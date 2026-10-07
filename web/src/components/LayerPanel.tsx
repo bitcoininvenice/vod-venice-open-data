@@ -41,7 +41,8 @@ import {
   Building2,
   Bike,
   Flower2,
-  GitBranch
+  GitBranch,
+  Camera
 } from 'lucide-react';
 import { TransportModeCategory } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
@@ -60,6 +61,10 @@ interface LayerPanelProps {
   showCantieri: boolean;
   onToggleCantieri: () => void;
   cantieriCount?: number;
+  showCameras?: boolean;
+  onToggleCameras?: () => void;
+  camerasCount?: number;
+  liveWebcamsCount?: number;
   showFlights?: boolean;
   onToggleFlights?: () => void;
   flightsCount?: number;
@@ -201,6 +206,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   showCantieri,
   onToggleCantieri,
   cantieriCount = 0,
+  showCameras = false,
+  onToggleCameras,
+  camerasCount = 0,
+  liveWebcamsCount = 0,
   showFlights = true,
   onToggleFlights,
   flightsCount = 0,
@@ -1253,7 +1262,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           </span>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-mono text-[var(--ink-3)] lowercase">
-              {[showCantieri, showCityAssets, showTrees, showServicesVenice, showAirQuality, showPedestrianFlows, showSatellites, showNizioleti, showWells, showBellTowers, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showAccommodations, showPollenStations].filter(Boolean).length}/16
+              {[showCantieri, showCameras, showCityAssets, showTrees, showServicesVenice, showAirQuality, showPedestrianFlows, showSatellites, showNizioleti, showWells, showBellTowers, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showAccommodations, showPollenStations].filter(Boolean).length}/17
             </span>
             {sectionOpen.city ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </div>
@@ -1284,6 +1293,43 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 {showCantieri ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
               </div>
             </button>
+
+            {/* Telecamere & Webcam (Anopticon + Live Webcams) */}
+            {onToggleCameras && (
+              <button
+                type="button"
+                onClick={onToggleCameras}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showCameras
+                    ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Camera className="w-3.5 h-3.5 text-cyan-400" />
+                  <div className="flex flex-col text-left">
+                    <span className="leading-tight">{t('layers.layerCameras')}</span>
+                    <span className="text-[9px] font-mono text-cyan-400/80">Anopticon + Webcam Live</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {camerasCount > 0 && (
+                    <div className="flex items-center gap-1">
+                      {liveWebcamsCount > 0 && (
+                        <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/25 text-cyan-300 font-bold border border-cyan-500/40 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                          {liveWebcamsCount} live
+                        </span>
+                      )}
+                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-500/20 text-slate-300 font-bold">
+                        {camerasCount}
+                      </span>
+                    </div>
+                  )}
+                  {showCameras ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
 
             {/* Fontanelle & Ponti Accessibili */}
             <button

@@ -14,6 +14,7 @@ import { ShipDetailModal } from '@/components/ShipDetailModal';
 import { MoseDetailModal } from '@/components/MoseDetailModal';
 import { AlilagunaDetailModal } from '@/components/AlilagunaDetailModal';
 import { SatelliteDetailModal } from '@/components/SatelliteDetailModal';
+import { CameraDetailModal } from '@/components/CameraDetailModal';
 import { VeniceFeatureDetailModal, VeniceFeatureSelected } from '@/components/VeniceFeatureDetailModal';
 import { OnboardingTutorialModal, MapPresetType } from '@/components/OnboardingTutorialModal';
 import { Layers } from 'lucide-react';
@@ -64,7 +65,8 @@ import {
   RegionalBikeRouteItem,
   PollenMonitoringStationItem,
   LagoonTributaryRiverItem,
-  AirportMetarData
+  AirportMetarData,
+  VeniceCameraItem
 } from '@/lib/types';
 import { INITIAL_LIPZ_METAR } from '@/lib/weatherWindData';
 import {
@@ -152,6 +154,7 @@ export default function HomePage() {
   const [showBathingWaters, setShowBathingWaters] = useState<boolean>(false);
   const [showTrees, setShowTrees] = useState<boolean>(false);
   const [showServicesVenice, setShowServicesVenice] = useState<boolean>(false);
+  const [showCameras, setShowCameras] = useState<boolean>(false);
 
   // 1. Viabilità Acquea & Canali
   const [showCanalLimits, setShowCanalLimits] = useState<boolean>(false);
@@ -213,6 +216,7 @@ export default function HomePage() {
   const [trees, setTrees] = useState<UrbanTreeItem[]>([]);
   const [evCharging, setEvCharging] = useState<EvChargingItem[]>([]);
   const [wifiHotspots, setWifiHotspots] = useState<WifiHotspotItem[]>([]);
+  const [cameras, setCameras] = useState<VeniceCameraItem[]>([]);
 
   // 17 New Open Data Collections
   const [canalSpeedLimits, setCanalSpeedLimits] = useState<CanalSpeedLimitItem[]>(OPEN_CANAL_SPEED_LIMITS);
@@ -249,6 +253,7 @@ export default function HomePage() {
   const [selectedShip, setSelectedShip] = useState<ShipItem | null>(null);
   const [selectedSatellite, setSelectedSatellite] = useState<SatelliteItem | null>(null);
   const [selectedFeature, setSelectedFeature] = useState<VeniceFeatureSelected | null>(null);
+  const [selectedCamera, setSelectedCamera] = useState<VeniceCameraItem | null>(null);
   const [isMoseModalOpen, setIsMoseModalOpen] = useState<boolean>(false);
   const [isAlilagunaModalOpen, setIsAlilagunaModalOpen] = useState<boolean>(false);
   const [isSpatialModalOpen, setIsSpatialModalOpen] = useState<boolean>(false);
@@ -291,6 +296,7 @@ export default function HomePage() {
     setShowBathingWaters(active);
     setShowTrees(active);
     setShowServicesVenice(active);
+    setShowCameras(active);
     // 1. Viabilità Acquea & Canali
     setShowCanalLimits(active);
     setShowBridges(active);
@@ -348,6 +354,7 @@ export default function HomePage() {
       setShowTrains(true);
       setShowWasteBoats(true);
       setShowBikeRoutes(true);
+      setShowCameras(true);
     } else if (preset === 'lagoon') {
       setShowMose(true);
       setShowPasserelle(true);
@@ -364,6 +371,7 @@ export default function HomePage() {
       setShowCityAssets(true);
       setShowTrees(true);
       setShowServicesVenice(true);
+      setShowCameras(true);
       setShowParkings(true);
       setShowCantieri(true);
       setShowAirQuality(true);
@@ -524,6 +532,14 @@ export default function HomePage() {
         }
       })
       .catch((err) => console.warn('Using fallback venice assets:', err));
+
+    // Fetch Venice Cameras & Webcams (Anopticon CCTV + Skyline/CPSM Live Feeds)
+    fetch('/api/cameras')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) setCameras(data.data);
+      })
+      .catch((err) => console.warn('Using fallback cameras:', err));
 
     // 1. Waterways & Canals (Speed limits, bridges, gondolas, docks)
     fetch('/api/waterways')
@@ -783,6 +799,9 @@ export default function HomePage() {
           alilagunaStops={alilagunaStops}
           alilagunaBoats={alilagunaBoats}
           onSelectAlilaguna={() => setIsAlilagunaModalOpen(true)}
+          showCameras={showCameras}
+          cameras={cameras}
+          onSelectCamera={setSelectedCamera}
           showSatellites={showSatellites}
           satellites={satellites}
           onSelectSatellite={setSelectedSatellite}
@@ -882,6 +901,10 @@ export default function HomePage() {
               showCantieri={showCantieri}
               onToggleCantieri={() => setShowCantieri((p) => !p)}
               cantieriCount={cantieri.length}
+              showCameras={showCameras}
+              onToggleCameras={() => setShowCameras((p) => !p)}
+              camerasCount={cameras.length}
+              liveWebcamsCount={cameras.filter((c) => c.hasLiveFeed).length}
               showFlights={showFlights}
               onToggleFlights={() => setShowFlights((p) => !p)}
               flightsCount={flights.length}
@@ -1015,7 +1038,7 @@ export default function HomePage() {
             >
               <Layers className="w-4 h-4 text-cyan-400 group-hover:rotate-12 transition-transform" />
               <span className="font-semibold">{t('layers.panelTitle')}</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-mono">43</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-mono">44</span>
             </button>
           </div>
         )}
@@ -1047,6 +1070,10 @@ export default function HomePage() {
                 showCantieri={showCantieri}
                 onToggleCantieri={() => setShowCantieri((p) => !p)}
                 cantieriCount={cantieri.length}
+                showCameras={showCameras}
+                onToggleCameras={() => setShowCameras((p) => !p)}
+                camerasCount={cameras.length}
+                liveWebcamsCount={cameras.filter((c) => c.hasLiveFeed).length}
                 showFlights={showFlights}
                 onToggleFlights={() => setShowFlights((p) => !p)}
                 flightsCount={flights.length}
@@ -1249,6 +1276,11 @@ export default function HomePage() {
       <SatelliteDetailModal
         satellite={selectedSatellite}
         onClose={() => setSelectedSatellite(null)}
+      />
+
+      <CameraDetailModal
+        camera={selectedCamera}
+        onClose={() => setSelectedCamera(null)}
       />
 
       <VeniceFeatureDetailModal

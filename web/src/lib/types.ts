@@ -378,6 +378,42 @@ export interface SatelliteItem {
   apiLink: string;
 }
 
+export type CameraType =
+  | 'CCTV_DOME'
+  | 'CCTV_SPOT'
+  | 'CCTV_ROTATING'
+  | 'CCTV_ANPR'
+  | 'CCTV_ZTL'
+  | 'WEBCAM_LIVE_STREAM'
+  | 'WEBCAM_CPSM_TIDE'
+  | 'WEBCAM_OCEAN_CNR';
+
+export interface VeniceCameraItem {
+  id: string;
+  name: string;
+  type: CameraType;
+  typeLabel: string;
+  lat: number;
+  lon: number;
+  sestiere: string;
+  location: string;
+  targetDescription: string;
+  operator: string;
+  source: 'ANOPTICON_CIVIC' | 'PUBLIC_STREAM' | 'CPSM_COMUNE_VENEZIA' | 'CNR_ISMAR';
+  sourceLabel: string;
+  sourceUrl: string;
+  hasLiveFeed: boolean;
+  feedType?: 'YOUTUBE_LIVE' | 'GARR_TV_STREAM' | 'IMAGE_SNAPSHOT_15M' | 'DIRECT_STREAM_LINK';
+  streamEmbedUrl?: string;
+  streamPageUrl?: string;
+  snapshotUrl?: string;
+  privacyNoticeStatus?: 'PRESENTE' | 'ASSENTE' | 'INCOMPLETA' | 'NON_APPLICABILE_PANORAMICA';
+  bearingDeg?: number;
+  fovDeg?: number;
+  rangeMeters?: number;
+  notes?: string;
+}
+
 export interface PasserellaItem {
   id: string;
   name: string;

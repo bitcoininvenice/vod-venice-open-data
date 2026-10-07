@@ -131,7 +131,8 @@ export const enTranslations: Translations = {
     layerBikeRoutes: 'Lagoon Island Cycle Paths',
     layerPollenStations: 'ARPAV Airborne Pollen Monitoring',
     layerTributaries: 'Lagoon Tributary Rivers',
-    layerSatellites: 'Copernicus & ASI Satellite Orbits'
+    layerSatellites: 'Copernicus & ASI Satellite Orbits',
+    layerCameras: 'Cameras & Webcams (Live + CCTV)'
   },
   tutorial: {
     step1Badge: 'WELCOME',

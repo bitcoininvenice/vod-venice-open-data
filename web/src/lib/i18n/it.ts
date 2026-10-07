@@ -131,7 +131,8 @@ export const itTranslations: Translations = {
     layerBikeRoutes: 'Ciclovie Isole del Veneto',
     layerPollenStations: 'Monitoraggio Pollini ARPAV',
     layerTributaries: 'Fiumi Immissari in Laguna',
-    layerSatellites: 'Orbita Satelliti Copernicus & ASI'
+    layerSatellites: 'Orbita Satelliti Copernicus & ASI',
+    layerCameras: 'Telecamere & Webcam (Live + CCTV)'
   },
   tutorial: {
     step1Badge: 'BENVENUTO',

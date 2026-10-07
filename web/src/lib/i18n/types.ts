@@ -132,6 +132,7 @@ export interface Translations {
     layerPollenStations: string;
     layerTributaries: string;
     layerSatellites: string;
+    layerCameras: string;
   };
   tutorial: {
     step1Badge: string;

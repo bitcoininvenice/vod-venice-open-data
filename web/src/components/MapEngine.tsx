@@ -47,7 +47,8 @@ import {
   TouristAccommodationItem,
   RegionalBikeRouteItem,
   PollenMonitoringStationItem,
-  LagoonTributaryRiverItem
+  LagoonTributaryRiverItem,
+  VeniceCameraItem
 } from '@/lib/types';
 import { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import { D, LAND, CFG } from '@/lib/simulation-data';
@@ -271,6 +272,9 @@ interface MapEngineProps {
   alilagunaStops?: AlilagunaStop[];
   alilagunaBoats?: AlilagunaBoat[];
   onSelectAlilaguna?: () => void;
+  showCameras?: boolean;
+  cameras?: VeniceCameraItem[];
+  onSelectCamera?: (camera: VeniceCameraItem) => void;
   showSatellites?: boolean;
   satellites?: SatelliteItem[];
   onSelectSatellite?: (satellite: SatelliteItem) => void;
@@ -380,6 +384,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   alilagunaStops = [],
   alilagunaBoats = [],
   onSelectAlilaguna,
+  showCameras = true,
+  cameras = [],
+  onSelectCamera,
   showSatellites = true,
   satellites = [],
   onSelectSatellite,
@@ -990,7 +997,27 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
     }
 
-    // 1f. Hit test Earth Observation Satellites (ESA / ASI / NASA)
+    // 1f. Hit test Venice Cameras & Webcams (Anopticon CCTV & Public Webcams)
+    if (showCameras && cameras && cameras.length > 0) {
+      for (const cam of cameras) {
+        const cx = (mx(cam.lon) - camera.x0) * camera.s;
+        const cy = (my(cam.lat) - camera.y0) * camera.s;
+        const hitRadius = cam.hasLiveFeed ? 22 : 16;
+        if (Math.hypot(clickX - cx, clickY - cy) <= hitRadius) {
+          if (onSelectCamera) {
+            onSelectCamera(cam);
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1g. Hit test Earth Observation Satellites (ESA / ASI / NASA)
     if (showSatellites && satellites && satellites.length > 0) {
       for (const sat of satellites) {
         const live = getLiveSatellite(sat, currentTimeSeconds);
@@ -3019,6 +3046,124 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         }
       }
 
+      // 18b. Render Venice Cameras & Webcams (Anopticon Civic CCTV + Live Public Webcams)
+      if (showCameras && cameras && cameras.length > 0) {
+        for (const cam of cameras) {
+          const cx = sx(mx(cam.lon));
+          const cy = sy(my(cam.lat));
+          if (cx < -60 || cx > cw + 60 || cy < -60 || cy > ch + 60) continue;
+
+          ctx.save();
+
+          if (cam.hasLiveFeed) {
+            // Live Public Webcam (Cyan Glow & Pulse)
+            const pulse = 10 + Math.sin(Date.now() / 240) * 3.5;
+
+            // Optional field of view wedge/cone
+            if (cam.bearingDeg !== undefined && camera.s > 0.02) {
+              const rad = (cam.bearingDeg * Math.PI) / 180;
+              const fovRad = ((cam.fovDeg || 80) * Math.PI) / 360;
+              const coneLen = 32;
+              ctx.beginPath();
+              ctx.moveTo(cx, cy);
+              ctx.arc(cx, cy, coneLen, rad - fovRad, rad + fovRad);
+              ctx.closePath();
+              ctx.fillStyle = isDark ? 'rgba(6, 182, 212, 0.16)' : 'rgba(6, 182, 212, 0.22)';
+              ctx.fill();
+            }
+
+            // Outer pulsing halo
+            ctx.beginPath();
+            ctx.arc(cx, cy, pulse, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(6, 182, 212, 0.22)';
+            ctx.fill();
+            ctx.strokeStyle = isDark ? '#38bdf8' : '#0284c7';
+            ctx.lineWidth = 1.4;
+            ctx.stroke();
+
+            // Inner pin
+            ctx.beginPath();
+            ctx.arc(cx, cy, 5.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#06b6d4';
+            ctx.fill();
+            ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Lens center dot
+            ctx.beginPath();
+            ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            // Label tag on zoom
+            if (camera.s > 0.035) {
+              ctx.font = '700 8.5px "DM Mono", monospace';
+              const label = `🔴 LIVE · ${cam.name}`;
+              const lW = ctx.measureText(label).width;
+              ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.90)' : 'rgba(255, 255, 255, 0.92)';
+              ctx.beginPath();
+              ctx.roundRect(cx - lW / 2 - 4, cy - 20, lW + 8, 13, 3);
+              ctx.fill();
+              ctx.strokeStyle = '#06b6d4';
+              ctx.lineWidth = 1;
+              ctx.stroke();
+              ctx.fillStyle = isDark ? '#38bdf8' : '#0284c7';
+              ctx.fillText(label, cx - lW / 2, cy - 10);
+            }
+          } else {
+            // CCTV Surveillance Camera (Anopticon)
+            const isAnpr = cam.type === 'CCTV_ANPR';
+            const pinColor = isAnpr ? '#e11d48' : (isDark ? '#94a3b8' : '#475569');
+
+            // Direction tick if available
+            if (cam.bearingDeg !== undefined && camera.s > 0.03) {
+              const rad = (cam.bearingDeg * Math.PI) / 180;
+              ctx.beginPath();
+              ctx.moveTo(cx, cy);
+              ctx.lineTo(cx + Math.cos(rad) * 14, cy + Math.sin(rad) * 14);
+              ctx.strokeStyle = pinColor;
+              ctx.lineWidth = 1.2;
+              ctx.setLineDash([2, 2]);
+              ctx.stroke();
+              ctx.setLineDash([]);
+            }
+
+            // CCTV Pin
+            ctx.beginPath();
+            ctx.arc(cx, cy, 3.8, 0, Math.PI * 2);
+            ctx.fillStyle = isDark ? '#1e293b' : '#f1f5f9';
+            ctx.fill();
+            ctx.strokeStyle = pinColor;
+            ctx.lineWidth = 1.8;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, 1.6, 0, Math.PI * 2);
+            ctx.fillStyle = pinColor;
+            ctx.fill();
+
+            // Label on high zoom
+            if (camera.s > 0.055) {
+              ctx.font = '600 7.5px "DM Mono", monospace';
+              const label = `📹 CCTV · ${cam.name}`;
+              const lW = ctx.measureText(label).width;
+              ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.85)';
+              ctx.beginPath();
+              ctx.roundRect(cx - lW / 2 - 3, cy - 16, lW + 6, 11, 2.5);
+              ctx.fill();
+              ctx.strokeStyle = pinColor;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+              ctx.fillStyle = isDark ? '#cbd5e1' : '#334155';
+              ctx.fillText(label, cx - lW / 2, cy - 8);
+            }
+          }
+
+          ctx.restore();
+        }
+      }
+
       // 19. Render Passerelle per Acqua Alta (CPSM / Protezione Civile)
       if (showPasserelle && passerelle && passerelle.length > 0) {
         for (const p of passerelle) {
@@ -4229,6 +4374,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     alilagunaStops,
     alilagunaBoats,
     selectedAlilagunaBoat,
+    showCameras,
+    cameras,
     showSatellites,
     satellites,
     selectedSatellite,
