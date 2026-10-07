@@ -63,8 +63,10 @@ import {
   TouristAccommodationItem,
   RegionalBikeRouteItem,
   PollenMonitoringStationItem,
-  LagoonTributaryRiverItem
+  LagoonTributaryRiverItem,
+  AirportMetarData
 } from '@/lib/types';
+import { INITIAL_LIPZ_METAR } from '@/lib/weatherWindData';
 import {
   REGIONAL_LAGOON_WATER_QUALITY,
   REGIONAL_TOURIST_ACCOMMODATIONS,
@@ -214,6 +216,7 @@ export default function HomePage() {
   const [subsidencePoints, setSubsidencePoints] = useState<SubsidenceInSARItem[]>(OPEN_SUBSIDENCE_INSAR);
   const [lagoonMorphology, setLagoonMorphology] = useState<LagoonMorphologyItem[]>(OPEN_LAGOON_MORPHOLOGY);
   const [marineWindStations, setMarineWindStations] = useState<MeteoMarineWindItem[]>(OPEN_METEO_MARINE_WIND);
+  const [metarData, setMetarData] = useState<AirportMetarData>(INITIAL_LIPZ_METAR);
   const [liveTrains, setLiveTrains] = useState<TrainLiveItem[]>(OPEN_LIVE_TRAINS);
   const [wasteBoats, setWasteBoats] = useState<VeritasWasteBoatItem[]>(OPEN_VERITAS_WASTE_BOATS);
   const [nizioleti, setNizioleti] = useState<NizioletoCivicoItem[]>(OPEN_NIZIOLETI_CIVICI);
@@ -536,6 +539,17 @@ export default function HomePage() {
         }
       })
       .catch((err) => console.warn('Using fallback lagoon morphology:', err));
+
+    // Weather & Wind (Aeronautica Militare LIPZ METAR, CNR-ISMAR offshore, CPSM anemometers)
+    fetch('/api/weather')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          if (data.data.metar) setMetarData(data.data.metar);
+          if (data.data.windStations) setMarineWindStations(data.data.windStations);
+        }
+      })
+      .catch((err) => console.warn('Using fallback weather data:', err));
 
     // 3. Rail & Logistics (Viaggiatreno/RFI trains, Veritas waste boats)
     fetch('/api/rail-logistics')
@@ -1192,6 +1206,7 @@ export default function HomePage() {
         isOpen={isAirportModalOpen}
         onClose={() => setIsAirportModalOpen(false)}
         flights={flights}
+        metar={metarData}
       />
 
       <ShipDetailModal

@@ -1,21 +1,33 @@
 'use client';
 
-import React from 'react';
-import { X, Plane, Navigation, Compass, ExternalLink, ShieldCheck, Waves, Bus } from 'lucide-react';
-import { FlightItem } from '@/lib/types';
+import React, { useState } from 'react';
+import { X, Plane, Navigation, Compass, ExternalLink, ShieldCheck, Waves, Bus, Wind, Thermometer, Gauge, Cloud, Check, Copy } from 'lucide-react';
+import { FlightItem, AirportMetarData } from '@/lib/types';
+import { INITIAL_LIPZ_METAR } from '@/lib/weatherWindData';
 
 interface AirportDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   flights: FlightItem[];
+  metar?: AirportMetarData;
 }
 
 export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
   isOpen,
   onClose,
-  flights
+  flights,
+  metar = INITIAL_LIPZ_METAR
 }) => {
+  const [copiedMetar, setCopiedMetar] = useState(false);
   if (!isOpen) return null;
+
+  const handleCopyMetar = () => {
+    if (metar?.rawMetar) {
+      navigator.clipboard.writeText(metar.rawMetar);
+      setCopiedMetar(true);
+      setTimeout(() => setCopiedMetar(false), 2000);
+    }
+  };
 
   const activeArrivals = flights.filter((f) => f.status === 'APPROACH');
   const activeDepartures = flights.filter((f) => f.status === 'DEPARTURE');
@@ -71,6 +83,94 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
             <span className="text-[9px] text-[var(--ink-3)] block">Polo Aeroportuale NE</span>
           </div>
         </div>
+
+        {/* Aviation Weather & METAR Bulletin (Aeronautica Militare / ENAV) */}
+        {metar && (
+          <div className="flex flex-col gap-2 p-3 rounded-2xl bg-sky-500/5 dark:bg-sky-500/10 border border-sky-500/25">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
+                <Wind className="w-4 h-4 text-sky-400" /> Bollettino Meteo METAR Ufficiale
+              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-bold border border-emerald-500/30">
+                  {metar.flightCategory} (Volo a Vista)
+                </span>
+                <span className="text-[10px] font-mono text-[var(--ink-3)]">
+                  QNH {metar.qnhHpa} hPa
+                </span>
+              </div>
+            </div>
+
+            {/* Raw METAR String Box */}
+            <div className="relative group bg-[var(--surface-sunken)] p-2 rounded-xl border border-[var(--rule)] font-mono text-[11px] text-sky-600 dark:text-sky-300 flex items-center justify-between">
+              <span className="select-all tracking-wide break-all font-semibold">{metar.rawMetar}</span>
+              <button
+                type="button"
+                onClick={handleCopyMetar}
+                title="Copia codice METAR"
+                className="ml-2 p-1 rounded-lg hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] shrink-0 transition-colors cursor-pointer"
+              >
+                {copiedMetar ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+
+            {/* Weather Breakdown Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div className="bg-[var(--rule)]/30 p-2 rounded-xl border border-[var(--rule)] flex flex-col">
+                <span className="text-[10px] text-[var(--ink-3)] font-mono flex items-center gap-1">
+                  <Wind className="w-3 h-3 text-sky-400" /> Vento al Suolo
+                </span>
+                <span className="font-mono font-bold text-[var(--ink)] mt-0.5">
+                  {metar.windSpeedKnots} kt ({metar.windSpeedKmh} km/h)
+                </span>
+                <span className="text-[10px] text-teal-600 dark:text-teal-400 font-mono">
+                  {metar.windDirectionDeg}° · {metar.windCompass}
+                </span>
+              </div>
+
+              <div className="bg-[var(--rule)]/30 p-2 rounded-xl border border-[var(--rule)] flex flex-col">
+                <span className="text-[10px] text-[var(--ink-3)] font-mono flex items-center gap-1">
+                  <Compass className="w-3 h-3 text-amber-400" /> Crosswind 04R
+                </span>
+                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                  {metar.crosswindKnots} kt
+                </span>
+                <span className="text-[10px] text-[var(--ink-2)] font-mono">
+                  Frontale {metar.headwindKnots} kt
+                </span>
+              </div>
+
+              <div className="bg-[var(--rule)]/30 p-2 rounded-xl border border-[var(--rule)] flex flex-col">
+                <span className="text-[10px] text-[var(--ink-3)] font-mono flex items-center gap-1">
+                  <Thermometer className="w-3 h-3 text-rose-400" /> Temp / Dewpoint
+                </span>
+                <span className="font-mono font-bold text-[var(--ink)] mt-0.5">
+                  {metar.temperatureCelsius}°C / {metar.dewPointCelsius}°C
+                </span>
+                <span className="text-[10px] text-[var(--ink-2)] font-mono">
+                  Umidità {metar.relativeHumidityPercent}%
+                </span>
+              </div>
+
+              <div className="bg-[var(--rule)]/30 p-2 rounded-xl border border-[var(--rule)] flex flex-col">
+                <span className="text-[10px] text-[var(--ink-3)] font-mono flex items-center gap-1">
+                  <Cloud className="w-3 h-3 text-cyan-400" /> Visibilità & Nubi
+                </span>
+                <span className="font-mono font-bold text-[var(--ink)] mt-0.5">
+                  {metar.visibilityMeters >= 10000 ? '> 10 km (CAVOK)' : `${metar.visibilityMeters} m`}
+                </span>
+                <span className="text-[9px] text-[var(--ink-3)] truncate" title={metar.cloudsDescription}>
+                  {metar.cloudsDescription}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-[10px] text-[var(--ink-3)] pt-1 border-t border-[var(--rule)]">
+              <span>Fonte: Aeronautica Militare / ENAV (Stazione LIPZ)</span>
+              <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">{metar.runwayCondition}</span>
+            </div>
+          </div>
+        )}
 
         {/* Runways specifications */}
         <div className="flex flex-col gap-2">

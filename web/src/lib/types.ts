@@ -558,17 +558,50 @@ export interface LagoonMorphologyItem {
   floraFauna: string;
 }
 
+export interface AirportMetarData {
+  icao: string; // LIPZ
+  iata: string; // VCE
+  stationName: string;
+  rawMetar: string;
+  observationTime: string;
+  windDirectionDeg: number;
+  windCompass: string;
+  windSpeedKnots: number;
+  windSpeedKmh: number;
+  gustSpeedKnots?: number;
+  visibilityMeters: number;
+  temperatureCelsius: number;
+  dewPointCelsius: number;
+  relativeHumidityPercent: number;
+  qnhHpa: number;
+  flightCategory: 'VFR' | 'MVFR' | 'IFR' | 'LIFR';
+  cloudsDescription: string;
+  activeRunway: string;
+  crosswindKnots: number;
+  headwindKnots: number;
+  runwayCondition: string;
+  officialSource: string;
+}
+
 export interface MeteoMarineWindItem {
   id: string;
   stationName: string;
   lat: number;
   lon: number;
-  windDirection: 'SCIROCCO' | 'BORA' | 'LIBECCIO' | 'MAESTRALE' | 'TRAMONTANA';
+  windDirection: 'SCIROCCO' | 'BORA' | 'LIBECCIO' | 'MAESTRALE' | 'TRAMONTANA' | 'GRECALE' | 'PONENTE' | 'LEVANTE';
   windDirectionDeg: number;
   windSpeedKmh: number;
+  windSpeedKnots: number;
   gustSpeedKmh: number;
+  gustSpeedKnots: number;
   waveHeightMeters: number;
+  airTempCelsius?: number;
+  pressureHpa?: number;
+  humidityPercent?: number;
   tidePushRisk: 'BASSO' | 'MODERATO' | 'ALTO' | 'CRITICO';
+  windTypeDescription: string;
+  stationType: 'AEROPORTO' | 'PIATTAFORMA_OFFSHORE' | 'BOCCA_DI_PORTO' | 'CENTRO_STORICO' | 'TERRAFERMA';
+  metar?: AirportMetarData;
   officialSource: string;
 }
 

@@ -96,7 +96,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-start gap-2.5">
               <span className="p-1 rounded-lg bg-blue-500/20 text-blue-400 font-bold">2</span>
               <div>
-                <strong className="text-[var(--ink)]">Laguna, Ambiente & Morfologia:</strong> Barriere MOSE, passerelle acqua alta, briccole di canale, barene Natura 2000, vento Scirocco/Bora e subsidenza radar InSAR Sentinel-1.
+                <strong className="text-[var(--ink)]">Laguna, Meteo & Ambiente:</strong> Barriere MOSE, bollettino METAR Aeronautica Militare (LIPZ), anemometri Scirocco/Bora, passerelle acqua alta, barene Natura 2000 e subsidenza radar InSAR Sentinel-1.
               </div>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-start gap-2.5">

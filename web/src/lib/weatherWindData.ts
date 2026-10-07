@@ -1,0 +1,203 @@
+import { AirportMetarData, MeteoMarineWindItem } from './types';
+
+/**
+ * Genera un bollettino METAR realistico e coerente per LIPZ (Venezia Tessera)
+ * conforme agli standard ICAO / WMO / Aeronautica Militare.
+ */
+export function generateCurrentLIPZMetar(): AirportMetarData {
+  const now = new Date();
+  const day = String(now.getUTCDate()).padStart(2, '0');
+  const hour = String(now.getUTCHours()).padStart(2, '0');
+  const minute = String(Math.floor(now.getUTCMinutes() / 30) * 30).padStart(2, '0');
+
+  const windDeg = 60; // Grecale / Bora debole
+  const windKt = 12;
+  const gustKt = 17;
+  const tempC = 18;
+  const dewC = 12;
+  const qnh = 1016;
+
+  // Runway 04R orientata a 042° magnetici
+  const runwayHeadingDeg = 42;
+  const angleDiffRad = ((windDeg - runwayHeadingDeg) * Math.PI) / 180;
+  const crosswindKnots = Math.abs(Math.round(windKt * Math.sin(angleDiffRad) * 10) / 10);
+  const headwindKnots = Math.round(windKt * Math.cos(angleDiffRad) * 10) / 10;
+
+  const rawMetar = `LIPZ ${day}${hour}${minute}Z ${String(windDeg).padStart(3, '0')}${String(windKt).padStart(2, '0')}G${gustKt}KT 9999 FEW025 BKN080 ${tempC}/${dewC} Q${qnh} NOSIG`;
+
+  return {
+    icao: 'LIPZ',
+    iata: 'VCE',
+    stationName: 'Aeroporto di Venezia Marco Polo - Stazione Aeronautica Militare / ENAV',
+    rawMetar,
+    observationTime: now.toISOString(),
+    windDirectionDeg: windDeg,
+    windCompass: 'ENE (Bora moderata / Grecale)',
+    windSpeedKnots: windKt,
+    windSpeedKmh: Math.round(windKt * 1.852 * 10) / 10,
+    gustSpeedKnots: gustKt,
+    visibilityMeters: 10000,
+    temperatureCelsius: tempC,
+    dewPointCelsius: dewC,
+    relativeHumidityPercent: 68,
+    qnhHpa: qnh,
+    flightCategory: 'VFR',
+    cloudsDescription: 'Poche nubi sparse a 2.500 ft (FEW025), nuvolosità a 8.000 ft (BKN080)',
+    activeRunway: 'RWY 04R (Pista Principale 3.300 m)',
+    crosswindKnots,
+    headwindKnots,
+    runwayCondition: 'Asciutta (Dry) - Atterraggi/Decolli Regolari',
+    officialSource: 'Servizio Meteorologico Aeronautica Militare / ENAV / ICAO LIPZ'
+  };
+}
+
+export const INITIAL_LIPZ_METAR: AirportMetarData = generateCurrentLIPZMetar();
+
+/**
+ * Catalogo delle 7 Stazioni Meteomarine e Anemometriche di Venezia e Laguna
+ * che coprono Aeroporto LIPZ, Mare aperto (Piattaforma CNR), Bocche di Porto (MOSE)
+ * Bacino San Marco e Terraferma (ARPAV).
+ */
+export const METEO_MARINE_WIND_STATIONS: MeteoMarineWindItem[] = [
+  {
+    id: 'WIND_LIPZ_AERONAUTICA',
+    stationName: 'Aeroporto Marco Polo - Stazione Aeronautica Militare / ENAV (LIPZ)',
+    lat: 45.5053,
+    lon: 12.3519,
+    windDirection: 'BORA',
+    windDirectionDeg: 60,
+    windSpeedKmh: 22.2,
+    windSpeedKnots: 12.0,
+    gustSpeedKmh: 31.5,
+    gustSpeedKnots: 17.0,
+    waveHeightMeters: 0.15,
+    airTempCelsius: 18.0,
+    pressureHpa: 1016.0,
+    humidityPercent: 68,
+    tidePushRisk: 'BASSO',
+    windTypeDescription: 'Vento al suolo rilevato dai sensori anemometrici aeroportuali ENAV / Aeronautica Militare lungo la pista 04R/22L.',
+    stationType: 'AEROPORTO',
+    metar: INITIAL_LIPZ_METAR,
+    officialSource: 'Aeronautica Militare / ENAV Servizio Meteorologico'
+  },
+  {
+    id: 'WIND_CNR_ACQUA_ALTA',
+    stationName: 'Piattaforma Oceanografica Acqua Alta (CNR-ISMAR)',
+    lat: 45.3142,
+    lon: 12.5083,
+    windDirection: 'SCIROCCO',
+    windDirectionDeg: 140,
+    windSpeedKmh: 46.5,
+    windSpeedKnots: 25.1,
+    gustSpeedKmh: 61.2,
+    gustSpeedKnots: 33.0,
+    waveHeightMeters: 2.45,
+    airTempCelsius: 17.2,
+    pressureHpa: 1014.2,
+    humidityPercent: 84,
+    tidePushRisk: 'CRITICO',
+    windTypeDescription: 'Stazione offshore a 15 km dalla costa (8 miglia marine). Rileva il fetch dello Scirocco che risale l\'Adriatico spingendo la massa d\'acqua verso le bocche lagunari (fondamentale per il modello MOSE).',
+    stationType: 'PIATTAFORMA_OFFSHORE',
+    officialSource: 'CNR-ISMAR Istituto di Scienze Marine / ISPRA RON'
+  },
+  {
+    id: 'WIND_LIDO_MOSE',
+    stationName: 'Bocca di Porto di Lido - Faro Diga Nord (MOSE)',
+    lat: 45.4190,
+    lon: 12.4490,
+    windDirection: 'SCIROCCO',
+    windDirectionDeg: 140,
+    windSpeedKmh: 38.5,
+    windSpeedKnots: 20.8,
+    gustSpeedKmh: 52.0,
+    gustSpeedKnots: 28.1,
+    waveHeightMeters: 1.85,
+    airTempCelsius: 17.8,
+    pressureHpa: 1015.0,
+    humidityPercent: 79,
+    tidePushRisk: 'ALTO',
+    windTypeDescription: 'Ingresso settentrionale della Laguna. Canale di San Nicolò con forti flussi mareali combinati al moto ondoso di Sud-Est.',
+    stationType: 'BOCCA_DI_PORTO',
+    officialSource: 'Centro Previsioni e Segnalazioni Maree CPSM / ISPRA RMN'
+  },
+  {
+    id: 'WIND_MALAMOCCO',
+    stationName: 'Bocca di Porto di Malamocco - Faro Rocchetta',
+    lat: 45.3360,
+    lon: 12.3380,
+    windDirection: 'SCIROCCO',
+    windDirectionDeg: 145,
+    windSpeedKmh: 42.0,
+    windSpeedKnots: 22.7,
+    gustSpeedKmh: 56.5,
+    gustSpeedKnots: 30.5,
+    waveHeightMeters: 2.15,
+    airTempCelsius: 17.5,
+    pressureHpa: 1014.8,
+    humidityPercent: 81,
+    tidePushRisk: 'CRITICO',
+    windTypeDescription: 'Canale d\'accesso per il traffico marittimo e commerciale (fino a 14 m di pescaggio); massima esposizione ai treni d\'onda adriatici.',
+    stationType: 'BOCCA_DI_PORTO',
+    officialSource: 'Capitaneria di Porto di Venezia / ISPRA RMN'
+  },
+  {
+    id: 'WIND_CHIOGGIA',
+    stationName: 'Bocca di Porto di Chioggia - Diga San Felice',
+    lat: 45.2340,
+    lon: 12.3020,
+    windDirection: 'SCIROCCO',
+    windDirectionDeg: 135,
+    windSpeedKmh: 39.5,
+    windSpeedKnots: 21.3,
+    gustSpeedKmh: 53.0,
+    gustSpeedKnots: 28.6,
+    waveHeightMeters: 1.95,
+    airTempCelsius: 17.9,
+    pressureHpa: 1015.1,
+    humidityPercent: 80,
+    tidePushRisk: 'ALTO',
+    windTypeDescription: 'Porta meridionale della Laguna; influenza direttamente i livelli d\'acqua del bacino di Chioggia, Sottomarina e valli da pesca meridionali.',
+    stationType: 'BOCCA_DI_PORTO',
+    officialSource: 'Centro Maree CPSM / Provveditorato OO.PP.'
+  },
+  {
+    id: 'WIND_DOGANA_SAN_MARCO',
+    stationName: 'Bacino San Marco - Punta della Dogana',
+    lat: 45.4310,
+    lon: 12.3370,
+    windDirection: 'SCIROCCO',
+    windDirectionDeg: 130,
+    windSpeedKmh: 26.0,
+    windSpeedKnots: 14.0,
+    gustSpeedKmh: 35.0,
+    gustSpeedKnots: 18.9,
+    waveHeightMeters: 0.65,
+    airTempCelsius: 18.3,
+    pressureHpa: 1015.6,
+    humidityPercent: 74,
+    tidePushRisk: 'MODERATO',
+    windTypeDescription: 'Punto nevralgico della città storica all\'incrocio tra Canal Grande e Canale della Giudecca. Scirocco canalizzato e moto ondoso riflesso.',
+    stationType: 'CENTRO_STORICO',
+    officialSource: 'Comune di Venezia CPSM / Rete Idrografica Lagunare'
+  },
+  {
+    id: 'WIND_MESTRE_BISSUOLA',
+    stationName: 'Mestre Terraferma - Parco Bissuola ARPAV',
+    lat: 45.4980,
+    lon: 12.2460,
+    windDirection: 'BORA',
+    windDirectionDeg: 55,
+    windSpeedKmh: 18.0,
+    windSpeedKnots: 9.7,
+    gustSpeedKmh: 27.0,
+    gustSpeedKnots: 14.6,
+    waveHeightMeters: 0.00,
+    airTempCelsius: 19.1,
+    pressureHpa: 1016.3,
+    humidityPercent: 65,
+    tidePushRisk: 'BASSO',
+    windTypeDescription: 'Stazione meteorologica ARPAV di riferimento per l\'agglomerato urbano di terraferma e il monitoraggio del microclima continentale.',
+    stationType: 'TERRAFERMA',
+    officialSource: 'ARPAV Servizio Meteorologico Regionale del Veneto'
+  }
+];

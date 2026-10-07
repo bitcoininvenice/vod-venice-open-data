@@ -1053,7 +1053,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Wind className="w-3.5 h-3.5 text-teal-400" />
-                  <span>Vento Scirocco/Bora & Onde ISPRA</span>
+                  <span>Meteo, Vento & METAR Aeronautica</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {marineWindCount > 0 && (

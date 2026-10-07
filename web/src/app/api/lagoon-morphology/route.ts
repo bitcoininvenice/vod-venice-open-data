@@ -12,8 +12,11 @@ export async function GET() {
     success: true,
     data: {
       subsidence: OPEN_SUBSIDENCE_INSAR,
+      subsidencePoints: OPEN_SUBSIDENCE_INSAR,
       morphology: OPEN_LAGOON_MORPHOLOGY,
-      marineWind: OPEN_METEO_MARINE_WIND
+      lagoonMorphology: OPEN_LAGOON_MORPHOLOGY,
+      marineWind: OPEN_METEO_MARINE_WIND,
+      marineWindStations: OPEN_METEO_MARINE_WIND
     },
     meta: {
       source: 'Copernicus EGMS (European Ground Motion Service), CNR-ISMAR, CPSM, ISPRA RMN',

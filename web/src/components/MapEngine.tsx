@@ -3564,37 +3564,137 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         }
       }
 
-      // 31. Render Stazioni Vento Meteomarine (Scirocco / Bora)
+      // 31. Render Stazioni Vento Meteomarine & Bollettini METAR (Scirocco / Bora / ENAV)
       if (showMarineWind && marineWindStations && marineWindStations.length > 0) {
         for (const w of marineWindStations) {
           const wx = sx(mx(w.lon));
           const wy = sy(my(w.lat));
+
+          // Culling visibilità canvas
+          if (wx < -60 || wx > cw + 60 || wy < -60 || wy > ch + 60) continue;
+
           ctx.save();
 
-          // Compass arrow pointing in wind direction
+          const isCritical = w.tidePushRisk === 'CRITICO' || w.tidePushRisk === 'ALTO';
+          const isAirport = w.stationType === 'AEROPORTO';
+          const isOffshore = w.stationType === 'PIATTAFORMA_OFFSHORE';
+
+          // Colori per Dark mode e Light mode
+          const primaryColor = isAirport
+            ? (isDark ? '#38bdf8' : '#0284c7')
+            : isCritical
+            ? (isDark ? '#fb7185' : '#dc2626')
+            : (isDark ? '#2dd4bf' : '#0d9488');
+
+          const haloColor = isAirport
+            ? (isDark ? 'rgba(56, 189, 248, 0.22)' : 'rgba(2, 132, 199, 0.16)')
+            : isCritical
+            ? (isDark ? 'rgba(251, 113, 133, 0.25)' : 'rgba(220, 38, 38, 0.18)')
+            : (isDark ? 'rgba(45, 212, 191, 0.22)' : 'rgba(13, 148, 136, 0.16)');
+
+          // Halo esterno
+          ctx.beginPath();
+          ctx.arc(wx, wy, isCritical ? 14 : 11, 0, Math.PI * 2);
+          ctx.fillStyle = haloColor;
+          ctx.fill();
+
+          // Cerchio base stazione
+          ctx.beginPath();
+          ctx.arc(wx, wy, 7, 0, Math.PI * 2);
+          ctx.fillStyle = isDark ? '#090d16' : '#ffffff';
+          ctx.fill();
+          ctx.strokeStyle = primaryColor;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // Punto centrale
+          ctx.beginPath();
+          ctx.arc(wx, wy, 3, 0, Math.PI * 2);
+          ctx.fillStyle = primaryColor;
+          ctx.fill();
+
+          // Freccia direzionale del vento
           const rad = (w.windDirectionDeg * Math.PI) / 180;
+          const arrowLen = Math.min(30, Math.max(16, 12 + w.windSpeedKmh * 0.32));
+
+          ctx.save();
           ctx.translate(wx, wy);
           ctx.rotate(rad);
 
-          // Arrow head
-          ctx.fillStyle = w.tidePushRisk === 'CRITICO' || w.tidePushRisk === 'ALTO'
-            ? (isDark ? '#f43f5e' : '#be123c')
-            : (isDark ? '#14b8a6' : '#0f766e');
+          // Asta della freccia
+          ctx.strokeStyle = primaryColor;
+          ctx.fillStyle = primaryColor;
+          ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.moveTo(0, -12);
-          ctx.lineTo(5, 6);
-          ctx.lineTo(0, 3);
-          ctx.lineTo(-5, 6);
+          ctx.moveTo(0, 0);
+          ctx.lineTo(0, -arrowLen);
+          ctx.stroke();
+
+          // Punta della freccia
+          ctx.beginPath();
+          ctx.moveTo(0, -arrowLen - 6);
+          ctx.lineTo(4.5, -arrowLen + 2);
+          ctx.lineTo(0, -arrowLen - 1);
+          ctx.lineTo(-4.5, -arrowLen + 2);
           ctx.closePath();
           ctx.fill();
 
+          // Barbe anemometriche
+          if (w.windSpeedKnots >= 15) {
+            ctx.beginPath();
+            ctx.moveTo(0, -arrowLen + 6);
+            ctx.lineTo(6, -arrowLen + 3);
+            ctx.stroke();
+          }
+          if (w.windSpeedKnots >= 25) {
+            ctx.beginPath();
+            ctx.moveTo(0, -arrowLen + 11);
+            ctx.lineTo(6, -arrowLen + 8);
+            ctx.stroke();
+          }
+
           ctx.restore();
 
-          if (camera.s > 0.025) {
-            ctx.font = 'bold 8px "DM Mono", monospace';
-            ctx.fillStyle = isDark ? '#2dd4bf' : '#0f766e';
-            ctx.fillText(`${w.windDirection} ${w.windSpeedKmh}km/h (Hs ${w.waveHeightMeters}m)`, wx + 10, wy + 3);
+          // Badge testuale ad alta leggibilità
+          if (camera.s > 0.009) {
+            const labelText = isAirport && w.metar
+              ? `LIPZ METAR ${w.windSpeedKnots}kt (${w.metar.flightCategory})`
+              : `${w.windDirection} ${w.windSpeedKmh}km/h (${w.windSpeedKnots}kt)`;
+
+            const subText = isOffshore
+              ? `CNR Piattaforma · Hs ${w.waveHeightMeters}m`
+              : isAirport
+              ? `RWY 04R crosswind ${w.metar?.crosswindKnots ?? 4}kt`
+              : `${w.stationName.split('-')[0].trim()} · Hs ${w.waveHeightMeters}m`;
+
+            ctx.font = 'bold 9px "DM Mono", monospace';
+            const mainMetrics = ctx.measureText(labelText);
+            const badgeW = mainMetrics.width + 12;
+            const badgeH = camera.s > 0.02 ? 26 : 16;
+            const pillX = wx + 12;
+            const pillY = wy - (badgeH / 2);
+
+            // Sfondo badge per contrasto perfetto in dark e light mode
+            ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.95)';
+            ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(pillX, pillY, badgeW, badgeH, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            // Testo
+            ctx.fillStyle = primaryColor;
+            ctx.fillText(labelText, pillX + 6, pillY + (camera.s > 0.02 ? 10 : 11));
+
+            if (camera.s > 0.02) {
+              ctx.font = '8px "DM Sans", sans-serif';
+              ctx.fillStyle = isDark ? '#94a3b8' : '#475569';
+              ctx.fillText(subText, pillX + 6, pillY + 21);
+            }
           }
+
+          ctx.restore();
         }
       }
 

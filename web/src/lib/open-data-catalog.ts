@@ -17,6 +17,7 @@ import {
   PharmacyDutyItem,
   HeatIslandSurfaceTempItem
 } from './types';
+import { METEO_MARINE_WIND_STATIONS } from './weatherWindData';
 
 // ==========================================
 // 1. VIABILITÀ ACQUEA & CANALI
@@ -490,60 +491,7 @@ export const OPEN_LAGOON_MORPHOLOGY: LagoonMorphologyItem[] = [
   }
 ];
 
-export const OPEN_METEO_MARINE_WIND: MeteoMarineWindItem[] = [
-  {
-    id: 'WIND_LIDO_MOSE',
-    stationName: 'Bocca di Porto di Lido - Faro Diga Nord',
-    lat: 45.4190,
-    lon: 12.4490,
-    windDirection: 'SCIROCCO',
-    windDirectionDeg: 140,
-    windSpeedKmh: 38.5,
-    gustSpeedKmh: 52.0,
-    waveHeightMeters: 1.85,
-    tidePushRisk: 'ALTO',
-    officialSource: 'Centro Previsioni Maree CPSM / ISPRA RMN'
-  },
-  {
-    id: 'WIND_MALAMOCCO',
-    stationName: 'Bocca di Porto di Malamocco - Faro Rocchetta',
-    lat: 45.3360,
-    lon: 12.3380,
-    windDirection: 'SCIROCCO',
-    windDirectionDeg: 145,
-    windSpeedKmh: 42.0,
-    gustSpeedKmh: 56.5,
-    waveHeightMeters: 2.15,
-    tidePushRisk: 'CRITICO',
-    officialSource: 'Capitaneria di Porto di Venezia / ISPRA'
-  },
-  {
-    id: 'WIND_CHIOGGIA',
-    stationName: 'Bocca di Porto di Chioggia - Diga San Felice',
-    lat: 45.2340,
-    lon: 12.3020,
-    windDirection: 'SCIROCCO',
-    windDirectionDeg: 135,
-    windSpeedKmh: 39.5,
-    gustSpeedKmh: 53.0,
-    waveHeightMeters: 1.95,
-    tidePushRisk: 'ALTO',
-    officialSource: 'Centro Maree CPSM'
-  },
-  {
-    id: 'WIND_CAVALLINO',
-    stationName: 'Litorale Cavallino - Diga Faro Piave',
-    lat: 45.4750,
-    lon: 12.5520,
-    windDirection: 'BORA',
-    windDirectionDeg: 45,
-    windSpeedKmh: 24.0,
-    gustSpeedKmh: 34.0,
-    waveHeightMeters: 0.95,
-    tidePushRisk: 'BASSO',
-    officialSource: 'ARPAV Servizio Meteorologico'
-  }
-];
+export const OPEN_METEO_MARINE_WIND: MeteoMarineWindItem[] = METEO_MARINE_WIND_STATIONS;
 
 // ==========================================
 // 3. FERROVIA & LOGISTICA URBANA

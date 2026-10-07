@@ -24,7 +24,10 @@ import {
   Pill,
   ThermometerSun,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Plane,
+  Thermometer,
+  Cloud
 } from 'lucide-react';
 import {
   PasserellaItem,
@@ -377,25 +380,111 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {/* MARINE WIND */}
           {feature.type === 'marineWind' && (
             <>
+              {/* Station Type Pill & Position */}
+              <div className="flex items-center justify-between text-xs pb-0.5">
+                <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-600 dark:text-teal-300 font-bold border border-teal-500/30 uppercase">
+                  {feature.data.stationType === 'AEROPORTO' && 'Stazione Aeronautica Militare / ENAV (LIPZ)'}
+                  {feature.data.stationType === 'PIATTAFORMA_OFFSHORE' && 'Piattaforma CNR-ISMAR (15 km Offshore)'}
+                  {feature.data.stationType === 'BOCCA_DI_PORTO' && 'Bocca di Porto Lagunare (MOSE)'}
+                  {feature.data.stationType === 'CENTRO_STORICO' && 'Laguna Centro Storico'}
+                  {feature.data.stationType === 'TERRAFERMA' && 'Terraferma Mestre (ARPAV)'}
+                </span>
+                <span className="text-[10px] text-[var(--ink-3)] font-mono">
+                  {feature.data.lat.toFixed(4)}°N, {feature.data.lon.toFixed(4)}°E
+                </span>
+              </div>
+
+              {/* Anemometer & Wave Grid */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Vento / Direzione</span>
-                  <p className="text-xl font-bold font-mono text-teal-400">{feature.data.windDirection} ({feature.data.windDirectionDeg}°)</p>
-                  <span className="text-xs font-mono text-[var(--ink-2)]">{feature.data.windSpeedKmh} km/h (Raffica: {feature.data.gustSpeedKmh} km/h)</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono flex items-center gap-1">
+                    <Wind className="w-3 h-3 text-teal-400" /> Vento & Direzione
+                  </span>
+                  <p className="text-xl font-bold font-mono text-teal-600 dark:text-teal-400">
+                    {feature.data.windDirection} ({feature.data.windDirectionDeg}°)
+                  </p>
+                  <span className="text-xs font-mono text-[var(--ink)] block mt-0.5">
+                    {feature.data.windSpeedKmh} km/h · {feature.data.windSpeedKnots} kt
+                  </span>
+                  <span className="text-[10px] font-mono text-[var(--ink-3)]">
+                    Raffica: {feature.data.gustSpeedKmh} km/h ({feature.data.gustSpeedKnots} kt)
+                  </span>
                 </div>
+
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Altezza Onda Hs</span>
-                  <p className="text-2xl font-bold font-mono text-cyan-400">{feature.data.waveHeightMeters} m</p>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono flex items-center gap-1">
+                    <Waves className="w-3 h-3 text-cyan-400" /> Altezza d'Onda Hs
+                  </span>
+                  <p className="text-2xl font-bold font-mono text-cyan-600 dark:text-cyan-400">
+                    {feature.data.waveHeightMeters} m
+                  </p>
+                  <span className="text-[10px] text-[var(--ink-3)] block mt-0.5">
+                    {feature.data.waveHeightMeters > 1.5 ? 'Mare molto mosso / agitato' : feature.data.waveHeightMeters > 0.5 ? 'Mare mosso' : 'Laguna calma / poco mosso'}
+                  </span>
                 </div>
               </div>
-              <div className={`p-3 rounded-xl border flex items-center justify-between ${
-                feature.data.tidePushRisk === 'CRITICO' || feature.data.tidePushRisk === 'ALTO'
-                  ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-                  : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-              }`}>
-                <span className="font-semibold">Spinta Idrodinamica verso la Laguna:</span>
-                <span className="font-mono font-bold">RISCHIO {feature.data.tidePushRisk}</span>
+
+              {/* Atmospheric Parameters */}
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] block font-mono">Temperatura</span>
+                  <span className="font-mono font-bold text-[var(--ink)] text-sm">
+                    {feature.data.airTempCelsius ?? 18}°C
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] block font-mono">Pressione</span>
+                  <span className="font-mono font-bold text-sky-600 dark:text-sky-400 text-sm">
+                    {feature.data.pressureHpa ?? 1015} hPa
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] block font-mono">Umidità Rel.</span>
+                  <span className="font-mono font-bold text-teal-600 dark:text-teal-400 text-sm">
+                    {feature.data.humidityPercent ?? 75}%
+                  </span>
+                </div>
               </div>
+
+              {/* Tide Surge & Hydrodynamic push */}
+              <div className={`p-3 rounded-xl border flex flex-col gap-1.5 ${
+                feature.data.tidePushRisk === 'CRITICO' || feature.data.tidePushRisk === 'ALTO'
+                  ? 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300'
+                  : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-xs flex items-center gap-1.5">
+                    <ShieldAlert className="w-3.5 h-3.5" /> Spinta Idrodinamica verso la Laguna:
+                  </span>
+                  <span className="font-mono font-bold text-xs uppercase px-2 py-0.5 rounded bg-black/10 dark:bg-black/30">
+                    RISCHIO {feature.data.tidePushRisk}
+                  </span>
+                </div>
+                <p className="text-[11px] leading-relaxed opacity-90">
+                  {feature.data.windTypeDescription}
+                </p>
+              </div>
+
+              {/* Dedicated METAR Bulletin box if available (Airport LIPZ) */}
+              {feature.data.metar && (
+                <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-sky-700 dark:text-sky-300 flex items-center gap-1.5">
+                      <Plane className="w-3.5 h-3.5" /> Bollettino Ufficiale METAR Aeronautica Militare
+                    </span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-bold">
+                      {feature.data.metar.flightCategory}
+                    </span>
+                  </div>
+                  <div className="p-2 rounded-lg bg-[var(--surface-sunken)] border border-[var(--rule)] font-mono text-[11px] text-sky-600 dark:text-sky-300 select-all break-all">
+                    {feature.data.metar.rawMetar}
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-[var(--ink-2)]">
+                    <span>QNH: <b>{feature.data.metar.qnhHpa} hPa</b> · Pista: <b>{feature.data.metar.activeRunway}</b></span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{feature.data.metar.runwayCondition}</span>
+                  </div>
+                </div>
+              )}
             </>
           )}
 
