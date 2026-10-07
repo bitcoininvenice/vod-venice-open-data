@@ -255,7 +255,7 @@ export async function fetchPlatformMetrics(): Promise<PlatformMetrics> {
     restrictedLagoonVesselsCount: 1, // MSC Opera deviazione Marghera (>25.000 GT)
 
     // Voli & Aeroporto VCE (ENAV / OpenSky)
-    activeFlightsCount: 7,
+    activeFlightsCount: 24,
     vceDailyMovements: 284,
     averageFlightAltitudeMeters: 1850,
 

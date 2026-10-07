@@ -156,8 +156,8 @@ const LAYER_CATALOG: LayerDocItem[] = [
     portalName: 'veneziaairport.it & OpenSky ADS-B',
     descriptionIt: 'Traffico aereo in tempo reale nello spazio aereo e nell\'area terminale di controllo (TMA) di Venezia Marco Polo.',
     descriptionEn: 'Live air traffic in the terminal maneuvering area (TMA) of Venice Marco Polo Airport.',
-    technicalNotesIt: 'Telemetria ADS-B in tempo reale: callsign, quota barometrica, velocità al suolo e distanza calcolata dalla pista 04R/22L.',
-    technicalNotesEn: 'Real-time ADS-B transponder telemetry: callsign, altitude, ground speed, and runway distance.',
+    technicalNotesIt: 'Telemetria ADS-B in tempo reale acquisita via API OpenSky Network per il TMA di Venezia; integra Digital Twin esteso con flotta realistica di 24 aeromobili (avvicinamenti ILS 04R, decolli SID, taxiway e gate a terra, elisoccorso SUEM 118, Treviso TSF e sorvoli alta quota).',
+    technicalNotesEn: 'Real-time ADS-B telemetry acquired via OpenSky Network API across Venice TMA; includes extended Digital Twin covering 24 active aircraft (ILS 04R approaches, SID departures, ground taxiway/gates, SUEM 118 air ambulance, Treviso TSF, and high-altitude cruise).',
     endpointOrFile: '/api/flights'
   },
   {
