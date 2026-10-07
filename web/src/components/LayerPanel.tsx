@@ -277,10 +277,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   onClose
 }) => {
   const [sectionOpen, setSectionOpen] = useState({
-    mobility: true,
-    lagoon: true,
-    city: true,
-    actv: true
+    mobility: false,
+    lagoon: false,
+    city: false,
+    actv: false
   });
 
   const toggleSection = (section: keyof typeof sectionOpen) => {
@@ -298,7 +298,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   ];
 
   return (
-    <aside className="glass-panel rounded-2xl p-3.5 sm:p-4 shadow-xl flex flex-col gap-3.5 max-h-[85vh] overflow-y-auto">
+    <aside className="glass-panel rounded-2xl p-3.5 sm:p-4 shadow-xl flex flex-col gap-3.5 max-h-[calc(100vh-13.5rem)] overflow-y-auto">
       {/* Mobile grab handle */}
       <div className="w-10 h-1 bg-[var(--rule)]/80 rounded-full mx-auto md:hidden" />
 
@@ -328,7 +328,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           {onTurnAllOff && (
             <button
               type="button"
-              onClick={onTurnAllOff}
+              onClick={() => {
+                onTurnAllOff();
+                setSectionOpen({ mobility: false, lagoon: false, city: false, actv: false });
+              }}
               className="flex-1 py-1.5 px-2 rounded-xl bg-[var(--rule)]/40 hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] font-mono text-[11px] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
               title="Disattiva tutti i livelli per una mappa pulita"
             >
@@ -339,7 +342,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           {onTurnAllOn && (
             <button
               type="button"
-              onClick={onTurnAllOn}
+              onClick={() => {
+                onTurnAllOn();
+                setSectionOpen({ mobility: true, lagoon: true, city: true, actv: false });
+              }}
               className="flex-1 py-1.5 px-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 font-mono text-[11px] flex items-center justify-center gap-1.5 border border-cyan-500/20 transition-all cursor-pointer"
               title="Attiva tutti i livelli contemporaneamente"
             >
@@ -354,28 +360,40 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             <span className="text-[10px] text-[var(--ink-3)] font-mono uppercase shrink-0">Preset:</span>
             <button
               type="button"
-              onClick={() => onApplyPreset('mobility')}
+              onClick={() => {
+                onApplyPreset('mobility');
+                setSectionOpen({ mobility: true, lagoon: false, city: false, actv: false });
+              }}
               className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-sky-500/20 text-sky-400 hover:text-sky-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-sky-500/30 transition-all cursor-pointer"
             >
               <span>🚤 Mobilità</span>
             </button>
             <button
               type="button"
-              onClick={() => onApplyPreset('lagoon')}
+              onClick={() => {
+                onApplyPreset('lagoon');
+                setSectionOpen({ mobility: false, lagoon: true, city: false, actv: false });
+              }}
               className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-blue-500/30 transition-all cursor-pointer"
             >
               <span>🌊 Laguna</span>
             </button>
             <button
               type="button"
-              onClick={() => onApplyPreset('city')}
+              onClick={() => {
+                onApplyPreset('city');
+                setSectionOpen({ mobility: false, lagoon: false, city: true, actv: false });
+              }}
               className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-emerald-500/30 transition-all cursor-pointer"
             >
               <span>🏛️ Città</span>
             </button>
             <button
               type="button"
-              onClick={() => onApplyPreset('satellites')}
+              onClick={() => {
+                onApplyPreset('satellites');
+                setSectionOpen({ mobility: false, lagoon: true, city: false, actv: false });
+              }}
               className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-purple-500/30 transition-all cursor-pointer"
             >
               <span>🛰️ Satelliti</span>

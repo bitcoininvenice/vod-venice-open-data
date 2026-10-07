@@ -3853,7 +3853,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
 
       {/* Floating map hint */}
-      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 pointer-events-none glass-panel px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-white/10 text-[11px] sm:text-xs text-[var(--ink-2)] flex items-center gap-1.5 sm:gap-2 shadow-lg max-w-[calc(100vw-5rem)]">
+      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 md:top-4 md:left-[21rem] xl:md:left-[22rem] pointer-events-none glass-panel px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-white/10 text-[11px] sm:text-xs text-[var(--ink-2)] flex items-center gap-1.5 sm:gap-2 shadow-lg max-w-[calc(100vw-5rem)]">
         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
         <span className="truncate">Tocca o clicca su mezzi, navi, MOSE, aerei, VCE o cantieri per info</span>
       </div>

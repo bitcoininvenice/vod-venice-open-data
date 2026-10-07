@@ -98,6 +98,7 @@ export default function HomePage() {
   });
   const [isLiveSynced, setIsLiveSynced] = useState<boolean>(true); // Default ORA LIVE active on initial load
   const [isLayerPanelOpenMobile, setIsLayerPanelOpenMobile] = useState<boolean>(false);
+  const [isDesktopLayerPanelOpen, setIsDesktopLayerPanelOpen] = useState<boolean>(true);
 
   const handleSyncLiveTime = () => {
     const now = new Date();
@@ -631,7 +632,10 @@ export default function HomePage() {
         onSelectPalette={setPaletteTheme}
         onOpenSpatialModal={() => setIsSpatialModalOpen(true)}
         onOpenStatsModal={() => setIsStatsModalOpen(true)}
-        onOpenLayers={() => setIsLayerPanelOpenMobile(true)}
+        onOpenLayers={() => {
+          setIsLayerPanelOpenMobile(true);
+          setIsDesktopLayerPanelOpen(true);
+        }}
         onOpenTutorial={() => setIsTutorialOpen(true)}
         activeVehiclesCount={302}
         activeCantieriCount={cantieri.filter((c) => c.stato === 'In corso').length}
@@ -745,129 +749,145 @@ export default function HomePage() {
           tideLevel={tideLevel}
         />
 
-        {/* Floating Left: Desktop Layer & Filter Panel */}
-        <div className="hidden md:block absolute top-4 left-4 z-20 w-80 max-w-[calc(100vw-2rem)]">
-          <LayerPanel
-            onTurnAllOff={() => turnAllLayers(false)}
-            onTurnAllOn={() => turnAllLayers(true)}
-            onApplyPreset={applyPreset}
-            showRoutes={showRoutes}
-            onToggleRoutes={() => setShowRoutes((p) => !p)}
-            showStops={showStops}
-            onToggleStops={() => setShowStops((p) => !p)}
-            showVehicles={showVehicles}
-            onToggleVehicles={() => setShowVehicles((p) => !p)}
-            showAlilaguna={showAlilaguna}
-            onToggleAlilaguna={() => setShowAlilaguna((p) => !p)}
-            alilagunaBoatsCount={alilagunaBoats.length}
-            showCantieri={showCantieri}
-            onToggleCantieri={() => setShowCantieri((p) => !p)}
-            showFlights={showFlights}
-            onToggleFlights={() => setShowFlights((p) => !p)}
-            flightsCount={flights.length}
-            showShips={showShips}
-            onToggleShips={() => setShowShips((p) => !p)}
-            shipsCount={ships.length}
-            showShipRoutes={showShipRoutes}
-            onToggleShipRoutes={() => setShowShipRoutes((p) => !p)}
-            showMose={showMose}
-            onToggleMose={() => setShowMose((p) => !p)}
-            showPasserelle={showPasserelle}
-            onTogglePasserelle={() => setShowPasserelle((p) => !p)}
-            passerelleCount={passerelle.length}
-            showMarineSignals={showMarineSignals}
-            onToggleMarineSignals={() => setShowMarineSignals((p) => !p)}
-            briccoleCount={briccole.length}
-            showOceanStations={showOceanStations}
-            onToggleOceanStations={() => setShowOceanStations((p) => !p)}
-            oceanStationsCount={oceanStations.length}
-            showBathingWaters={showBathingWaters}
-            onToggleBathingWaters={() => setShowBathingWaters((p) => !p)}
-            bathingWatersCount={bathingWaters.length}
-            showTrees={showTrees}
-            onToggleTrees={() => setShowTrees((p) => !p)}
-            treesCount={trees.length}
-            showServicesVenice={showServicesVenice}
-            onToggleServicesVenice={() => setShowServicesVenice((p) => !p)}
-            servicesVeniceCount={evCharging.length + wifiHotspots.length}
-            showCityAssets={showCityAssets}
-            onToggleCityAssets={() => setShowCityAssets((p) => !p)}
-            showParkings={showParkings}
-            onToggleParkings={() => setShowParkings((p) => !p)}
-            showAirQuality={showAirQuality}
-            onToggleAirQuality={() => setShowAirQuality((p) => !p)}
-            showPedestrianFlows={showPedestrianFlows}
-            onTogglePedestrianFlows={() => setShowPedestrianFlows((p) => !p)}
-            showSatellites={showSatellites}
-            onToggleSatellites={() => setShowSatellites((p) => !p)}
-            satellitesCount={satellites.length}
-            // 1. Viabilità Acquea & Canali
-            showCanalLimits={showCanalLimits}
-            onToggleCanalLimits={() => setShowCanalLimits((p) => !p)}
-            canalLimitsCount={canalSpeedLimits.length}
-            showBridges={showBridges}
-            onToggleBridges={() => setShowBridges((p) => !p)}
-            bridgesCount={bridges.length}
-            showGondolas={showGondolas}
-            onToggleGondolas={() => setShowGondolas((p) => !p)}
-            gondolasCount={gondolas.length}
-            showDocks={showDocks}
-            onToggleDocks={() => setShowDocks((p) => !p)}
-            docksCount={docks.length}
-            // 2. Idrografia, Subsidenza & Morfologia
-            showSubsidence={showSubsidence}
-            onToggleSubsidence={() => setShowSubsidence((p) => !p)}
-            subsidenceCount={subsidencePoints.length}
-            showMorphology={showMorphology}
-            onToggleMorphology={() => setShowMorphology((p) => !p)}
-            morphologyCount={lagoonMorphology.length}
-            showMarineWind={showMarineWind}
-            onToggleMarineWind={() => setShowMarineWind((p) => !p)}
-            marineWindCount={marineWindStations.length}
-            // 3. Ferrovia & Logistica
-            showTrains={showTrains}
-            onToggleTrains={() => setShowTrains((p) => !p)}
-            trainsCount={liveTrains.length}
-            showWasteBoats={showWasteBoats}
-            onToggleWasteBoats={() => setShowWasteBoats((p) => !p)}
-            wasteBoatsCount={wasteBoats.length}
-            // 4. Patrimonio Storico & Nizioleti
-            showNizioleti={showNizioleti}
-            onToggleNizioleti={() => setShowNizioleti((p) => !p)}
-            nizioletiCount={nizioleti.length}
-            showWells={showWells}
-            onToggleWells={() => setShowWells((p) => !p)}
-            wellsCount={wells.length}
-            showBellTowers={showBellTowers}
-            onToggleBellTowers={() => setShowBellTowers((p) => !p)}
-            bellTowersCount={bellTowers.length}
-            showFortresses={showFortresses}
-            onToggleFortresses={() => setShowFortresses((p) => !p)}
-            fortressesCount={fortressIslands.length}
-            // 5. Salute Pubblica & SUEM 118
-            showEmergencyDocks={showEmergencyDocks}
-            onToggleEmergencyDocks={() => setShowEmergencyDocks((p) => !p)}
-            emergencyDocksCount={emergencyDocks.length}
-            showDae={showDae}
-            onToggleDae={() => setShowDae((p) => !p)}
-            daeCount={daeList.length}
-            showPharmacies={showPharmacies}
-            onTogglePharmacies={() => setShowPharmacies((p) => !p)}
-            pharmaciesCount={pharmacies.length}
-            // 6. Microclima & Isole Calore
-            showHeatIslands={showHeatIslands}
-            onToggleHeatIslands={() => setShowHeatIslands((p) => !p)}
-            heatIslandsCount={heatIslands.length}
-            showSpatialBuffer={showSpatialBuffer}
-            onToggleSpatialBuffer={() => setShowSpatialBuffer((p) => !p)}
-            bufferRadiusMeters={bufferRadiusMeters}
-            onBufferRadiusChange={setBufferRadiusMeters}
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-            categoryCounts={categoryCounts}
-            categoryColors={activePalette.cats}
-          />
-        </div>
+        {/* Floating Left: Desktop Layer & Filter Panel or Minimized Toggle */}
+        {isDesktopLayerPanelOpen ? (
+          <div className="hidden md:block absolute top-4 left-4 z-20 w-72 xl:w-80 max-w-[calc(100vw-2rem)] animate-in fade-in zoom-in-95 duration-200">
+            <LayerPanel
+              onClose={() => setIsDesktopLayerPanelOpen(false)}
+              onTurnAllOff={() => turnAllLayers(false)}
+              onTurnAllOn={() => turnAllLayers(true)}
+              onApplyPreset={applyPreset}
+              showRoutes={showRoutes}
+              onToggleRoutes={() => setShowRoutes((p) => !p)}
+              showStops={showStops}
+              onToggleStops={() => setShowStops((p) => !p)}
+              showVehicles={showVehicles}
+              onToggleVehicles={() => setShowVehicles((p) => !p)}
+              showAlilaguna={showAlilaguna}
+              onToggleAlilaguna={() => setShowAlilaguna((p) => !p)}
+              alilagunaBoatsCount={alilagunaBoats.length}
+              showCantieri={showCantieri}
+              onToggleCantieri={() => setShowCantieri((p) => !p)}
+              showFlights={showFlights}
+              onToggleFlights={() => setShowFlights((p) => !p)}
+              flightsCount={flights.length}
+              showShips={showShips}
+              onToggleShips={() => setShowShips((p) => !p)}
+              shipsCount={ships.length}
+              showShipRoutes={showShipRoutes}
+              onToggleShipRoutes={() => setShowShipRoutes((p) => !p)}
+              showMose={showMose}
+              onToggleMose={() => setShowMose((p) => !p)}
+              showPasserelle={showPasserelle}
+              onTogglePasserelle={() => setShowPasserelle((p) => !p)}
+              passerelleCount={passerelle.length}
+              showMarineSignals={showMarineSignals}
+              onToggleMarineSignals={() => setShowMarineSignals((p) => !p)}
+              briccoleCount={briccole.length}
+              showOceanStations={showOceanStations}
+              onToggleOceanStations={() => setShowOceanStations((p) => !p)}
+              oceanStationsCount={oceanStations.length}
+              showBathingWaters={showBathingWaters}
+              onToggleBathingWaters={() => setShowBathingWaters((p) => !p)}
+              bathingWatersCount={bathingWaters.length}
+              showTrees={showTrees}
+              onToggleTrees={() => setShowTrees((p) => !p)}
+              treesCount={trees.length}
+              showServicesVenice={showServicesVenice}
+              onToggleServicesVenice={() => setShowServicesVenice((p) => !p)}
+              servicesVeniceCount={evCharging.length + wifiHotspots.length}
+              showCityAssets={showCityAssets}
+              onToggleCityAssets={() => setShowCityAssets((p) => !p)}
+              showParkings={showParkings}
+              onToggleParkings={() => setShowParkings((p) => !p)}
+              showAirQuality={showAirQuality}
+              onToggleAirQuality={() => setShowAirQuality((p) => !p)}
+              showPedestrianFlows={showPedestrianFlows}
+              onTogglePedestrianFlows={() => setShowPedestrianFlows((p) => !p)}
+              showSatellites={showSatellites}
+              onToggleSatellites={() => setShowSatellites((p) => !p)}
+              satellitesCount={satellites.length}
+              // 1. Viabilità Acquea & Canali
+              showCanalLimits={showCanalLimits}
+              onToggleCanalLimits={() => setShowCanalLimits((p) => !p)}
+              canalLimitsCount={canalSpeedLimits.length}
+              showBridges={showBridges}
+              onToggleBridges={() => setShowBridges((p) => !p)}
+              bridgesCount={bridges.length}
+              showGondolas={showGondolas}
+              onToggleGondolas={() => setShowGondolas((p) => !p)}
+              gondolasCount={gondolas.length}
+              showDocks={showDocks}
+              onToggleDocks={() => setShowDocks((p) => !p)}
+              docksCount={docks.length}
+              // 2. Idrografia, Subsidenza & Morfologia
+              showSubsidence={showSubsidence}
+              onToggleSubsidence={() => setShowSubsidence((p) => !p)}
+              subsidenceCount={subsidencePoints.length}
+              showMorphology={showMorphology}
+              onToggleMorphology={() => setShowMorphology((p) => !p)}
+              morphologyCount={lagoonMorphology.length}
+              showMarineWind={showMarineWind}
+              onToggleMarineWind={() => setShowMarineWind((p) => !p)}
+              marineWindCount={marineWindStations.length}
+              // 3. Ferrovia & Logistica
+              showTrains={showTrains}
+              onToggleTrains={() => setShowTrains((p) => !p)}
+              trainsCount={liveTrains.length}
+              showWasteBoats={showWasteBoats}
+              onToggleWasteBoats={() => setShowWasteBoats((p) => !p)}
+              wasteBoatsCount={wasteBoats.length}
+              // 4. Patrimonio Storico & Nizioleti
+              showNizioleti={showNizioleti}
+              onToggleNizioleti={() => setShowNizioleti((p) => !p)}
+              nizioletiCount={nizioleti.length}
+              showWells={showWells}
+              onToggleWells={() => setShowWells((p) => !p)}
+              wellsCount={wells.length}
+              showBellTowers={showBellTowers}
+              onToggleBellTowers={() => setShowBellTowers((p) => !p)}
+              bellTowersCount={bellTowers.length}
+              showFortresses={showFortresses}
+              onToggleFortresses={() => setShowFortresses((p) => !p)}
+              fortressesCount={fortressIslands.length}
+              // 5. Salute Pubblica & SUEM 118
+              showEmergencyDocks={showEmergencyDocks}
+              onToggleEmergencyDocks={() => setShowEmergencyDocks((p) => !p)}
+              emergencyDocksCount={emergencyDocks.length}
+              showDae={showDae}
+              onToggleDae={() => setShowDae((p) => !p)}
+              daeCount={daeList.length}
+              showPharmacies={showPharmacies}
+              onTogglePharmacies={() => setShowPharmacies((p) => !p)}
+              pharmaciesCount={pharmacies.length}
+              // 6. Microclima & Isole Calore
+              showHeatIslands={showHeatIslands}
+              onToggleHeatIslands={() => setShowHeatIslands((p) => !p)}
+              heatIslandsCount={heatIslands.length}
+              showSpatialBuffer={showSpatialBuffer}
+              onToggleSpatialBuffer={() => setShowSpatialBuffer((p) => !p)}
+              bufferRadiusMeters={bufferRadiusMeters}
+              onBufferRadiusChange={setBufferRadiusMeters}
+              selectedCategory={selectedCategory}
+              onSelectCategory={setSelectedCategory}
+              categoryCounts={categoryCounts}
+              categoryColors={activePalette.cats}
+            />
+          </div>
+        ) : (
+          <div className="hidden md:block absolute top-4 left-4 z-20 animate-in fade-in duration-200">
+            <button
+              type="button"
+              onClick={() => setIsDesktopLayerPanelOpen(true)}
+              className="glass-panel px-3.5 py-2 rounded-2xl border border-cyan-500/30 text-xs font-mono text-[var(--ink)] flex items-center gap-2 shadow-2xl hover:border-cyan-400 hover:bg-cyan-500/10 transition-all cursor-pointer group backdrop-blur-md active:scale-95"
+              title="Apri Livelli & Filtri"
+            >
+              <Layers className="w-4 h-4 text-cyan-400 group-hover:rotate-12 transition-transform" />
+              <span className="font-semibold">Livelli & Filtri</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-mono">40</span>
+            </button>
+          </div>
+        )}
 
         {/* Mobile Floating Action Button (FAB) to open Filters & Layers */}
         <div className="md:hidden absolute top-3 left-3 z-20">
@@ -1017,7 +1037,13 @@ export default function HomePage() {
         )}
 
         {/* Floating Bottom: 24h Timeline Scrubber & Speed Controls */}
-        <div className="absolute bottom-2 sm:bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 z-20 w-full max-w-4xl px-2 sm:px-4">
+        <div
+          className={`absolute bottom-2 sm:bottom-4 md:bottom-6 z-20 w-full px-2 sm:px-4 transition-all duration-300 ${
+            isDesktopLayerPanelOpen
+              ? 'left-1/2 -translate-x-1/2 md:left-[calc(50%+9.5rem)] xl:md:left-[calc(50%+10.5rem)] md:-translate-x-1/2 max-w-4xl md:max-w-[calc(100vw-21rem)] lg:max-w-3xl xl:max-w-4xl'
+              : 'left-1/2 -translate-x-1/2 max-w-4xl'
+          }`}
+        >
           <TimelineControls
             currentTimeSeconds={currentTimeSeconds}
             onTimeChange={(val) => {
