@@ -13,7 +13,9 @@ import {
   ChevronRight,
   ChevronLeft,
   Sparkles,
-  EyeOff
+  EyeOff,
+  BookOpen,
+  ExternalLink
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -111,6 +113,31 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
                 {t('tutorial.itemCity')}
               </div>
             </div>
+          </div>
+
+          {/* Sezione Documentazione Trasparenza Dati /layers */}
+          <div className="mt-1 p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 font-bold text-xs text-cyan-400">
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>{language === 'it' ? 'Documentazione Completa dei Livelli' : 'Full Layers Documentation'}</span>
+              </div>
+              <a
+                href="/layers"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-mono text-[11px] font-semibold transition-colors"
+                title={language === 'it' ? 'Apri catalogo livelli' : 'Open layers catalog'}
+              >
+                <span>/layers</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+            <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">
+              {language === 'it'
+                ? 'Vuoi conoscere l\'origine e la precisione di ogni dato? Nel catalogo sono tracciati tutti i 43 livelli: fonte istituzionale, acquisizione (API vs locale) e natura temporale (sensori fisici in tempo reale, digital twin simulato su orari ufficiali o censimenti statici).'
+                : 'Want to know data provenance and fidelity? The catalog tracks all 43 layers: official source, acquisition type (API vs local), and temporal regime (physical real-time sensors, scheduled digital twin, or static open data).'}
+            </p>
           </div>
         </div>
       )
