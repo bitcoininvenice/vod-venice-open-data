@@ -542,11 +542,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             <button
               type="button"
               onClick={onToggleVehicles}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                showVehicles
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showVehicles
                   ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
                   : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Navigation className="w-3.5 h-3.5" />
@@ -559,11 +558,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             <button
               type="button"
               onClick={onToggleRoutes}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                showRoutes
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showRoutes
                   ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
                   : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2">
                 <CircleDot className="w-3.5 h-3.5" />
@@ -576,11 +574,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             <button
               type="button"
               onClick={onToggleStops}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                showStops
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showStops
                   ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                   : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Anchor className="w-3.5 h-3.5" />
@@ -600,11 +597,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             <button
               type="button"
               onClick={onToggleShips}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                showShips
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showShips
                   ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40 shadow-sm'
                   : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Ship className="w-3.5 h-3.5 text-indigo-400" />
@@ -625,11 +621,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleShipRoutes}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showShipRoutes
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showShipRoutes
                     ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Compass className="w-3.5 h-3.5 text-amber-400" />
@@ -644,11 +639,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleAlilaguna}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showAlilaguna
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showAlilaguna
                     ? 'bg-blue-600/15 text-blue-300 border-blue-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Waves className="w-3.5 h-3.5 text-blue-400" />
@@ -673,11 +667,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleFlights}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showFlights
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showFlights
                     ? 'bg-sky-500/10 text-sky-400 border-sky-500/30'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Plane className="w-3.5 h-3.5 text-sky-400" />
@@ -698,11 +691,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             <button
               type="button"
               onClick={onToggleParkings}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                showParkings
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showParkings
                   ? 'bg-teal-500/10 text-teal-300 border-teal-500/30'
                   : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Car className="w-3.5 h-3.5 text-teal-400" />
@@ -723,11 +715,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleCanalLimits}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showCanalLimits
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showCanalLimits
                     ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Gauge className="w-3.5 h-3.5 text-amber-400" />
@@ -749,11 +740,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleBridges}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showBridges
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showBridges
                     ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Navigation className="w-3.5 h-3.5 text-cyan-400" />
@@ -775,11 +765,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleGondolas}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showGondolas
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showGondolas
                     ? 'bg-purple-500/15 text-purple-300 border-purple-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Waves className="w-3.5 h-3.5 text-purple-400" />
@@ -801,11 +790,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleDocks}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showDocks
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showDocks
                     ? 'bg-blue-500/15 text-blue-300 border-blue-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Anchor className="w-3.5 h-3.5 text-blue-400" />
@@ -827,11 +815,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleTrains}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showTrains
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showTrains
                     ? 'bg-red-500/15 text-red-300 border-red-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Train className="w-3.5 h-3.5 text-red-400" />
@@ -853,11 +840,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleWasteBoats}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showWasteBoats
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showWasteBoats
                     ? 'bg-lime-500/15 text-lime-300 border-lime-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Trash2 className="w-3.5 h-3.5 text-lime-400" />
@@ -879,11 +865,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleBikeRoutes}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showBikeRoutes
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showBikeRoutes
                     ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Bike className="w-3.5 h-3.5 text-emerald-400" />
@@ -930,11 +915,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             <button
               type="button"
               onClick={onToggleMose}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                showMose
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showMose
                   ? 'bg-blue-500/15 text-blue-300 border-blue-500/40 shadow-sm'
                   : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Waves className="w-3.5 h-3.5 text-blue-400" />
@@ -948,11 +932,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onTogglePasserelle}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showPasserelle
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showPasserelle
                     ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
@@ -974,11 +957,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleMarineSignals}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showMarineSignals
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showMarineSignals
                     ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Anchor className="w-3.5 h-3.5 text-emerald-400" />
@@ -1000,11 +982,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleOceanStations}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showOceanStations
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showOceanStations
                     ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Compass className="w-3.5 h-3.5 text-cyan-400" />
@@ -1026,11 +1007,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleBathingWaters}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showBathingWaters
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showBathingWaters
                     ? 'bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <LifeBuoy className="w-3.5 h-3.5 text-sky-400" />
@@ -1052,11 +1032,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleSubsidence}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showSubsidence
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showSubsidence
                     ? 'bg-rose-500/15 text-rose-300 border-rose-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Layers className="w-3.5 h-3.5 text-rose-400" />
@@ -1078,11 +1057,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleMorphology}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showMorphology
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showMorphology
                     ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Trees className="w-3.5 h-3.5 text-emerald-400" />
@@ -1104,11 +1082,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleMarineWind}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showMarineWind
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showMarineWind
                     ? 'bg-teal-500/15 text-teal-300 border-teal-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Wind className="w-3.5 h-3.5 text-teal-400" />
@@ -1130,11 +1107,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleFortresses}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showFortresses
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showFortresses
                     ? 'bg-stone-500/15 text-stone-300 border-stone-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <ShieldAlert className="w-3.5 h-3.5 text-stone-400" />
@@ -1156,11 +1132,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleLagoonWater}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showLagoonWater
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showLagoonWater
                     ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Droplets className="w-3.5 h-3.5 text-cyan-400" />
@@ -1185,11 +1160,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleTributaries}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showTributaries
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showTributaries
                     ? 'bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <GitBranch className="w-3.5 h-3.5 text-sky-400" />
@@ -1218,11 +1192,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 <button
                   type="button"
                   onClick={onToggleSpatialBuffer}
-                  className={`text-[10px] font-mono px-2 py-0.5 rounded cursor-pointer ${
-                    showSpatialBuffer
+                  className={`text-[10px] font-mono px-2 py-0.5 rounded cursor-pointer ${showSpatialBuffer
                       ? 'bg-amber-500 text-white font-bold'
                       : 'bg-[var(--rule)] text-[var(--ink-2)]'
-                  }`}
+                    }`}
                 >
                   {showSpatialBuffer ? t('common.active') : t('common.inactive')}
                 </button>
@@ -1274,11 +1247,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             <button
               type="button"
               onClick={onToggleCantieri}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                showCantieri
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showCantieri
                   ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                   : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Construction className="w-3.5 h-3.5 text-amber-400" />
@@ -1299,17 +1271,15 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleCameras}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showCameras
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showCameras
                     ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Camera className="w-3.5 h-3.5 text-cyan-400" />
                   <div className="flex flex-col text-left">
                     <span className="leading-tight">{t('layers.layerCameras')}</span>
-                    <span className="text-[9px] font-mono text-cyan-400/80">Anopticon + Webcam Live</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -1335,11 +1305,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             <button
               type="button"
               onClick={onToggleCityAssets}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                showCityAssets
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showCityAssets
                   ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
                   : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Droplets className="w-3.5 h-3.5 text-cyan-400" />
@@ -1353,11 +1322,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleTrees}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showTrees
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showTrees
                     ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Trees className="w-3.5 h-3.5 text-emerald-400" />
@@ -1379,11 +1347,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleServicesVenice}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showServicesVenice
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showServicesVenice
                     ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Wifi className="w-3.5 h-3.5 text-indigo-400" />
@@ -1404,11 +1371,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             <button
               type="button"
               onClick={onToggleAirQuality}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                showAirQuality
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showAirQuality
                   ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
                   : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Wind className="w-3.5 h-3.5 text-emerald-400" />
@@ -1421,11 +1387,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             <button
               type="button"
               onClick={onTogglePedestrianFlows}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                showPedestrianFlows
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showPedestrianFlows
                   ? 'bg-rose-500/10 text-rose-300 border-rose-500/30'
                   : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Footprints className="w-3.5 h-3.5 text-rose-400" />
@@ -1438,11 +1403,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             <button
               type="button"
               onClick={onToggleSatellites}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                showSatellites
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showSatellites
                   ? 'bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/30'
                   : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Satellite className="w-3.5 h-3.5 text-fuchsia-400" />
@@ -1463,11 +1427,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleNizioleti}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showNizioleti
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showNizioleti
                     ? 'bg-neutral-800 text-white border-neutral-600 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Landmark className="w-3.5 h-3.5 text-neutral-300" />
@@ -1489,11 +1452,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleWells}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showWells
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showWells
                     ? 'bg-amber-600/15 text-amber-300 border-amber-600/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Landmark className="w-3.5 h-3.5 text-amber-500" />
@@ -1515,11 +1477,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleBellTowers}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showBellTowers
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showBellTowers
                     ? 'bg-orange-500/15 text-orange-300 border-orange-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Bell className="w-3.5 h-3.5 text-orange-400" />
@@ -1541,11 +1502,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleEmergencyDocks}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showEmergencyDocks
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showEmergencyDocks
                     ? 'bg-red-500/15 text-red-300 border-red-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <HeartPulse className="w-3.5 h-3.5 text-red-400" />
@@ -1567,11 +1527,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleDae}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showDae
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showDae
                     ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <HeartPulse className="w-3.5 h-3.5 text-emerald-400" />
@@ -1593,11 +1552,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onTogglePharmacies}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showPharmacies
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showPharmacies
                     ? 'bg-green-500/15 text-green-300 border-green-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Pill className="w-3.5 h-3.5 text-green-400" />
@@ -1619,11 +1577,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleHeatIslands}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showHeatIslands
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showHeatIslands
                     ? 'bg-orange-500/15 text-orange-300 border-orange-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <ThermometerSun className="w-3.5 h-3.5 text-orange-400" />
@@ -1645,11 +1602,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onToggleAccommodations}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showAccommodations
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showAccommodations
                     ? 'bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Building2 className="w-3.5 h-3.5 text-fuchsia-400" />
@@ -1674,11 +1630,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               <button
                 type="button"
                 onClick={onTogglePollenStations}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showPollenStations
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showPollenStations
                     ? 'bg-lime-500/15 text-lime-300 border-lime-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Flower2 className="w-3.5 h-3.5 text-lime-400" />
@@ -1738,11 +1693,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                     key={c.key}
                     type="button"
                     onClick={() => onSelectCategory(isSelected ? 'all' : c.key)}
-                    className={`flex items-center justify-between p-1.5 px-2.5 rounded-lg text-xs transition-all cursor-pointer ${
-                      isSelected
+                    className={`flex items-center justify-between p-1.5 px-2.5 rounded-lg text-xs transition-all cursor-pointer ${isSelected
                         ? 'bg-[var(--rule)] text-[var(--ink)] font-bold ring-1 ring-cyan-500'
                         : 'text-[var(--ink-2)] hover:bg-[var(--rule)]/50 hover:text-[var(--ink)]'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2">
                       <span

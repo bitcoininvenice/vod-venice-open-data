@@ -294,7 +294,7 @@ export const VENICE_CAMERAS: VeniceCameraItem[] = [
   },
 
   // --------------------------------------------------------------------------
-  // B. ANOPTICON (TRAMACI.ORG) - CENSIMENTO CIVICO VIDEOSORVEGLIANZA URBANA CCTV
+  // B. ANOPTICON (TRAMACI.ORG) - CENSIMENTO CIVICO VIDEO MONITORAGGIO URBANO CCTV
   // (Flusso video non accessibile al pubblico per disposizioni privacy / GDPR)
   // --------------------------------------------------------------------------
   {
@@ -400,7 +400,7 @@ export const VENICE_CAMERAS: VeniceCameraItem[] = [
     bearingDeg: 310,
     fovDeg: 360,
     rangeMeters: 60,
-    notes: 'Sorveglianza pedonale e controllo assembramenti.'
+    notes: 'Video monitoraggio pedonale e controllo assembramenti.'
   },
   {
     id: 'cctv_argos_rialto',
@@ -673,7 +673,7 @@ export const VENICE_CAMERAS: VeniceCameraItem[] = [
     bearingDeg: 310,
     fovDeg: 360,
     rangeMeters: 55,
-    notes: 'Sorveglianza dell’infrastruttura ferroviaria nazionale.'
+    notes: 'Video monitoraggio dell’infrastruttura ferroviaria nazionale.'
   },
   {
     id: 'cctv_pl_piazzale_roma_autostazione',
@@ -778,7 +778,7 @@ export const VENICE_CAMERAS: VeniceCameraItem[] = [
     bearingDeg: 30,
     fovDeg: 75,
     rangeMeters: 80,
-    notes: 'Sorveglianza dell’asse pedonale e acqueo dell’isola della Giudecca.'
+    notes: 'Video monitoraggio dell’asse pedonale e acqueo dell’isola della Giudecca.'
   },
   {
     id: 'cctv_argos_canale_giudecca_redentore',

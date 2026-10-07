@@ -64,7 +64,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                   </span>
                 ) : (
                   <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded-full bg-slate-500/20 text-slate-300 border border-slate-500/30 flex items-center gap-1">
-                    <Lock className="w-2.5 h-2.5" /> CCTV Sorveglianza Urbana
+                    <Lock className="w-2.5 h-2.5" /> CCTV Video Monitoraggio Urbano
                   </span>
                 )}
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[var(--rule)]/60 text-[var(--ink-2)] border border-[var(--rule)]">
@@ -231,8 +231,8 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
             <div className="flex flex-col gap-1">
               <strong className="text-amber-300 text-xs">
                 {language === 'it'
-                  ? 'Videosorveglianza Urbana a Circuito Chiuso (CCTV)'
-                  : 'Closed-Circuit Urban Surveillance (CCTV)'}
+                  ? 'Video Monitoraggio Urbano a Circuito Chiuso (CCTV)'
+                  : 'Closed-Circuit Urban Monitoring (CCTV)'}
               </strong>
               <p className="text-[11px] leading-relaxed text-[var(--ink-2)]">
                 {language === 'it'

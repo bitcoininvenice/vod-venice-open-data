@@ -14,12 +14,14 @@ export async function GET() {
     stats: {
       total: VENICE_CAMERAS.length,
       liveWebcams: liveCount,
+      cctvMonitoring: cctvCount,
       cctvSurveillance: cctvCount
     },
     metadata: {
       regime: 'CATALOGO_IBRIDO_CERTIFICATO_E_CIVICO',
       sources: {
         liveWebcams: 'Centro Previsioni Maree (CPSM), CNR-ISMAR Acqua Alta, SkylineWebcams, I Love You Venice',
+        cctvMonitoring: 'Anopticon / Tramaci.org (Mappatura civica partecipativa - Open Counter-Mapping)',
         cctvSurveillance: 'Anopticon / Tramaci.org (Mappatura civica partecipativa - Open Counter-Mapping)'
       },
       policy: {

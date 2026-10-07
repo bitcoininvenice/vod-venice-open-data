@@ -3112,7 +3112,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               ctx.fillText(label, cx - lW / 2, cy - 10);
             }
           } else {
-            // CCTV Surveillance Camera (Anopticon)
+            // CCTV Video Monitoring Camera (Anopticon)
             const isAnpr = cam.type === 'CCTV_ANPR';
             const pinColor = isAnpr ? '#e11d48' : (isDark ? '#94a3b8' : '#475569');
 

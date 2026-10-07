@@ -76,7 +76,7 @@ export const SATELLITES_DATA: SatelliteItem[] = [
     type: 'SAR_RADAR',
     sensor: 'X-SAR (X-Band Synthetic Aperture Radar, 9.6 GHz)',
     resolution: '0.8m Sub-metrico (Spotlight-2 ad altissima definizione)',
-    missionTarget: 'Sorveglianza idrogeologica nazionale: stabilità statica dei ponti monumentali (Rialto, Accademia), banchine portuali e sicurezza delle Bocche di Porto',
+    missionTarget: 'Monitoraggio idrogeologico nazionale: stabilità statica dei ponti monumentali (Rialto, Accademia), banchine portuali e sicurezza delle Bocche di Porto',
     altitudeKm: 619,
     speedKmh: 27800,
     inclinationDeg: 97.86,
