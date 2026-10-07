@@ -1332,6 +1332,25 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
     }
 
+    // 1s2. Hit test Parcheggi Auto Real-time
+    if (showParkings && parkings && parkings.length > 0) {
+      for (const p of parkings) {
+        const px = (mx(p.lon) - camera.x0) * camera.s;
+        const py = (my(p.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - px, clickY - (py - 10)) <= 28) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'parking', data: p });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
     // 1t. Hit test Battelli Ecologici Veritas
     if (showWasteBoats && wasteBoats && wasteBoats.length > 0) {
       for (const wb of wasteBoats) {
@@ -2681,7 +2700,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           ctx.save();
           ctx.font = '700 9.5px "DM Mono", monospace';
-          const pTxt = `🅿️ ${p.name}: ${p.freeSpots} liberi`;
+          const pTxt = camera.s > 0.02 ? `🅿️ ${p.name}: ${p.freeSpots} liberi` : `🅿️ ${p.freeSpots}`;
           const pW = ctx.measureText(pTxt).width;
 
           ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)';
@@ -3716,10 +3735,19 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           const ty = sy(my(tr.lat));
           ctx.save();
 
-          // Sleek high-speed train body
-          ctx.fillStyle = tr.trainType === 'FRECCIAROSSA' ? '#dc2626' : '#2563eb';
+          // Sleek high-speed / regional / cargo train body
+          ctx.fillStyle =
+            tr.trainType === 'FRECCIAROSSA'
+              ? '#dc2626'
+              : tr.trainType === 'ITALO'
+              ? '#991b1b'
+              : tr.trainType === 'MERCITALIA_CARGO'
+              ? '#15803d'
+              : tr.trainType === 'EUROCITY' || tr.trainType === 'RAILJET'
+              ? '#7c3aed'
+              : '#2563eb';
           ctx.beginPath();
-          ctx.roundRect(tx - 12, ty - 4.5, 24, 9, 4);
+          ctx.roundRect(tx - 13, ty - 5, 26, 10, 4);
           ctx.fill();
           ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1.2;
@@ -3728,10 +3756,10 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           // Headlight glow
           ctx.fillStyle = '#fef08a';
           ctx.beginPath();
-          ctx.arc(tx + 12, ty, 2.5, 0, Math.PI * 2);
+          ctx.arc(tx + 13, ty, 2.5, 0, Math.PI * 2);
           ctx.fill();
 
-          if (camera.s > 0.025) {
+          if (camera.s > 0.02) {
             ctx.font = 'bold 8px "DM Mono", monospace';
             ctx.fillStyle = isDark ? '#f87171' : '#b91c1c';
             ctx.fillText(`🚆 ${tr.trainNumber} (${tr.speedKmh} km/h)`, tx - 14, ty - 8);

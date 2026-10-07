@@ -420,9 +420,9 @@ export async function fetchPlatformMetrics(): Promise<PlatformMetrics> {
     peakPedestrianSensor: 'Ponte di Rialto (4.210 passaggi/h)',
 
     // Mobilità Terraferma & Parcheggi AVM
-    totalParkingSpaces: 4100,
-    freeParkingSpots: 1250,
-    parkingOccupancyRate: 69.5,
+    totalParkingSpaces: 10149,
+    freeParkingSpots: 2167,
+    parkingOccupancyRate: 78.6,
 
     // Satelliti & Osservazione Spaziale (Copernicus ESA / ASI / NASA)
     activeSatellitesCount: 6,

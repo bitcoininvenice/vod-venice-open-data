@@ -115,7 +115,7 @@ export const enTranslations: Translations = {
     layerCityAssets: 'Fountains & Accessible Bridges',
     layerTrees: 'Urban Trees & Parks',
     layerServicesVenice: 'Public Restrooms & Waste Centers',
-    layerParkings: 'Mainland Car Parks',
+    layerParkings: 'Car Parks (Venice & Mainland)',
     layerCantieri: 'Canal Maintenance Worksites',
     layerAirQuality: 'ARPAV Air Quality Stations',
     layerPedestrianFlows: 'Pedestrian Flow Counters (Smart Control Room)',

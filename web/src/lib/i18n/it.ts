@@ -115,7 +115,7 @@ export const itTranslations: Translations = {
     layerCityAssets: 'Fontane & Ponti Accessibili',
     layerTrees: 'Alberature Urbane & Parchi',
     layerServicesVenice: 'Servizi Igienici & Ecocentro',
-    layerParkings: 'Parcheggi Auto Terraferma',
+    layerParkings: 'Parcheggi Auto (Venezia & Terraferma)',
     layerCantieri: 'Cantieri Acquei & Ordinanze',
     layerAirQuality: 'Centraline Qualità Aria ARPAV',
     layerPedestrianFlows: 'Sensori Flusso Pedonale (Smart Control Room)',

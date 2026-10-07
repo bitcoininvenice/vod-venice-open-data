@@ -148,8 +148,9 @@ export async function GET() {
     }
   ];
 
-  // Parcheggi in Tempo Reale (AVM / Polizia Locale)
+  // Parcheggi in Tempo Reale & Hub Scambiatori (AVM S.p.A. / Comune di Venezia / Metropark FS)
   const parkings: ParkingItem[] = [
+    // 1. Centro Storico Insulare (Piazzale Roma & Tronchetto)
     {
       id: 'park-1',
       name: 'Autorimessa Comunale ASM',
@@ -159,7 +160,7 @@ export async function GET() {
       lat: 45.4378,
       lon: 12.3182,
       rateHourly: '€ 35,00 / 24h',
-      operator: 'AVM S.p.A.'
+      operator: 'AVM S.p.A. / Comune di Venezia'
     },
     {
       id: 'park-2',
@@ -170,7 +171,7 @@ export async function GET() {
       lat: 45.4368,
       lon: 12.3178,
       rateHourly: '€ 45,00 / 24h',
-      operator: 'Privato convenzionato'
+      operator: 'Garage San Marco S.p.A.'
     },
     {
       id: 'park-3',
@@ -180,7 +181,7 @@ export async function GET() {
       freeSpots: 12,
       lat: 45.4365,
       lon: 12.3160,
-      rateHourly: '€ 7,00 / 2h',
+      rateHourly: '€ 7,00 / 2h (sosta breve)',
       operator: 'AVM S.p.A.'
     },
     {
@@ -191,8 +192,137 @@ export async function GET() {
       freeSpots: 865,
       lat: 45.4415,
       lon: 12.3040,
-      rateHourly: '€ 26,00 / 24h',
-      operator: 'Interparking Italia'
+      rateHourly: '€ 26,00 / 24h (People Mover)',
+      operator: 'Interparking Italia S.r.l.'
+    },
+    {
+      id: 'park-5',
+      name: 'Scalo Fluviale Tronchetto',
+      location: 'Tronchetto',
+      totalSpots: 220,
+      freeSpots: 54,
+      lat: 45.4430,
+      lon: 12.3075,
+      rateHourly: '€ 20,00 / 24h',
+      operator: 'AVM S.p.A.'
+    },
+
+    // 2. Terraferma: Nodi d'Interscambio Parco San Giuliano (AVM)
+    {
+      id: 'park-6',
+      name: 'Park San Giuliano - Porta Gialla',
+      location: 'Mestre',
+      totalSpots: 270,
+      freeSpots: 110,
+      lat: 45.4665,
+      lon: 12.2785,
+      rateHourly: '3h gratis, poi € 2,00/h (Tram T1)',
+      operator: 'AVM S.p.A.'
+    },
+    {
+      id: 'park-7',
+      name: 'Park San Giuliano - Porta Rossa',
+      location: 'Mestre',
+      totalSpots: 250,
+      freeSpots: 85,
+      lat: 45.4642,
+      lon: 12.2740,
+      rateHourly: '3h gratis, poi € 2,00/h (Bus 5, 19, 24)',
+      operator: 'AVM S.p.A.'
+    },
+    {
+      id: 'park-8',
+      name: 'Park San Giuliano - Porta Blu',
+      location: 'Mestre',
+      totalSpots: 190,
+      freeSpots: 64,
+      lat: 45.4678,
+      lon: 12.2708,
+      rateHourly: '3h gratis, poi € 2,00/h',
+      operator: 'AVM S.p.A.'
+    },
+
+    // 3. Terraferma: Polo Ferroviario Stazione Mestre
+    {
+      id: 'park-9',
+      name: 'Park Stazione Mestre - Ca\' Marcello',
+      location: 'Mestre',
+      totalSpots: 650,
+      freeSpots: 142,
+      lat: 45.4808,
+      lon: 12.2345,
+      rateHourly: '€ 14,00 / 24h (Treni S.Lucia 10 min)',
+      operator: 'Metropark (Gruppo FS) / AVM'
+    },
+
+    // 4. Terraferma: Centro Urbano Mestre
+    {
+      id: 'park-10',
+      name: 'Park Candiani (Mestre Centro)',
+      location: 'Mestre',
+      totalSpots: 105,
+      freeSpots: 18,
+      lat: 45.4912,
+      lon: 12.2388,
+      rateHourly: '€ 2,00 / ora (Centro Candiani)',
+      operator: 'AVM S.p.A.'
+    },
+    {
+      id: 'park-11',
+      name: 'Park Costa (Mestre Centro)',
+      location: 'Mestre',
+      totalSpots: 302,
+      freeSpots: 72,
+      lat: 45.4940,
+      lon: 12.2325,
+      rateHourly: '€ 2,00 / ora (Piazza Ferretto)',
+      operator: 'AVM S.p.A.'
+    },
+
+    // 5. Terraferma: Hub Scambiatori Tangenziale, VEGA & Marghera
+    {
+      id: 'park-12',
+      name: 'Park Marghera - P1 Panorama',
+      location: 'Mestre',
+      totalSpots: 450,
+      freeSpots: 215,
+      lat: 45.4715,
+      lon: 12.2155,
+      rateHourly: 'Gratuito scambiatore (Bus 6/6L)',
+      operator: 'Comune di Venezia / AVM'
+    },
+    {
+      id: 'park-13',
+      name: 'Park VEGA Porto Marghera',
+      location: 'Mestre',
+      totalSpots: 380,
+      freeSpots: 120,
+      lat: 45.4745,
+      lon: 12.2530,
+      rateHourly: '€ 1,50 / ora (Staz. P. Marghera)',
+      operator: 'VEGA Parco Scientifico / AVM'
+    },
+    {
+      id: 'park-14',
+      name: 'Park Castellana A4',
+      location: 'Mestre',
+      totalSpots: 220,
+      freeSpots: 98,
+      lat: 45.5085,
+      lon: 12.2210,
+      rateHourly: 'Gratuito scambiatore (Bus 53E / SFMR)',
+      operator: 'Comune di Venezia / AVM'
+    },
+    {
+      id: 'park-15',
+      name: 'Park Taliercio (Favaro)',
+      location: 'Mestre',
+      totalSpots: 180,
+      freeSpots: 86,
+      lat: 45.5060,
+      lon: 12.2720,
+      rateHourly: 'Gratuito scambiatore (Tram T2)',
+      operator: 'AVM S.p.A.'
     }
   ];
 
@@ -200,6 +330,10 @@ export async function GET() {
     success: true,
     totalAssets: assets.length,
     totalParkings: parkings.length,
+    fountains: assets.filter((a) => a.type === 'FOUNTAIN'),
+    accessibleBridges: assets.filter((a) => a.type === 'ACCESSIBLE_BRIDGE'),
+    veritasServices: assets.filter((a) => a.type === 'VERITAS_WASTE' || a.type === 'VERITAS_BOAT'),
+    parkings,
     data: {
       assets,
       parkings

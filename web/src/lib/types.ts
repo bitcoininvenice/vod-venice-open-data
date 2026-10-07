@@ -611,7 +611,7 @@ export interface MeteoMarineWindItem {
 export interface TrainLiveItem {
   id: string;
   trainNumber: string;
-  trainType: 'FRECCIAROSSA' | 'REGIONALE_VELOCE' | 'ITALO' | 'EUROCITY';
+  trainType: 'FRECCIAROSSA' | 'REGIONALE_VELOCE' | 'ITALO' | 'EUROCITY' | 'INTERCITY' | 'MERCITALIA_CARGO' | 'RAILJET';
   origin: string;
   destination: string;
   currentLocation: string;

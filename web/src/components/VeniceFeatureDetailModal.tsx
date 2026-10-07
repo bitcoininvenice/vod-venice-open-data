@@ -58,9 +58,10 @@ import {
   TouristAccommodationItem,
   RegionalBikeRouteItem,
   PollenMonitoringStationItem,
-  LagoonTributaryRiverItem
+  LagoonTributaryRiverItem,
+  ParkingItem
 } from '@/lib/types';
-import { Droplet, Building2, Bike, Flower2, GitBranch } from 'lucide-react';
+import { Droplet, Building2, Bike, Flower2, GitBranch, Car } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
 export type VeniceFeatureSelected =
@@ -92,7 +93,8 @@ export type VeniceFeatureSelected =
   | { type: 'accommodation'; data: TouristAccommodationItem }
   | { type: 'bikeRoute'; data: RegionalBikeRouteItem }
   | { type: 'pollenStation'; data: PollenMonitoringStationItem }
-  | { type: 'tributaryRiver'; data: LagoonTributaryRiverItem };
+  | { type: 'tributaryRiver'; data: LagoonTributaryRiverItem }
+  | { type: 'parking'; data: ParkingItem };
 
 interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
@@ -201,6 +203,9 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             {feature.type === 'tributaryRiver' && (
               <div className="p-2 rounded-xl bg-sky-500/20 text-sky-400"><GitBranch className="w-5 h-5" /></div>
             )}
+            {feature.type === 'parking' && (
+              <div className="p-2 rounded-xl bg-teal-500/20 text-teal-400"><Car className="w-5 h-5" /></div>
+            )}
 
             <div>
               <h2 className="text-base font-bold leading-tight">
@@ -233,6 +238,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'bikeRoute' && feature.data.routeName}
                 {feature.type === 'pollenStation' && feature.data.stationName}
                 {feature.type === 'tributaryRiver' && `${language === 'it' ? 'Fiume Scolante' : 'Tributary River'}: ${feature.data.riverName}`}
+                {feature.type === 'parking' && feature.data.name}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
                 {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
@@ -247,6 +253,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'bikeRoute' && `${language === 'it' ? 'Lunghezza' : 'Length'}: ${feature.data.lengthKm} km · ${feature.data.section}`}
                 {feature.type === 'pollenStation' && `${language === 'it' ? 'Rischio Allergico' : 'Allergy Risk'}: ${feature.data.overallAllergyRisk} · ${feature.data.locationName}`}
                 {feature.type === 'tributaryRiver' && `${language === 'it' ? 'Portata' : 'Flow Rate'}: ${feature.data.avgFlowM3s} m³/s · ${feature.data.mouthZone}`}
+                {feature.type === 'parking' && `${feature.data.location} · ${feature.data.operator}`}
               </span>
             </div>
           </div>
@@ -521,6 +528,43 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <p className="text-[var(--ink)]">{language === 'it' ? 'Posizione' : 'Location'}: <b>{feature.data.currentLocation}</b></p>
               <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] text-[11px] text-[var(--ink-2)]">
                 {language === 'it' ? 'Binario di arrivo:' : 'Arrival platform:'} <b>{feature.data.platform}</b>
+              </div>
+            </>
+          )}
+
+          {/* PARKING REAL-TIME */}
+          {feature.type === 'parking' && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Posti Liberi' : 'Available Spots'}</span>
+                  <p className={`text-2xl font-bold font-mono ${feature.data.freeSpots < 50 ? 'text-red-400' : feature.data.freeSpots < 150 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                    {feature.data.freeSpots} <span className="text-xs text-[var(--ink-2)] font-normal">/ {feature.data.totalSpots}</span>
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Occupazione' : 'Occupancy Rate'}</span>
+                  <p className="text-2xl font-bold font-mono text-cyan-400">
+                    {Math.round(((feature.data.totalSpots - feature.data.freeSpots) / feature.data.totalSpots) * 100)}%
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
+                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Tariffa / Condizioni' : 'Tariff / Rates'}</span>
+                  <span className="font-semibold text-[var(--ink)]">{feature.data.rateHourly}</span>
+                </div>
+                <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
+                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Gestore Operativo' : 'Operator'}</span>
+                  <span className="font-semibold text-[var(--ink)]">{feature.data.operator}</span>
+                </div>
+                <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
+                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Ambito Territoriale' : 'Territorial Area'}</span>
+                  <span className="font-semibold text-emerald-400">
+                    {feature.data.location === 'Piazzale Roma' || feature.data.location === 'Tronchetto' ? (language === 'it' ? 'Venezia Insulare' : 'Venice Island') : (language === 'it' ? 'Terraferma / Mestre' : 'Mainland / Mestre')}
+                  </span>
+                </div>
               </div>
             </>
           )}

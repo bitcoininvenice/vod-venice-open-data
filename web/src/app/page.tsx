@@ -911,6 +911,7 @@ export default function HomePage() {
               onToggleCityAssets={() => setShowCityAssets((p) => !p)}
               showParkings={showParkings}
               onToggleParkings={() => setShowParkings((p) => !p)}
+              parkingsCount={parkings.length}
               showAirQuality={showAirQuality}
               onToggleAirQuality={() => setShowAirQuality((p) => !p)}
               showPedestrianFlows={showPedestrianFlows}
@@ -1075,6 +1076,7 @@ export default function HomePage() {
                 onToggleCityAssets={() => setShowCityAssets((p) => !p)}
                 showParkings={showParkings}
                 onToggleParkings={() => setShowParkings((p) => !p)}
+                parkingsCount={parkings.length}
                 showAirQuality={showAirQuality}
                 onToggleAirQuality={() => setShowAirQuality((p) => !p)}
                 showPedestrianFlows={showPedestrianFlows}

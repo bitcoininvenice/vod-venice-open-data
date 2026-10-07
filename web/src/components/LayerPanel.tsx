@@ -95,6 +95,7 @@ interface LayerPanelProps {
   onToggleCityAssets: () => void;
   showParkings: boolean;
   onToggleParkings: () => void;
+  parkingsCount?: number;
   showAirQuality: boolean;
   onToggleAirQuality: () => void;
   showPedestrianFlows: boolean;
@@ -235,6 +236,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   onToggleCityAssets,
   showParkings,
   onToggleParkings,
+  parkingsCount = 0,
   showAirQuality,
   onToggleAirQuality,
   showPedestrianFlows,
@@ -683,7 +685,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </button>
             )}
 
-            {/* 6. Parkings Live (Piazzale Roma & Tronchetto) */}
+            {/* 6. Parkings Live (Piazzale Roma, Tronchetto & Terraferma) */}
             <button
               type="button"
               onClick={onToggleParkings}
@@ -697,7 +699,14 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 <Car className="w-3.5 h-3.5 text-teal-400" />
                 <span>{t('layers.layerParkings')}</span>
               </div>
-              {showParkings ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              <div className="flex items-center gap-1.5">
+                {parkingsCount > 0 && (
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-teal-500/20 text-teal-300 font-bold">
+                    {parkingsCount}
+                  </span>
+                )}
+                {showParkings ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              </div>
             </button>
 
             {/* Limiti Velocità & Barcavelox */}
