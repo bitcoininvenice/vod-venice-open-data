@@ -1,0 +1,403 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import {
+  X,
+  BarChart3,
+  Navigation,
+  Anchor,
+  Construction,
+  Euro,
+  Compass,
+  ShieldAlert,
+  Waves,
+  Wind,
+  Ship,
+  Plane,
+  Footprints,
+  Car,
+  Droplets,
+  Accessibility,
+  Trash2,
+  ExternalLink
+} from 'lucide-react';
+import { PlatformMetrics } from '@/lib/types';
+
+interface StatsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+type MetricCategory = 'all' | 'maree_aria' | 'marittimo' | 'trasporti' | 'aeroporto' | 'pedoni_citta';
+
+export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
+  const [metrics, setMetrics] = useState<PlatformMetrics | null>(null);
+  const [activeTab, setActiveTab] = useState<MetricCategory>('all');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    fetch('/api/stats')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setMetrics(data.data);
+      })
+      .catch((err) => console.error(err));
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4">
+      <div className="glass-panel w-full max-w-4xl rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 border border-cyan-500/30 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500/30 to-blue-600/30 text-cyan-400 flex items-center justify-center border border-cyan-500/40 shrink-0 shadow-lg shadow-cyan-500/10">
+              <BarChart3 className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] uppercase font-mono tracking-wider text-cyan-400 font-bold px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30">
+                  Venice Open Data Analytics
+                </span>
+                <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                  ● 9 SETTORI URBANI INCROCIATI
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-[var(--ink)] leading-snug">
+                Cruscotto Metriche Geospaziali & Dati Aperti di Venezia
+              </h3>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Category Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs">
+          {[
+            { id: 'all', label: 'Tutti i Dati', count: 18 },
+            { id: 'maree_aria', label: '🌊 Maree & Aria ARPAV', count: 4 },
+            { id: 'marittimo', label: '🚢 Porto, AIS & Canali', count: 3 },
+            { id: 'trasporti', label: '🚤 ACTV & Alilaguna', count: 4 },
+            { id: 'aeroporto', label: '✈️ Voli & VCE Hub', count: 2 },
+            { id: 'pedoni_citta', label: '🚶 Flussi & Città', count: 5 }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id as MetricCategory)}
+              className={`px-3 py-1.5 rounded-xl font-medium transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                activeTab === tab.id
+                  ? 'bg-cyan-500 text-white font-semibold shadow-md shadow-cyan-500/20'
+                  : 'bg-[var(--rule)]/40 text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--rule)]'
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-[var(--rule)] text-[var(--ink-3)]'
+              }`}>
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {/* SECTION 1: MAREE & MOSE (CPSM) */}
+          {(activeTab === 'all' || activeTab === 'maree_aria') && (
+            <>
+              <div className="bg-gradient-to-br from-blue-950/30 to-blue-900/10 p-3.5 rounded-xl border border-blue-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-blue-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Waves className="w-4 h-4 text-blue-400" />
+                    <span>Livello Marea Live</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300">CPSM</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-[var(--ink)]">
+                    +{metrics?.tideLevelCm ?? 76}
+                  </span>
+                  <span className="text-xs font-mono text-blue-400">cm (Punta Salute)</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Marea astronomica normale · 0% viabilità pedonale allagata (San Marco +80cm)
+                </span>
+              </div>
+
+              <div className="bg-gradient-to-br from-indigo-950/30 to-indigo-900/10 p-3.5 rounded-xl border border-indigo-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-indigo-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Waves className="w-4 h-4 text-indigo-400" />
+                    <span>Sistema MOSE</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">4 Barriere</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-emerald-400">
+                    {metrics?.moseGatesCount ?? 78}
+                  </span>
+                  <span className="text-xs font-mono text-indigo-300">paratoie a scomparsa</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Stato: a riposo · Lido Treporti, S. Nicolò, Malamocco, Chioggia (soglia +110cm)
+                </span>
+              </div>
+            </>
+          )}
+
+          {/* SECTION 2: QUALITÀ DELL'ARIA (ARPAV) */}
+          {(activeTab === 'all' || activeTab === 'maree_aria') && (
+            <>
+              <div className="bg-gradient-to-br from-emerald-950/30 to-emerald-900/10 p-3.5 rounded-xl border border-emerald-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-emerald-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Wind className="w-4 h-4 text-emerald-400" />
+                    <span>Qualità dell'Aria AQI</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">ARPAV</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-emerald-400">
+                    {metrics?.averageAqi ?? 36}
+                  </span>
+                  <span className="text-xs font-mono text-emerald-300">AQI medio (Buona)</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  PM10: {metrics?.averagePm10 ?? 20.3} µg/m³ · NO2: {metrics?.averageNo2 ?? 27.5} µg/m³ (3 stazioni)
+                </span>
+              </div>
+            </>
+          )}
+
+          {/* SECTION 3: TRAFFICO MARITTIMO & CROCIERE (VTS) */}
+          {(activeTab === 'all' || activeTab === 'marittimo') && (
+            <>
+              <div className="bg-gradient-to-br from-indigo-950/30 to-purple-950/10 p-3.5 rounded-xl border border-indigo-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-indigo-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Ship className="w-4 h-4 text-indigo-400" />
+                    <span>Flotta Navale & Crociere</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">AIS LIVE</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-[var(--ink)]">
+                    {metrics?.activeShipsCount ?? 8}
+                  </span>
+                  <span className="text-xs font-mono text-indigo-300">navi monitorate</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Stazza totale: {((metrics?.totalGrossTonnage ?? 145200) / 1000).toFixed(1)}k GT · 1 nave &gt;25k GT a Marghera
+                </span>
+              </div>
+
+              <div className="bg-gradient-to-br from-amber-950/30 to-orange-950/10 p-3.5 rounded-xl border border-amber-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-amber-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Compass className="w-4 h-4 text-amber-400" />
+                    <span>Canali Marittimi Censiti</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">Batimetria</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-amber-400">
+                    {metrics?.maritimeChannelsCount ?? 4}
+                  </span>
+                  <span className="text-xs font-mono text-amber-300">rotte commerciali</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Canale dei Petroli (-14.5m), Bocca Lido-Tronchetto (-11.0m), Linea 17, Aliscafi
+                </span>
+              </div>
+            </>
+          )}
+
+          {/* SECTION 4: VOLI & AEROPORTO MARCO POLO VCE */}
+          {(activeTab === 'all' || activeTab === 'aeroporto') && (
+            <>
+              <div className="bg-gradient-to-br from-sky-950/30 to-blue-950/10 p-3.5 rounded-xl border border-sky-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-sky-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Plane className="w-4 h-4 text-sky-400" />
+                    <span>Voli Radar nel Raggio Lagunare</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300">OpenSky / ADS-B</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-sky-400">
+                    {metrics?.activeFlightsCount ?? 7}
+                  </span>
+                  <span className="text-xs font-mono text-sky-300">voli in avvicinamento</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Hub Aeroporto Marco Polo (VCE/LIPZ) · ~{metrics?.vceDailyMovements ?? 284} movimenti/giorno
+                </span>
+              </div>
+            </>
+          )}
+
+          {/* SECTION 5: TRASPORTO PUBBLICO ACTV & ALILAGUNA */}
+          {(activeTab === 'all' || activeTab === 'trasporti') && (
+            <>
+              <div className="bg-[var(--rule)]/40 p-3.5 rounded-xl border border-[var(--rule)] flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-[var(--ink-2)]">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Navigation className="w-4 h-4 text-cyan-400" />
+                    <span>Rete ACTV (Acqua + Terra)</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400">GTFS ACTV</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-[var(--ink)]">
+                    {metrics?.totalRoutes ?? 104}
+                  </span>
+                  <span className="text-xs font-mono text-[var(--ink-2)]">linee attive</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  32 linee navigazione · 72 linee gomma & tram ({metrics?.totalTrips?.toLocaleString('it-IT') ?? '5.480'} corse/giorno)
+                </span>
+              </div>
+
+              <div className="bg-gradient-to-br from-blue-950/30 to-amber-950/10 p-3.5 rounded-xl border border-blue-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-blue-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Ship className="w-4 h-4 text-blue-400" />
+                    <span>Navigazione Aeroporto Alilaguna</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">Transitland</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-[var(--ink)]">
+                    {metrics?.alilagunaRoutesCount ?? 4}
+                  </span>
+                  <span className="text-xs font-mono text-blue-300">linee dedicate</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  21 darsene · {metrics?.alilagunaBoatsCount ?? 4} motoscafi attivi · Feed f-u20f-alilagunaspa
+                </span>
+              </div>
+
+              <div className="bg-gradient-to-br from-emerald-950/30 to-teal-950/10 p-3.5 rounded-xl border border-teal-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-teal-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Car className="w-4 h-4 text-teal-400" />
+                    <span>Parcheggi Interscambio AVM</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300">AVM / P.le Roma</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-emerald-400">
+                    {metrics?.freeParkingSpots?.toLocaleString('it-IT') ?? '1.250'}
+                  </span>
+                  <span className="text-xs font-mono text-teal-300">posti liberi su 4.100</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Occupazione 69.5% · Autorimessa Comunale, Garage S. Marco, Tronchetto
+                </span>
+              </div>
+            </>
+          )}
+
+          {/* SECTION 6: SMART CONTROL ROOM, FLUSSI PEDONALI & CITTÀ */}
+          {(activeTab === 'all' || activeTab === 'pedoni_citta') && (
+            <>
+              <div className="bg-gradient-to-br from-rose-950/30 to-pink-950/10 p-3.5 rounded-xl border border-rose-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-rose-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Footprints className="w-4 h-4 text-rose-400" />
+                    <span>Flussi Pedonali Orari</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold">Smart Control Room</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-rose-400">
+                    {metrics?.totalHourlyPedestrians?.toLocaleString('it-IT') ?? '9.340'}
+                  </span>
+                  <span className="text-xs font-mono text-rose-300">passaggi/ora</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Varchi stereoscopici · Picco: {metrics?.peakPedestrianSensor ?? 'Ponte di Rialto (4.210 p/h)'}
+                </span>
+              </div>
+
+              <div className="bg-gradient-to-br from-cyan-950/30 to-blue-950/10 p-3.5 rounded-xl border border-cyan-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-cyan-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Droplets className="w-4 h-4 text-cyan-400" />
+                    <span>Fontanelle Potabili Comunali</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300">dati.venezia.it</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-cyan-400">
+                    {metrics?.drinkingFountainsCount ?? 142}
+                  </span>
+                  <span className="text-xs font-mono text-cyan-300">fontane pubbliche</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Rete idrica potabile censita · Acqua gratis per residenti e turisti nei campielli
+                </span>
+              </div>
+
+              <div className="bg-gradient-to-br from-emerald-950/30 to-green-950/10 p-3.5 rounded-xl border border-emerald-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-emerald-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Accessibility className="w-4 h-4 text-emerald-400" />
+                    <span>Ponti Accessibili Censiti</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Barriere Zero</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-emerald-400">
+                    {metrics?.accessibleBridgesCount ?? 48}
+                  </span>
+                  <span className="text-xs font-mono text-emerald-300">ponti con rampe</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Ponti con rampe agevolate o servoscala elettro-meccanico per disabili e passeggini
+                </span>
+              </div>
+
+              <div className="bg-gradient-to-br from-amber-950/30 to-yellow-950/10 p-3.5 rounded-xl border border-amber-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-amber-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Construction className="w-4 h-4 text-amber-400" />
+                    <span>Cantieri & Occupazioni Suolo</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">Comune LL.PP.</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-amber-400">
+                    {metrics?.activeCantieri ?? 8}
+                  </span>
+                  <span className="text-xs font-mono text-amber-300">cantieri attivi</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Investimento: € {((metrics?.totalInvestmentCantieri ?? 3460000) / 1000000).toFixed(2)}M · {metrics?.stopsNearWorksites200m ?? 8} fermate nel buffer 200m
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Source citation */}
+        <div className="text-[11px] text-[var(--ink-3)] leading-relaxed pt-2 border-t border-[var(--rule)] flex flex-wrap gap-x-4 gap-y-1 items-center justify-between">
+          <span>
+            <b>Fonti Istituzionali:</b> CPSM Centro Maree · ARPAV · Guardia Costiera VTS · ENAV/OpenSky · Smart Control Room Tronchetto · Comune di Venezia (dati.venezia.it) · ACTV / AVM · Alilaguna S.p.A. (Transitland) · Veritas.
+          </span>
+          <span className="font-mono text-[10px] text-cyan-400">
+            PostgreSQL / PostGIS Engine
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};

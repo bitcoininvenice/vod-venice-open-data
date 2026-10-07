@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: vod_postgis
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: venice_opendata
+      POSTGRES_USER: vod_user
+      POSTGRES_PASSWORD: vod_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/01_init_postgis.sql:/docker-entrypoint-initdb.d/01_init_postgis.sql:ro
+      - ./db/02_spatial_queries.sql:/docker-entrypoint-initdb.d/02_spatial_queries.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vod_user -d venice_opendata"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+    driver: local

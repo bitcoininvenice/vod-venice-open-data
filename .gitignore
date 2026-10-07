@@ -1,0 +1,145 @@
+# ==============================================================================
+# 🛡️ VOD - Venice Open Data: .gitignore
+# Protezione rigorosa contro il commit di dati sensibili, credenziali e artefatti
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Variabili d'ambiente e Segreti (CRITICO)
+# ------------------------------------------------------------------------------
+.env
+.env.*
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Eccezioni: conserva solo i template di esempio non contenenti segreti
+!.env.example
+!web/.env.example
+
+# ------------------------------------------------------------------------------
+# 2. Chiavi Private, Certificati SSL/TLS e Token di Autenticazione
+# ------------------------------------------------------------------------------
+*.pem
+*.key
+*.crt
+*.cer
+*.pfx
+*.p12
+*.id_rsa
+*.id_ed25519
+id_rsa*
+id_ed25519*
+id_ecdsa*
+*.keystore
+*.jks
+
+# File JSON contenenti chiavi API o Service Account
+credentials.json
+client_secret*.json
+service-account*.json
+google-credentials*.json
+auth.json
+token.json
+*secret*.json
+*token*.json
+
+# Cartelle riservate di chiavi o segreti
+secrets/
+credentials/
+.secrets/
+
+# ------------------------------------------------------------------------------
+# 3. Vercel CLI & Configurazione di Deploy Locale
+# ------------------------------------------------------------------------------
+# Contiene token di sessione e ID di progetto generati da vercel link / vercel login
+.vercel/
+.vercel
+
+# ------------------------------------------------------------------------------
+# 4. Node.js, Next.js & Build Artifacts
+# ------------------------------------------------------------------------------
+node_modules/
+.next/
+out/
+build/
+dist/
+.turbo/
+
+# Log di runtime e package manager
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# Cache TypeScript
+*.tsbuildinfo
+next-env.d.ts.bak
+
+# ------------------------------------------------------------------------------
+# 5. Database Locali, Dati Sensibili & Archivi di Grandi Dimensioni
+# ------------------------------------------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.sql.gz
+pgdata/
+postgres-data/
+
+# Dati grezzi scaricati (es. zip GTFS da 50-100MB)
+data/*.zip
+data/*.tar.gz
+data/*.csv
+pipeline/data/
+pipeline/downloads/
+*.zip
+*.tar.gz
+*.rar
+
+# ------------------------------------------------------------------------------
+# 6. Python, Ambienti Virtuali & Cache
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+env/
+ENV/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# ------------------------------------------------------------------------------
+# 7. File di Sistema Operativo & Editor IDE
+# ------------------------------------------------------------------------------
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE & Editor di codice
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
