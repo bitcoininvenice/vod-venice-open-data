@@ -9,6 +9,8 @@ export async function GET() {
 
   return NextResponse.json({
     success: true,
+    data: VENICE_CAMERAS,
+    cameras: VENICE_CAMERAS,
     stats: {
       total: VENICE_CAMERAS.length,
       liveWebcams: liveCount,
@@ -24,7 +26,6 @@ export async function GET() {
         lazyLoad: true,
         termsNotice: 'I flussi video live vengono inizializzati esclusivamente su richiesta esplicita dell’utente (click-to-load) nel rispetto delle policy di streaming e della privacy.'
       }
-    },
-    cameras: VENICE_CAMERAS
+    }
   });
 }

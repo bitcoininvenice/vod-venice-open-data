@@ -96,6 +96,8 @@ import {
   OPEN_HEAT_ISLAND_LST
 } from '@/lib/open-data-catalog';
 import { MOCK_CANTIERI, MOCK_STOPS } from '@/lib/db';
+import { VENICE_CAMERAS } from '@/lib/cameras-data';
+import { SCHEDULED_VCE_FLIGHTS } from '@/lib/flights-data';
 import { NOTTE, CARTA, getDynamicPalette } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { useTranslation } from '@/lib/i18n';
@@ -192,7 +194,7 @@ export default function HomePage() {
   // Data collections
   const [cantieri, setCantieri] = useState<CantiereItem[]>(MOCK_CANTIERI);
   const [stops, setStops] = useState<StopItem[]>(MOCK_STOPS);
-  const [flights, setFlights] = useState<FlightItem[]>([]);
+  const [flights, setFlights] = useState<FlightItem[]>(SCHEDULED_VCE_FLIGHTS);
   const [ships, setShips] = useState<ShipItem[]>([]);
   const [moseGates, setMoseGates] = useState<MoseGateItem[]>([]);
   const [cpsmStations, setCpsmStations] = useState<any[]>([]);
@@ -216,7 +218,7 @@ export default function HomePage() {
   const [trees, setTrees] = useState<UrbanTreeItem[]>([]);
   const [evCharging, setEvCharging] = useState<EvChargingItem[]>([]);
   const [wifiHotspots, setWifiHotspots] = useState<WifiHotspotItem[]>([]);
-  const [cameras, setCameras] = useState<VeniceCameraItem[]>([]);
+  const [cameras, setCameras] = useState<VeniceCameraItem[]>(VENICE_CAMERAS);
 
   // 17 New Open Data Collections
   const [canalSpeedLimits, setCanalSpeedLimits] = useState<CanalSpeedLimitItem[]>(OPEN_CANAL_SPEED_LIMITS);
@@ -469,7 +471,9 @@ export default function HomePage() {
       fetch('/api/flights')
         .then((res) => res.json())
         .then((data) => {
-          if (data.success && data.data) setFlights(data.data);
+          if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+            setFlights(data.data);
+          }
         })
         .catch((err) => console.warn('Using fallback flights:', err));
     };
@@ -537,7 +541,8 @@ export default function HomePage() {
     fetch('/api/cameras')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && data.data) setCameras(data.data);
+        const list = data.data || data.cameras;
+        if (data.success && Array.isArray(list) && list.length > 0) setCameras(list);
       })
       .catch((err) => console.warn('Using fallback cameras:', err));
 
