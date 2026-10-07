@@ -49,12 +49,8 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
             <h1 className="text-base sm:text-lg font-bold tracking-tight text-[var(--ink)] whitespace-nowrap">
-              VOD
-              <span className="hidden sm:inline font-normal text-[var(--ink-2)] text-xs sm:text-sm"> · Venice Open Data</span>
+              Venice Open Data
             </h1>
-            <span className="hidden md:inline-flex text-[9px] sm:text-[10px] uppercase font-mono tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 whitespace-nowrap">
-              LAGUNA & TERRAFERMA
-            </span>
           </div>
         </div>
 
@@ -122,8 +118,8 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={() => onSelectView(v)}
               className={`px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${currentView === v
-                  ? 'bg-cyan-500 text-white shadow-sm font-semibold'
-                  : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+                ? 'bg-cyan-500 text-white shadow-sm font-semibold'
+                : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
                 }`}
             >
               {v === 'lagoon' ? 'Laguna' : v === 'venezia' ? 'Venezia' : v === 'mestre' ? 'Mestre' : v === 'lido' ? 'Lido' : 'Aeroporto VCE'}

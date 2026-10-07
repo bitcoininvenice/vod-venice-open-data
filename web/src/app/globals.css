@@ -4,6 +4,8 @@
 :root {
   color-scheme: dark;
   --ground: #0c1114;
+  --surface: #141d24;
+  --surface-card: #18232c;
   --water: #0e1519;
   --sea: #0a1013;
   --land: #1a2227;
@@ -12,6 +14,11 @@
   --ink-2: #9aa7a8;
   --ink-3: #66757a;
   --rule: #263238;
+
+  --panel-bg: rgba(14, 21, 26, 0.88);
+  --panel-border: rgba(255, 255, 255, 0.10);
+  --panel-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.5);
+  --track-bg: rgba(255, 255, 255, 0.15);
 
   --c-vaporetto: #5cc8ff;
   --c-motoscafo: #2ee6c5;
@@ -23,6 +30,34 @@
 
   --font-display: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "DM Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+
+[data-theme="carta"] {
+  color-scheme: light;
+  --ground: #ebe3c9;
+  --surface: #f4eee0;
+  --surface-card: #f9f5eb;
+  --water: #cbd4c3;
+  --sea: #b9c4bd;
+  --land: #f1e6c6;
+  --coast: #7d6b55;
+  --ink: #2b2118;
+  --ink-2: #5f5140;
+  --ink-3: #85755f;
+  --rule: #d3c8a8;
+
+  --panel-bg: rgba(247, 243, 232, 0.94);
+  --panel-border: rgba(125, 107, 85, 0.30);
+  --panel-shadow: 0 12px 36px 0 rgba(70, 50, 30, 0.16);
+  --track-bg: rgba(60, 45, 30, 0.22);
+
+  --c-vaporetto: #007bbd;
+  --c-motoscafo: #008a7e;
+  --c-motonave: #b02068;
+  --c-ferry: #b85000;
+  --c-tram: #b0281b;
+  --c-bus: #4a8018;
+  --c-island: #6b3aa0;
 }
 
 html, body {
@@ -55,21 +90,27 @@ input[type="range"]::-webkit-slider-thumb {
   box-shadow: 0 0 10px rgba(92, 200, 255, 0.6);
   cursor: ew-resize;
   margin-top: -6px;
-  border: 2px solid #ffffff;
+  border: 2px solid var(--ground, #ffffff);
+}
+
+[data-theme="carta"] input[type="range"]::-webkit-slider-thumb {
+  box-shadow: 0 2px 6px rgba(0, 123, 189, 0.4);
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
   width: 100%;
   height: 6px;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--track-bg, rgba(255, 255, 255, 0.15));
   border-radius: 3px;
 }
 
 .glass-panel {
-  background: rgba(18, 26, 32, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel-bg, rgba(18, 26, 32, 0.85));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--panel-border, rgba(255, 255, 255, 0.08));
+  box-shadow: var(--panel-shadow, 0 8px 32px 0 rgba(0, 0, 0, 0.37));
+  color: var(--ink);
 }
 
 .tabular {
@@ -83,4 +124,311 @@ input[type="range"]::-webkit-slider-runnable-track {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Light Mode (Carta) Contrast & Typography Polish */
+[data-theme="carta"] .text-cyan-400 {
+  color: #0284c7 !important;
+}
+[data-theme="carta"] .text-cyan-300 {
+  color: #0369a1 !important;
+}
+[data-theme="carta"] .text-blue-400 {
+  color: #1d4ed8 !important;
+}
+[data-theme="carta"] .text-blue-300 {
+  color: #1e40af !important;
+}
+[data-theme="carta"] .text-sky-400 {
+  color: #0284c7 !important;
+}
+[data-theme="carta"] .text-sky-300 {
+  color: #0369a1 !important;
+}
+[data-theme="carta"] .text-teal-400 {
+  color: #0f766e !important;
+}
+[data-theme="carta"] .text-teal-300 {
+  color: #115e59 !important;
+}
+[data-theme="carta"] .text-emerald-400 {
+  color: #047857 !important;
+}
+[data-theme="carta"] .text-emerald-300 {
+  color: #065f46 !important;
+}
+[data-theme="carta"] .text-green-400 {
+  color: #15803d !important;
+}
+[data-theme="carta"] .text-green-300 {
+  color: #166534 !important;
+}
+[data-theme="carta"] .text-lime-400 {
+  color: #4d7c0f !important;
+}
+[data-theme="carta"] .text-lime-300 {
+  color: #3f6212 !important;
+}
+[data-theme="carta"] .text-amber-400 {
+  color: #b45309 !important;
+}
+[data-theme="carta"] .text-amber-300 {
+  color: #92400e !important;
+}
+[data-theme="carta"] .text-yellow-400 {
+  color: #a16207 !important;
+}
+[data-theme="carta"] .text-yellow-300 {
+  color: #854d0e !important;
+}
+[data-theme="carta"] .text-orange-400 {
+  color: #c2410c !important;
+}
+[data-theme="carta"] .text-orange-300 {
+  color: #9a3412 !important;
+}
+[data-theme="carta"] .text-red-400 {
+  color: #b91c1c !important;
+}
+[data-theme="carta"] .text-red-300 {
+  color: #991b1b !important;
+}
+[data-theme="carta"] .text-rose-400 {
+  color: #be123c !important;
+}
+[data-theme="carta"] .text-rose-300 {
+  color: #9f1239 !important;
+}
+[data-theme="carta"] .text-purple-400 {
+  color: #7c3aed !important;
+}
+[data-theme="carta"] .text-purple-300 {
+  color: #6d28d9 !important;
+}
+[data-theme="carta"] .text-fuchsia-400 {
+  color: #a21caf !important;
+}
+[data-theme="carta"] .text-fuchsia-300 {
+  color: #86198f !important;
+}
+[data-theme="carta"] .text-violet-400 {
+  color: #6d28d9 !important;
+}
+[data-theme="carta"] .text-violet-300 {
+  color: #5b21b6 !important;
+}
+[data-theme="carta"] .text-indigo-400 {
+  color: #4338ca !important;
+}
+[data-theme="carta"] .text-indigo-300 {
+  color: #3730a3 !important;
+}
+[data-theme="carta"] .text-stone-400 {
+  color: #57534e !important;
+}
+[data-theme="carta"] .text-stone-300 {
+  color: #44403c !important;
+}
+[data-theme="carta"] .text-neutral-400 {
+  color: #525252 !important;
+}
+[data-theme="carta"] .text-neutral-300 {
+  color: #404040 !important;
+}
+[data-theme="carta"] .text-neutral-200 {
+  color: #262626 !important;
+}
+
+/* Badge backgrounds & borders in light mode */
+[data-theme="carta"] .bg-cyan-500\/10,
+[data-theme="carta"] .bg-cyan-500\/15,
+[data-theme="carta"] .bg-cyan-500\/20 {
+  background-color: rgba(2, 132, 199, 0.12) !important;
+}
+[data-theme="carta"] .bg-sky-500\/10,
+[data-theme="carta"] .bg-sky-500\/15,
+[data-theme="carta"] .bg-sky-500\/20 {
+  background-color: rgba(2, 132, 199, 0.12) !important;
+}
+[data-theme="carta"] .bg-blue-500\/10,
+[data-theme="carta"] .bg-blue-500\/15,
+[data-theme="carta"] .bg-blue-500\/20 {
+  background-color: rgba(29, 78, 216, 0.12) !important;
+}
+[data-theme="carta"] .bg-teal-500\/10,
+[data-theme="carta"] .bg-teal-500\/15,
+[data-theme="carta"] .bg-teal-500\/20 {
+  background-color: rgba(15, 118, 110, 0.12) !important;
+}
+[data-theme="carta"] .bg-emerald-500\/10,
+[data-theme="carta"] .bg-emerald-500\/15,
+[data-theme="carta"] .bg-emerald-500\/20 {
+  background-color: rgba(4, 120, 87, 0.12) !important;
+}
+[data-theme="carta"] .bg-green-500\/10,
+[data-theme="carta"] .bg-green-500\/15,
+[data-theme="carta"] .bg-green-500\/20 {
+  background-color: rgba(21, 128, 61, 0.12) !important;
+}
+[data-theme="carta"] .bg-lime-500\/10,
+[data-theme="carta"] .bg-lime-500\/15,
+[data-theme="carta"] .bg-lime-500\/20 {
+  background-color: rgba(77, 124, 15, 0.12) !important;
+}
+[data-theme="carta"] .bg-amber-500\/10,
+[data-theme="carta"] .bg-amber-500\/15,
+[data-theme="carta"] .bg-amber-500\/20 {
+  background-color: rgba(180, 83, 9, 0.14) !important;
+}
+[data-theme="carta"] .bg-yellow-500\/10,
+[data-theme="carta"] .bg-yellow-500\/15,
+[data-theme="carta"] .bg-yellow-500\/20 {
+  background-color: rgba(161, 98, 7, 0.14) !important;
+}
+[data-theme="carta"] .bg-orange-500\/10,
+[data-theme="carta"] .bg-orange-500\/15,
+[data-theme="carta"] .bg-orange-500\/20 {
+  background-color: rgba(194, 65, 12, 0.13) !important;
+}
+[data-theme="carta"] .bg-red-500\/10,
+[data-theme="carta"] .bg-red-500\/15,
+[data-theme="carta"] .bg-red-500\/20 {
+  background-color: rgba(185, 28, 28, 0.12) !important;
+}
+[data-theme="carta"] .bg-purple-500\/10,
+[data-theme="carta"] .bg-purple-500\/15,
+[data-theme="carta"] .bg-purple-500\/20 {
+  background-color: rgba(124, 58, 237, 0.12) !important;
+}
+[data-theme="carta"] .bg-fuchsia-500\/10,
+[data-theme="carta"] .bg-fuchsia-500\/15,
+[data-theme="carta"] .bg-fuchsia-500\/20 {
+  background-color: rgba(162, 28, 175, 0.12) !important;
+}
+[data-theme="carta"] .bg-violet-500\/10,
+[data-theme="carta"] .bg-violet-500\/15,
+[data-theme="carta"] .bg-violet-500\/20 {
+  background-color: rgba(109, 40, 217, 0.12) !important;
+}
+[data-theme="carta"] .bg-rose-500\/10,
+[data-theme="carta"] .bg-rose-500\/15,
+[data-theme="carta"] .bg-rose-500\/20 {
+  background-color: rgba(190, 18, 60, 0.12) !important;
+}
+[data-theme="carta"] .bg-indigo-500\/10,
+[data-theme="carta"] .bg-indigo-500\/15,
+[data-theme="carta"] .bg-indigo-500\/20 {
+  background-color: rgba(67, 56, 202, 0.12) !important;
+}
+[data-theme="carta"] .bg-stone-500\/10,
+[data-theme="carta"] .bg-stone-500\/15,
+[data-theme="carta"] .bg-stone-500\/20 {
+  background-color: rgba(87, 83, 78, 0.12) !important;
+}
+
+[data-theme="carta"] .border-cyan-500\/20,
+[data-theme="carta"] .border-cyan-500\/30,
+[data-theme="carta"] .border-cyan-500\/40 {
+  border-color: rgba(2, 132, 199, 0.35) !important;
+}
+[data-theme="carta"] .border-sky-500\/20,
+[data-theme="carta"] .border-sky-500\/30,
+[data-theme="carta"] .border-sky-500\/40 {
+  border-color: rgba(2, 132, 199, 0.35) !important;
+}
+[data-theme="carta"] .border-blue-500\/20,
+[data-theme="carta"] .border-blue-500\/30,
+[data-theme="carta"] .border-blue-500\/40 {
+  border-color: rgba(29, 78, 216, 0.35) !important;
+}
+[data-theme="carta"] .border-teal-500\/20,
+[data-theme="carta"] .border-teal-500\/30,
+[data-theme="carta"] .border-teal-500\/40 {
+  border-color: rgba(15, 118, 110, 0.35) !important;
+}
+[data-theme="carta"] .border-emerald-500\/20,
+[data-theme="carta"] .border-emerald-500\/30,
+[data-theme="carta"] .border-emerald-500\/40 {
+  border-color: rgba(4, 120, 87, 0.35) !important;
+}
+[data-theme="carta"] .border-green-500\/20,
+[data-theme="carta"] .border-green-500\/30,
+[data-theme="carta"] .border-green-500\/40 {
+  border-color: rgba(21, 128, 61, 0.35) !important;
+}
+[data-theme="carta"] .border-lime-500\/20,
+[data-theme="carta"] .border-lime-500\/30,
+[data-theme="carta"] .border-lime-500\/40 {
+  border-color: rgba(77, 124, 15, 0.35) !important;
+}
+[data-theme="carta"] .border-amber-500\/20,
+[data-theme="carta"] .border-amber-500\/30,
+[data-theme="carta"] .border-amber-500\/40 {
+  border-color: rgba(180, 83, 9, 0.35) !important;
+}
+[data-theme="carta"] .border-yellow-500\/20,
+[data-theme="carta"] .border-yellow-500\/30,
+[data-theme="carta"] .border-yellow-500\/40 {
+  border-color: rgba(161, 98, 7, 0.35) !important;
+}
+[data-theme="carta"] .border-orange-500\/20,
+[data-theme="carta"] .border-orange-500\/30,
+[data-theme="carta"] .border-orange-500\/40 {
+  border-color: rgba(194, 65, 12, 0.35) !important;
+}
+[data-theme="carta"] .border-red-500\/20,
+[data-theme="carta"] .border-red-500\/30,
+[data-theme="carta"] .border-red-500\/40 {
+  border-color: rgba(185, 28, 28, 0.35) !important;
+}
+[data-theme="carta"] .border-purple-500\/20,
+[data-theme="carta"] .border-purple-500\/30,
+[data-theme="carta"] .border-purple-500\/40 {
+  border-color: rgba(124, 58, 237, 0.35) !important;
+}
+[data-theme="carta"] .border-fuchsia-500\/20,
+[data-theme="carta"] .border-fuchsia-500\/30,
+[data-theme="carta"] .border-fuchsia-500\/40 {
+  border-color: rgba(162, 28, 175, 0.35) !important;
+}
+[data-theme="carta"] .border-violet-500\/20,
+[data-theme="carta"] .border-violet-500\/30,
+[data-theme="carta"] .border-violet-500\/40 {
+  border-color: rgba(109, 40, 217, 0.35) !important;
+}
+[data-theme="carta"] .border-rose-500\/20,
+[data-theme="carta"] .border-rose-500\/30,
+[data-theme="carta"] .border-rose-500\/40 {
+  border-color: rgba(190, 18, 60, 0.35) !important;
+}
+[data-theme="carta"] .border-indigo-500\/20,
+[data-theme="carta"] .border-indigo-500\/30,
+[data-theme="carta"] .border-indigo-500\/40 {
+  border-color: rgba(67, 56, 202, 0.35) !important;
+}
+
+/* Nizioleti & Neutral buttons in Carta mode */
+[data-theme="carta"] .bg-neutral-800 {
+  background-color: rgba(220, 212, 195, 0.95) !important;
+  color: #2b2118 !important;
+  border-color: #85755f !important;
+}
+[data-theme="carta"] .bg-neutral-700 {
+  background-color: rgba(195, 185, 165, 0.8) !important;
+  color: #2b2118 !important;
+}
+
+/* Transform dark modal cards into refined parchment cards in light mode */
+[data-theme="carta"] [class*="from-blue-950"],
+[data-theme="carta"] [class*="from-indigo-950"],
+[data-theme="carta"] [class*="from-emerald-950"],
+[data-theme="carta"] [class*="from-amber-950"],
+[data-theme="carta"] [class*="from-sky-950"],
+[data-theme="carta"] [class*="from-purple-950"],
+[data-theme="carta"] [class*="from-rose-950"],
+[data-theme="carta"] [class*="from-green-950"],
+[data-theme="carta"] [class*="from-cyan-950"] {
+  background-image: none !important;
+  background-color: rgba(240, 233, 215, 0.90) !important;
+  border-color: var(--rule) !important;
 }

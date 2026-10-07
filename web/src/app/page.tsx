@@ -554,11 +554,27 @@ export default function HomePage() {
   // Update CSS Variables when palette changes
   useEffect(() => {
     let pal = NOTTE;
-    if (paletteTheme === 'carta') pal = CARTA;
-    else if (paletteTheme === 'dynamic') pal = getDynamicPalette(currentTimeSeconds);
+    let isLight = false;
+    if (paletteTheme === 'carta') {
+      pal = CARTA;
+      isLight = true;
+    } else if (paletteTheme === 'dynamic') {
+      pal = getDynamicPalette(currentTimeSeconds);
+      isLight = pal.ground === CARTA.ground;
+    }
 
     const root = document.documentElement;
+    root.dataset.theme = isLight ? 'carta' : 'notte';
+    root.style.colorScheme = isLight ? 'light' : 'dark';
+
     root.style.setProperty('--ground', pal.ground);
+    root.style.setProperty('--surface', isLight ? '#f4eee0' : '#141d24');
+    root.style.setProperty('--surface-card', isLight ? '#f9f5eb' : '#18232c');
+    root.style.setProperty('--panel-bg', isLight ? 'rgba(247, 243, 232, 0.94)' : 'rgba(14, 21, 26, 0.88)');
+    root.style.setProperty('--panel-border', isLight ? 'rgba(125, 107, 85, 0.30)' : 'rgba(255, 255, 255, 0.10)');
+    root.style.setProperty('--panel-shadow', isLight ? '0 12px 36px 0 rgba(70, 50, 30, 0.16)' : '0 12px 36px 0 rgba(0, 0, 0, 0.5)');
+    root.style.setProperty('--track-bg', isLight ? 'rgba(60, 45, 30, 0.22)' : 'rgba(255, 255, 255, 0.15)');
+
     root.style.setProperty('--water', pal.water);
     root.style.setProperty('--sea', pal.sea);
     root.style.setProperty('--land', pal.land);
@@ -567,6 +583,14 @@ export default function HomePage() {
     root.style.setProperty('--ink-2', pal.ink2);
     root.style.setProperty('--ink-3', pal.ink3);
     root.style.setProperty('--rule', pal.rule);
+
+    root.style.setProperty('--c-vaporetto', pal.cats.vaporetto);
+    root.style.setProperty('--c-motoscafo', pal.cats.motoscafo);
+    root.style.setProperty('--c-motonave', pal.cats.motonave);
+    root.style.setProperty('--c-ferry', pal.cats.ferry);
+    root.style.setProperty('--c-tram', pal.cats.tram);
+    root.style.setProperty('--c-bus', pal.cats.bus);
+    root.style.setProperty('--c-island', pal.cats.island);
   }, [paletteTheme, currentTimeSeconds]);
 
   // Simulation loop ticker: synced to exact real-time wall-clock when isLiveSynced is true

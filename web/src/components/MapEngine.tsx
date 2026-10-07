@@ -1614,6 +1614,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       else if (paletteTheme === 'carta') pal = CARTA;
       else pal = getDynamicPalette(currentTimeSeconds);
 
+      const isDark = pal.ground !== CARTA.ground;
+
       ctx.save();
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
@@ -1787,7 +1789,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.arc(px, py, 4, 0, Math.PI * 2);
           ctx.fillStyle = '#10b981';
           ctx.fill();
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
@@ -1815,16 +1817,16 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           // Worksite pin
           ctx.beginPath();
           ctx.arc(cx, cy, 5.5, 0, Math.PI * 2);
-          ctx.fillStyle = c.impattoMobilita === 'Critico' ? '#ef4444' : '#f59e0b';
+          ctx.fillStyle = c.impattoMobilita === 'Critico' ? '#ef4444' : (isDark ? '#f59e0b' : '#d97706');
           ctx.fill();
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
           // Label
           if (camera.s > 0.035) {
             ctx.font = '600 10px "Bricolage Grotesque", sans-serif';
-            ctx.fillStyle = '#f59e0b';
+            ctx.fillStyle = isDark ? '#f59e0b' : '#b45309';
             ctx.fillText(`🚧 ${c.titolo.slice(0, 24)}...`, cx + 9, cy - 2);
           }
         }
@@ -1896,12 +1898,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.translate(r1x, r1y);
           ctx.rotate(rAng);
           // 04R Threshold
-          ctx.fillStyle = '#ffffff';
+          ctx.fillStyle = isDark ? '#ffffff' : '#1e293b';
           for (let k = -3; k <= 3; k += 2) {
             ctx.fillRect(0, k * 2, 7, 1.2);
           }
           ctx.font = '700 9px "DM Mono", monospace';
-          ctx.fillStyle = '#38bdf8';
+          ctx.fillStyle = isDark ? '#38bdf8' : '#0284c7';
           ctx.fillText('04R', -22, 3);
           ctx.restore();
 
@@ -1909,12 +1911,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.translate(r2x, r2y);
           ctx.rotate(rAng);
           // 22L Threshold
-          ctx.fillStyle = '#ffffff';
+          ctx.fillStyle = isDark ? '#ffffff' : '#1e293b';
           for (let k = -3; k <= 3; k += 2) {
             ctx.fillRect(-7, k * 2, 7, 1.2);
           }
           ctx.font = '700 9px "DM Mono", monospace';
-          ctx.fillStyle = '#38bdf8';
+          ctx.fillStyle = isDark ? '#38bdf8' : '#0284c7';
           ctx.fillText('22L', 10, 3);
           ctx.restore();
         }
@@ -1954,7 +1956,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         ctx.arc(towerX, towerY, 3.5, 0, Math.PI * 2);
         ctx.fillStyle = '#10b981';
         ctx.fill();
-        ctx.strokeStyle = '#ffffff';
+        ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
         ctx.lineWidth = 1.2;
         ctx.stroke();
 
@@ -2051,12 +2053,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.lineTo(wx, wy + 4);
           ctx.lineTo(wx - 4, wy);
           ctx.closePath();
-          ctx.fillStyle = '#38bdf8';
+          ctx.fillStyle = isDark ? '#38bdf8' : '#0284c7';
           ctx.fill();
 
           if (camera.s > 0.02) {
             ctx.font = '600 9px "DM Mono", monospace';
-            ctx.fillStyle = '#38bdf8';
+            ctx.fillStyle = isDark ? '#38bdf8' : '#0284c7';
             ctx.fillText(`${fix.name} · ${fix.alt}`, wx + 7, wy + 3);
           }
         }
@@ -2160,19 +2162,21 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.fillStyle = f.onGround
               ? '#94a3b8'
               : f.status === 'APPROACH'
-              ? '#38bdf8'
+              ? (isDark ? '#38bdf8' : '#0284c7')
               : f.status === 'DEPARTURE'
-              ? '#67e8f9'
-              : '#60a5fa';
+              ? (isDark ? '#67e8f9' : '#0891b2')
+              : (isDark ? '#60a5fa' : '#2563eb');
             ctx.fill();
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
             ctx.lineWidth = 1;
             ctx.stroke();
             ctx.restore();
 
             // Flight Tag
             ctx.font = '600 10px "DM Mono", monospace';
-            ctx.fillStyle = f.status === 'APPROACH' ? '#38bdf8' : '#7dd3fc';
+            ctx.fillStyle = f.status === 'APPROACH'
+              ? (isDark ? '#38bdf8' : '#0284c7')
+              : (isDark ? '#7dd3fc' : '#0369a1');
             ctx.fillText(`✈️ ${f.callsign} · ${Math.round(live.alt)}m`, fx + 13, fy + 3);
           }
         }
@@ -2203,7 +2207,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.setLineDash([]);
 
           // Mooring caissons / Abutments on both sides
-          ctx.fillStyle = '#ffffff';
+          ctx.fillStyle = isDark ? '#ffffff' : '#475569';
           ctx.beginPath();
           ctx.arc(gx - barWidth / 2, gy, 3, 0, Math.PI * 2);
           ctx.arc(gx + barWidth / 2, gy, 3, 0, Math.PI * 2);
@@ -2291,14 +2295,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.closePath();
             ctx.fillStyle = ch.color;
             ctx.fill();
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
             ctx.lineWidth = 1;
             ctx.stroke();
 
             // Waypoint Label
             if (camera.s > 0.02 || isChannelSelected) {
               ctx.font = '600 8.5px "DM Mono", monospace';
-              ctx.fillStyle = isChannelSelected ? '#ffffff' : ch.color;
+              ctx.fillStyle = isChannelSelected ? (isDark ? '#ffffff' : '#0f172a') : (isDark ? ch.color : '#1e3a8a');
               ctx.fillText(`${wp.name} · ${wp.depth}`, wpx + 7, wpy + 3);
             }
             ctx.restore();
@@ -2325,7 +2329,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.rotate(headingRad);
             const wakeLen = Math.min(80, isSelected ? sh.speedKnots * 7 : sh.speedKnots * 4);
             const wakeGrad = ctx.createLinearGradient(0, 0, 0, wakeLen);
-            wakeGrad.addColorStop(0, isSelected ? 'rgba(56, 189, 248, 0.95)' : 'rgba(255, 255, 255, 0.6)');
+            wakeGrad.addColorStop(0, isSelected ? 'rgba(56, 189, 248, 0.95)' : (isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 100, 160, 0.35)'));
             wakeGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
 
             ctx.beginPath();
@@ -2347,7 +2351,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.beginPath();
             ctx.moveTo(shx, shy);
             ctx.lineTo(sx(mx(forwardLon)), sy(my(forwardLat)));
-            ctx.strokeStyle = isSelected ? '#fbbf24' : 'rgba(255, 255, 255, 0.45)';
+            ctx.strokeStyle = isSelected ? '#fbbf24' : (isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(30, 41, 59, 0.45)');
             ctx.lineWidth = isSelected ? 2.5 : 1.2;
             ctx.setLineDash([4, 4]);
             ctx.stroke();
@@ -2367,7 +2371,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.beginPath();
             ctx.moveTo(shx, shy);
             ctx.lineTo(bx, by);
-            ctx.strokeStyle = '#38bdf8';
+            ctx.strokeStyle = isDark ? '#38bdf8' : '#0284c7';
             ctx.lineWidth = 2;
             ctx.setLineDash([6, 5]);
             ctx.stroke();
@@ -2409,13 +2413,13 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.closePath();
           ctx.fillStyle = hullColor;
           ctx.fill();
-          ctx.strokeStyle = isSelected ? '#fbbf24' : '#ffffff';
+          ctx.strokeStyle = isSelected ? '#fbbf24' : (isDark ? '#ffffff' : '#0f172a');
           ctx.lineWidth = isSelected ? 2 : 1.2;
           ctx.stroke();
 
           // Superstructure / Deck for cruise ships
           if (isCruise) {
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = isDark ? '#ffffff' : '#e2e8f0';
             ctx.fillRect(-3 * sScale, -5 * sScale, 6 * sScale, 12 * sScale);
             // Funnel
             ctx.fillStyle = '#ef4444';
@@ -2440,7 +2444,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           // Berth subtext
           if (camera.s > 0.02 || isSelected) {
             ctx.font = '500 8.5px "DM Mono", monospace';
-            ctx.fillStyle = sh.isRestrictedLagoonRoute ? '#f59e0b' : '#38bdf8';
+            ctx.fillStyle = sh.isRestrictedLagoonRoute
+              ? (isDark ? '#f59e0b' : '#b45309')
+              : (isDark ? '#38bdf8' : '#0284c7');
             ctx.fillText(sh.berth, shx + 10, shy + 9);
           }
         }
@@ -2458,13 +2464,13 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.arc(fx, fy, 3.5, 0, Math.PI * 2);
             ctx.fillStyle = '#06b6d4';
             ctx.fill();
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
             ctx.lineWidth = 1;
             ctx.stroke();
 
             if (camera.s > 0.05) {
               ctx.font = '500 8.5px "DM Mono", monospace';
-              ctx.fillStyle = '#06b6d4';
+              ctx.fillStyle = isDark ? '#06b6d4' : '#0891b2';
               ctx.fillText(`💧 ${f.name}`, fx + 6, fy + 3);
             }
           }
@@ -2480,13 +2486,13 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.arc(bx, by, 4.5, 0, Math.PI * 2);
             ctx.fillStyle = '#10b981';
             ctx.fill();
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
             ctx.lineWidth = 1.2;
             ctx.stroke();
 
             if (camera.s > 0.035) {
               ctx.font = '600 9px "DM Mono", monospace';
-              ctx.fillStyle = '#10b981';
+              ctx.fillStyle = isDark ? '#10b981' : '#047857';
               ctx.fillText(`♿ ${b.name} (Rampa)`, bx + 7, by + 3);
             }
           }
@@ -2502,13 +2508,13 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.arc(vx, vy, 4, 0, Math.PI * 2);
             ctx.fillStyle = '#84cc16';
             ctx.fill();
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
             ctx.lineWidth = 1;
             ctx.stroke();
 
             if (camera.s > 0.035) {
               ctx.font = '500 8.5px "DM Mono", monospace';
-              ctx.fillStyle = '#84cc16';
+              ctx.fillStyle = isDark ? '#84cc16' : '#4d7c0f';
               ctx.fillText(`♻️ ${v.name}`, vx + 6, vy + 3);
             }
           }
@@ -2555,14 +2561,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           const aW = ctx.measureText(aTxt).width;
 
           ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.88)';
-          ctx.strokeStyle = '#10b981';
+          ctx.strokeStyle = isDark ? '#10b981' : '#047857';
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.roundRect(ax - aW / 2 - 4, ay - 16, aW + 8, 15, 4);
           ctx.fill();
           ctx.stroke();
 
-          ctx.fillStyle = '#10b981';
+          ctx.fillStyle = isDark ? '#10b981' : '#047857';
           ctx.fillText(aTxt, ax - aW / 2, ay - 5);
           ctx.restore();
         }
@@ -2580,14 +2586,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           const pfW = ctx.measureText(pfTxt).width;
 
           ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)';
-          ctx.strokeStyle = '#f43f5e';
+          ctx.strokeStyle = isDark ? '#f43f5e' : '#be123c';
           ctx.lineWidth = 1.2;
           ctx.beginPath();
           ctx.roundRect(pfx - pfW / 2 - 5, pfy - 16, pfW + 10, 15, 5);
           ctx.fill();
           ctx.stroke();
 
-          ctx.fillStyle = '#f43f5e';
+          ctx.fillStyle = isDark ? '#f43f5e' : '#be123c';
           ctx.fillText(pfTxt, pfx - pfW / 2, pfy - 5);
           ctx.restore();
         }
@@ -2630,7 +2636,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               ctx.arc(stx, sty, pulse, 0, Math.PI * 2);
               ctx.fillStyle = 'rgba(0, 85, 165, 0.2)';
               ctx.fill();
-              ctx.strokeStyle = '#38bdf8';
+              ctx.strokeStyle = isDark ? '#38bdf8' : '#0284c7';
               ctx.lineWidth = 1.5;
               ctx.stroke();
 
@@ -2638,7 +2644,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               ctx.arc(stx, sty, 5.5, 0, Math.PI * 2);
               ctx.fillStyle = '#0055a5';
               ctx.fill();
-              ctx.strokeStyle = '#ffffff';
+              ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
               ctx.lineWidth = 2;
               ctx.stroke();
 
@@ -2650,7 +2656,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               ctx.beginPath();
               ctx.roundRect(stx - hubW / 2 - 5, sty - 22, hubW + 10, 16, 5);
               ctx.fill();
-              ctx.strokeStyle = '#38bdf8';
+              ctx.strokeStyle = isDark ? '#38bdf8' : '#0284c7';
               ctx.lineWidth = 1.2;
               ctx.stroke();
               ctx.fillStyle = '#ffffff';
@@ -2663,13 +2669,13 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               ctx.arc(stx, sty, 3.5, 0, Math.PI * 2);
               ctx.fillStyle = '#0055a5';
               ctx.fill();
-              ctx.strokeStyle = '#ffffff';
+              ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
               ctx.lineWidth = 1;
               ctx.stroke();
 
               if (camera.s > 0.04) {
                 ctx.font = '600 8px "DM Mono", monospace';
-                ctx.fillStyle = '#60a5fa';
+                ctx.fillStyle = isDark ? '#60a5fa' : '#1e40af';
                 ctx.fillText(`⚓ ${st.name}`, stx + 6, sty + 3);
               }
               ctx.restore();
@@ -2693,7 +2699,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.translate(bx, by);
             ctx.rotate(headingRad);
             const wakeGrad = ctx.createLinearGradient(0, 0, 0, 32);
-            wakeGrad.addColorStop(0, isSelected ? 'rgba(56, 189, 248, 0.95)' : 'rgba(255, 255, 255, 0.65)');
+            wakeGrad.addColorStop(0, isSelected ? 'rgba(56, 189, 248, 0.95)' : (isDark ? 'rgba(255, 255, 255, 0.65)' : 'rgba(0, 85, 165, 0.35)'));
             wakeGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
             ctx.beginPath();
             ctx.moveTo(-2, 5);
@@ -2714,12 +2720,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.closePath();
             ctx.fillStyle = b.color;
             ctx.fill();
-            ctx.strokeStyle = isSelected ? '#fbbf24' : '#ffffff';
+            ctx.strokeStyle = isSelected ? '#fbbf24' : (isDark ? '#ffffff' : '#0f172a');
             ctx.lineWidth = isSelected ? 2.2 : 1.2;
             ctx.stroke();
 
             // Cabin Roof
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = isDark ? '#ffffff' : '#e2e8f0';
             ctx.fillRect(-2.5, -3, 5, 8);
             ctx.restore();
 
@@ -2751,14 +2757,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           const isSelected = selectedSatellite?.id === sat.id;
 
           const satCol = sat.type === 'SAR_RADAR'
-            ? '#e879f9' // fuchsia/neon pink for radar
+            ? (isDark ? '#e879f9' : '#a21caf')
             : sat.type === 'OPTICAL'
-            ? '#38bdf8' // cyan for optical multispectral
+            ? (isDark ? '#38bdf8' : '#0284c7')
             : sat.type === 'SPACE_STATION'
-            ? '#fbbf24' // gold/amber for ISS
+            ? (isDark ? '#fbbf24' : '#b45309')
             : sat.type === 'NAVIGATION'
-            ? '#34d399' // emerald for Galileo
-            : '#a78bfa'; // violet for thermal/Landsat
+            ? (isDark ? '#34d399' : '#047857')
+            : (isDark ? '#a78bfa' : '#6d28d9');
 
           // 1. Draw Orbital Ground Track across the Lagoon & Adriatic
           if (sat.groundTrack && sat.groundTrack.length > 1) {
@@ -2770,7 +2776,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               if (idx === 0) ctx.moveTo(px, py);
               else ctx.lineTo(px, py);
             });
-            ctx.strokeStyle = isSelected ? '#f0abfc' : satCol;
+            ctx.strokeStyle = isSelected ? (isDark ? '#f0abfc' : '#a21caf') : satCol;
             ctx.lineWidth = isSelected ? 2.5 : 1.2;
             ctx.setLineDash(isSelected ? [6, 4] : [4, 6]);
             ctx.globalAlpha = isSelected ? 0.85 : 0.45;
@@ -2795,7 +2801,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ? 'rgba(232, 121, 249, 0.07)'
             : 'rgba(56, 189, 248, 0.06)';
           ctx.fill();
-          ctx.strokeStyle = isSelected ? '#e879f9' : satCol;
+          ctx.strokeStyle = isSelected ? (isDark ? '#e879f9' : '#a21caf') : satCol;
           ctx.lineWidth = isSelected ? 1.5 : 0.8;
           ctx.setLineDash([3, 4]);
           ctx.stroke();
@@ -2817,7 +2823,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           // Solar panel 1 (Left wing)
           ctx.fillStyle = '#0284c7';
           ctx.fillRect(-16, -3, 11, 6);
-          ctx.strokeStyle = '#38bdf8';
+          ctx.strokeStyle = isDark ? '#38bdf8' : '#0284c7';
           ctx.lineWidth = 0.8;
           ctx.strokeRect(-16, -3, 11, 6);
           // Solar panel grid lines
@@ -2829,7 +2835,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           // Solar panel 2 (Right wing)
           ctx.fillStyle = '#0284c7';
           ctx.fillRect(5, -3, 11, 6);
-          ctx.strokeStyle = '#38bdf8';
+          ctx.strokeStyle = isDark ? '#38bdf8' : '#0284c7';
           ctx.lineWidth = 0.8;
           ctx.strokeRect(5, -3, 11, 6);
           ctx.beginPath();
@@ -2839,7 +2845,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           // Radar SAR Antenna / Nadir Optical Sensor Boom
           if (sat.type === 'SAR_RADAR') {
-            ctx.strokeStyle = '#e879f9';
+            ctx.strokeStyle = isDark ? '#e879f9' : '#a21caf';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.moveTo(0, 4);
@@ -2850,7 +2856,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.arc(0, 9.5, 2.5, 0, Math.PI);
             ctx.stroke();
           } else {
-            ctx.fillStyle = '#38bdf8';
+            ctx.fillStyle = isDark ? '#38bdf8' : '#0284c7';
             ctx.beginPath();
             ctx.arc(0, 5, 2, 0, Math.PI * 2);
             ctx.fill();
@@ -2865,21 +2871,21 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             const satLabel = `🛰️ ${sat.name.split('(')[0].trim()} · ${sat.altitudeKm}km`;
             const sW = ctx.measureText(satLabel).width;
 
-            ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.90)' : 'rgba(255, 255, 255, 0.90)';
+            ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.90)' : 'rgba(255, 255, 255, 0.92)';
             ctx.beginPath();
             ctx.roundRect(satX - sW / 2 - 4, satY - 22, sW + 8, 14, 4);
             ctx.fill();
-            ctx.strokeStyle = isSelected ? '#f0abfc' : satCol;
+            ctx.strokeStyle = isSelected ? (isDark ? '#f0abfc' : '#a21caf') : satCol;
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            ctx.fillStyle = isSelected ? '#f0abfc' : satCol;
+            ctx.fillStyle = isSelected ? (isDark ? '#f0abfc' : '#a21caf') : satCol;
             ctx.fillText(satLabel, satX - sW / 2, satY - 12);
 
             // Subtext readout
             if (isSelected || camera.s > 0.03) {
               ctx.font = '600 8px "DM Mono", monospace';
-              ctx.fillStyle = '#e2e8f0';
+              ctx.fillStyle = isDark ? '#e2e8f0' : '#475569';
               ctx.fillText(`${sat.resolution} · ${sat.operator.split('/')[0].trim()}`, satX - sW / 2, satY + 18);
             }
             ctx.restore();
@@ -2911,7 +2917,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.stroke();
 
           // Elevated metal stilt legs / planks dashes
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#44403c';
           ctx.lineWidth = Math.max(1.5, 2.5 * (camera.s / 0.05));
           ctx.setLineDash([4, 4]);
           ctx.stroke();
@@ -2935,9 +2941,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.font = '700 8.5px "DM Mono", monospace';
             const label = `🦺 ${p.name.split('-')[0].trim()} (${p.lengthMeters}m)`;
             const lW = ctx.measureText(label).width;
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+            ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.92)';
             ctx.fillRect(lx - lW / 2 - 3, ly - 14, lW + 6, 12);
-            ctx.fillStyle = '#f59e0b';
+            ctx.fillStyle = isDark ? '#f59e0b' : '#b45309';
             ctx.fillText(label, lx - lW / 2, ly - 5);
           }
 
@@ -2998,14 +3004,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.arc(bx, by, Math.max(2, 3.5 * (camera.s / 0.04)), 0, Math.PI * 2);
             ctx.fillStyle = lColor;
             ctx.fill();
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
             ctx.lineWidth = 0.6;
             ctx.stroke();
           }
 
           if (camera.s > 0.05) {
             ctx.font = '600 8px "DM Mono", monospace';
-            ctx.fillStyle = '#94a3b8';
+            ctx.fillStyle = isDark ? '#94a3b8' : '#475569';
             ctx.fillText(br.code, bx + 8, by + 3);
           }
 
@@ -3044,7 +3050,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.strokeRect(ox - 7, oy - 7, 14, 14);
 
             // Helipad circle & cross
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
             ctx.beginPath();
             ctx.arc(ox, oy, 4, 0, Math.PI * 2);
             ctx.stroke();
@@ -3053,11 +3059,11 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.font = '700 8.5px "DM Mono", monospace';
             const tag = `🔬 CNR ISMAR · Hs ${st.waveHeightMeters}m · ${st.waterTempC}°C`;
             const tW = ctx.measureText(tag).width;
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+            ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.92)';
             ctx.fillRect(ox - tW / 2 - 4, oy - 22, tW + 8, 13);
-            ctx.strokeStyle = '#06b6d4';
+            ctx.strokeStyle = isDark ? '#06b6d4' : '#0891b2';
             ctx.strokeRect(ox - tW / 2 - 4, oy - 22, tW + 8, 13);
-            ctx.fillStyle = '#22d3ee';
+            ctx.fillStyle = isDark ? '#22d3ee' : '#0891b2';
             ctx.fillText(tag, ox - tW / 2, oy - 12);
           } else {
             // Wave buoy floating marker
@@ -3065,12 +3071,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.beginPath();
             ctx.arc(ox, oy, 5, 0, Math.PI * 2);
             ctx.fill();
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
             ctx.lineWidth = 1;
             ctx.stroke();
 
             ctx.font = '600 8px "DM Mono", monospace';
-            ctx.fillStyle = '#fbbf24';
+            ctx.fillStyle = isDark ? '#fbbf24' : '#b45309';
             ctx.fillText(`Hs ${st.waveHeightMeters}m`, ox + 8, oy + 3);
           }
 
@@ -3090,7 +3096,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.beginPath();
           ctx.arc(bx, by, 6, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#0284c7';
+          ctx.strokeStyle = isDark ? '#0284c7' : '#0369a1';
           ctx.lineWidth = 2.5;
           ctx.stroke();
 
@@ -3104,7 +3110,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           if (camera.s > 0.02) {
             ctx.font = '600 8px "DM Mono", monospace';
-            ctx.fillStyle = '#38bdf8';
+            ctx.fillStyle = isDark ? '#38bdf8' : '#0284c7';
             ctx.fillText(`🌊 ${bw.name.split('-')[1]?.trim() || bw.name}`, bx + 9, by + 3);
           }
 
@@ -3137,7 +3143,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           if (camera.s > 0.04) {
             ctx.font = '600 8px "DM Mono", monospace';
-            ctx.fillStyle = '#4ade80';
+            ctx.fillStyle = isDark ? '#4ade80' : '#15803d';
             ctx.fillText(`🌳 ${tr.commonName}`, tx + canopyR + 3, ty + 3);
           }
 
@@ -3156,7 +3162,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.beginPath();
             ctx.arc(ex, ey, 5, 0, Math.PI * 2);
             ctx.fill();
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
             ctx.lineWidth = 1.2;
             ctx.stroke();
 
@@ -3167,7 +3173,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
             if (camera.s > 0.035) {
               ctx.font = '600 8px "DM Mono", monospace';
-              ctx.fillStyle = '#fde047';
+              ctx.fillStyle = isDark ? '#fde047' : '#a16207';
               ctx.fillText(`${ev.availableSockets}/${ev.totalSockets} EV`, ex + 8, ey + 3);
             }
             ctx.restore();
@@ -3183,13 +3189,13 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.beginPath();
             ctx.arc(wx, wy, 4.5, 0, Math.PI * 2);
             ctx.fill();
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
             ctx.lineWidth = 1;
             ctx.stroke();
 
             if (camera.s > 0.05) {
               ctx.font = '600 8px "DM Mono", monospace';
-              ctx.fillStyle = '#818cf8';
+              ctx.fillStyle = isDark ? '#818cf8' : '#4338ca';
               ctx.fillText(`📶 Wi-Fi (${wf.usersConnected})`, wx + 7, wy + 3);
             }
             ctx.restore();
@@ -3218,7 +3224,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.stroke();
 
           // Dashed center guideline
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1;
           ctx.setLineDash([4, 6]);
           ctx.stroke();
@@ -3265,13 +3271,15 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.beginPath();
           ctx.arc(bx, by, 5, Math.PI, 0, false); // Arch shape
           ctx.fill();
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1.2;
           ctx.stroke();
 
           if (camera.s > 0.04) {
             ctx.font = 'bold 7.5px "DM Mono", monospace';
-            ctx.fillStyle = isNavigable ? '#22d3ee' : '#f87171';
+            ctx.fillStyle = isNavigable
+              ? (isDark ? '#22d3ee' : '#0891b2')
+              : (isDark ? '#f87171' : '#dc2626');
             ctx.fillText(`🌉 ${b.bridgeName.split(' ')[1] || b.bridgeName} (${liveClearance}cm)`, bx + 7, by + 3);
           }
           ctx.restore();
@@ -3306,7 +3314,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.beginPath();
           ctx.arc(gx, gy, 5.5, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1.2;
           ctx.stroke();
 
@@ -3317,7 +3325,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           if (camera.s > 0.045) {
             ctx.font = '600 8px "DM Mono", monospace';
-            ctx.fillStyle = '#d8b4fe';
+            ctx.fillStyle = isDark ? '#d8b4fe' : '#7e22ce';
             ctx.fillText(g.type === 'TRAGHETTO_DA_PARADA' ? `Parada (€${g.priceEur})` : `Stazio (${g.activeGondolas})`, gx + 8, gy + 3);
           }
           ctx.restore();
@@ -3334,7 +3342,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.beginPath();
           ctx.arc(dx, dy, 5, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1;
           ctx.stroke();
 
@@ -3344,7 +3352,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           if (camera.s > 0.04) {
             ctx.font = '600 8px "DM Mono", monospace';
-            ctx.fillStyle = '#60a5fa';
+            ctx.fillStyle = isDark ? '#60a5fa' : '#1d4ed8';
             ctx.fillText(`Riva Merci (${d.maxStayMinutes}m)`, dx + 8, dy + 3);
           }
           ctx.restore();
@@ -3359,7 +3367,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.save();
 
           // Pulsating displacement circle
-          const rateColor = sub.velocityMmYear < -2.0 ? '#f43f5e' : '#fb923c';
+          const rateColor = sub.velocityMmYear < -2.0
+            ? (isDark ? '#f43f5e' : '#be123c')
+            : (isDark ? '#fb923c' : '#c2410c');
           ctx.fillStyle = rateColor;
           ctx.globalAlpha = 0.25;
           ctx.beginPath();
@@ -3370,7 +3380,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.beginPath();
           ctx.arc(sxPos, syPos, 4.5, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1.2;
           ctx.stroke();
 
@@ -3398,7 +3408,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.closePath();
           ctx.fillStyle = morph.type === 'BARENA_NATURALE' ? 'rgba(16, 185, 129, 0.25)' : 'rgba(14, 165, 233, 0.20)';
           ctx.fill();
-          ctx.strokeStyle = '#10b981';
+          ctx.strokeStyle = isDark ? '#10b981' : '#047857';
           ctx.lineWidth = 1.5;
           ctx.setLineDash([4, 4]);
           ctx.stroke();
@@ -3409,7 +3419,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           const cy = sy(my(morph.center[1]));
           if (camera.s > 0.02) {
             ctx.font = 'bold 8.5px "DM Mono", monospace';
-            ctx.fillStyle = '#34d399';
+            ctx.fillStyle = isDark ? '#34d399' : '#047857';
             ctx.fillText(`🌿 ${morph.name} (${morph.areaHectares}ha)`, cx - 30, cy);
           }
           ctx.restore();
@@ -3429,7 +3439,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.rotate(rad);
 
           // Arrow head
-          ctx.fillStyle = w.tidePushRisk === 'CRITICO' || w.tidePushRisk === 'ALTO' ? '#f43f5e' : '#14b8a6';
+          ctx.fillStyle = w.tidePushRisk === 'CRITICO' || w.tidePushRisk === 'ALTO'
+            ? (isDark ? '#f43f5e' : '#be123c')
+            : (isDark ? '#14b8a6' : '#0f766e');
           ctx.beginPath();
           ctx.moveTo(0, -12);
           ctx.lineTo(5, 6);
@@ -3442,7 +3454,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           if (camera.s > 0.025) {
             ctx.font = 'bold 8px "DM Mono", monospace';
-            ctx.fillStyle = '#2dd4bf';
+            ctx.fillStyle = isDark ? '#2dd4bf' : '#0f766e';
             ctx.fillText(`${w.windDirection} ${w.windSpeedKmh}km/h (Hs ${w.waveHeightMeters}m)`, wx + 10, wy + 3);
           }
         }
@@ -3460,7 +3472,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.beginPath();
           ctx.roundRect(tx - 12, ty - 4.5, 24, 9, 4);
           ctx.fill();
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1.2;
           ctx.stroke();
 
@@ -3472,7 +3484,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           if (camera.s > 0.025) {
             ctx.font = 'bold 8px "DM Mono", monospace';
-            ctx.fillStyle = '#f87171';
+            ctx.fillStyle = isDark ? '#f87171' : '#b91c1c';
             ctx.fillText(`🚆 ${tr.trainNumber} (${tr.speedKmh} km/h)`, tx - 14, ty - 8);
           }
           ctx.restore();
@@ -3490,7 +3502,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.beginPath();
           ctx.arc(bx, by, 5, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1;
           ctx.stroke();
 
@@ -3500,7 +3512,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           if (camera.s > 0.04) {
             ctx.font = '600 7.5px "DM Mono", monospace';
-            ctx.fillStyle = '#a3e635';
+            ctx.fillStyle = isDark ? '#a3e635' : '#4d7c0f';
             ctx.fillText(wb.boatCode, bx + 7, by + 3);
           }
           ctx.restore();
@@ -3550,7 +3562,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.beginPath();
           ctx.arc(wx, wy, 4.5, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1;
           ctx.stroke();
 
@@ -3562,7 +3574,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           if (camera.s > 0.05) {
             ctx.font = '600 7.5px "DM Mono", monospace';
-            ctx.fillStyle = '#fbbf24';
+            ctx.fillStyle = isDark ? '#fbbf24' : '#b45309';
             ctx.fillText(w.name.split(' ')[4] || w.name, wx + 7, wy + 3);
           }
           ctx.restore();
@@ -3580,7 +3592,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.beginPath();
           ctx.arc(bx, by, 6, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
@@ -3590,7 +3602,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           if (camera.s > 0.03) {
             ctx.font = 'bold 8px "DM Mono", monospace';
-            ctx.fillStyle = '#fdba74';
+            ctx.fillStyle = isDark ? '#fdba74' : '#c2410c';
             ctx.fillText(bt.isLeaning ? `${bt.name} (Pendente ${bt.tiltAngleDeg}°)` : bt.name, bx + 8, by + 3);
           }
           ctx.restore();
@@ -3609,7 +3621,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.beginPath();
           ctx.arc(fx, fy, 7, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#e7e5e4';
+          ctx.strokeStyle = isDark ? '#e7e5e4' : '#44403c';
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
@@ -3619,7 +3631,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           if (camera.s > 0.02) {
             ctx.font = 'bold 8.5px "DM Mono", monospace';
-            ctx.fillStyle = '#d6d3d1';
+            ctx.fillStyle = isDark ? '#d6d3d1' : '#57534e';
             ctx.fillText(`🏰 ${fort.name}`, fx + 10, fy + 3);
           }
           ctx.restore();
@@ -3637,7 +3649,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.beginPath();
           ctx.arc(ex, ey, 6, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
@@ -3647,7 +3659,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           if (camera.s > 0.035) {
             ctx.font = 'bold 8px "DM Mono", monospace';
-            ctx.fillStyle = '#f87171';
+            ctx.fillStyle = isDark ? '#f87171' : '#b91c1c';
             ctx.fillText(`SUEM 118 ${ed.dockCode}`, ex + 8, ey + 3);
           }
           ctx.restore();
@@ -3664,7 +3676,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.beginPath();
           ctx.arc(dx, dy, 4.5, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1;
           ctx.stroke();
 
@@ -3674,7 +3686,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           if (camera.s > 0.05) {
             ctx.font = '600 7.5px "DM Mono", monospace';
-            ctx.fillStyle = '#34d399';
+            ctx.fillStyle = isDark ? '#34d399' : '#047857';
             ctx.fillText('DAE', dx + 7, dy + 3);
           }
           ctx.restore();
@@ -3691,7 +3703,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.beginPath();
           ctx.arc(px, py, 4.5, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#ffffff';
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1;
           ctx.stroke();
 
@@ -3701,7 +3713,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           if (camera.s > 0.05) {
             ctx.font = '600 7.5px "DM Mono", monospace';
-            ctx.fillStyle = '#4ade80';
+            ctx.fillStyle = isDark ? '#4ade80' : '#15803d';
             ctx.fillText(`Farmacia ${ph.isOnDutyNow ? '(Aperta)' : ''}`, px + 7, py + 3);
           }
           ctx.restore();
@@ -3737,7 +3749,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           if (camera.s > 0.02) {
             ctx.font = 'bold 8px "DM Mono", monospace';
-            ctx.fillStyle = isHot ? '#f87171' : '#38bdf8';
+            ctx.fillStyle = isHot ? (isDark ? '#f87171' : '#b91c1c') : (isDark ? '#38bdf8' : '#0284c7');
             ctx.fillText(`🌡️ ${hi.surfaceTempCelsius}°C (${hi.airTempDelta > 0 ? '+' : ''}${hi.airTempDelta}°C)`, hx - 20, hy);
           }
           ctx.restore();
@@ -3861,7 +3873,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
 
       {/* Floating map hint (desktop only to prevent clutter on mobile) */}
-      <div className="hidden md:flex absolute md:top-4 md:left-[21rem] xl:md:left-[22rem] pointer-events-none glass-panel px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-white/10 text-[11px] sm:text-xs text-[var(--ink-2)] items-center gap-1.5 sm:gap-2 shadow-lg max-w-[calc(100vw-5rem)]">
+      <div className="hidden md:flex absolute md:top-4 md:left-[21rem] xl:md:left-[22rem] pointer-events-none glass-panel px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-[var(--rule)] text-[11px] sm:text-xs text-[var(--ink-2)] items-center gap-1.5 sm:gap-2 shadow-lg max-w-[calc(100vw-5rem)]">
         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
         <span className="truncate">Tocca o clicca su mezzi, navi, MOSE, aerei, VCE o cantieri per info</span>
       </div>
@@ -3871,7 +3883,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         <button
           type="button"
           onClick={handleZoomIn}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl glass-panel border border-white/15 hover:border-cyan-400/50 bg-[var(--ground)]/90 text-[var(--ink)] hover:text-cyan-400 flex items-center justify-center transition-all shadow-lg active:scale-95 cursor-pointer"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl glass-panel border border-[var(--rule)] hover:border-cyan-400/50 bg-[var(--ground)]/90 text-[var(--ink)] hover:text-cyan-400 flex items-center justify-center transition-all shadow-lg active:scale-95 cursor-pointer"
           title="Ingrandisci mappa (+)"
           aria-label="Zoom in"
         >
@@ -3881,7 +3893,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         <button
           type="button"
           onClick={handleZoomOut}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl glass-panel border border-white/15 hover:border-cyan-400/50 bg-[var(--ground)]/90 text-[var(--ink)] hover:text-cyan-400 flex items-center justify-center transition-all shadow-lg active:scale-95 cursor-pointer"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl glass-panel border border-[var(--rule)] hover:border-cyan-400/50 bg-[var(--ground)]/90 text-[var(--ink)] hover:text-cyan-400 flex items-center justify-center transition-all shadow-lg active:scale-95 cursor-pointer"
           title="Riduci mappa (-)"
           aria-label="Zoom out"
         >
@@ -3891,7 +3903,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         <button
           type="button"
           onClick={handleResetCamera}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl glass-panel border border-white/15 hover:border-cyan-400/50 bg-[var(--ground)]/90 text-[var(--ink-2)] hover:text-cyan-400 flex items-center justify-center transition-all shadow-lg active:scale-95 cursor-pointer mt-0.5"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl glass-panel border border-[var(--rule)] hover:border-cyan-400/50 bg-[var(--ground)]/90 text-[var(--ink-2)] hover:text-cyan-400 flex items-center justify-center transition-all shadow-lg active:scale-95 cursor-pointer mt-0.5"
           title="Ricentra vista attuale"
           aria-label="Centra vista"
         >
@@ -3932,7 +3944,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             <button
               type="button"
               onClick={() => setSelectedVehicle(null)}
-              className="text-[var(--ink-2)] hover:text-white p-1 rounded cursor-pointer"
+              className="text-[var(--ink-2)] hover:text-[var(--ink)] p-1 rounded cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -3974,7 +3986,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             <button
               type="button"
               onClick={() => setSelectedFlight(null)}
-              className="text-[var(--ink-2)] hover:text-white p-1 rounded cursor-pointer"
+              className="text-[var(--ink-2)] hover:text-[var(--ink)] p-1 rounded cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -4038,7 +4050,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             <button
               type="button"
               onClick={() => setSelectedShipOnMap(null)}
-              className="text-[var(--ink-2)] hover:text-white p-1 rounded cursor-pointer"
+              className="text-[var(--ink-2)] hover:text-[var(--ink)] p-1 rounded cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -4116,7 +4128,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             <button
               type="button"
               onClick={() => setSelectedAlilagunaBoat(null)}
-              className="text-[var(--ink-2)] hover:text-white p-1 rounded cursor-pointer"
+              className="text-[var(--ink-2)] hover:text-[var(--ink)] p-1 rounded cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -4181,7 +4193,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             <button
               type="button"
               onClick={() => setSelectedSatellite(null)}
-              className="text-[var(--ink-2)] hover:text-white p-1 rounded cursor-pointer"
+              className="text-[var(--ink-2)] hover:text-[var(--ink)] p-1 rounded cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
