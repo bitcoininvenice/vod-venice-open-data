@@ -195,6 +195,19 @@ export interface PlatformMetrics {
   drinkingFountainsCount: number;
   accessibleBridgesCount: number;
   veritasServicePointsCount: number;
+
+  // Nuovi Open Data Venezia: Emergenza, Laguna, Ambiente & Servizi
+  passerelleTotalMeters: number;
+  passerelleMountedCount: number;
+  briccoleCount: number;
+  marineLightsCount: number;
+  oceanStationsCount: number;
+  cnrWaveHeightMeters: number;
+  cnrWaterTempC: number;
+  bathingWaterStationsCount: number;
+  monumentalTreesCount: number;
+  evChargingStationsCount: number;
+  wifiHotspotsCount: number;
 }
 
 export interface MaritimeWaypoint {
@@ -358,3 +371,110 @@ export interface SatelliteItem {
   openDataSource: string; // "Copernicus Data Space (ESA)", "ASI Open Data", "CelesTrak NORAD", etc.
   apiLink: string;
 }
+
+export interface PasserellaItem {
+  id: string;
+  name: string;
+  district: string; // 'San Marco' | 'Castello' | 'Cannaregio' | 'San Polo' | 'Dorsoduro' | 'Santa Croce'
+  path: [number, number][]; // LineString [lon, lat] coordinate esatte delle passerelle
+  lengthMeters: number;
+  groundElevationCm: number; // Quota altimetrica minima del suolo (es. 80cm a San Marco, 95cm a Rialto)
+  activationThresholdCm: number; // Soglia attivazione (es. 95cm o 110cm)
+  isMounted: boolean;
+  priority: 'PRIMARIA' | 'SECONDARIA';
+  description: string;
+  officialSource: string;
+}
+
+export interface BriccolaSignalItem {
+  id: string;
+  code: string;
+  channelName: string;
+  type: 'BRICCOLA_3_PALI' | 'DAMA_5_PALI' | 'FANALE_LUMINOSO' | 'PALINA_ORMEGGIO';
+  lat: number;
+  lon: number;
+  lightColor: 'GREEN' | 'RED' | 'WHITE' | 'NONE'; // Lanterna notturna
+  lightFlashRythm?: string; // es. "Fl(2) G 6s", "Q R 1s"
+  depthMeters: number;
+  material: 'ROVERE_NATURALE' | 'PLASTICA_RICICLATA_ECO';
+  description: string;
+}
+
+export interface OceanStationItem {
+  id: string;
+  name: string;
+  type: 'OCEANOGRAPHIC_PLATFORM' | 'WAVE_BUOY' | 'TIDAL_CURRENT_STATION';
+  lat: number;
+  lon: number;
+  operator: 'CNR-ISMAR' | 'ISPRA RML' | 'CPSM Centro Maree';
+  waveHeightMeters: number; // Altezza significativa onda Hs
+  wavePeriodSeconds: number; // Periodo d'onda Tp
+  waterTempC: number;
+  salinityPsu: number;
+  currentSpeedMs: number;
+  currentDirectionDeg: number;
+  windSpeedKnots: number;
+  windDirectionDeg: number;
+  depthMeters: number;
+  lastUpdate: string;
+  officialSource: string;
+  portalLink: string;
+}
+
+export interface BathingWaterItem {
+  id: string;
+  name: string;
+  location: string; // 'Lido di Venezia' | 'Pellestrina' | 'Cavallino-Treporti'
+  lat: number;
+  lon: number;
+  qualityClass: 'ECCELLENTE' | 'BUONO' | 'SUFFICIENTE' | 'VIETATA';
+  waterTempC: number;
+  escherichiaColiUfc: number; // < 100 ufc/100ml
+  enterococchiUfc: number; // < 100 ufc/100ml
+  blueFlag: boolean;
+  samplingDate: string;
+  officialSource: string;
+}
+
+export interface UrbanTreeItem {
+  id: string;
+  code: string;
+  species: string; // es. "Platanus acerifolia", "Pinus pinea", "Celtis australis"
+  commonName: string; // es. "Platano comune", "Pino domestico", "Bagolaro"
+  location: string; // es. "Giardini Reali", "Sant'Elena", "Giardini della Biennale"
+  lat: number;
+  lon: number;
+  heightMeters: number;
+  canopyDiameterMeters: number;
+  ageClass: 'MONUMENTALE' | 'ADULTO' | 'GIOVANE';
+  co2AbsorbedKgYear: number;
+  district: string;
+}
+
+export interface EvChargingItem {
+  id: string;
+  name: string;
+  operator: string; // 'AVM / Comune di Venezia' | 'Enel X Way' | 'Be Charge'
+  location: string;
+  lat: number;
+  lon: number;
+  totalSockets: number;
+  availableSockets: number;
+  powerKw: number; // es. 22kW, 50kW, 150kW Ultra-Fast
+  socketTypes: string[]; // ['Type 2', 'CCS Combo 2']
+  isOperational: boolean;
+}
+
+export interface WifiHotspotItem {
+  id: string;
+  name: string;
+  networkName: 'VeniceConnected' | 'WiFi Italia';
+  location: string;
+  lat: number;
+  lon: number;
+  indoorOutdoor: 'OUTDOOR' | 'INDOOR';
+  usersConnected: number;
+  speedMbps: number;
+  isFreePublic: boolean;
+}
+

@@ -282,7 +282,20 @@ export async function fetchPlatformMetrics(): Promise<PlatformMetrics> {
     stopsNearWorksites200m: near.length,
     drinkingFountainsCount: 142,
     accessibleBridgesCount: 48,
-    veritasServicePointsCount: 18
+    veritasServicePointsCount: 18,
+
+    // Nuovi Open Data Venezia: Emergenza, Laguna, Ambiente & Servizi
+    passerelleTotalMeters: 3100,
+    passerelleMountedCount: 4,
+    briccoleCount: 8,
+    marineLightsCount: 5,
+    oceanStationsCount: 4,
+    cnrWaveHeightMeters: 0.85,
+    cnrWaterTempC: 17.6,
+    bathingWaterStationsCount: 5,
+    monumentalTreesCount: 6,
+    evChargingStationsCount: 4,
+    wifiHotspotsCount: 8
   };
 }
 
@@ -299,4 +312,52 @@ export async function fetchSatellites(): Promise<SatelliteItem[]> {
   const { SATELLITES_DATA } = await import('@/lib/satellitesData');
   return SATELLITES_DATA;
 }
+
+export async function fetchPasserelle() {
+  try {
+    const res = await fetch('/api/passerelle');
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data) return json.data;
+    }
+  } catch (err) {
+    // fallback below
+  }
+  const { PASSERELLE_DATA } = await import('@/lib/passerelleData');
+  return PASSERELLE_DATA;
+}
+
+export async function fetchMarineSensors() {
+  try {
+    const res = await fetch('/api/marine-sensors');
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data) return json.data;
+    }
+  } catch (err) {
+    // fallback below
+  }
+  const { OCEAN_STATIONS_DATA, BRICCOLE_SIGNALS_DATA } = await import('@/lib/marineSensorsData');
+  return { oceanStations: OCEAN_STATIONS_DATA, briccole: BRICCOLE_SIGNALS_DATA };
+}
+
+export async function fetchVeniceAssets() {
+  try {
+    const res = await fetch('/api/venice-assets');
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data) return json.data;
+    }
+  } catch (err) {
+    // fallback below
+  }
+  const { BATHING_WATERS_DATA, URBAN_TREES_DATA, EV_CHARGING_DATA, WIFI_HOTSPOTS_DATA } = await import('@/lib/urbanAssetsVeniceData');
+  return {
+    bathingWaters: BATHING_WATERS_DATA,
+    urbanTrees: URBAN_TREES_DATA,
+    evCharging: EV_CHARGING_DATA,
+    wifiHotspots: WIFI_HOTSPOTS_DATA
+  };
+}
+
 

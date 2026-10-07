@@ -1,0 +1,192 @@
+import { OceanStationItem, BriccolaSignalItem } from './types';
+
+// Stazioni oceanografiche, boe ondametriche e piattaforme CNR-ISMAR al largo e nelle bocche di porto
+export const OCEAN_STATIONS_DATA: OceanStationItem[] = [
+  {
+    id: 'CNR-PLAT-01',
+    name: 'Piattaforma Oceanografica CNR-ISMAR "Acqua Alta"',
+    type: 'OCEANOGRAPHIC_PLATFORM',
+    lat: 45.3140,
+    lon: 12.5080,
+    operator: 'CNR-ISMAR',
+    waveHeightMeters: 0.85,
+    wavePeriodSeconds: 5.4,
+    waterTempC: 17.6,
+    salinityPsu: 36.8,
+    currentSpeedMs: 0.42,
+    currentDirectionDeg: 195,
+    windSpeedKnots: 12.4,
+    windDirectionDeg: 65, // Bora moderata ENE
+    depthMeters: 16.0,
+    lastUpdate: 'Pochi minuti fa (Streaming Realtime)',
+    officialSource: 'CNR - Istituto di Scienze Marine (Venezia)',
+    portalLink: 'https://www.ismar.cnr.it/'
+  },
+  {
+    id: 'ISPRA-BUOY-LIDO',
+    name: 'Boa Ondametrica RML Lido Diga Nord',
+    type: 'WAVE_BUOY',
+    lat: 45.4210,
+    lon: 12.4450,
+    operator: 'ISPRA RML',
+    waveHeightMeters: 0.62,
+    wavePeriodSeconds: 4.8,
+    waterTempC: 18.2,
+    salinityPsu: 35.9,
+    currentSpeedMs: 0.78,
+    currentDirectionDeg: 240,
+    windSpeedKnots: 10.8,
+    windDirectionDeg: 70,
+    depthMeters: 11.5,
+    lastUpdate: '10 min fa',
+    officialSource: 'ISPRA - Rete Mareografica della Laguna',
+    portalLink: 'https://www.mareografico.it/'
+  },
+  {
+    id: 'CPSM-MALAMOCCO-01',
+    name: 'Stazione Mareografica & Correnti Bocca di Malamocco Diga Sud',
+    type: 'TIDAL_CURRENT_STATION',
+    lat: 45.3320,
+    lon: 12.3150,
+    operator: 'CPSM Centro Maree',
+    waveHeightMeters: 0.50,
+    wavePeriodSeconds: 4.2,
+    waterTempC: 18.4,
+    salinityPsu: 35.4,
+    currentSpeedMs: 1.15, // Flusso marea entrante potente nel canale dei petroli
+    currentDirectionDeg: 285,
+    windSpeedKnots: 9.5,
+    windDirectionDeg: 80,
+    depthMeters: 14.0,
+    lastUpdate: '5 min fa',
+    officialSource: 'CPSM Centro Maree / Provveditorato OO.PP.',
+    portalLink: 'https://www.comune.venezia.it/it/content/centro-previsioni-e-segnalazioni-maree'
+  },
+  {
+    id: 'ISPRA-CHIOGGIA-01',
+    name: 'Stazione Mareografica Bocca di Porto Chioggia Diga Sud',
+    type: 'TIDAL_CURRENT_STATION',
+    lat: 45.2340,
+    lon: 12.3080,
+    operator: 'ISPRA RML',
+    waveHeightMeters: 0.45,
+    wavePeriodSeconds: 4.1,
+    waterTempC: 18.7,
+    salinityPsu: 34.9,
+    currentSpeedMs: 0.92,
+    currentDirectionDeg: 290,
+    windSpeedKnots: 8.2,
+    windDirectionDeg: 75,
+    depthMeters: 10.0,
+    lastUpdate: '12 min fa',
+    officialSource: 'ISPRA RML',
+    portalLink: 'https://www.isprambiente.gov.it/'
+  }
+];
+
+// Censimento Briccole, Dame e Fanali di Canale navigabili in Laguna di Venezia
+export const BRICCOLE_SIGNALS_DATA: BriccolaSignalItem[] = [
+  {
+    id: 'BRIC-SM-01',
+    code: 'VE-BRIC-0104',
+    channelName: 'Bacino di San Marco',
+    type: 'FANALE_LUMINOSO',
+    lat: 45.4320,
+    lon: 12.3450,
+    lightColor: 'GREEN',
+    lightFlashRythm: 'Fl(2) G 6s',
+    depthMeters: 8.5,
+    material: 'ROVERE_NATURALE',
+    description: 'Briccola a 3 pali con fanale verde di dritta per l\'accesso dal Canale di San Nicolò verso San Zaccaria.'
+  },
+  {
+    id: 'BRIC-SM-02',
+    code: 'VE-BRIC-0105',
+    channelName: 'Bacino di San Marco / San Giorgio',
+    type: 'FANALE_LUMINOSO',
+    lat: 45.4285,
+    lon: 12.3430,
+    lightColor: 'RED',
+    lightFlashRythm: 'Fl(2) R 6s',
+    depthMeters: 9.0,
+    material: 'ROVERE_NATURALE',
+    description: 'Briccola con fanale rosso di sinistra per delimitazione secca San Giorgio Maggiore.'
+  },
+  {
+    id: 'BRIC-GIU-01',
+    code: 'VE-DAMA-0210',
+    channelName: 'Canale della Giudecca',
+    type: 'DAMA_5_PALI',
+    lat: 45.4270,
+    lon: 12.3320,
+    lightColor: 'WHITE',
+    lightFlashRythm: 'Q W 1s',
+    depthMeters: 10.5,
+    material: 'ROVERE_NATURALE',
+    description: 'Dama monumentale a 5 pali con palo centrale rialzato, spartiacque tra Canale della Giudecca e Canale San Biagio.'
+  },
+  {
+    id: 'BRIC-GIU-02',
+    code: 'VE-BRIC-0218',
+    channelName: 'Canale della Giudecca (Fronte Zattere)',
+    type: 'BRICCOLA_3_PALI',
+    lat: 45.4280,
+    lon: 12.3240,
+    lightColor: 'NONE',
+    depthMeters: 9.2,
+    material: 'PLASTICA_RICICLATA_ECO',
+    description: 'Briccola sperimentale ecologica in plastica riciclata ad alta densità per la protezione del moto ondoso.'
+  },
+  {
+    id: 'BRIC-MUR-01',
+    code: 'VE-FAN-0301',
+    channelName: 'Canale dei Marani (Venezia - Murano)',
+    type: 'FANALE_LUMINOSO',
+    lat: 45.4490,
+    lon: 12.3480,
+    lightColor: 'GREEN',
+    lightFlashRythm: 'Fl G 3s',
+    depthMeters: 4.5,
+    material: 'ROVERE_NATURALE',
+    description: 'Segnalamento luminoso del canale navigabile veloce per i vaporetti ACTV linee 3, 4.1, 4.2 e 12 verso Murano e Burano.'
+  },
+  {
+    id: 'BRIC-MUR-02',
+    code: 'VE-DAMA-0308',
+    channelName: 'Canale dei Marani / Cimitero San Michele',
+    type: 'DAMA_5_PALI',
+    lat: 45.4465,
+    lon: 12.3520,
+    lightColor: 'RED',
+    lightFlashRythm: 'Fl R 3s',
+    depthMeters: 4.8,
+    material: 'ROVERE_NATURALE',
+    description: 'Dama con lanterna rossa indicante la secca a est dell\'Isola di San Michele.'
+  },
+  {
+    id: 'BRIC-PET-01',
+    code: 'VE-FAN-0412',
+    channelName: 'Canale dei Petroli / San Leonardo',
+    type: 'FANALE_LUMINOSO',
+    lat: 45.3620,
+    lon: 12.2850,
+    lightColor: 'GREEN',
+    lightFlashRythm: 'Oc(2) G 8s',
+    depthMeters: 12.0,
+    material: 'ROVERE_NATURALE',
+    description: 'Faro di canale d\'alto fondale (-12m) per il transito delle navi cisterna e cargo verso Porto Marghera.'
+  },
+  {
+    id: 'BRIC-LIDO-01',
+    code: 'VE-BRIC-0502',
+    channelName: 'Canale di San Nicolò del Lido',
+    type: 'BRICCOLA_3_PALI',
+    lat: 45.4310,
+    lon: 12.3780,
+    lightColor: 'WHITE',
+    lightFlashRythm: 'Iso W 4s',
+    depthMeters: 7.2,
+    material: 'ROVERE_NATURALE',
+    description: 'Briccola di approccio per il terminal Ferry-Boat ACTV Tronchetto - Lido San Nicolò.'
+  }
+];

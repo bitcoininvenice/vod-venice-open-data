@@ -18,8 +18,16 @@ import {
   AlilagunaRoute,
   AlilagunaStop,
   AlilagunaBoat,
-  SatelliteItem
+  SatelliteItem,
+  PasserellaItem,
+  BriccolaSignalItem,
+  OceanStationItem,
+  BathingWaterItem,
+  UrbanTreeItem,
+  EvChargingItem,
+  WifiHotspotItem
 } from '@/lib/types';
+import { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import { D, LAND, CFG } from '@/lib/simulation-data';
 import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
 
@@ -272,6 +280,20 @@ interface MapEngineProps {
   showSatellites?: boolean;
   satellites?: SatelliteItem[];
   onSelectSatellite?: (satellite: SatelliteItem) => void;
+  showPasserelle?: boolean;
+  passerelle?: PasserellaItem[];
+  showMarineSignals?: boolean;
+  briccole?: BriccolaSignalItem[];
+  showOceanStations?: boolean;
+  oceanStations?: OceanStationItem[];
+  showBathingWaters?: boolean;
+  bathingWaters?: BathingWaterItem[];
+  showTrees?: boolean;
+  trees?: UrbanTreeItem[];
+  showServicesVenice?: boolean;
+  evCharging?: EvChargingItem[];
+  wifiHotspots?: WifiHotspotItem[];
+  onSelectFeature?: (feature: VeniceFeatureSelected) => void;
   bufferRadiusMeters: number;
   selectedCategory: TransportModeCategory | 'all';
   cantieri: CantiereItem[];
@@ -319,6 +341,20 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   showSatellites = true,
   satellites = [],
   onSelectSatellite,
+  showPasserelle = true,
+  passerelle = [],
+  showMarineSignals = true,
+  briccole = [],
+  showOceanStations = true,
+  oceanStations = [],
+  showBathingWaters = true,
+  bathingWaters = [],
+  showTrees = true,
+  trees = [],
+  showServicesVenice = true,
+  evCharging = [],
+  wifiHotspots = [],
+  onSelectFeature,
   bufferRadiusMeters,
   selectedCategory,
   cantieri,
@@ -891,6 +927,141 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           setSelectedShipOnMap(null);
           setSelectedAlilagunaBoat(null);
           return;
+        }
+      }
+    }
+
+    // 1g. Hit test Ocean Stations (Piattaforma CNR & Boe)
+    if (showOceanStations && oceanStations && oceanStations.length > 0) {
+      for (const st of oceanStations) {
+        const sxPos = (mx(st.lon) - camera.x0) * camera.s;
+        const syPos = (my(st.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - sxPos, clickY - syPos) <= 24) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'oceanStation', data: st });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1h. Hit test Briccole & Fanali di Canale
+    if (showMarineSignals && briccole && briccole.length > 0) {
+      for (const br of briccole) {
+        const bxPos = (mx(br.lon) - camera.x0) * camera.s;
+        const byPos = (my(br.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - bxPos, clickY - byPos) <= 20) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'briccola', data: br });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1i. Hit test Passerelle Acqua Alta
+    if (showPasserelle && passerelle && passerelle.length > 0) {
+      for (const p of passerelle) {
+        for (const pt of p.path) {
+          const px = (mx(pt[0]) - camera.x0) * camera.s;
+          const py = (my(pt[1]) - camera.y0) * camera.s;
+          if (Math.hypot(clickX - px, clickY - py) <= 18) {
+            if (onSelectFeature) {
+              onSelectFeature({ type: 'passerella', data: p });
+              setSelectedVehicle(null);
+              setSelectedFlight(null);
+              setSelectedShipOnMap(null);
+              setSelectedAlilagunaBoat(null);
+              setSelectedSatellite(null);
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    // 1j. Hit test Bathing Waters (Lido & Pellestrina)
+    if (showBathingWaters && bathingWaters && bathingWaters.length > 0) {
+      for (const bw of bathingWaters) {
+        const bx = (mx(bw.lon) - camera.x0) * camera.s;
+        const by = (my(bw.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - bx, clickY - by) <= 22) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'bathingWater', data: bw });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1k. Hit test Alberi Monumentali
+    if (showTrees && trees && trees.length > 0) {
+      for (const tr of trees) {
+        const tx = (mx(tr.lon) - camera.x0) * camera.s;
+        const ty = (my(tr.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - tx, clickY - ty) <= 20) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'urbanTree', data: tr });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1l. Hit test EV Charging & Wi-Fi Hotspots
+    if (showServicesVenice) {
+      if (evCharging && evCharging.length > 0) {
+        for (const ev of evCharging) {
+          const ex = (mx(ev.lon) - camera.x0) * camera.s;
+          const ey = (my(ev.lat) - camera.y0) * camera.s;
+          if (Math.hypot(clickX - ex, clickY - ey) <= 20) {
+            if (onSelectFeature) {
+              onSelectFeature({ type: 'evCharging', data: ev });
+              setSelectedVehicle(null);
+              setSelectedFlight(null);
+              setSelectedShipOnMap(null);
+              setSelectedAlilagunaBoat(null);
+              setSelectedSatellite(null);
+              return;
+            }
+          }
+        }
+      }
+      if (wifiHotspots && wifiHotspots.length > 0) {
+        for (const wf of wifiHotspots) {
+          const wx = (mx(wf.lon) - camera.x0) * camera.s;
+          const wy = (my(wf.lat) - camera.y0) * camera.s;
+          if (Math.hypot(clickX - wx, clickY - wy) <= 20) {
+            if (onSelectFeature) {
+              onSelectFeature({ type: 'wifiHotspot', data: wf });
+              setSelectedVehicle(null);
+              setSelectedFlight(null);
+              setSelectedShipOnMap(null);
+              setSelectedAlilagunaBoat(null);
+              setSelectedSatellite(null);
+              return;
+            }
+          }
         }
       }
     }
@@ -2297,6 +2468,316 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         }
       }
 
+      // 19. Render Passerelle per Acqua Alta (CPSM / Protezione Civile)
+      if (showPasserelle && passerelle && passerelle.length > 0) {
+        for (const p of passerelle) {
+          if (!p.path || p.path.length < 2) continue;
+          ctx.save();
+
+          // Outer walkway board outline
+          ctx.beginPath();
+          p.path.forEach((pt, idx) => {
+            const px = sx(mx(pt[0]));
+            const py = sy(my(pt[1]));
+            if (idx === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          });
+
+          // Wooden planks glow & styling
+          ctx.strokeStyle = p.isMounted ? '#f59e0b' : '#78716c';
+          ctx.lineWidth = Math.max(3.5, 6 * (camera.s / 0.05));
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.globalAlpha = p.isMounted ? 0.95 : 0.45;
+          ctx.stroke();
+
+          // Elevated metal stilt legs / planks dashes
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = Math.max(1.5, 2.5 * (camera.s / 0.05));
+          ctx.setLineDash([4, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Stanchion marker posts at vertices
+          p.path.forEach((pt) => {
+            const px = sx(mx(pt[0]));
+            const py = sy(my(pt[1]));
+            ctx.fillStyle = p.isMounted ? '#fbbf24' : '#a8a29e';
+            ctx.beginPath();
+            ctx.arc(px, py, Math.max(2.5, 4 * (camera.s / 0.05)), 0, Math.PI * 2);
+            ctx.fill();
+          });
+
+          // Label when zoomed in
+          if (camera.s > 0.06) {
+            const midPt = p.path[Math.floor(p.path.length / 2)];
+            const lx = sx(mx(midPt[0]));
+            const ly = sy(my(midPt[1]));
+            ctx.font = '700 8.5px "DM Mono", monospace';
+            const label = `🦺 ${p.name.split('-')[0].trim()} (${p.lengthMeters}m)`;
+            const lW = ctx.measureText(label).width;
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+            ctx.fillRect(lx - lW / 2 - 3, ly - 14, lW + 6, 12);
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillText(label, lx - lW / 2, ly - 5);
+          }
+
+          ctx.restore();
+        }
+      }
+
+      // 20. Render Briccole & Fanali di Canale
+      if (showMarineSignals && briccole && briccole.length > 0) {
+        for (const br of briccole) {
+          const bx = sx(mx(br.lon));
+          const by = sy(my(br.lat));
+          ctx.save();
+
+          // 3 or 5 wooden oak piles
+          const pileCount = br.type === 'DAMA_5_PALI' ? 5 : 3;
+          const pileRadius = Math.max(1.5, 2.5 * (camera.s / 0.04));
+          const pileOffset = Math.max(2.5, 4.5 * (camera.s / 0.04));
+
+          ctx.fillStyle = br.material === 'ROVERE_NATURALE' ? '#854d0e' : '#059669';
+          ctx.strokeStyle = '#451a03';
+          ctx.lineWidth = 0.8;
+
+          for (let i = 0; i < pileCount; i++) {
+            const ang = (i / pileCount) * Math.PI * 2;
+            const px = bx + Math.cos(ang) * pileOffset;
+            const py = by + Math.sin(ang) * pileOffset;
+            ctx.beginPath();
+            ctx.arc(px, py, pileRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
+
+          // Central pile for Dama
+          if (br.type === 'DAMA_5_PALI') {
+            ctx.beginPath();
+            ctx.arc(bx, by, pileRadius * 1.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
+
+          // Active Lantern / Beacon
+          if (br.lightColor !== 'NONE') {
+            const flashPhase = (currentTimeSeconds * 2 + (parseInt(br.id.replace(/\D/g, ''), 10) || 1)) % 3;
+            const isFlashing = flashPhase < 1.2;
+            const lColor = br.lightColor === 'GREEN' ? '#10b981' : br.lightColor === 'RED' ? '#ef4444' : '#f8fafc';
+
+            if (isFlashing) {
+              // Glowing lantern aura
+              ctx.beginPath();
+              ctx.arc(bx, by, Math.max(6, 12 * (camera.s / 0.04)), 0, Math.PI * 2);
+              ctx.fillStyle = br.lightColor === 'GREEN' ? 'rgba(16, 185, 129, 0.35)' : br.lightColor === 'RED' ? 'rgba(239, 68, 68, 0.35)' : 'rgba(255, 255, 255, 0.35)';
+              ctx.fill();
+            }
+
+            // Lantern core
+            ctx.beginPath();
+            ctx.arc(bx, by, Math.max(2, 3.5 * (camera.s / 0.04)), 0, Math.PI * 2);
+            ctx.fillStyle = lColor;
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+          }
+
+          if (camera.s > 0.05) {
+            ctx.font = '600 8px "DM Mono", monospace';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText(br.code, bx + 8, by + 3);
+          }
+
+          ctx.restore();
+        }
+      }
+
+      // 21. Render Piattaforma Oceanografica CNR-ISMAR & Boe Ondametriche
+      if (showOceanStations && oceanStations && oceanStations.length > 0) {
+        for (const st of oceanStations) {
+          const ox = sx(mx(st.lon));
+          const oy = sy(my(st.lat));
+          ctx.save();
+
+          // Animated ocean wave concentric ripple circles (60 FPS)
+          const wavePhase = (currentTimeSeconds * 1.5) % 3;
+          const maxRipple = Math.max(16, 32 * (camera.s / 0.02));
+          for (let r = 1; r <= 3; r++) {
+            const rippleR = (((wavePhase + r) % 3) / 3) * maxRipple;
+            const alpha = 1 - (rippleR / maxRipple);
+            ctx.beginPath();
+            ctx.arc(ox, oy, rippleR, 0, Math.PI * 2);
+            ctx.strokeStyle = '#06b6d4';
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = alpha * 0.5;
+            ctx.stroke();
+          }
+          ctx.globalAlpha = 1.0;
+
+          if (st.type === 'OCEANOGRAPHIC_PLATFORM') {
+            // Steel Lattice Tower / Platform icon
+            ctx.fillStyle = '#0e7490';
+            ctx.fillRect(ox - 7, oy - 7, 14, 14);
+            ctx.strokeStyle = '#22d3ee';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(ox - 7, oy - 7, 14, 14);
+
+            // Helipad circle & cross
+            ctx.strokeStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(ox, oy, 4, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Telemetry readout
+            ctx.font = '700 8.5px "DM Mono", monospace';
+            const tag = `🔬 CNR ISMAR · Hs ${st.waveHeightMeters}m · ${st.waterTempC}°C`;
+            const tW = ctx.measureText(tag).width;
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+            ctx.fillRect(ox - tW / 2 - 4, oy - 22, tW + 8, 13);
+            ctx.strokeStyle = '#06b6d4';
+            ctx.strokeRect(ox - tW / 2 - 4, oy - 22, tW + 8, 13);
+            ctx.fillStyle = '#22d3ee';
+            ctx.fillText(tag, ox - tW / 2, oy - 12);
+          } else {
+            // Wave buoy floating marker
+            ctx.fillStyle = '#eab308';
+            ctx.beginPath();
+            ctx.arc(ox, oy, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.font = '600 8px "DM Mono", monospace';
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillText(`Hs ${st.waveHeightMeters}m`, ox + 8, oy + 3);
+          }
+
+          ctx.restore();
+        }
+      }
+
+      // 22. Render Acque di Balneazione (ARPAV)
+      if (showBathingWaters && bathingWaters && bathingWaters.length > 0) {
+        for (const bw of bathingWaters) {
+          const bx = sx(mx(bw.lon));
+          const by = sy(my(bw.lat));
+          ctx.save();
+
+          // Coastal lifesaver ring
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(bx, by, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#0284c7';
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+
+          // Blue Flag badge
+          if (bw.blueFlag) {
+            ctx.fillStyle = '#2563eb';
+            ctx.beginPath();
+            ctx.arc(bx, by, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          if (camera.s > 0.02) {
+            ctx.font = '600 8px "DM Mono", monospace';
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText(`🌊 ${bw.name.split('-')[1]?.trim() || bw.name}`, bx + 9, by + 3);
+          }
+
+          ctx.restore();
+        }
+      }
+
+      // 23. Render Verde Urbano & Alberi Monumentali
+      if (showTrees && trees && trees.length > 0) {
+        for (const tr of trees) {
+          const tx = sx(mx(tr.lon));
+          const ty = sy(my(tr.lat));
+          ctx.save();
+
+          const canopyR = Math.max(5, Math.min(18, (tr.canopyDiameterMeters / 2) * (camera.s / 0.02)));
+          // Tree foliage canopy
+          ctx.beginPath();
+          ctx.arc(tx, ty, canopyR, 0, Math.PI * 2);
+          ctx.fillStyle = tr.ageClass === 'MONUMENTALE' ? 'rgba(34, 197, 94, 0.50)' : 'rgba(74, 222, 128, 0.40)';
+          ctx.fill();
+          ctx.strokeStyle = '#15803d';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // Tree trunk
+          ctx.fillStyle = '#78350f';
+          ctx.beginPath();
+          ctx.arc(tx, ty, 2, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (camera.s > 0.04) {
+            ctx.font = '600 8px "DM Mono", monospace';
+            ctx.fillStyle = '#4ade80';
+            ctx.fillText(`🌳 ${tr.commonName}`, tx + canopyR + 3, ty + 3);
+          }
+
+          ctx.restore();
+        }
+      }
+
+      // 24. Render Colonnine Ricarica EV & Wi-Fi Hotspots
+      if (showServicesVenice) {
+        if (evCharging && evCharging.length > 0) {
+          for (const ev of evCharging) {
+            const ex = sx(mx(ev.lon));
+            const ey = sy(my(ev.lat));
+            ctx.save();
+            ctx.fillStyle = '#eab308';
+            ctx.beginPath();
+            ctx.arc(ex, ey, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+
+            // Lightning glyph
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 7px sans-serif';
+            ctx.fillText('⚡', ex - 3.5, ey + 2.5);
+
+            if (camera.s > 0.035) {
+              ctx.font = '600 8px "DM Mono", monospace';
+              ctx.fillStyle = '#fde047';
+              ctx.fillText(`${ev.availableSockets}/${ev.totalSockets} EV`, ex + 8, ey + 3);
+            }
+            ctx.restore();
+          }
+        }
+
+        if (wifiHotspots && wifiHotspots.length > 0) {
+          for (const wf of wifiHotspots) {
+            const wx = sx(mx(wf.lon));
+            const wy = sy(my(wf.lat));
+            ctx.save();
+            ctx.fillStyle = '#6366f1';
+            ctx.beginPath();
+            ctx.arc(wx, wy, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            if (camera.s > 0.05) {
+              ctx.font = '600 8px "DM Mono", monospace';
+              ctx.fillStyle = '#818cf8';
+              ctx.fillText(`📶 Wi-Fi (${wf.usersConnected})`, wx + 7, wy + 3);
+            }
+            ctx.restore();
+          }
+        }
+      }
+
       ctx.restore();
       animId = requestAnimationFrame(render);
     };
@@ -2340,6 +2821,19 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     showSatellites,
     satellites,
     selectedSatellite,
+    showPasserelle,
+    passerelle,
+    showMarineSignals,
+    briccole,
+    showOceanStations,
+    oceanStations,
+    showBathingWaters,
+    bathingWaters,
+    showTrees,
+    trees,
+    showServicesVenice,
+    evCharging,
+    wifiHotspots,
     bufferRadiusMeters,
     selectedCategory,
     cantieri,

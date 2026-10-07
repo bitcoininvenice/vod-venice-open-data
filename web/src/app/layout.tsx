@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "VOD – Venice Open Data | Cruscotto Geospaziale della Laguna",
-  description: "Piattaforma interattiva ad alte prestazioni che incrocia Open Data ACTV (trasporto pubblico su acqua e terraferma) e Comune di Venezia (cantieri, opere pubbliche, suolo pubblico).",
+  description: "Piattaforma interattiva che incrocia Open Data di diverso genere relativi all'area della città di Venezia.",
   keywords: ["Venezia", "Open Data", "ACTV", "GTFS", "PostGIS", "Vaporetti", "Laguna di Venezia", "MapLibre", "Mobilità"]
 };
 

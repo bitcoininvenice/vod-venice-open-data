@@ -14,6 +14,7 @@ import { ShipDetailModal } from '@/components/ShipDetailModal';
 import { MoseDetailModal } from '@/components/MoseDetailModal';
 import { AlilagunaDetailModal } from '@/components/AlilagunaDetailModal';
 import { SatelliteDetailModal } from '@/components/SatelliteDetailModal';
+import { VeniceFeatureDetailModal, VeniceFeatureSelected } from '@/components/VeniceFeatureDetailModal';
 import { Layers } from 'lucide-react';
 import {
   CameraViewPreset,
@@ -32,7 +33,14 @@ import {
   AlilagunaRoute,
   AlilagunaStop,
   AlilagunaBoat,
-  SatelliteItem
+  SatelliteItem,
+  PasserellaItem,
+  BriccolaSignalItem,
+  OceanStationItem,
+  BathingWaterItem,
+  UrbanTreeItem,
+  EvChargingItem,
+  WifiHotspotItem
 } from '@/lib/types';
 import { MOCK_CANTIERI, MOCK_STOPS } from '@/lib/db';
 import { NOTTE, CARTA, getDynamicPalette } from '@/lib/solar';
@@ -83,6 +91,12 @@ export default function HomePage() {
   const [showPedestrianFlows, setShowPedestrianFlows] = useState<boolean>(true);
   const [showAlilaguna, setShowAlilaguna] = useState<boolean>(true);
   const [showSatellites, setShowSatellites] = useState<boolean>(true);
+  const [showPasserelle, setShowPasserelle] = useState<boolean>(true);
+  const [showMarineSignals, setShowMarineSignals] = useState<boolean>(true);
+  const [showOceanStations, setShowOceanStations] = useState<boolean>(true);
+  const [showBathingWaters, setShowBathingWaters] = useState<boolean>(true);
+  const [showTrees, setShowTrees] = useState<boolean>(true);
+  const [showServicesVenice, setShowServicesVenice] = useState<boolean>(true);
   const [bufferRadiusMeters, setBufferRadiusMeters] = useState<number>(200);
   const [selectedCategory, setSelectedCategory] = useState<TransportModeCategory | 'all'>('all');
 
@@ -103,6 +117,13 @@ export default function HomePage() {
   const [alilagunaStops, setAlilagunaStops] = useState<AlilagunaStop[]>([]);
   const [alilagunaBoats, setAlilagunaBoats] = useState<AlilagunaBoat[]>([]);
   const [satellites, setSatellites] = useState<SatelliteItem[]>([]);
+  const [passerelle, setPasserelle] = useState<PasserellaItem[]>([]);
+  const [briccole, setBriccole] = useState<BriccolaSignalItem[]>([]);
+  const [oceanStations, setOceanStations] = useState<OceanStationItem[]>([]);
+  const [bathingWaters, setBathingWaters] = useState<BathingWaterItem[]>([]);
+  const [trees, setTrees] = useState<UrbanTreeItem[]>([]);
+  const [evCharging, setEvCharging] = useState<EvChargingItem[]>([]);
+  const [wifiHotspots, setWifiHotspots] = useState<WifiHotspotItem[]>([]);
   const [tideLevel, setTideLevel] = useState<number>(76);
 
   // Active selections & Modals
@@ -110,6 +131,7 @@ export default function HomePage() {
   const [selectedCantiere, setSelectedCantiere] = useState<CantiereItem | null>(null);
   const [selectedShip, setSelectedShip] = useState<ShipItem | null>(null);
   const [selectedSatellite, setSelectedSatellite] = useState<SatelliteItem | null>(null);
+  const [selectedFeature, setSelectedFeature] = useState<VeniceFeatureSelected | null>(null);
   const [isMoseModalOpen, setIsMoseModalOpen] = useState<boolean>(false);
   const [isAlilagunaModalOpen, setIsAlilagunaModalOpen] = useState<boolean>(false);
   const [isSpatialModalOpen, setIsSpatialModalOpen] = useState<boolean>(false);
@@ -219,6 +241,38 @@ export default function HomePage() {
         if (data.success && data.data) setSatellites(data.data);
       })
       .catch((err) => console.warn('Using fallback satellites:', err));
+
+    // Fetch Passerelle per Acqua Alta (CPSM)
+    fetch('/api/passerelle')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) setPasserelle(data.data);
+      })
+      .catch((err) => console.warn('Using fallback passerelle:', err));
+
+    // Fetch Marine Sensors & Briccole (CNR-ISMAR / ISPRA)
+    fetch('/api/marine-sensors')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          if (data.data.oceanStations) setOceanStations(data.data.oceanStations);
+          if (data.data.briccole) setBriccole(data.data.briccole);
+        }
+      })
+      .catch((err) => console.warn('Using fallback marine sensors:', err));
+
+    // Fetch Venice Assets (Bathing, Trees, EV, WiFi)
+    fetch('/api/venice-assets')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          if (data.data.bathingWaters) setBathingWaters(data.data.bathingWaters);
+          if (data.data.urbanTrees) setTrees(data.data.urbanTrees);
+          if (data.data.evCharging) setEvCharging(data.data.evCharging);
+          if (data.data.wifiHotspots) setWifiHotspots(data.data.wifiHotspots);
+        }
+      })
+      .catch((err) => console.warn('Using fallback venice assets:', err));
 
     return () => {
       clearInterval(flightInterval);
@@ -357,6 +411,20 @@ export default function HomePage() {
           showSatellites={showSatellites}
           satellites={satellites}
           onSelectSatellite={setSelectedSatellite}
+          showPasserelle={showPasserelle}
+          passerelle={passerelle}
+          showMarineSignals={showMarineSignals}
+          briccole={briccole}
+          showOceanStations={showOceanStations}
+          oceanStations={oceanStations}
+          showBathingWaters={showBathingWaters}
+          bathingWaters={bathingWaters}
+          showTrees={showTrees}
+          trees={trees}
+          showServicesVenice={showServicesVenice}
+          evCharging={evCharging}
+          wifiHotspots={wifiHotspots}
+          onSelectFeature={setSelectedFeature}
           onSelectStop={setSelectedStop}
           onSelectCantiere={setSelectedCantiere}
           onSelectAirport={() => setIsAirportModalOpen(true)}
@@ -389,6 +457,24 @@ export default function HomePage() {
             onToggleShipRoutes={() => setShowShipRoutes((p) => !p)}
             showMose={showMose}
             onToggleMose={() => setShowMose((p) => !p)}
+            showPasserelle={showPasserelle}
+            onTogglePasserelle={() => setShowPasserelle((p) => !p)}
+            passerelleCount={passerelle.length}
+            showMarineSignals={showMarineSignals}
+            onToggleMarineSignals={() => setShowMarineSignals((p) => !p)}
+            briccoleCount={briccole.length}
+            showOceanStations={showOceanStations}
+            onToggleOceanStations={() => setShowOceanStations((p) => !p)}
+            oceanStationsCount={oceanStations.length}
+            showBathingWaters={showBathingWaters}
+            onToggleBathingWaters={() => setShowBathingWaters((p) => !p)}
+            bathingWatersCount={bathingWaters.length}
+            showTrees={showTrees}
+            onToggleTrees={() => setShowTrees((p) => !p)}
+            treesCount={trees.length}
+            showServicesVenice={showServicesVenice}
+            onToggleServicesVenice={() => setShowServicesVenice((p) => !p)}
+            servicesVeniceCount={evCharging.length + wifiHotspots.length}
             showCityAssets={showCityAssets}
             onToggleCityAssets={() => setShowCityAssets((p) => !p)}
             showParkings={showParkings}
@@ -455,6 +541,24 @@ export default function HomePage() {
                 onToggleShipRoutes={() => setShowShipRoutes((p) => !p)}
                 showMose={showMose}
                 onToggleMose={() => setShowMose((p) => !p)}
+                showPasserelle={showPasserelle}
+                onTogglePasserelle={() => setShowPasserelle((p) => !p)}
+                passerelleCount={passerelle.length}
+                showMarineSignals={showMarineSignals}
+                onToggleMarineSignals={() => setShowMarineSignals((p) => !p)}
+                briccoleCount={briccole.length}
+                showOceanStations={showOceanStations}
+                onToggleOceanStations={() => setShowOceanStations((p) => !p)}
+                oceanStationsCount={oceanStations.length}
+                showBathingWaters={showBathingWaters}
+                onToggleBathingWaters={() => setShowBathingWaters((p) => !p)}
+                bathingWatersCount={bathingWaters.length}
+                showTrees={showTrees}
+                onToggleTrees={() => setShowTrees((p) => !p)}
+                treesCount={trees.length}
+                showServicesVenice={showServicesVenice}
+                onToggleServicesVenice={() => setShowServicesVenice((p) => !p)}
+                servicesVeniceCount={evCharging.length + wifiHotspots.length}
                 showCityAssets={showCityAssets}
                 onToggleCityAssets={() => setShowCityAssets((p) => !p)}
                 showParkings={showParkings}
@@ -548,6 +652,11 @@ export default function HomePage() {
       <SatelliteDetailModal
         satellite={selectedSatellite}
         onClose={() => setSelectedSatellite(null)}
+      />
+
+      <VeniceFeatureDetailModal
+        feature={selectedFeature}
+        onClose={() => setSelectedFeature(null)}
       />
 
       <SpatialAnalysisModal

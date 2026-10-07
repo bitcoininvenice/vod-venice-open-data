@@ -21,7 +21,12 @@ import {
   Compass,
   Satellite,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Trees,
+  Wifi,
+  Zap,
+  LifeBuoy,
+  ShieldAlert
 } from 'lucide-react';
 import { TransportModeCategory } from '@/lib/types';
 
@@ -47,6 +52,24 @@ interface LayerPanelProps {
   alilagunaBoatsCount?: number;
   showMose: boolean;
   onToggleMose: () => void;
+  showPasserelle?: boolean;
+  onTogglePasserelle?: () => void;
+  passerelleCount?: number;
+  showMarineSignals?: boolean;
+  onToggleMarineSignals?: () => void;
+  briccoleCount?: number;
+  showOceanStations?: boolean;
+  onToggleOceanStations?: () => void;
+  oceanStationsCount?: number;
+  showBathingWaters?: boolean;
+  onToggleBathingWaters?: () => void;
+  bathingWatersCount?: number;
+  showTrees?: boolean;
+  onToggleTrees?: () => void;
+  treesCount?: number;
+  showServicesVenice?: boolean;
+  onToggleServicesVenice?: () => void;
+  servicesVeniceCount?: number;
   showCityAssets: boolean;
   onToggleCityAssets: () => void;
   showParkings: boolean;
@@ -91,6 +114,24 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   alilagunaBoatsCount = 0,
   showMose,
   onToggleMose,
+  showPasserelle = true,
+  onTogglePasserelle,
+  passerelleCount = 0,
+  showMarineSignals = true,
+  onToggleMarineSignals,
+  briccoleCount = 0,
+  showOceanStations = true,
+  onToggleOceanStations,
+  oceanStationsCount = 0,
+  showBathingWaters = true,
+  onToggleBathingWaters,
+  bathingWatersCount = 0,
+  showTrees = true,
+  onToggleTrees,
+  treesCount = 0,
+  showServicesVenice = true,
+  onToggleServicesVenice,
+  servicesVeniceCount = 0,
   showCityAssets,
   onToggleCityAssets,
   showParkings,
@@ -374,6 +415,110 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               {showMose ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
 
+            {/* Passerelle Acqua Alta CPSM */}
+            {onTogglePasserelle && (
+              <button
+                type="button"
+                onClick={onTogglePasserelle}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showPasserelle
+                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Passerelle Acqua Alta (CPSM)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {passerelleCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold">
+                      {passerelleCount}
+                    </span>
+                  )}
+                  {showPasserelle ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Briccole & Fanali Canale */}
+            {onToggleMarineSignals && (
+              <button
+                type="button"
+                onClick={onToggleMarineSignals}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showMarineSignals
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Anchor className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Briccole & Fanali Canale</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {briccoleCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                      {briccoleCount}
+                    </span>
+                  )}
+                  {showMarineSignals ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Piattaforma CNR & Boe Ondametriche */}
+            {onToggleOceanStations && (
+              <button
+                type="button"
+                onClick={onToggleOceanStations}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showOceanStations
+                    ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Compass className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Piattaforma CNR & Boe Onde</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {oceanStationsCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-bold">
+                      {oceanStationsCount}
+                    </span>
+                  )}
+                  {showOceanStations ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Spiagge & Acque Balneazione ARPAV */}
+            {onToggleBathingWaters && (
+              <button
+                type="button"
+                onClick={onToggleBathingWaters}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showBathingWaters
+                    ? 'bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <LifeBuoy className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Balneazione Lido & Pellestrina</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {bathingWatersCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-bold">
+                      {bathingWatersCount}
+                    </span>
+                  )}
+                  {showBathingWaters ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
             {/* Spatial Buffer PostGIS */}
             <div className="flex flex-col gap-1.5 bg-[var(--rule)]/30 p-2.5 rounded-xl border border-[var(--rule)]">
               <div className="flex items-center justify-between">
@@ -463,6 +608,58 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </div>
               {showCityAssets ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
+
+            {/* Verde Urbano & Alberi Monumentali */}
+            {onToggleTrees && (
+              <button
+                type="button"
+                onClick={onToggleTrees}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showTrees
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Trees className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Verde & Alberi Monumentali</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {treesCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                      {treesCount}
+                    </span>
+                  )}
+                  {showTrees ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Ricarica EV & Wi-Fi VeniceConnected */}
+            {onToggleServicesVenice && (
+              <button
+                type="button"
+                onClick={onToggleServicesVenice}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showServicesVenice
+                    ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Wifi className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Ricarica EV & Wi-Fi Pubblico</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {servicesVeniceCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-bold">
+                      {servicesVeniceCount}
+                    </span>
+                  )}
+                  {showServicesVenice ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
 
             {/* Qualità Aria ARPAV */}
             <button

@@ -21,7 +21,11 @@ import {
   Trash2,
   ExternalLink,
   Satellite,
-  Orbit
+  Orbit,
+  Trees,
+  LifeBuoy,
+  Zap,
+  Wifi
 } from 'lucide-react';
 import { PlatformMetrics } from '@/lib/types';
 
@@ -30,7 +34,7 @@ interface StatsModalProps {
   onClose: () => void;
 }
 
-type MetricCategory = 'all' | 'maree_aria' | 'marittimo' | 'trasporti' | 'aeroporto' | 'pedoni_citta' | 'satelliti';
+type MetricCategory = 'all' | 'maree_aria' | 'laguna_scienza' | 'marittimo' | 'trasporti' | 'aeroporto' | 'satelliti' | 'pedoni_citta';
 
 export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null);
@@ -83,13 +87,14 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
         {/* Category Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs">
           {[
-            { id: 'all', label: 'Tutti i Dati', count: 20 },
+            { id: 'all', label: 'Tutti i Dati', count: 26 },
             { id: 'maree_aria', label: '🌊 Maree & Aria ARPAV', count: 4 },
+            { id: 'laguna_scienza', label: '🔬 CNR, Onde & Passerelle', count: 4 },
             { id: 'marittimo', label: '🚢 Porto, AIS & Canali', count: 3 },
             { id: 'trasporti', label: '🚤 ACTV & Alilaguna', count: 4 },
             { id: 'aeroporto', label: '✈️ Voli & VCE Hub', count: 2 },
             { id: 'satelliti', label: '🛰️ Satelliti & Radar SAR', count: 2 },
-            { id: 'pedoni_citta', label: '🚶 Flussi & Città', count: 5 }
+            { id: 'pedoni_citta', label: '🚶 Flussi & Servizi Città', count: 7 }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -387,6 +392,44 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                   Investimento: € {((metrics?.totalInvestmentCantieri ?? 3460000) / 1000000).toFixed(2)}M · {metrics?.stopsNearWorksites200m ?? 8} fermate nel buffer 200m
                 </span>
               </div>
+
+              <div className="bg-gradient-to-br from-green-950/30 to-emerald-950/10 p-3.5 rounded-xl border border-green-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-green-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Trees className="w-4 h-4 text-green-400" />
+                    <span>Verde & Alberi Monumentali</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-green-500/20 text-green-300">Catasto Verde</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-green-400">
+                    {metrics?.monumentalTreesCount ?? 6}
+                  </span>
+                  <span className="text-xs font-mono text-green-300">alberi monumentali</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Giardini Reali, Biennale, Sant'Elena, Papadopoli · Assorbimento CO₂: ~220 kg/anno
+                </span>
+              </div>
+
+              <div className="bg-gradient-to-br from-indigo-950/30 to-blue-950/10 p-3.5 rounded-xl border border-indigo-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-indigo-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Zap className="w-4 h-4 text-indigo-400" />
+                    <span>Ricarica EV & Wi-Fi Pubblico</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">Smart City</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-indigo-400">
+                    {(metrics?.evChargingStationsCount ?? 4) + (metrics?.wifiHotspotsCount ?? 8)}
+                  </span>
+                  <span className="text-xs font-mono text-indigo-300">presidi digitali & green</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  {metrics?.evChargingStationsCount ?? 4} hub EV Ultra-Fast (P.le Roma, Tronchetto) · {metrics?.wifiHotspotsCount ?? 8} hotspot VeniceConnected
+                </span>
+              </div>
             </>
           )}
 
@@ -432,12 +475,93 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
               </div>
             </>
           )}
+
+          {/* SECTION 8: SCIENZE MARINE, CNR, ONDE & PASSERELLE */}
+          {(activeTab === 'all' || activeTab === 'laguna_scienza') && (
+            <>
+              <div className="bg-gradient-to-br from-amber-950/30 to-yellow-950/10 p-3.5 rounded-xl border border-amber-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-amber-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <ShieldAlert className="w-4 h-4 text-amber-400" />
+                    <span>Rete Passerelle Acqua Alta</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">CPSM / Prot. Civile</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-amber-400">
+                    {metrics?.passerelleTotalMeters?.toLocaleString('it-IT') ?? '3.100'}
+                  </span>
+                  <span className="text-xs font-mono text-amber-300">metri di passerelle censite</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  {metrics?.passerelleMountedCount ?? 4} percorsi montati in opera · Piazza San Marco, Rialto, Ferrovia, Formosa
+                </span>
+              </div>
+
+              <div className="bg-gradient-to-br from-cyan-950/30 to-teal-950/10 p-3.5 rounded-xl border border-cyan-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-cyan-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Compass className="w-4 h-4 text-cyan-400" />
+                    <span>Piattaforma CNR-ISMAR "Acqua Alta"</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">Ricerca Marina</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-cyan-400">
+                    {metrics?.cnrWaveHeightMeters ?? 0.85} m
+                  </span>
+                  <span className="text-xs font-mono text-cyan-300">onda significativa (Hs)</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Temp acqua: {metrics?.cnrWaterTempC ?? 17.6}°C · Corrente lagunare: 0.42 m/s · Salinità: 36.8 PSU al largo del Lido
+                </span>
+              </div>
+
+              <div className="bg-gradient-to-br from-emerald-950/30 to-teal-950/10 p-3.5 rounded-xl border border-emerald-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-emerald-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Anchor className="w-4 h-4 text-emerald-400" />
+                    <span>Briccole & Fanali di Canale</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Provv. OO.PP.</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-emerald-400">
+                    {metrics?.briccoleCount ?? 8}
+                  </span>
+                  <span className="text-xs font-mono text-emerald-300">segnalamenti nautici censiti</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Dame a 5 pali, briccole in rovere naturale ed ecologiche, lanterne ritmiche canali San Marco e Giudecca
+                </span>
+              </div>
+
+              <div className="bg-gradient-to-br from-sky-950/30 to-blue-950/10 p-3.5 rounded-xl border border-sky-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-sky-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <LifeBuoy className="w-4 h-4 text-sky-400" />
+                    <span>Acque Balneazione Litorali</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-bold">ARPAV Veneto</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-sky-400">
+                    {metrics?.bathingWaterStationsCount ?? 5}
+                  </span>
+                  <span className="text-xs font-mono text-sky-300">spiagge Bandiera Blu</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Qualità Eccellente · Lido Blue Moon, Murazzi, Alberoni WWF e Pellestrina Diga Sud
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Source citation */}
         <div className="text-[11px] text-[var(--ink-3)] leading-relaxed pt-2 border-t border-[var(--rule)] flex flex-wrap gap-x-4 gap-y-1 items-center justify-between">
           <span>
-            <b>Fonti Istituzionali:</b> CPSM Centro Maree · ARPAV · Guardia Costiera VTS · ENAV/OpenSky · Smart Control Room Tronchetto · Comune di Venezia (dati.venezia.it) · ACTV / AVM · Alilaguna S.p.A. · Copernicus Data Space (ESA) · ASI Open Data · CelesTrak NORAD · Veritas.
+            <b>Fonti Istituzionali:</b> CPSM Centro Maree · ARPAV · CNR-ISMAR · ISPRA RML · Guardia Costiera VTS · ENAV/OpenSky · Smart Control Room Tronchetto · Comune di Venezia (dati.venezia.it) · ACTV / AVM · Alilaguna S.p.A. · Venis S.p.A. · Copernicus Data Space (ESA) · ASI Open Data · CelesTrak NORAD · Veritas.
           </span>
           <span className="font-mono text-[10px] text-cyan-400">
             PostgreSQL / PostGIS Engine
