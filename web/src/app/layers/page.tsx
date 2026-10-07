@@ -1001,7 +1001,7 @@ export default function LayersDocumentationPage() {
                       : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
                   }`}
                 >
-                  {gRegimeBadge(r.key as DataRegimeKey, r.label)}
+                  {r.label}
                 </button>
               ))}
             </div>
