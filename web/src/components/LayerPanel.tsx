@@ -19,6 +19,7 @@ import {
   Wind,
   Footprints,
   Compass,
+  Satellite,
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
@@ -54,6 +55,9 @@ interface LayerPanelProps {
   onToggleAirQuality: () => void;
   showPedestrianFlows: boolean;
   onTogglePedestrianFlows: () => void;
+  showSatellites?: boolean;
+  onToggleSatellites?: () => void;
+  satellitesCount?: number;
   showSpatialBuffer: boolean;
   onToggleSpatialBuffer: () => void;
   bufferRadiusMeters: number;
@@ -95,6 +99,9 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   onToggleAirQuality,
   showPedestrianFlows,
   onTogglePedestrianFlows,
+  showSatellites = true,
+  onToggleSatellites,
+  satellitesCount = 0,
   showSpatialBuffer,
   onToggleSpatialBuffer,
   bufferRadiusMeters,
@@ -489,6 +496,30 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 <span>Flussi Pedonali & Access Fee</span>
               </div>
               {showPedestrianFlows ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            </button>
+
+            {/* Satelliti & Radar SAR (Copernicus / ASI) */}
+            <button
+              type="button"
+              onClick={onToggleSatellites}
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                showSatellites
+                  ? 'bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/30'
+                  : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Satellite className="w-3.5 h-3.5 text-fuchsia-400" />
+                <span>Satelliti & Radar SAR (ESA/ASI)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {satellitesCount > 0 && (
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-fuchsia-500/20 text-fuchsia-300">
+                    {satellitesCount}
+                  </span>
+                )}
+                {showSatellites ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              </div>
             </button>
           </div>
         )}

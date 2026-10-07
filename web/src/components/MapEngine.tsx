@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { X, Navigation, Plane, Anchor, Waves, Ship, Droplets, Car, Wind, Footprints, Plus, Minus, Maximize2 } from 'lucide-react';
+import { X, Navigation, Plane, Anchor, Waves, Ship, Droplets, Car, Wind, Footprints, Satellite, Plus, Minus, Maximize2 } from 'lucide-react';
 import {
   CameraViewPreset,
   TransportModeCategory,
@@ -17,7 +17,8 @@ import {
   PedestrianFlowItem,
   AlilagunaRoute,
   AlilagunaStop,
-  AlilagunaBoat
+  AlilagunaBoat,
+  SatelliteItem
 } from '@/lib/types';
 import { D, LAND, CFG } from '@/lib/simulation-data';
 import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
@@ -219,6 +220,23 @@ function getLiveAlilagunaBoat(
   }
 }
 
+// Live kinematics for Earth Observation Satellites (continuous orbital pass across Venetian sky)
+function getLiveSatellite(
+  sat: SatelliteItem,
+  t: number
+): { lon: number; lat: number; heading: number } {
+  if (!sat.groundTrack || sat.groundTrack.length < 2) {
+    return { lon: sat.currentLon, lat: sat.currentLat, heading: sat.heading };
+  }
+
+  const wps = sat.groundTrack.map((pt) => ({ lon: pt[0], lat: pt[1] }));
+  const cycleSeconds = 180; // 3 min orbital pass interval across radar screen
+  const hash = sat.noradId * 17;
+  const progress = ((t + hash) % cycleSeconds) / cycleSeconds;
+
+  return interpolateAlongWaypoints(wps, progress);
+}
+
 interface MapEngineProps {
   currentTimeSeconds: number;
   selectedDay: 'weekday' | 'saturday' | 'sunday';
@@ -251,6 +269,9 @@ interface MapEngineProps {
   alilagunaStops?: AlilagunaStop[];
   alilagunaBoats?: AlilagunaBoat[];
   onSelectAlilaguna?: () => void;
+  showSatellites?: boolean;
+  satellites?: SatelliteItem[];
+  onSelectSatellite?: (satellite: SatelliteItem) => void;
   bufferRadiusMeters: number;
   selectedCategory: TransportModeCategory | 'all';
   cantieri: CantiereItem[];
@@ -295,6 +316,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   alilagunaStops = [],
   alilagunaBoats = [],
   onSelectAlilaguna,
+  showSatellites = true,
+  satellites = [],
+  onSelectSatellite,
   bufferRadiusMeters,
   selectedCategory,
   cantieri,
@@ -341,6 +365,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   const [selectedFlight, setSelectedFlight] = useState<FlightItem | null>(null);
   const [selectedShipOnMap, setSelectedShipOnMap] = useState<ShipItem | null>(null);
   const [selectedAlilagunaBoat, setSelectedAlilagunaBoat] = useState<AlilagunaBoat | null>(null);
+  const [selectedSatellite, setSelectedSatellite] = useState<SatelliteItem | null>(null);
 
   // Active Fleet preallocated buffers
   const simDataRef = useRef<any>(null);
@@ -832,8 +857,40 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             setSelectedFlight(null);
             setSelectedShipOnMap(null);
             setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
             return;
           }
+        }
+      }
+    }
+
+    // 1f. Hit test Earth Observation Satellites (ESA / ASI / NASA)
+    if (showSatellites && satellites && satellites.length > 0) {
+      for (const sat of satellites) {
+        const live = getLiveSatellite(sat, currentTimeSeconds);
+        const satX = (mx(live.lon) - camera.x0) * camera.s;
+        const satY = (my(live.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - satX, clickY - satY) <= 24) {
+          if (onSelectSatellite) {
+            onSelectSatellite({
+              ...sat,
+              currentLon: live.lon,
+              currentLat: live.lat,
+              heading: live.heading
+            });
+          } else {
+            setSelectedSatellite({
+              ...sat,
+              currentLon: live.lon,
+              currentLat: live.lat,
+              heading: live.heading
+            });
+          }
+          setSelectedVehicle(null);
+          setSelectedFlight(null);
+          setSelectedShipOnMap(null);
+          setSelectedAlilagunaBoat(null);
+          return;
         }
       }
     }
@@ -2095,6 +2152,151 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         }
       }
 
+      // 18. Render Earth Observation Satellites (Copernicus Sentinel-1/2, COSMO-SkyMed, ISS, Landsat, Galileo)
+      if (showSatellites && satellites && satellites.length > 0) {
+        for (const sat of satellites) {
+          const live = getLiveSatellite(sat, currentTimeSeconds);
+          const satX = sx(mx(live.lon));
+          const satY = sy(my(live.lat));
+          const isSelected = selectedSatellite?.id === sat.id;
+
+          const satCol = sat.type === 'SAR_RADAR'
+            ? '#e879f9' // fuchsia/neon pink for radar
+            : sat.type === 'OPTICAL'
+            ? '#38bdf8' // cyan for optical multispectral
+            : sat.type === 'SPACE_STATION'
+            ? '#fbbf24' // gold/amber for ISS
+            : sat.type === 'NAVIGATION'
+            ? '#34d399' // emerald for Galileo
+            : '#a78bfa'; // violet for thermal/Landsat
+
+          // 1. Draw Orbital Ground Track across the Lagoon & Adriatic
+          if (sat.groundTrack && sat.groundTrack.length > 1) {
+            ctx.save();
+            ctx.beginPath();
+            sat.groundTrack.forEach((pt, idx) => {
+              const px = sx(mx(pt[0]));
+              const py = sy(my(pt[1]));
+              if (idx === 0) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            });
+            ctx.strokeStyle = isSelected ? '#f0abfc' : satCol;
+            ctx.lineWidth = isSelected ? 2.5 : 1.2;
+            ctx.setLineDash(isSelected ? [6, 4] : [4, 6]);
+            ctx.globalAlpha = isSelected ? 0.85 : 0.45;
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.globalAlpha = 1.0;
+            ctx.restore();
+          }
+
+          // 2. Draw Radar/Sensor Swath Footprint projection on ground
+          const swathRadius = Math.max(35, Math.min(180, (sat.swathWidthKm / 2.5) * (camera.s / 0.02)));
+          ctx.save();
+          ctx.translate(satX, satY);
+          ctx.rotate((live.heading * Math.PI) / 180);
+
+          // Swath scanning polygon
+          ctx.beginPath();
+          ctx.ellipse(0, 0, swathRadius * 0.45, swathRadius, 0, 0, Math.PI * 2);
+          ctx.fillStyle = isSelected
+            ? 'rgba(232, 121, 249, 0.16)'
+            : sat.type === 'SAR_RADAR'
+            ? 'rgba(232, 121, 249, 0.07)'
+            : 'rgba(56, 189, 248, 0.06)';
+          ctx.fill();
+          ctx.strokeStyle = isSelected ? '#e879f9' : satCol;
+          ctx.lineWidth = isSelected ? 1.5 : 0.8;
+          ctx.setLineDash([3, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // 3. Satellite Icon Silhouette
+          // Central satellite bus
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(-3.5, -4, 7, 8);
+          ctx.strokeStyle = '#0f172a';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(-3.5, -4, 7, 8);
+
+          // Golden Multi-layer thermal insulation core
+          ctx.fillStyle = '#fbbf24';
+          ctx.fillRect(-2, -2.5, 4, 5);
+
+          // Solar panel array wings (Left & Right)
+          // Solar panel 1 (Left wing)
+          ctx.fillStyle = '#0284c7';
+          ctx.fillRect(-16, -3, 11, 6);
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 0.8;
+          ctx.strokeRect(-16, -3, 11, 6);
+          // Solar panel grid lines
+          ctx.beginPath();
+          ctx.moveTo(-10.5, -3);
+          ctx.lineTo(-10.5, 3);
+          ctx.stroke();
+
+          // Solar panel 2 (Right wing)
+          ctx.fillStyle = '#0284c7';
+          ctx.fillRect(5, -3, 11, 6);
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 0.8;
+          ctx.strokeRect(5, -3, 11, 6);
+          ctx.beginPath();
+          ctx.moveTo(10.5, -3);
+          ctx.lineTo(10.5, 3);
+          ctx.stroke();
+
+          // Radar SAR Antenna / Nadir Optical Sensor Boom
+          if (sat.type === 'SAR_RADAR') {
+            ctx.strokeStyle = '#e879f9';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(0, 4);
+            ctx.lineTo(0, 9);
+            ctx.stroke();
+            // Reflector/feed
+            ctx.beginPath();
+            ctx.arc(0, 9.5, 2.5, 0, Math.PI);
+            ctx.stroke();
+          } else {
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.arc(0, 5, 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          ctx.restore();
+
+          // 4. Satellite Label Tag
+          if (camera.s > 0.012 || isSelected) {
+            ctx.save();
+            ctx.font = '700 9px "DM Mono", monospace';
+            const satLabel = `🛰️ ${sat.name.split('(')[0].trim()} · ${sat.altitudeKm}km`;
+            const sW = ctx.measureText(satLabel).width;
+
+            ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.90)' : 'rgba(255, 255, 255, 0.90)';
+            ctx.beginPath();
+            ctx.roundRect(satX - sW / 2 - 4, satY - 22, sW + 8, 14, 4);
+            ctx.fill();
+            ctx.strokeStyle = isSelected ? '#f0abfc' : satCol;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.fillStyle = isSelected ? '#f0abfc' : satCol;
+            ctx.fillText(satLabel, satX - sW / 2, satY - 12);
+
+            // Subtext readout
+            if (isSelected || camera.s > 0.03) {
+              ctx.font = '600 8px "DM Mono", monospace';
+              ctx.fillStyle = '#e2e8f0';
+              ctx.fillText(`${sat.resolution} · ${sat.operator.split('/')[0].trim()}`, satX - sW / 2, satY + 18);
+            }
+            ctx.restore();
+          }
+        }
+      }
+
       ctx.restore();
       animId = requestAnimationFrame(render);
     };
@@ -2135,6 +2337,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     alilagunaStops,
     alilagunaBoats,
     selectedAlilagunaBoat,
+    showSatellites,
+    satellites,
+    selectedSatellite,
     bufferRadiusMeters,
     selectedCategory,
     cantieri,
@@ -2460,6 +2665,72 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               <Ship className="w-3.5 h-3.5" /> Dettagli Linee & GTFS Transitland
             </button>
           )}
+        </div>
+      )}
+
+      {/* Floating Satellite Tooltip */}
+      {selectedSatellite && (
+        <div
+          className="absolute z-40 glass-panel rounded-2xl p-4 shadow-2xl border border-fuchsia-500/50 w-[calc(100vw-2rem)] max-w-sm sm:w-88 flex flex-col gap-2.5 animate-in fade-in zoom-in-95 pointer-events-auto left-4 sm:left-6 top-16 sm:top-20"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between border-b border-[var(--rule)] pb-2">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 flex items-center gap-1 shadow-sm">
+                <Satellite className="w-3.5 h-3.5 text-fuchsia-400" /> {selectedSatellite.type.replace('_', ' ')}
+              </span>
+              <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase">
+                {selectedSatellite.operator.split('/')[0].trim()}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedSatellite(null)}
+              className="text-[var(--ink-2)] hover:text-white p-1 rounded cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-1 text-xs">
+            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Missione & Telerilevamento</span>
+            <span className="font-bold text-[var(--ink)] leading-snug">
+              {selectedSatellite.name}
+            </span>
+            <span className="text-[11px] text-fuchsia-300 leading-relaxed">
+              {selectedSatellite.missionTarget}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[var(--rule)] text-xs">
+            <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
+              <span className="text-[10px] text-[var(--ink-3)] block font-mono">Quota & Velocità</span>
+              <span className="font-mono font-bold text-fuchsia-400">{selectedSatellite.altitudeKm} km</span>
+              <span className="text-[10px] text-[var(--ink-2)] font-mono">{selectedSatellite.speedKmh.toLocaleString()} km/h</span>
+            </div>
+            <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
+              <span className="text-[10px] text-[var(--ink-3)] block font-mono">Sensore & Risoluzione</span>
+              <span className="font-mono font-bold text-cyan-400">{selectedSatellite.resolution}</span>
+              <span className="text-[10px] text-[var(--ink-2)] font-mono">Swath {selectedSatellite.swathWidthKm} km</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-1 border-t border-[var(--rule)] text-[11px] font-mono text-[var(--ink-2)]">
+            <span>Passaggio: {selectedSatellite.nextPassVenice.split('(')[0].trim()}</span>
+            <span className="text-emerald-400 font-semibold">Elev. {selectedSatellite.maxElevationDeg}°</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              const sat = selectedSatellite;
+              setSelectedSatellite(null);
+              if (onSelectSatellite) onSelectSatellite(sat);
+            }}
+            className="w-full mt-1 py-1.5 px-3 rounded-xl bg-fuchsia-500/20 hover:bg-fuchsia-500/30 text-fuchsia-300 text-xs font-mono font-medium border border-fuchsia-500/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
+          >
+            <Satellite className="w-3.5 h-3.5" /> Scheda Completa & Dati ESA/ASI
+          </button>
         </div>
       )}
     </div>

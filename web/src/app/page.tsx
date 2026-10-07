@@ -13,6 +13,7 @@ import { AirportDetailModal } from '@/components/AirportDetailModal';
 import { ShipDetailModal } from '@/components/ShipDetailModal';
 import { MoseDetailModal } from '@/components/MoseDetailModal';
 import { AlilagunaDetailModal } from '@/components/AlilagunaDetailModal';
+import { SatelliteDetailModal } from '@/components/SatelliteDetailModal';
 import { Layers } from 'lucide-react';
 import {
   CameraViewPreset,
@@ -30,7 +31,8 @@ import {
   PedestrianFlowItem,
   AlilagunaRoute,
   AlilagunaStop,
-  AlilagunaBoat
+  AlilagunaBoat,
+  SatelliteItem
 } from '@/lib/types';
 import { MOCK_CANTIERI, MOCK_STOPS } from '@/lib/db';
 import { NOTTE, CARTA, getDynamicPalette } from '@/lib/solar';
@@ -80,6 +82,7 @@ export default function HomePage() {
   const [showAirQuality, setShowAirQuality] = useState<boolean>(true);
   const [showPedestrianFlows, setShowPedestrianFlows] = useState<boolean>(true);
   const [showAlilaguna, setShowAlilaguna] = useState<boolean>(true);
+  const [showSatellites, setShowSatellites] = useState<boolean>(true);
   const [bufferRadiusMeters, setBufferRadiusMeters] = useState<number>(200);
   const [selectedCategory, setSelectedCategory] = useState<TransportModeCategory | 'all'>('all');
 
@@ -99,12 +102,14 @@ export default function HomePage() {
   const [alilagunaRoutes, setAlilagunaRoutes] = useState<AlilagunaRoute[]>([]);
   const [alilagunaStops, setAlilagunaStops] = useState<AlilagunaStop[]>([]);
   const [alilagunaBoats, setAlilagunaBoats] = useState<AlilagunaBoat[]>([]);
+  const [satellites, setSatellites] = useState<SatelliteItem[]>([]);
   const [tideLevel, setTideLevel] = useState<number>(76);
 
   // Active selections & Modals
   const [selectedStop, setSelectedStop] = useState<StopItem | null>(null);
   const [selectedCantiere, setSelectedCantiere] = useState<CantiereItem | null>(null);
   const [selectedShip, setSelectedShip] = useState<ShipItem | null>(null);
+  const [selectedSatellite, setSelectedSatellite] = useState<SatelliteItem | null>(null);
   const [isMoseModalOpen, setIsMoseModalOpen] = useState<boolean>(false);
   const [isAlilagunaModalOpen, setIsAlilagunaModalOpen] = useState<boolean>(false);
   const [isSpatialModalOpen, setIsSpatialModalOpen] = useState<boolean>(false);
@@ -207,6 +212,14 @@ export default function HomePage() {
     loadAlilaguna();
     const alilagunaInterval = setInterval(loadAlilaguna, 8000);
 
+    // Fetch Earth Observation Satellites over Venice (Copernicus / ASI / NASA)
+    fetch('/api/satellites')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) setSatellites(data.data);
+      })
+      .catch((err) => console.warn('Using fallback satellites:', err));
+
     return () => {
       clearInterval(flightInterval);
       clearInterval(alilagunaInterval);
@@ -300,6 +313,7 @@ export default function HomePage() {
         tideLevel={tideLevel}
         activeShipsCount={ships.length}
         activeFlightsCount={flights.length}
+        activeSatellitesCount={satellites.length}
       />
 
       {/* Main Map Canvas Area */}
@@ -340,6 +354,9 @@ export default function HomePage() {
           alilagunaStops={alilagunaStops}
           alilagunaBoats={alilagunaBoats}
           onSelectAlilaguna={() => setIsAlilagunaModalOpen(true)}
+          showSatellites={showSatellites}
+          satellites={satellites}
+          onSelectSatellite={setSelectedSatellite}
           onSelectStop={setSelectedStop}
           onSelectCantiere={setSelectedCantiere}
           onSelectAirport={() => setIsAirportModalOpen(true)}
@@ -380,6 +397,9 @@ export default function HomePage() {
             onToggleAirQuality={() => setShowAirQuality((p) => !p)}
             showPedestrianFlows={showPedestrianFlows}
             onTogglePedestrianFlows={() => setShowPedestrianFlows((p) => !p)}
+            showSatellites={showSatellites}
+            onToggleSatellites={() => setShowSatellites((p) => !p)}
+            satellitesCount={satellites.length}
             showSpatialBuffer={showSpatialBuffer}
             onToggleSpatialBuffer={() => setShowSpatialBuffer((p) => !p)}
             bufferRadiusMeters={bufferRadiusMeters}
@@ -443,6 +463,9 @@ export default function HomePage() {
                 onToggleAirQuality={() => setShowAirQuality((p) => !p)}
                 showPedestrianFlows={showPedestrianFlows}
                 onTogglePedestrianFlows={() => setShowPedestrianFlows((p) => !p)}
+                showSatellites={showSatellites}
+                onToggleSatellites={() => setShowSatellites((p) => !p)}
+                satellitesCount={satellites.length}
                 showSpatialBuffer={showSpatialBuffer}
                 onToggleSpatialBuffer={() => setShowSpatialBuffer((p) => !p)}
                 bufferRadiusMeters={bufferRadiusMeters}
@@ -520,6 +543,11 @@ export default function HomePage() {
         routes={alilagunaRoutes}
         stops={alilagunaStops}
         boats={alilagunaBoats}
+      />
+
+      <SatelliteDetailModal
+        satellite={selectedSatellite}
+        onClose={() => setSelectedSatellite(null)}
       />
 
       <SpatialAnalysisModal

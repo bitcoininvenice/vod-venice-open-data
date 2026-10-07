@@ -18,6 +18,7 @@ interface HeaderProps {
   activeShipsCount?: number;
   activeFlightsCount?: number;
   airAqi?: number;
+  activeSatellitesCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -33,7 +34,8 @@ export const Header: React.FC<HeaderProps> = ({
   tideLevel = 76,
   activeShipsCount = 8,
   activeFlightsCount = 7,
-  airAqi = 36
+  airAqi = 36,
+  activeSatellitesCount = 6
 }) => {
   return (
     <header className="w-full border-b border-[var(--rule)] bg-[var(--ground)]/90 backdrop-blur-md px-3 sm:px-4 py-2 sm:py-3 flex flex-col md:flex-row md:items-center justify-between gap-2 sm:gap-3 z-30 shrink-0">
@@ -139,6 +141,12 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
           <span>🚢 Navi:</span>
           <span className="font-bold text-[var(--ink)]">{activeShipsCount} AIS</span>
+        </div>
+
+        {/* Satellites badge (Copernicus / ASI) */}
+        <div className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/30">
+          <span>🛰️ Satelliti:</span>
+          <span className="font-bold text-[var(--ink)]">{activeSatellitesCount} ESA/ASI</span>
         </div>
 
         {/* Spatial Query Tool trigger */}

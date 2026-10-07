@@ -3,7 +3,7 @@
  * Database Access Layer & Spatial Geometry Queries
  */
 
-import { CantiereItem, StopItem, StopNearCantiere, PlatformMetrics } from './types';
+import { CantiereItem, StopItem, StopNearCantiere, PlatformMetrics, SatelliteItem } from './types';
 
 // Fallback verified datasets for client rendering and offline operations
 export const MOCK_CANTIERI: CantiereItem[] = [
@@ -269,6 +269,12 @@ export async function fetchPlatformMetrics(): Promise<PlatformMetrics> {
     freeParkingSpots: 1250,
     parkingOccupancyRate: 69.5,
 
+    // Satelliti & Osservazione Spaziale (Copernicus ESA / ASI / NASA)
+    activeSatellitesCount: 6,
+    copernicusSentinelsCount: 2,
+    radarEarthObservationSwathKm: 250,
+    nextOrbitalPassMinutes: 14,
+
     // Patrimonio & Opere Pubbliche
     activeCantieri: cantieri.filter(c => c.stato === 'In corso').length,
     totalInvestmentCantieri: totalInv,
@@ -279,3 +285,18 @@ export async function fetchPlatformMetrics(): Promise<PlatformMetrics> {
     veritasServicePointsCount: 18
   };
 }
+
+export async function fetchSatellites(): Promise<SatelliteItem[]> {
+  try {
+    const res = await fetch('/api/satellites');
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data) return json.data;
+    }
+  } catch (err) {
+    // fallback below
+  }
+  const { SATELLITES_DATA } = await import('@/lib/satellitesData');
+  return SATELLITES_DATA;
+}
+

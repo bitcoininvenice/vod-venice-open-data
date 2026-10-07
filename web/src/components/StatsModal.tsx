@@ -19,7 +19,9 @@ import {
   Droplets,
   Accessibility,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  Satellite,
+  Orbit
 } from 'lucide-react';
 import { PlatformMetrics } from '@/lib/types';
 
@@ -28,7 +30,7 @@ interface StatsModalProps {
   onClose: () => void;
 }
 
-type MetricCategory = 'all' | 'maree_aria' | 'marittimo' | 'trasporti' | 'aeroporto' | 'pedoni_citta';
+type MetricCategory = 'all' | 'maree_aria' | 'marittimo' | 'trasporti' | 'aeroporto' | 'pedoni_citta' | 'satelliti';
 
 export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null);
@@ -81,11 +83,12 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
         {/* Category Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs">
           {[
-            { id: 'all', label: 'Tutti i Dati', count: 18 },
+            { id: 'all', label: 'Tutti i Dati', count: 20 },
             { id: 'maree_aria', label: '🌊 Maree & Aria ARPAV', count: 4 },
             { id: 'marittimo', label: '🚢 Porto, AIS & Canali', count: 3 },
             { id: 'trasporti', label: '🚤 ACTV & Alilaguna', count: 4 },
             { id: 'aeroporto', label: '✈️ Voli & VCE Hub', count: 2 },
+            { id: 'satelliti', label: '🛰️ Satelliti & Radar SAR', count: 2 },
             { id: 'pedoni_citta', label: '🚶 Flussi & Città', count: 5 }
           ].map((tab) => (
             <button
@@ -386,12 +389,55 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
               </div>
             </>
           )}
+
+          {/* SECTION 7: OSSERVAZIONE DELLA TERRA & SATELLITI ESA/ASI */}
+          {(activeTab === 'all' || activeTab === 'satelliti') && (
+            <>
+              <div className="bg-gradient-to-br from-indigo-950/30 to-violet-950/10 p-3.5 rounded-xl border border-indigo-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-indigo-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Satellite className="w-4 h-4 text-indigo-400" />
+                    <span>Costellazioni Radar & Ottiche</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold">Copernicus & ASI</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-indigo-400">
+                    {metrics?.activeSatellitesCount ?? 6}
+                  </span>
+                  <span className="text-xs font-mono text-indigo-300">satelliti censiti</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  {metrics?.copernicusSentinelsCount ?? 2} Sentinel ESA · COSMO-SkyMed CSG-2 ASI · ISS · Landsat 9 · Galileo GNSS
+                </span>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-950/30 to-pink-950/10 p-3.5 rounded-xl border border-purple-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs text-purple-300">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Orbit className="w-4 h-4 text-purple-400" />
+                    <span>Interferometria Subsidenza & MOSE</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">DInSAR Radar</span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold font-mono text-purple-400">
+                    {metrics?.radarEarthObservationSwathKm ?? 250}
+                  </span>
+                  <span className="text-xs font-mono text-purple-300">km ampiezza scansione SAR</span>
+                </div>
+                <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
+                  Precisione millimetrica DInSAR per sprofondamento suolo lagunare e cerniere paratoie MOSE
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Source citation */}
         <div className="text-[11px] text-[var(--ink-3)] leading-relaxed pt-2 border-t border-[var(--rule)] flex flex-wrap gap-x-4 gap-y-1 items-center justify-between">
           <span>
-            <b>Fonti Istituzionali:</b> CPSM Centro Maree · ARPAV · Guardia Costiera VTS · ENAV/OpenSky · Smart Control Room Tronchetto · Comune di Venezia (dati.venezia.it) · ACTV / AVM · Alilaguna S.p.A. (Transitland) · Veritas.
+            <b>Fonti Istituzionali:</b> CPSM Centro Maree · ARPAV · Guardia Costiera VTS · ENAV/OpenSky · Smart Control Room Tronchetto · Comune di Venezia (dati.venezia.it) · ACTV / AVM · Alilaguna S.p.A. · Copernicus Data Space (ESA) · ASI Open Data · CelesTrak NORAD · Veritas.
           </span>
           <span className="font-mono text-[10px] text-cyan-400">
             PostgreSQL / PostGIS Engine

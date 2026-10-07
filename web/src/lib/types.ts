@@ -181,6 +181,12 @@ export interface PlatformMetrics {
   freeParkingSpots: number;
   parkingOccupancyRate: number;
 
+  // Satelliti & Osservazione Spaziale (Copernicus ESA / ASI / NASA)
+  activeSatellitesCount: number;
+  copernicusSentinelsCount: number;
+  radarEarthObservationSwathKm: number;
+  nextOrbitalPassMinutes: number;
+
   // Patrimonio & Opere Pubbliche
   activeCantieri: number;
   totalInvestmentCantieri: number;
@@ -325,4 +331,30 @@ export interface AlilagunaBoat {
   nextStop: string;
   destination: string;
   passengersOnBoard: number;
+}
+
+export interface SatelliteItem {
+  id: string; // es. "SENTINEL-1A", "SENTINEL-2A", "COSMO-SKYMED-2", "ISS", "LANDSAT-9"
+  name: string;
+  noradId: number;
+  operator: string; // "ESA / Copernicus", "ASI (Agenzia Spaziale Italiana)", "NASA / USGS", "NASA / ESA / JAXA"
+  type: 'SAR_RADAR' | 'OPTICAL' | 'SPACE_STATION' | 'THERMAL' | 'NAVIGATION';
+  sensor: string; // es. "C-Band SAR Radar (C-SAR)", "MSI Multispectral 13-band", "X-Band SAR Submetrico"
+  resolution: string; // es. "5m SAR", "10m Multispettrale", "1m Submetrico"
+  missionTarget: string; // Ruolo per Venezia (es. "Interferometria subsidenza San Marco e monitoraggio barriere MOSE")
+  altitudeKm: number;
+  speedKmh: number;
+  inclinationDeg: number;
+  periodMinutes: number;
+  currentLon: number;
+  currentLat: number;
+  heading: number; // Angolo di traccia orbitale a terra (deg)
+  groundTrack: [number, number][]; // Polilinea [lon, lat] dell'orbita sopra l'Alto Adriatico / Veneto
+  swathWidthKm: number; // Larghezza scansione al suolo (impronta radar/ottica)
+  nextPassVenice: string;
+  passDurationSeconds: number;
+  maxElevationDeg: number;
+  isPassingNow: boolean;
+  openDataSource: string; // "Copernicus Data Space (ESA)", "ASI Open Data", "CelesTrak NORAD", etc.
+  apiLink: string;
 }
