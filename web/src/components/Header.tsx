@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CameraViewPreset, PaletteTheme } from '@/lib/types';
-import { Compass, Moon, Sun, Sparkles, Activity, Layers, BarChart3, ShieldAlert } from 'lucide-react';
+import { Compass, Moon, Sun, Sparkles, Activity, Layers, BarChart3, ShieldAlert, HelpCircle } from 'lucide-react';
 
 interface HeaderProps {
   currentView: CameraViewPreset;
@@ -12,6 +12,7 @@ interface HeaderProps {
   onOpenSpatialModal: () => void;
   onOpenStatsModal: () => void;
   onOpenLayers?: () => void;
+  onOpenTutorial?: () => void;
   activeVehiclesCount: number;
   activeCantieriCount: number;
   tideLevel?: number;
@@ -29,6 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSpatialModal,
   onOpenStatsModal,
   onOpenLayers,
+  onOpenTutorial,
   activeVehiclesCount,
   activeCantieriCount,
   tideLevel = 76,
@@ -87,6 +89,18 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <BarChart3 className="w-4 h-4" />
           </button>
+
+          {/* Tutorial / Help Mobile Trigger */}
+          {onOpenTutorial && (
+            <button
+              type="button"
+              onClick={onOpenTutorial}
+              className="p-1.5 rounded-lg bg-[var(--rule)] text-amber-400 border border-[var(--rule)] cursor-pointer"
+              title="Guida & Tutorial"
+            >
+              <HelpCircle className="w-4 h-4" />
+            </button>
+          )}
 
           {/* Layers Mobile Trigger */}
           {onOpenLayers && (
@@ -172,6 +186,19 @@ export const Header: React.FC<HeaderProps> = ({
           <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
           <span className="hidden lg:inline">Metriche</span>
         </button>
+
+        {/* Tutorial / Guide trigger */}
+        {onOpenTutorial && (
+          <button
+            type="button"
+            onClick={onOpenTutorial}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--rule)] hover:bg-[var(--rule)]/80 text-[var(--ink)] border border-[var(--rule)] transition-all cursor-pointer"
+            title="Guida interattiva e scelta preset"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden lg:inline">Guida</span>
+          </button>
+        )}
 
         {/* Theme / Palette Switcher */}
         <div className="flex items-center bg-[var(--rule)]/60 p-0.5 rounded-lg border border-[var(--rule)]">

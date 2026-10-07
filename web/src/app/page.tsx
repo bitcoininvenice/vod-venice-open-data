@@ -15,6 +15,7 @@ import { MoseDetailModal } from '@/components/MoseDetailModal';
 import { AlilagunaDetailModal } from '@/components/AlilagunaDetailModal';
 import { SatelliteDetailModal } from '@/components/SatelliteDetailModal';
 import { VeniceFeatureDetailModal, VeniceFeatureSelected } from '@/components/VeniceFeatureDetailModal';
+import { OnboardingTutorialModal, MapPresetType } from '@/components/OnboardingTutorialModal';
 import { Layers } from 'lucide-react';
 import {
   CameraViewPreset,
@@ -75,28 +76,28 @@ export default function HomePage() {
   const [paletteTheme, setPaletteTheme] = useState<PaletteTheme>('notte');
   const [currentView, setCurrentView] = useState<CameraViewPreset>('lagoon');
 
-  // Layer toggles
-  const [showRoutes, setShowRoutes] = useState<boolean>(true);
-  const [showStops, setShowStops] = useState<boolean>(true);
-  const [showVehicles, setShowVehicles] = useState<boolean>(true);
-  const [showCantieri, setShowCantieri] = useState<boolean>(true);
-  const [showSpatialBuffer, setShowSpatialBuffer] = useState<boolean>(true);
-  const [showFlights, setShowFlights] = useState<boolean>(true);
-  const [showShips, setShowShips] = useState<boolean>(true);
-  const [showShipRoutes, setShowShipRoutes] = useState<boolean>(true);
-  const [showMose, setShowMose] = useState<boolean>(true);
-  const [showCityAssets, setShowCityAssets] = useState<boolean>(true);
-  const [showParkings, setShowParkings] = useState<boolean>(true);
-  const [showAirQuality, setShowAirQuality] = useState<boolean>(true);
-  const [showPedestrianFlows, setShowPedestrianFlows] = useState<boolean>(true);
-  const [showAlilaguna, setShowAlilaguna] = useState<boolean>(true);
-  const [showSatellites, setShowSatellites] = useState<boolean>(true);
-  const [showPasserelle, setShowPasserelle] = useState<boolean>(true);
-  const [showMarineSignals, setShowMarineSignals] = useState<boolean>(true);
-  const [showOceanStations, setShowOceanStations] = useState<boolean>(true);
-  const [showBathingWaters, setShowBathingWaters] = useState<boolean>(true);
-  const [showTrees, setShowTrees] = useState<boolean>(true);
-  const [showServicesVenice, setShowServicesVenice] = useState<boolean>(true);
+  // Layer toggles (Default to false on clean map startup)
+  const [showRoutes, setShowRoutes] = useState<boolean>(false);
+  const [showStops, setShowStops] = useState<boolean>(false);
+  const [showVehicles, setShowVehicles] = useState<boolean>(false);
+  const [showCantieri, setShowCantieri] = useState<boolean>(false);
+  const [showSpatialBuffer, setShowSpatialBuffer] = useState<boolean>(false);
+  const [showFlights, setShowFlights] = useState<boolean>(false);
+  const [showShips, setShowShips] = useState<boolean>(false);
+  const [showShipRoutes, setShowShipRoutes] = useState<boolean>(false);
+  const [showMose, setShowMose] = useState<boolean>(false);
+  const [showCityAssets, setShowCityAssets] = useState<boolean>(false);
+  const [showParkings, setShowParkings] = useState<boolean>(false);
+  const [showAirQuality, setShowAirQuality] = useState<boolean>(false);
+  const [showPedestrianFlows, setShowPedestrianFlows] = useState<boolean>(false);
+  const [showAlilaguna, setShowAlilaguna] = useState<boolean>(false);
+  const [showSatellites, setShowSatellites] = useState<boolean>(false);
+  const [showPasserelle, setShowPasserelle] = useState<boolean>(false);
+  const [showMarineSignals, setShowMarineSignals] = useState<boolean>(false);
+  const [showOceanStations, setShowOceanStations] = useState<boolean>(false);
+  const [showBathingWaters, setShowBathingWaters] = useState<boolean>(false);
+  const [showTrees, setShowTrees] = useState<boolean>(false);
+  const [showServicesVenice, setShowServicesVenice] = useState<boolean>(false);
   const [bufferRadiusMeters, setBufferRadiusMeters] = useState<number>(200);
   const [selectedCategory, setSelectedCategory] = useState<TransportModeCategory | 'all'>('all');
 
@@ -137,7 +138,82 @@ export default function HomePage() {
   const [isSpatialModalOpen, setIsSpatialModalOpen] = useState<boolean>(false);
   const [isStatsModalOpen, setIsStatsModalOpen] = useState<boolean>(false);
   const [isAirportModalOpen, setIsAirportModalOpen] = useState<boolean>(false);
+  const [isTutorialOpen, setIsTutorialOpen] = useState<boolean>(false);
   const [focusedCoordinates, setFocusedCoordinates] = useState<{ lat: number; lon: number } | null>(null);
+
+  // Check onboarding tutorial completion on first load
+  useEffect(() => {
+    try {
+      const completed = localStorage.getItem('vod_onboarding_completed');
+      if (!completed) {
+        setIsTutorialOpen(true);
+      }
+    } catch {
+      // In private browsing or non-window contexts
+    }
+  }, []);
+
+  const turnAllLayers = (active: boolean) => {
+    setShowRoutes(active);
+    setShowStops(active);
+    setShowVehicles(active);
+    setShowCantieri(active);
+    setShowSpatialBuffer(active);
+    setShowFlights(active);
+    setShowShips(active);
+    setShowShipRoutes(active);
+    setShowMose(active);
+    setShowCityAssets(active);
+    setShowParkings(active);
+    setShowAirQuality(active);
+    setShowPedestrianFlows(active);
+    setShowAlilaguna(active);
+    setShowSatellites(active);
+    setShowPasserelle(active);
+    setShowMarineSignals(active);
+    setShowOceanStations(active);
+    setShowBathingWaters(active);
+    setShowTrees(active);
+    setShowServicesVenice(active);
+  };
+
+  const applyPreset = (preset: MapPresetType) => {
+    // Reset all layers first to ensure a crisp, dedicated preset
+    turnAllLayers(false);
+
+    if (preset === 'clean') {
+      return;
+    }
+    if (preset === 'all') {
+      turnAllLayers(true);
+      return;
+    }
+    if (preset === 'mobility') {
+      setShowRoutes(true);
+      setShowStops(true);
+      setShowVehicles(true);
+      setShowAlilaguna(true);
+      setShowShips(true);
+      setShowShipRoutes(true);
+      setShowFlights(true);
+    } else if (preset === 'lagoon') {
+      setShowMose(true);
+      setShowPasserelle(true);
+      setShowMarineSignals(true);
+      setShowOceanStations(true);
+      setShowBathingWaters(true);
+    } else if (preset === 'city') {
+      setShowCityAssets(true);
+      setShowTrees(true);
+      setShowServicesVenice(true);
+      setShowParkings(true);
+      setShowCantieri(true);
+      setShowAirQuality(true);
+      setShowPedestrianFlows(true);
+    } else if (preset === 'satellites') {
+      setShowSatellites(true);
+    }
+  };
 
   // Fetch initial data from APIs (including Flights, Ships, City Assets, Tide, Environment, Flows)
   useEffect(() => {
@@ -362,6 +438,7 @@ export default function HomePage() {
         onOpenSpatialModal={() => setIsSpatialModalOpen(true)}
         onOpenStatsModal={() => setIsStatsModalOpen(true)}
         onOpenLayers={() => setIsLayerPanelOpenMobile(true)}
+        onOpenTutorial={() => setIsTutorialOpen(true)}
         activeVehiclesCount={302}
         activeCantieriCount={cantieri.filter((c) => c.stato === 'In corso').length}
         tideLevel={tideLevel}
@@ -436,6 +513,9 @@ export default function HomePage() {
         {/* Floating Left: Desktop Layer & Filter Panel */}
         <div className="hidden md:block absolute top-4 left-4 z-20 w-80 max-w-[calc(100vw-2rem)]">
           <LayerPanel
+            onTurnAllOff={() => turnAllLayers(false)}
+            onTurnAllOn={() => turnAllLayers(true)}
+            onApplyPreset={applyPreset}
             showRoutes={showRoutes}
             onToggleRoutes={() => setShowRoutes((p) => !p)}
             showStops={showStops}
@@ -520,6 +600,9 @@ export default function HomePage() {
               onClick={(e) => e.stopPropagation()}
             >
               <LayerPanel
+                onTurnAllOff={() => turnAllLayers(false)}
+                onTurnAllOn={() => turnAllLayers(true)}
+                onApplyPreset={applyPreset}
                 showRoutes={showRoutes}
                 onToggleRoutes={() => setShowRoutes((p) => !p)}
                 showStops={showStops}
@@ -668,6 +751,12 @@ export default function HomePage() {
       <StatsModal
         isOpen={isStatsModalOpen}
         onClose={() => setIsStatsModalOpen(false)}
+      />
+
+      <OnboardingTutorialModal
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+        onSelectPreset={applyPreset}
       />
     </main>
   );
