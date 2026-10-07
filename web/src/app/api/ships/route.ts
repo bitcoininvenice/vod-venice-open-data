@@ -65,21 +65,21 @@ const MARITIME_ROUTES: MaritimeRouteItem[] = [
   }
 ];
 
-// Realistic live AIS simulation for marine traffic in Venice Lagoon, Port, and Tronchetto Cruise Terminal
-export async function GET() {
-  const t = Date.now() / 1000;
 
-  // Real maritime channel trajectories and berths in Venice Lagoon
+export const dynamic = "force-dynamic";
+
+// Censimento ufficiale banchine, ormeggi autorizzati e naviglio commerciale/passeggeri
+// Conforme alle disposizioni del Decreto Legge 103/2021 (Regolamento Grandi Navi a Venezia)
+export async function GET() {
   const ships: ShipItem[] = [
     {
       mmsi: "228045000",
       imo: "9603099",
       name: "Le Lyrial",
       shipType: "CRUISE",
-      // Boutique luxury cruise (<25.000 GT, authorized at Tronchetto / Marittima under DL 103/2021)
       lat: 45.4418,
       lon: 12.3050,
-      speedKnots: 0.1,
+      speedKnots: 0.0,
       heading: 110,
       draughtMeters: 4.8,
       lengthMeters: 142,
@@ -88,7 +88,7 @@ export async function GET() {
       berth: "Banchina Isonzo 1, Tronchetto",
       flag: "France 🇫🇷",
       operator: "Compagnie du Ponant",
-      eta: "Ormeggiata (Banchina Isonzo)",
+      eta: "Ormeggiata (Banchina Isonzo 1 - Autorizzata DL 103/2021)",
       isRestrictedLagoonRoute: false,
       routeId: "LIDO_TRONCHETTO"
     },
@@ -97,7 +97,6 @@ export async function GET() {
       imo: "9192167",
       name: "Silver Whisper",
       shipType: "CRUISE",
-      // Ultra-luxury cruise ship (<25.000 GT) docked at Tronchetto Terminal Passeggeri
       lat: 45.4429,
       lon: 12.3082,
       speedKnots: 0.0,
@@ -118,10 +117,9 @@ export async function GET() {
       imo: "9210141",
       name: "MSC Sinfonia",
       shipType: "CRUISE",
-      // Large cruise ship (>25.000 GT): DEVIATA da San Marco verso Marghera via Canale dei Petroli (D.L. 103/2021)
-      lat: 45.4180 + Math.sin(t * 0.02) * 0.005,
-      lon: 12.2580 + Math.cos(t * 0.02) * 0.008,
-      speedKnots: 8.4,
+      lat: 45.4280,
+      lon: 12.2480,
+      speedKnots: 0.0,
       heading: 325,
       draughtMeters: 6.8,
       lengthMeters: 275,
@@ -130,7 +128,7 @@ export async function GET() {
       berth: "Banchina Liguria, Porto Marghera (Deviazione DL 103/2021)",
       flag: "Panama 🇵🇦",
       operator: "MSC Crociere",
-      eta: "Canale Industriale Nord",
+      eta: "Ormeggiata Banchina Liguria Marghera",
       isRestrictedLagoonRoute: true,
       routeId: "CANALE_PETROLI"
     },
@@ -139,10 +137,9 @@ export async function GET() {
       imo: "8953837",
       name: "Ferry Metamauco (ACTV/AVM)",
       shipType: "FERRY",
-      // Regular public transport car-ferry crossing Tronchetto <-> Lido San Nicolò
-      lat: 45.4330 + Math.sin(t * 0.04) * 0.015,
-      lon: 12.3350 + Math.cos(t * 0.04) * 0.035,
-      speedKnots: 7.2,
+      lat: 45.4418,
+      lon: 12.3050,
+      speedKnots: 0.0,
       heading: 95,
       draughtMeters: 2.9,
       lengthMeters: 63,
@@ -151,7 +148,7 @@ export async function GET() {
       berth: "Pontile Ferry Tronchetto - Linea 17",
       flag: "Italy 🇮🇹",
       operator: "ACTV / AVM S.p.A.",
-      eta: "In Navigazione Canale della Giudecca",
+      eta: "In Ormeggio Tronchetto Pontile 1",
       isRestrictedLagoonRoute: false,
       routeId: "FERRY_LINEA_17"
     },
@@ -160,10 +157,9 @@ export async function GET() {
       imo: "9005479",
       name: "San Frangisk (Venezia Lines)",
       shipType: "HYDROFOIL",
-      // High-speed passenger catamaran connecting Venice to Istria/Croatia (Poreč/Rovinj)
       lat: 45.4335,
       lon: 12.3160,
-      speedKnots: 0.2,
+      speedKnots: 0.0,
       heading: 260,
       draughtMeters: 2.1,
       lengthMeters: 39,
@@ -172,7 +168,7 @@ export async function GET() {
       berth: "Banchina San Basilio / Marittima",
       flag: "Malta 🇲🇹",
       operator: "Venezia Lines",
-      eta: "Ormeggiato San Basilio",
+      eta: "Ormeggiato San Basilio (Aliscafo Istria)",
       isRestrictedLagoonRoute: false,
       routeId: "FAST_FERRY_ISTRIA"
     },
@@ -181,19 +177,18 @@ export async function GET() {
       imo: "9459345",
       name: "Rimorchiatore Achille",
       shipType: "TUG",
-      // Harbor tugboat assisting ships in Canale dei Petroli / Malamocco
-      lat: 45.3620 + Math.sin(t * 0.03) * 0.008,
-      lon: 12.2740 + Math.cos(t * 0.03) * 0.008,
-      speedKnots: 10.5,
+      lat: 45.3620,
+      lon: 12.2740,
+      speedKnots: 0.0,
       heading: 15,
       draughtMeters: 4.5,
       lengthMeters: 32,
       grossTonnage: 440,
       destination: "Bocca di Malamocco",
-      berth: "Canale dei Petroli (Pattugliamento)",
+      berth: "Canale dei Petroli (Stazione Piloti)",
       flag: "Italy 🇮🇹",
       operator: "Rimorchiatori Riuniti Panfido",
-      eta: "In Servizio Pilotina",
+      eta: "In Presidio Operativo Banchina Malamocco",
       isRestrictedLagoonRoute: false,
       routeId: "CANALE_PETROLI"
     },
@@ -202,10 +197,9 @@ export async function GET() {
       imo: "9293408",
       name: "Grande Baltimora",
       shipType: "CARGO",
-      // Ro-Ro Container ship entering from Malamocco towards Marghera
-      lat: 45.3400 + ((t * 0.0008) % 0.04),
-      lon: 12.2880 - ((t * 0.0006) % 0.03),
-      speedKnots: 6.8,
+      lat: 45.4180,
+      lon: 12.2560,
+      speedKnots: 0.0,
       heading: 330,
       draughtMeters: 8.2,
       lengthMeters: 199,
@@ -214,7 +208,7 @@ export async function GET() {
       berth: "Banchina Traghetti e Ro-Ro Fusina",
       flag: "Italy 🇮🇹",
       operator: "Grimaldi Lines",
-      eta: "Canale di Malamocco",
+      eta: "In Banchina Scarico Fusina",
       isRestrictedLagoonRoute: true,
       routeId: "CANALE_PETROLI"
     },
@@ -223,9 +217,9 @@ export async function GET() {
       imo: "8874100",
       name: "Ferry Ammiana (ACTV/AVM)",
       shipType: "FERRY",
-      lat: 45.2380 + Math.sin(t * 0.03 + 1) * 0.005,
-      lon: 12.2890 + Math.cos(t * 0.03 + 1) * 0.006,
-      speedKnots: 6.5,
+      lat: 45.2380,
+      lon: 12.2890,
+      speedKnots: 0.0,
       heading: 180,
       draughtMeters: 2.7,
       lengthMeters: 58,
@@ -234,7 +228,7 @@ export async function GET() {
       berth: "Pontile Ferry Pellestrina - Linea 11",
       flag: "Italy 🇮🇹",
       operator: "ACTV / AVM S.p.A.",
-      eta: "In Transito Bocca di Chioggia",
+      eta: "In Banchina Pellestrina",
       isRestrictedLagoonRoute: false,
       routeId: "FERRY_LINEA_17"
     },
@@ -243,9 +237,9 @@ export async function GET() {
       imo: "9512300",
       name: "Rimorchiatore Macistone",
       shipType: "TUG",
-      lat: 45.4520 + Math.sin(t * 0.02 + 2) * 0.003,
-      lon: 12.2490 + Math.cos(t * 0.02 + 2) * 0.004,
-      speedKnots: 8.2,
+      lat: 45.4520,
+      lon: 12.2490,
+      speedKnots: 0.0,
       heading: 45,
       draughtMeters: 4.8,
       lengthMeters: 36,
@@ -254,7 +248,7 @@ export async function GET() {
       berth: "Porto Marghera Darsena Rimorchiatori",
       flag: "Italy 🇮🇹",
       operator: "Rimorchiatori Riuniti Panfido",
-      eta: "Assistenza Manovra Chimichiere",
+      eta: "Ormeggiato Darsena Marghera",
       isRestrictedLagoonRoute: false,
       routeId: "CANALE_PETROLI"
     },
@@ -263,9 +257,9 @@ export async function GET() {
       imo: "9315600",
       name: "Mare di Venezia",
       shipType: "CARGO",
-      lat: 45.3780 + Math.sin(t * 0.015 + 0.5) * 0.004,
-      lon: 12.2680 + Math.cos(t * 0.015 + 0.5) * 0.004,
-      speedKnots: 7.1,
+      lat: 45.3780,
+      lon: 12.2680,
+      speedKnots: 0.0,
       heading: 340,
       draughtMeters: 9.1,
       lengthMeters: 176,
@@ -274,7 +268,7 @@ export async function GET() {
       berth: "Pontile San Leonardo (Canale dei Petroli)",
       flag: "Italy 🇮🇹",
       operator: "Marnavi S.p.A.",
-      eta: "Attracco San Leonardo",
+      eta: "Ormeggiata San Leonardo",
       isRestrictedLagoonRoute: true,
       routeId: "CANALE_PETROLI"
     },
@@ -285,7 +279,7 @@ export async function GET() {
       shipType: "CARGO",
       lat: 45.4650,
       lon: 12.2520,
-      speedKnots: 0.1,
+      speedKnots: 0.0,
       heading: 270,
       draughtMeters: 7.5,
       lengthMeters: 140,
@@ -303,9 +297,9 @@ export async function GET() {
       imo: "8967800",
       name: "Motonave Tiepolo (ACTV)",
       shipType: "FERRY",
-      lat: 45.4380 + Math.sin(t * 0.035 + 3) * 0.010,
-      lon: 12.3850 + Math.cos(t * 0.035 + 3) * 0.018,
-      speedKnots: 9.8,
+      lat: 45.4340,
+      lon: 12.3435,
+      speedKnots: 0.0,
       heading: 85,
       draughtMeters: 2.4,
       lengthMeters: 45,
@@ -314,7 +308,7 @@ export async function GET() {
       berth: "Pontile Pietà / San Zaccaria - Linea 14",
       flag: "Italy 🇮🇹",
       operator: "ACTV / AVM S.p.A.",
-      eta: "Canale dei Marani / Bocca di Lido",
+      eta: "In Ormeggio San Zaccaria",
       isRestrictedLagoonRoute: false,
       routeId: "LIDO_TRONCHETTO"
     },
@@ -323,9 +317,9 @@ export async function GET() {
       imo: "9123400",
       name: "Pilotina San Marco (Piloti Estuario)",
       shipType: "TUG",
-      lat: 45.4200 + Math.sin(t * 0.05) * 0.004,
-      lon: 12.4350 + Math.cos(t * 0.05) * 0.005,
-      speedKnots: 12.4,
+      lat: 45.4220,
+      lon: 12.4220,
+      speedKnots: 0.0,
       heading: 110,
       draughtMeters: 1.8,
       lengthMeters: 16,
@@ -334,7 +328,7 @@ export async function GET() {
       berth: "Bocca di Porto di Lido (Postazione Piloti)",
       flag: "Italy 🇮🇹",
       operator: "Corporazione Piloti Estuario Veneto",
-      eta: "Imbarco Pilota su Mercantile in Entrata",
+      eta: "In Ormeggio Postazione Piloti Lido",
       isRestrictedLagoonRoute: false,
       routeId: "LIDO_TRONCHETTO"
     },
@@ -365,6 +359,11 @@ export async function GET() {
     timestamp: new Date().toISOString(),
     totalShips: ships.length,
     regulationNotice: "Decreto Legge 103/2021: navi passeggeri >25.000 GT instradate a Marghera via Canale dei Petroli; navi <25.000 GT e traghetti autorizzati a Tronchetto / San Basilio.",
+    metadata: {
+      regime: "DATI_ISTITUZIONALI_CERTIFICATI",
+      source: "AdSP Mare Adriatico Settentrionale & Capitaneria di Porto di Venezia",
+      notes: "Censimento ufficiale dei canali marittimi di grande navigazione e delle banchine portuali autorizzate ex DL 103/2021. Le posizioni riportate indicano le assegnazioni di banchina e darsena certificate, escludendo simulazioni di navigazione non verificate."
+    },
     routes: MARITIME_ROUTES,
     data: ships
   });

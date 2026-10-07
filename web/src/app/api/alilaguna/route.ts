@@ -295,167 +295,27 @@ const ALILAGUNA_ROUTES: AlilagunaRoute[] = [
   }
 ];
 
+
+export const dynamic = "force-dynamic";
+
 export async function GET() {
-  const t = Date.now() / 1000;
-
-  // Live fleet movement simulation along shapes
-  const boats: AlilagunaBoat[] = [
-    {
-      id: 'ali_boat_14',
-      name: 'Alilaguna 14',
-      lineCode: 'BLU',
-      lineName: 'Linea Blu',
-      color: '#0055a5',
-      lat: 45.4720 + Math.sin(t * 0.05) * 0.012,
-      lon: 12.3460 + Math.cos(t * 0.05) * 0.005,
-      heading: 195,
-      speedKmh: 17.8,
-      nextStop: 'Murano Colonna',
-      destination: 'Stazione Marittima',
-      passengersOnBoard: 42
-    },
-    {
-      id: 'ali_boat_22',
-      name: 'Alilaguna 22',
-      lineCode: 'BLU',
-      lineName: 'Linea Blu',
-      color: '#0055a5',
-      lat: 45.4310 + Math.sin(t * 0.04 + 1.5) * 0.006,
-      lon: 12.3420 + Math.cos(t * 0.04 + 1.5) * 0.015,
-      heading: 260,
-      speedKmh: 14.5,
-      nextStop: 'San Marco (Giardinetti)',
-      destination: 'Aeroporto VCE',
-      passengersOnBoard: 58
-    },
-    {
-      id: 'ali_boat_07',
-      name: 'Alilaguna 07',
-      lineCode: 'ARANCIO',
-      lineName: 'Linea Arancio',
-      color: '#f39200',
-      lat: 45.4650 + Math.sin(t * 0.06 + 2) * 0.015,
-      lon: 12.3410 + Math.cos(t * 0.06 + 2) * 0.004,
-      heading: 185,
-      speedKmh: 18.2,
-      nextStop: "Madonna dell'Orto",
-      destination: 'Rialto / Giglio',
-      passengersOnBoard: 36
-    },
-    {
-      id: 'ali_boat_19',
-      name: 'Alilaguna 19',
-      lineCode: 'ARANCIO',
-      lineName: 'Linea Arancio',
-      color: '#f39200',
-      lat: 45.4395 + Math.sin(t * 0.03 + 3) * 0.002,
-      lon: 12.3340 + Math.cos(t * 0.03 + 3) * 0.003,
-      heading: 140,
-      speedKmh: 9.2,
-      nextStop: 'Rialto',
-      destination: 'Santa Maria del Giglio',
-      passengersOnBoard: 47
-    },
-    {
-      id: 'ali_boat_31',
-      name: 'Alilaguna 31',
-      lineCode: 'ROSSA',
-      lineName: 'Linea Rossa',
-      color: '#e30613',
-      lat: 45.4780 + Math.sin(t * 0.07 + 0.8) * 0.010,
-      lon: 12.3500 + Math.cos(t * 0.07 + 0.8) * 0.006,
-      heading: 175,
-      speedKmh: 19.5,
-      nextStop: 'Murano Museo',
-      destination: 'San Marco',
-      passengersOnBoard: 51
-    },
-    {
-      id: 'ali_boat_04',
-      name: 'Alilaguna 04',
-      lineCode: 'VERDE',
-      lineName: 'Linea Verde',
-      color: '#009640',
-      lat: 45.4680 + Math.sin(t * 0.04 + 4) * 0.012,
-      lon: 12.3850 + Math.cos(t * 0.04 + 4) * 0.018,
-      heading: 55,
-      speedKmh: 16.0,
-      nextStop: 'Burano',
-      destination: 'Torcello',
-      passengersOnBoard: 64
-    },
-    {
-      id: 'ali_boat_18',
-      name: 'Alilaguna 18',
-      lineCode: 'BLU',
-      lineName: 'Linea Blu',
-      color: '#0055a5',
-      lat: 45.4285 + Math.sin(t * 0.035 + 2.5) * 0.005,
-      lon: 12.3210 + Math.cos(t * 0.035 + 2.5) * 0.008,
-      heading: 285,
-      speedKmh: 15.2,
-      nextStop: 'Molino Stucky Giudecca',
-      destination: 'Tronchetto / Marittima',
-      passengersOnBoard: 38
-    },
-    {
-      id: 'ali_boat_25',
-      name: 'Alilaguna 25',
-      lineCode: 'ARANCIO',
-      lineName: 'Linea Arancio',
-      color: '#f39200',
-      lat: 45.4425 + Math.sin(t * 0.04 + 1.2) * 0.003,
-      lon: 12.3270 + Math.cos(t * 0.04 + 1.2) * 0.003,
-      heading: 135,
-      speedKmh: 9.8,
-      nextStop: 'San Stae',
-      destination: 'Rialto',
-      passengersOnBoard: 44
-    },
-    {
-      id: 'ali_boat_33',
-      name: 'Alilaguna 33',
-      lineCode: 'ROSSA',
-      lineName: 'Linea Rossa',
-      color: '#e30613',
-      lat: 45.4220 + Math.sin(t * 0.045 + 3.8) * 0.008,
-      lon: 12.3750 + Math.cos(t * 0.045 + 3.8) * 0.012,
-      heading: 240,
-      speedKmh: 18.0,
-      nextStop: 'Lido SME',
-      destination: 'San Marco Giardinetti',
-      passengersOnBoard: 53
-    },
-    {
-      id: 'ali_boat_09',
-      name: 'Alilaguna 09',
-      lineCode: 'VERDE',
-      lineName: 'Linea Verde',
-      color: '#009640',
-      lat: 45.4540 + Math.sin(t * 0.038 + 5.1) * 0.008,
-      lon: 12.3680 + Math.cos(t * 0.038 + 5.1) * 0.014,
-      heading: 75,
-      speedKmh: 16.5,
-      nextStop: 'Murano Faro',
-      destination: 'Burano / Torcello',
-      passengersOnBoard: 49
-    }
-  ];
-
   return NextResponse.json({
     success: true,
-    operator: 'Alilaguna S.p.A.',
+    operator: "Alilaguna S.p.A.",
     transitlandFeed: {
-      onestopId: 'f-u20f-alilagunaspa',
-      url: 'https://www.transit.land/feeds/f-u20f-alilagunaspa',
-      versionsTracked: 59,
-      type: 'GTFS Static'
+      onestopId: "f-u20f-alilagunaspa",
+      url: "https://www.transit.land/feeds/f-u20f-alilagunaspa",
+      type: "GTFS Static Open Data"
+    },
+    metadata: {
+      regime: "DATI_ISTITUZIONALI_CERTIFICATI",
+      source: "Transitland Registry (Feed f-u20f-alilagunaspa) / Alilaguna S.p.A.",
+      notes: "Rete ufficiale delle linee e pontili del servizio pubblico aeroportuale lagunare Alilaguna. I dati provengono dal feed ufficiale GTFS registrato su Transitland. La piattaforma esclude posizionamenti cinematici simulati in assenza di un feed GTFS-RT pubblico aperto."
     },
     routesCount: ALILAGUNA_ROUTES.length,
     stopsCount: ALILAGUNA_STOPS.length,
-    activeBoatsCount: boats.length,
     routes: ALILAGUNA_ROUTES,
     stops: ALILAGUNA_STOPS,
-    boats
+    boats: []
   });
 }

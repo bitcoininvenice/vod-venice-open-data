@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { X, Anchor, Navigation, Accessibility, Clock, MapPin } from 'lucide-react';
+import { X, Anchor, Accessibility, MapPin, ExternalLink, ShieldCheck } from 'lucide-react';
 import { StopItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 
@@ -13,27 +13,12 @@ interface StopDetailModalProps {
 
 export const StopDetailModal: React.FC<StopDetailModalProps> = ({
   stop,
-  onClose,
-  currentTimeSeconds
+  onClose
 }) => {
   const { language, t } = useTranslation();
   if (!stop) return null;
 
-  // Generate simulated realistic upcoming departures based on current time
-  const currentMinute = Math.floor(currentTimeSeconds / 60);
   const sampleLines = stop.lines && stop.lines.length > 0 ? stop.lines : ['1', '2'];
-  
-  const departures = sampleLines.map((line, idx) => {
-    const depMinute = (currentMinute + 3 + (idx * 6)) % 1440;
-    const h = Math.floor(depMinute / 60).toString().padStart(2, '0');
-    const m = (depMinute % 60).toString().padStart(2, '0');
-    return {
-      line,
-      time: `${h}:${m}`,
-      destination: idx % 2 === 0 ? "Piazzale Roma" : "Lido S.M.E.",
-      waitMinutes: 3 + (idx * 6)
-    };
-  });
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
@@ -96,32 +81,26 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
           </div>
         </div>
 
-        {/* Upcoming Departures */}
-        <div className="flex flex-col gap-2 pt-2 border-t border-[var(--rule)]">
-          <div className="flex items-center gap-1.5 text-xs text-[var(--ink-2)]">
-            <Clock className="w-3.5 h-3.5 text-cyan-400" />
-            <span>{t('stopModal.upcomingDepartures')}</span>
+        {/* Institutional Verification Notice */}
+        <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-xs text-blue-300 font-semibold">
+            <ShieldCheck className="w-4 h-4 text-blue-400" />
+            <span>{language === 'it' ? 'Dato Istituzionale GTFS ACTV' : 'ACTV Institutional GTFS Data'}</span>
           </div>
-
-          <div className="flex flex-col gap-1.5">
-            {departures.map((d, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between p-2 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] text-xs font-mono"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded bg-cyan-500 text-white font-bold">
-                    {d.line}
-                  </span>
-                  <span className="text-[var(--ink)] font-sans">{d.destination}</span>
-                </div>
-                <div className="text-right">
-                  <span className="font-bold text-[var(--ink)]">{d.time}</span>
-                  <span className="text-[10px] text-[var(--ink-3)] ml-1.5">({d.waitMinutes} min)</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">
+            {language === 'it'
+              ? 'Approdo censito nel catalogo open data ufficiale GTFS di ACTV / AVM S.p.A. e Comune di Venezia. Per gli orari ufficiali di passaggio in tempo reale e gli avvisi di linea consulta il portale ufficiale di ACTV o i display di pontile.'
+              : 'Official dock catalogued in the ACTV / AVM S.p.A. and Municipality of Venice GTFS open data registry. For official live timetables and service alerts, consult the official ACTV portal or electronic dock displays.'}
+          </p>
+          <a
+            href="https://actv.avmspa.it/it/content/orari-servizio-di-navigazione-0"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 text-xs font-semibold border border-cyan-500/30 transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            {language === 'it' ? 'Orari Ufficiali di Navigazione ACTV' : 'Official ACTV Navigation Timetables'}
+          </a>
         </div>
       </div>
     </div>

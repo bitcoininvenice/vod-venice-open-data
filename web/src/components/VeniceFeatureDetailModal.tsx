@@ -510,61 +510,73 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             </>
           )}
 
-          {/* LIVE TRAIN */}
+          {/* RFI RAILWAY INFRASTRUCTURE */}
           {feature.type === 'trainLive' && (
             <>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Velocità di Transito' : 'Transit Speed'}</span>
-                  <p className="text-2xl font-bold font-mono text-red-400">{feature.data.speedKmh} km/h</p>
+              <div className="space-y-2">
+                <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
+                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Infrastruttura / Nodo' : 'Infrastructure / Node'}</span>
+                  <span className="font-semibold text-[var(--ink)]">{feature.data.trainNumber}</span>
                 </div>
-                <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Scostamento Orario' : 'Schedule Deviation'}</span>
-                  <p className={`text-2xl font-bold font-mono ${feature.data.delayMinutes > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                    {feature.data.delayMinutes > 0 ? `+${feature.data.delayMinutes} min` : (language === 'it' ? 'In Orario' : 'On Time')}
-                  </p>
+                <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
+                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Dotazione Binari / Impianto' : 'Track Capacity / System'}</span>
+                  <span className="font-semibold text-cyan-400">{feature.data.platform}</span>
+                </div>
+                <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
+                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Connessione di Linea' : 'Line Connection'}</span>
+                  <span className="font-semibold text-[var(--ink)]">{feature.data.origin} ➔ {feature.data.destination}</span>
+                </div>
+                <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
+                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Ubicazione' : 'Location'}</span>
+                  <span className="font-semibold text-[var(--ink)]">{feature.data.currentLocation}</span>
                 </div>
               </div>
-              <p className="text-[var(--ink)]">{language === 'it' ? 'Posizione' : 'Location'}: <b>{feature.data.currentLocation}</b></p>
-              <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] text-[11px] text-[var(--ink-2)]">
-                {language === 'it' ? 'Binario di arrivo:' : 'Arrival platform:'} <b>{feature.data.platform}</b>
+
+              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-300 leading-relaxed">
+                ℹ️ {language === 'it'
+                  ? "Dato istituzionale certificato RFI (Prospetto Informativo della Rete PIR / FS Italiane). Riporta le caratteristiche fisiche e infrastrutturali del nodo ferroviario lagunare. Non include posizioni simulate."
+                  : "Certified institutional data from RFI (Network Statement / FS Italiane). Reports physical and infrastructural features of the lagoon rail network without synthetic simulations."}
               </div>
             </>
           )}
 
-          {/* PARKING REAL-TIME */}
+          {/* CERTIFIED PARKING INFRASTRUCTURE */}
           {feature.type === 'parking' && (
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Posti Liberi' : 'Available Spots'}</span>
-                  <p className={`text-2xl font-bold font-mono ${feature.data.freeSpots < 50 ? 'text-red-400' : feature.data.freeSpots < 150 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                    {feature.data.freeSpots} <span className="text-xs text-[var(--ink-2)] font-normal">/ {feature.data.totalSpots}</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Capienza Certificata' : 'Certified Capacity'}</span>
+                  <p className="text-2xl font-bold font-mono text-cyan-400">
+                    {feature.data.totalSpots} <span className="text-xs text-[var(--ink-2)] font-normal">{language === 'it' ? 'posti' : 'spots'}</span>
                   </p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Occupazione' : 'Occupancy Rate'}</span>
-                  <p className="text-2xl font-bold font-mono text-cyan-400">
-                    {Math.round(((feature.data.totalSpots - feature.data.freeSpots) / feature.data.totalSpots) * 100)}%
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Ambito Territoriale' : 'Territorial Area'}</span>
+                  <p className="text-lg font-bold font-mono text-emerald-400 truncate">
+                    {feature.data.location === 'Piazzale Roma' || feature.data.location === 'Tronchetto' ? (language === 'it' ? 'Venezia Insulare' : 'Venice Island') : (language === 'it' ? 'Terraferma / Mestre' : 'Mainland / Mestre')}
                   </p>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
-                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Tariffa / Condizioni' : 'Tariff / Rates'}</span>
+                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Tariffa Ufficiale / Oraria' : 'Official Tariff / Hourly'}</span>
                   <span className="font-semibold text-[var(--ink)]">{feature.data.rateHourly}</span>
                 </div>
                 <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
-                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Gestore Operativo' : 'Operator'}</span>
+                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Gestore Istituzionale' : 'Operator'}</span>
                   <span className="font-semibold text-[var(--ink)]">{feature.data.operator}</span>
                 </div>
                 <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
-                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Ambito Territoriale' : 'Territorial Area'}</span>
-                  <span className="font-semibold text-emerald-400">
-                    {feature.data.location === 'Piazzale Roma' || feature.data.location === 'Tronchetto' ? (language === 'it' ? 'Venezia Insulare' : 'Venice Island') : (language === 'it' ? 'Terraferma / Mestre' : 'Mainland / Mestre')}
-                  </span>
+                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Località / Nodo' : 'Hub Node'}</span>
+                  <span className="font-semibold text-[var(--ink)]">{feature.data.location}</span>
                 </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-300 leading-relaxed">
+                ℹ️ {language === 'it'
+                  ? "Dato istituzionale verificato AVM S.p.A. / Metropark FS. Il Comune di Venezia non pubblica tramite API aperte l'occupazione istantanea delle spire (visibile solo da PMV stradali fisici). La piattaforma esclude rigorosamente stime o dati sintetici non certificati."
+                  : "Verified institutional data from AVM S.p.A. / Metropark FS. Real-time induction loop counts are not published via open APIs by the Municipality (only shown on roadside PMV signs). The platform strictly excludes unverified synthetic estimates."}
               </div>
             </>
           )}

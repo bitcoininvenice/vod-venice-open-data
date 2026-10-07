@@ -2689,18 +2689,17 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         }
       }
 
-      // 14. Render Real-time Parkings (Piazzale Roma & Tronchetto)
+      // 14. Render Certified Parkings (Piazzale Roma, Tronchetto & Mestre)
       if (showParkings && parkings && parkings.length > 0) {
         for (const p of parkings) {
           const px = sx(mx(p.lon));
           const py = sy(my(p.lat));
 
-          const isFull = p.freeSpots < 50;
-          const badgeCol = isFull ? '#ef4444' : p.freeSpots < 150 ? '#f59e0b' : '#14b8a6';
+          const badgeCol = '#0284c7';
 
           ctx.save();
           ctx.font = '700 9.5px "DM Mono", monospace';
-          const pTxt = camera.s > 0.02 ? `🅿️ ${p.name}: ${p.freeSpots} liberi` : `🅿️ ${p.freeSpots}`;
+          const pTxt = camera.s > 0.02 ? `🅿️ ${p.name} (${p.totalSpots} posti)` : `🅿️ ${p.name}`;
           const pW = ctx.measureText(pTxt).width;
 
           ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)';
@@ -2750,7 +2749,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           ctx.save();
           ctx.font = '700 9px "DM Mono", monospace';
-          const pfTxt = `🚶 ${pf.sensorName}: ${pf.hourlyFlow.toLocaleString()} p/h`;
+          const pfTxt = pf.hourlyFlow != null
+            ? `🚶 ${pf.sensorName}: ${pf.hourlyFlow.toLocaleString()} p/h`
+            : `🚶 Varco SCR: ${pf.sensorName}`;
           const pfW = ctx.measureText(pfTxt).width;
 
           ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)';

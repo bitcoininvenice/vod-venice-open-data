@@ -277,7 +277,7 @@ export interface ParkingItem {
   name: string;
   location: 'Piazzale Roma' | 'Tronchetto' | 'Mestre';
   totalSpots: number;
-  freeSpots: number;
+  freeSpots?: number;
   lat: number;
   lon: number;
   rateHourly: string;
@@ -303,9 +303,12 @@ export interface PedestrianFlowItem {
   location: string;
   lat: number;
   lon: number;
-  hourlyFlow: number;
-  trend: 'STABILE' | 'IN_AUMENTO' | 'IN_CALO';
-  crowdingLevel: 'BASSO' | 'MEDIO' | 'ELEVATO';
+  gateCode?: string;
+  technology?: string;
+  monitoringScope?: string;
+  hourlyFlow?: number;
+  trend?: 'STABILE' | 'IN_AUMENTO' | 'IN_CALO';
+  crowdingLevel?: 'BASSO' | 'MEDIO' | 'ELEVATO';
   accessFeeEnforced: boolean;
 }
 
