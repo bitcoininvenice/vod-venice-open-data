@@ -27,6 +27,18 @@ Il progetto è pronto al 100% per essere deployato su **Vercel** sia tramite la 
 
 ---
 
+### ⚠️ Risoluzione Errore: `No Output Directory named "public" found`
+Se il progetto è già stato creato su Vercel e vedi questo errore, significa che Vercel sta cercando di compilare la root invece della sottocartella `web/`:
+
+1. Vai sul tuo progetto su **Vercel** (`vercel.com`).
+2. Clicca sulla scheda **Settings** in alto.
+3. Nella sezione **General**:
+   - Scorri fino a **Root Directory**, clicca su **Edit**, seleziona o digita **`web`** e clicca su **Save**.
+   - Subito sopra, verifica che **Framework Preset** sia impostato su **Next.js**.
+4. Vai nella scheda **Deployments**, clicca sui tre puntini `...` dell'ultimo deployment e seleziona **Redeploy**.
+
+---
+
 ## ⚡ Metodo 2: Deploy tramite Vercel CLI
 
 Se preferisci deployare dal terminale:
