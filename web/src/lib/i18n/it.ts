@@ -85,7 +85,7 @@ export const itTranslations: Translations = {
     presetSatellites: 'Satelliti',
     presetRegional: 'Regionale',
     catMobility: '1. Mobilità Acquea, Aerea & Ferroviaria',
-    catLagoon: '2. Laguna, Idrografia & Difesa Maree',
+    catLagoon: '2. Laguna, Idrografia & Difesa Mare',
     catCity: '3. Città Storica, Patrimonio & Servizi',
     catRegional: '4. Open Data Regione Veneto (dati.veneto.it)',
     catEnvironment: '5. Monitoraggio Ambientale & Satelliti',

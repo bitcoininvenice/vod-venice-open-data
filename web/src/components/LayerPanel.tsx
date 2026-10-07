@@ -319,7 +319,6 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
     mobility: false,
     lagoon: false,
     city: false,
-    regional: false,
     actv: false
   });
 
@@ -395,7 +394,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               type="button"
               onClick={() => {
                 onTurnAllOff();
-                setSectionOpen({ mobility: false, lagoon: false, city: false, regional: false, actv: false });
+                setSectionOpen({ mobility: false, lagoon: false, city: false, actv: false });
               }}
               className="flex-1 py-1.5 px-2 rounded-xl bg-[var(--rule)]/40 hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] font-mono text-[11px] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
               title={language === 'it' ? 'Disattiva tutti i livelli per una mappa pulita' : 'Turn off all layers for a clean map'}
@@ -409,7 +408,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               type="button"
               onClick={() => {
                 onTurnAllOn();
-                setSectionOpen({ mobility: true, lagoon: true, city: true, regional: true, actv: false });
+                setSectionOpen({ mobility: true, lagoon: true, city: true, actv: false });
               }}
               className="flex-1 py-1.5 px-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 font-mono text-[11px] flex items-center justify-center gap-1.5 border border-cyan-500/20 transition-all cursor-pointer"
               title={language === 'it' ? 'Attiva tutti i livelli contemporaneamente' : 'Turn on all layers simultaneously'}
@@ -452,7 +451,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 type="button"
                 onClick={() => {
                   onApplyPreset('mobility');
-                  setSectionOpen({ mobility: true, lagoon: false, city: false, regional: false, actv: false });
+                  setSectionOpen({ mobility: true, lagoon: false, city: false, actv: false });
                 }}
                 className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-sky-500/20 text-sky-400 hover:text-sky-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-sky-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
               >
@@ -462,7 +461,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 type="button"
                 onClick={() => {
                   onApplyPreset('lagoon');
-                  setSectionOpen({ mobility: false, lagoon: true, city: false, regional: false, actv: false });
+                  setSectionOpen({ mobility: false, lagoon: true, city: false, actv: false });
                 }}
                 className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-blue-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
               >
@@ -472,7 +471,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 type="button"
                 onClick={() => {
                   onApplyPreset('city');
-                  setSectionOpen({ mobility: false, lagoon: false, city: true, regional: false, actv: false });
+                  setSectionOpen({ mobility: false, lagoon: false, city: true, actv: false });
                 }}
                 className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-emerald-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
               >
@@ -482,21 +481,11 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 type="button"
                 onClick={() => {
                   onApplyPreset('satellites');
-                  setSectionOpen({ mobility: false, lagoon: true, city: false, regional: false, actv: false });
+                  setSectionOpen({ mobility: false, lagoon: false, city: true, actv: false });
                 }}
                 className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-purple-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
               >
                 <span>🛰️ {t('layers.presetSatellites')}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onApplyPreset('regional');
-                  setSectionOpen({ mobility: false, lagoon: false, city: false, regional: true, actv: false });
-                }}
-                className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-teal-500/20 text-teal-400 hover:text-teal-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-teal-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
-              >
-                <span>🌾 {t('layers.presetRegional')}</span>
               </button>
             </div>
 
@@ -524,7 +513,12 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           <span className="flex items-center gap-1.5 font-bold">
             🚢 {t('layers.catMobility')}
           </span>
-          {sectionOpen.mobility ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-mono text-[var(--ink-3)] lowercase">
+              {[showVehicles, showRoutes, showStops, showShips, showShipRoutes, showAlilaguna, showFlights, showParkings, showCanalLimits, showBridges, showGondolas, showDocks, showTrains, showWasteBoats, showBikeRoutes].filter(Boolean).length}/15
+            </span>
+            {sectionOpen.mobility ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </div>
         </button>
 
         {sectionOpen.mobility && (
@@ -850,6 +844,35 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 </div>
               </button>
             )}
+
+            {/* Ciclovie Isole del Veneto (dati.veneto.it) */}
+            {onToggleBikeRoutes && (
+              <button
+                type="button"
+                onClick={onToggleBikeRoutes}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showBikeRoutes
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Bike className="w-3.5 h-3.5 text-emerald-400" />
+                  <div className="flex flex-col text-left">
+                    <span className="leading-tight">{t('layers.layerBikeRoutes')}</span>
+                    <span className="text-[9px] font-mono text-teal-400">dati.veneto.it</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {bikeRoutesCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                      {bikeRoutesCount}
+                    </span>
+                  )}
+                  {showBikeRoutes ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -864,7 +887,12 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           <span className="flex items-center gap-1.5 font-bold">
             🌊 {t('layers.catLagoon')}
           </span>
-          {sectionOpen.lagoon ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-mono text-[var(--ink-3)] lowercase">
+              {[showMose, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showSubsidence, showMorphology, showMarineWind, showFortresses, showSpatialBuffer, showLagoonWater, showTributaries].filter(Boolean).length}/12
+            </span>
+            {sectionOpen.lagoon ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </div>
         </button>
 
         {sectionOpen.lagoon && (
@@ -1094,6 +1122,64 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </button>
             )}
 
+            {/* Sonde Qualità Acque Lagunari ARPAV (dati.veneto.it) */}
+            {onToggleLagoonWater && (
+              <button
+                type="button"
+                onClick={onToggleLagoonWater}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showLagoonWater
+                    ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Droplets className="w-3.5 h-3.5 text-cyan-400" />
+                  <div className="flex flex-col text-left">
+                    <span className="leading-tight">{t('layers.layerLagoonWater')}</span>
+                    <span className="text-[9px] font-mono text-teal-400">ARPAV · dati.veneto.it</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {lagoonWaterCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-bold">
+                      {lagoonWaterCount}
+                    </span>
+                  )}
+                  {showLagoonWater ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Fiumi Immissari in Laguna (dati.veneto.it) */}
+            {onToggleTributaries && (
+              <button
+                type="button"
+                onClick={onToggleTributaries}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showTributaries
+                    ? 'bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <GitBranch className="w-3.5 h-3.5 text-sky-400" />
+                  <div className="flex flex-col text-left">
+                    <span className="leading-tight">{t('layers.layerTributaries')}</span>
+                    <span className="text-[9px] font-mono text-teal-400">dati.veneto.it</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {tributariesCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-bold">
+                      {tributariesCount}
+                    </span>
+                  )}
+                  {showTributaries ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
             {/* Spatial Buffer PostGIS */}
             <div className="flex flex-col gap-1.5 bg-[var(--rule)]/30 p-2.5 rounded-xl border border-[var(--rule)]">
               <div className="flex items-center justify-between">
@@ -1145,7 +1231,12 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           <span className="flex items-center gap-1.5 font-bold">
             🏛️ {t('layers.catCity')}
           </span>
-          {sectionOpen.city ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-mono text-[var(--ink-3)] lowercase">
+              {[showCantieri, showCityAssets, showTrees, showServicesVenice, showAirQuality, showPedestrianFlows, showSatellites, showNizioleti, showWells, showBellTowers, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showAccommodations, showPollenStations].filter(Boolean).length}/16
+            </span>
+            {sectionOpen.city ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </div>
         </button>
 
         {sectionOpen.city && (
@@ -1475,57 +1566,8 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 </div>
               </button>
             )}
-          </div>
-        )}
-      </div>
 
-      {/* SECTION: Open Data Regione Veneto (dati.veneto.it) */}
-      <div className="flex flex-col gap-2 pt-2 border-t border-[var(--rule)]">
-        <button
-          type="button"
-          onClick={() => toggleSection('regional')}
-          className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-[var(--ink-3)] hover:text-[var(--ink)] cursor-pointer"
-        >
-          <span className="flex items-center gap-1.5 font-bold text-teal-400">
-            🌾 {t('layers.catRegional')}
-          </span>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-mono text-[var(--ink-3)] lowercase">
-              {[showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries].filter(Boolean).length}/5
-            </span>
-            {sectionOpen.regional ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </div>
-        </button>
-
-        {sectionOpen.regional && (
-          <div className="flex flex-col gap-1.5 animate-in fade-in duration-150">
-            {/* 1. Acque Lagunari ARPAV (Dati Sonda) */}
-            {onToggleLagoonWater && (
-              <button
-                type="button"
-                onClick={onToggleLagoonWater}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showLagoonWater
-                    ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 shadow-sm'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Droplets className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>{t('layers.layerLagoonWater')}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {lagoonWaterCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-bold">
-                      {lagoonWaterCount}
-                    </span>
-                  )}
-                  {showLagoonWater ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-            )}
-
-            {/* 2. Strutture Ricettive & Overtourism */}
+            {/* Pressione Turistica & Alloggi (dati.veneto.it) */}
             {onToggleAccommodations && (
               <button
                 type="button"
@@ -1538,7 +1580,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Building2 className="w-3.5 h-3.5 text-fuchsia-400" />
-                  <span>{t('layers.layerAccommodations')}</span>
+                  <div className="flex flex-col text-left">
+                    <span className="leading-tight">{t('layers.layerAccommodations')}</span>
+                    <span className="text-[9px] font-mono text-teal-400">dati.veneto.it</span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {accommodationsCount > 0 && (
@@ -1551,33 +1596,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </button>
             )}
 
-            {/* 3. Ciclovia delle Isole di Venezia */}
-            {onToggleBikeRoutes && (
-              <button
-                type="button"
-                onClick={onToggleBikeRoutes}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showBikeRoutes
-                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Bike className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>{t('layers.layerBikeRoutes')}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {bikeRoutesCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
-                      {bikeRoutesCount}
-                    </span>
-                  )}
-                  {showBikeRoutes ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-            )}
-
-            {/* 4. Bollettino Pollini ARPAV */}
+            {/* Bollettino Pollini ARPAV (dati.veneto.it) */}
             {onTogglePollenStations && (
               <button
                 type="button"
@@ -1590,7 +1609,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Flower2 className="w-3.5 h-3.5 text-lime-400" />
-                  <span>{t('layers.layerPollenStations')}</span>
+                  <div className="flex flex-col text-left">
+                    <span className="leading-tight">{t('layers.layerPollenStations')}</span>
+                    <span className="text-[9px] font-mono text-teal-400">ARPAV · dati.veneto.it</span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {pollenStationsCount > 0 && (
@@ -1599,32 +1621,6 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                     </span>
                   )}
                   {showPollenStations ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-            )}
-
-            {/* 5. Bacino Scolante & Fiumi Tributari */}
-            {onToggleTributaries && (
-              <button
-                type="button"
-                onClick={onToggleTributaries}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                  showTributaries
-                    ? 'bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <GitBranch className="w-3.5 h-3.5 text-sky-400" />
-                  <span>{t('layers.layerTributaries')}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {tributariesCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-bold">
-                      {tributariesCount}
-                    </span>
-                  )}
-                  {showTributaries ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 </div>
               </button>
             )}

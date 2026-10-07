@@ -343,6 +343,7 @@ export default function HomePage() {
       setShowDocks(true);
       setShowTrains(true);
       setShowWasteBoats(true);
+      setShowBikeRoutes(true);
     } else if (preset === 'lagoon') {
       setShowMose(true);
       setShowPasserelle(true);
@@ -353,6 +354,8 @@ export default function HomePage() {
       setShowMorphology(true);
       setShowMarineWind(true);
       setShowFortresses(true);
+      setShowLagoonWater(true);
+      setShowTributaries(true);
     } else if (preset === 'city') {
       setShowCityAssets(true);
       setShowTrees(true);
@@ -368,6 +371,8 @@ export default function HomePage() {
       setShowDae(true);
       setShowPharmacies(true);
       setShowHeatIslands(true);
+      setShowAccommodations(true);
+      setShowPollenStations(true);
     } else if (preset === 'satellites') {
       setShowSatellites(true);
       setShowSubsidence(true);
@@ -1004,7 +1009,7 @@ export default function HomePage() {
             >
               <Layers className="w-4 h-4 text-cyan-400 group-hover:rotate-12 transition-transform" />
               <span className="font-semibold">{t('layers.panelTitle')}</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-mono">45</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-mono">43</span>
             </button>
           </div>
         )}
