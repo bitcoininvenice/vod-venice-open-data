@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Layers,
   Eye,
@@ -22,6 +22,8 @@ import {
   Satellite,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Trees,
   Wifi,
   Zap,
@@ -283,6 +285,31 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
     actv: false
   });
 
+  const presetContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollButtons = useCallback(() => {
+    if (!presetContainerRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = presetContainerRef.current;
+    setCanScrollLeft(scrollLeft > 2);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    updateScrollButtons();
+    const handleResize = () => updateScrollButtons();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [updateScrollButtons]);
+
+  const handleScrollPresets = (direction: 'left' | 'right') => {
+    if (!presetContainerRef.current) return;
+    const delta = direction === 'left' ? -100 : 100;
+    presetContainerRef.current.scrollBy({ left: delta, behavior: 'smooth' });
+    setTimeout(updateScrollButtons, 220);
+  };
+
   const toggleSection = (section: keyof typeof sectionOpen) => {
     setSectionOpen((prev) => ({ ...prev, [section]: !prev[section] }));
   };
@@ -356,48 +383,85 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
         </div>
 
         {onApplyPreset && (
-          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-0.5">
-            <span className="text-[10px] text-[var(--ink-3)] font-mono uppercase shrink-0">Preset:</span>
-            <button
-              type="button"
-              onClick={() => {
-                onApplyPreset('mobility');
-                setSectionOpen({ mobility: true, lagoon: false, city: false, actv: false });
+          <div className="flex items-center gap-1 pt-0.5 w-full relative">
+            <span className="text-[10px] text-[var(--ink-3)] font-mono uppercase shrink-0 font-semibold select-none">
+              Preset:
+            </span>
+
+            {canScrollLeft && (
+              <button
+                type="button"
+                onClick={() => handleScrollPresets('left')}
+                className="p-1 rounded-md bg-[var(--rule)]/70 hover:bg-cyan-500/20 text-[var(--ink-2)] hover:text-cyan-400 border border-[var(--rule)] transition-all cursor-pointer shrink-0 shadow-sm active:scale-90"
+                title="Scorri preset a sinistra"
+              >
+                <ChevronLeft className="w-3 h-3" />
+              </button>
+            )}
+
+            <div
+              ref={presetContainerRef}
+              onScroll={updateScrollButtons}
+              onWheel={(e) => {
+                if (e.deltaY !== 0 && presetContainerRef.current) {
+                  presetContainerRef.current.scrollLeft += e.deltaY;
+                  updateScrollButtons();
+                }
               }}
-              className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-sky-500/20 text-sky-400 hover:text-sky-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-sky-500/30 transition-all cursor-pointer"
+              className="flex items-center gap-1 overflow-x-auto no-scrollbar scroll-smooth flex-1 py-0.5"
             >
-              <span>🚤 Mobilità</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                onApplyPreset('lagoon');
-                setSectionOpen({ mobility: false, lagoon: true, city: false, actv: false });
-              }}
-              className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-blue-500/30 transition-all cursor-pointer"
-            >
-              <span>🌊 Laguna</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                onApplyPreset('city');
-                setSectionOpen({ mobility: false, lagoon: false, city: true, actv: false });
-              }}
-              className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-emerald-500/30 transition-all cursor-pointer"
-            >
-              <span>🏛️ Città</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                onApplyPreset('satellites');
-                setSectionOpen({ mobility: false, lagoon: true, city: false, actv: false });
-              }}
-              className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-purple-500/30 transition-all cursor-pointer"
-            >
-              <span>🛰️ Satelliti</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onApplyPreset('mobility');
+                  setSectionOpen({ mobility: true, lagoon: false, city: false, actv: false });
+                }}
+                className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-sky-500/20 text-sky-400 hover:text-sky-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-sky-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
+              >
+                <span>🚤 Mobilità</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onApplyPreset('lagoon');
+                  setSectionOpen({ mobility: false, lagoon: true, city: false, actv: false });
+                }}
+                className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-blue-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
+              >
+                <span>🌊 Laguna</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onApplyPreset('city');
+                  setSectionOpen({ mobility: false, lagoon: false, city: true, actv: false });
+                }}
+                className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-emerald-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
+              >
+                <span>🏛️ Città</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onApplyPreset('satellites');
+                  setSectionOpen({ mobility: false, lagoon: true, city: false, actv: false });
+                }}
+                className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-purple-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
+              >
+                <span>🛰️ Satelliti</span>
+              </button>
+            </div>
+
+            {canScrollRight && (
+              <button
+                type="button"
+                onClick={() => handleScrollPresets('right')}
+                className="p-1 rounded-md bg-[var(--rule)]/70 hover:bg-cyan-500/20 text-[var(--ink-2)] hover:text-cyan-400 border border-[var(--rule)] transition-all cursor-pointer shrink-0 shadow-sm active:scale-90"
+                title="Scorri preset a destra"
+              >
+                <ChevronRight className="w-3 h-3" />
+              </button>
+            )}
           </div>
         )}
       </div>

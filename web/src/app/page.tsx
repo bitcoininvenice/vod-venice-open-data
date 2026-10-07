@@ -752,7 +752,7 @@ export default function HomePage() {
 
         {/* Floating Left: Desktop Layer & Filter Panel or Minimized Toggle */}
         {isDesktopLayerPanelOpen ? (
-          <div className="hidden md:block absolute top-4 left-4 z-20 w-72 xl:w-80 max-w-[calc(100vw-2rem)] animate-in fade-in zoom-in-95 duration-200">
+          <div className="hidden md:block absolute top-4 left-4 z-20 w-80 xl:w-84 max-w-[calc(100vw-2rem)] animate-in fade-in zoom-in-95 duration-200">
             <LayerPanel
               onClose={() => setIsDesktopLayerPanelOpen(false)}
               onTurnAllOff={() => turnAllLayers(false)}
