@@ -371,6 +371,60 @@ export const REGIONAL_BIKE_ROUTES: RegionalBikeRouteItem[] = [
     ],
     description: 'Tratto di arrivo monumentale della grande ciclovia che scende dalle Alpi verso la laguna, offrendo vedute spettacolari sul profilo di Venezia e il Ponte della Libertà.',
     officialSource: 'Regione del Veneto - Direzione Infrastrutture e Trasporti (dati.veneto.it)'
+  },
+  {
+    id: 'BIKE_RIVIERA_BRENTA',
+    routeName: 'Ciclovia della Riviera del Brenta (Tratta Laguna)',
+    section: 'Malcontenta (Villa Foscari) - Dogana Fusina - Terminal Laguna',
+    surfaceType: 'ASFALTO_CICLABILE',
+    lengthKm: 14.5,
+    elevationGainM: 8,
+    difficulty: 'FACILE_PANORAMICO',
+    ferryInterchange: 'Terminal Fusina Motonave ACTV Linea 16 per Zattere',
+    path: [
+      [12.2020, 45.4370], // Villa Foscari La Malcontenta
+      [12.2210, 45.4280], // Argine Naviglio del Brenta
+      [12.2410, 45.4210], // Darsena Fusina
+      [12.2560, 45.4180]  // Terminal Traghetti Fusina
+    ],
+    description: 'Percorso storico-paesaggistico lungo l\'antico corso del Brenta navigabile tra ville venete sansoviniane e l\'approdo lagunare di Fusina.',
+    officialSource: 'Regione del Veneto - REV Itinerario I1 (dati.veneto.it)'
+  },
+  {
+    id: 'BIKE_BARENE_CAVALLINO',
+    routeName: 'Ciclovia delle Barene del Cavallino & Lio Piccolo',
+    section: 'Treporti - Piazza del Prà - Valle Mesole - Lio Piccolo',
+    surfaceType: 'PIETRA_MURAZZI',
+    lengthKm: 15.8,
+    elevationGainM: 5,
+    difficulty: 'FACILE_PANORAMICO',
+    ferryInterchange: 'Terminal Punta Sabbioni / Treporti Ricevitoria ACTV Linee 12/14',
+    path: [
+      [12.4490, 45.4740], // Ricevitoria Treporti
+      [12.4560, 45.4850], // Saffa / Canale Saccagnana
+      [12.4640, 45.4980], // Borgo Storico Mesole
+      [12.4150, 45.5050]  // Palazzetto nobile Lio Piccolo & Barene
+    ],
+    description: 'Ciclabile sospesa sull\'acqua che attraversa valli da pesca incontaminate, barene salmastre e colonie stanziali di fenicotteri rosa.',
+    officialSource: 'Parco Turistico Cavallino-Treporti / dati.veneto.it'
+  },
+  {
+    id: 'BIKE_PONTE_LIBERTA',
+    routeName: 'Pista Ciclabile a Sbalzo "Ponte della Libertà"',
+    section: 'Porta di Venezia (Mestre VEGA) - Ponte Ferro-Stradale - Venezia Santa Chiara',
+    surfaceType: 'ASFALTO_CICLABILE',
+    lengthKm: 4.2,
+    elevationGainM: 6,
+    difficulty: 'FACILE_PANORAMICO',
+    ferryInterchange: 'Tronchetto People Mover / Piazzale Roma Vaporetti',
+    path: [
+      [12.2590, 45.4710], // Parco Scientifico VEGA Marghera
+      [12.2780, 45.4550], // Inizio sbalzo lagunare
+      [12.2980, 45.4480], // Tratto centrale su Laguna
+      [12.3160, 45.4410]  // Arrivo Tronchetto / Banchina Santa Chiara
+    ],
+    description: 'Pista ciclabile protetta a sbalzo sulla laguna aperta inaugurata nel 2016, corridoio ecologico esclusivo di ingresso a Venezia insulare.',
+    officialSource: 'Comune di Venezia - Direzione Mobilità e Trasporti (dati.veneto.it)'
   }
 ];
 
@@ -476,6 +530,80 @@ export const REGIONAL_POLLEN_STATIONS: PollenMonitoringStationItem[] = [
       }
     ],
     officialSource: 'ARPAV - Rete Regionale Monitoraggio Pollini (dati.veneto.it)'
+  },
+  {
+    id: 'POL_CHIOGGIA_SOTTOMARINA',
+    stationName: 'Stazione Aerobiologica Chioggia & Laguna Sud',
+    locationName: 'Chioggia / Ospedale Madonna della Navicella',
+    lat: 45.2150,
+    lon: 12.2780,
+    overallAllergyRisk: 'BASSO',
+    samplerType: 'CAPTOR_VOLUMETRICO_BURKARD',
+    bulletinWeek: 'Bollettino Aerobiologico ARPAV Settimanale',
+    pollens: [
+      {
+        family: 'Pinaceae (Pinus)',
+        commonName: 'Pino domestico & d\'Aleppo litoraneo',
+        level: 'MEDIO',
+        concentrationGrainsM3: 28,
+        trend: 'STABILE',
+        allergenicity: 'BASSA'
+      },
+      {
+        family: 'Graminaceae',
+        commonName: 'Erbe costiere litoranee',
+        level: 'MEDIO',
+        concentrationGrainsM3: 24,
+        trend: 'CRESCITA',
+        allergenicity: 'ALTA'
+      },
+      {
+        family: 'Parietaria (Urticaceae)',
+        commonName: 'Erba vetriola muraria',
+        level: 'BASSO',
+        concentrationGrainsM3: 14,
+        trend: 'STABILE',
+        allergenicity: 'MOLTO_ALTA'
+      }
+    ],
+    officialSource: 'ARPAV - Presidio Sanitario Chioggia (dati.veneto.it)'
+  },
+  {
+    id: 'POL_SAN_DONA_PIAVE',
+    stationName: 'Stazione Aerobiologica Basso Piave & Laguna Nord',
+    locationName: 'San Donà di Piave / Presidio ARPAV',
+    lat: 45.6320,
+    lon: 12.5650,
+    overallAllergyRisk: 'MEDIO',
+    samplerType: 'AUTOMATICO_CONTINUO',
+    bulletinWeek: 'Bollettino Aerobiologico ARPAV Settimanale',
+    pollens: [
+      {
+        family: 'Graminaceae',
+        commonName: 'Colture foraggere e graminacee',
+        level: 'ALTO',
+        concentrationGrainsM3: 54,
+        trend: 'CRESCITA',
+        allergenicity: 'ALTA'
+      },
+      {
+        family: 'Corylaceae (Corylus)',
+        commonName: 'Nocciolo comune',
+        level: 'BASSO',
+        concentrationGrainsM3: 6,
+        trend: 'DIMINUZIONE',
+        allergenicity: 'MEDIA'
+      },
+      {
+        family: 'Salicaceae (Salix / Populus)',
+        commonName: 'Salice & Pioppo ripariale',
+        level: 'MEDIO',
+        concentrationGrainsM3: 29,
+        trend: 'STABILE',
+        allergenicity: 'BASSA'
+      }
+    ],
+    officialSource: 'ARPAV - Dipartimento Provinciale di Venezia (dati.veneto.it)'
   }
 ];
 

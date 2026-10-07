@@ -387,7 +387,7 @@ export async function fetchPlatformMetrics(): Promise<PlatformMetrics> {
     // Alilaguna S.p.A. (Transitland f-u20f-alilagunaspa)
     alilagunaRoutesCount: 4,
     alilagunaStopsCount: 21,
-    alilagunaBoatsCount: 4,
+    alilagunaBoatsCount: 10,
 
     // Maree & MOSE (CPSM)
     tideLevelCm: 76,
@@ -397,17 +397,17 @@ export async function fetchPlatformMetrics(): Promise<PlatformMetrics> {
     floodingPercentage: 0.0,
 
     // Qualità dell'Aria (ARPAV)
-    airStationsCount: 3,
+    airStationsCount: 6,
     averageAqi: 36,
     averagePm10: 20.3,
     averageNo2: 27.5,
     airQualityStatus: 'Buona',
 
     // Traffico Marittimo AIS & Canali (VTS / Crociere)
-    activeShipsCount: 8,
-    totalGrossTonnage: 145200,
+    activeShipsCount: 14,
+    totalGrossTonnage: 185400,
     maritimeChannelsCount: 4,
-    restrictedLagoonVesselsCount: 1, // MSC Opera deviazione Marghera (>25.000 GT)
+    restrictedLagoonVesselsCount: 4, // Deviazioni Marghera via Canale Petroli (DL 103/2021)
 
     // Voli & Aeroporto VCE (ENAV / OpenSky)
     activeFlightsCount: 24,
@@ -415,9 +415,9 @@ export async function fetchPlatformMetrics(): Promise<PlatformMetrics> {
     averageFlightAltitudeMeters: 1850,
 
     // Flussi Pedonali (Smart Control Room)
-    pedestrianSensorsCount: 3,
-    totalHourlyPedestrians: 9340,
-    peakPedestrianSensor: 'Ponte di Rialto (4.210 passaggi/h)',
+    pedestrianSensorsCount: 8,
+    totalHourlyPedestrians: 18450,
+    peakPedestrianSensor: 'Piazza San Marco / Rialto',
 
     // Mobilità Terraferma & Parcheggi AVM
     totalParkingSpaces: 10149,

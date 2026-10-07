@@ -383,6 +383,62 @@ export async function GET() {
       nextStop: 'Burano',
       destination: 'Torcello',
       passengersOnBoard: 64
+    },
+    {
+      id: 'ali_boat_18',
+      name: 'Alilaguna 18',
+      lineCode: 'BLU',
+      lineName: 'Linea Blu',
+      color: '#0055a5',
+      lat: 45.4285 + Math.sin(t * 0.035 + 2.5) * 0.005,
+      lon: 12.3210 + Math.cos(t * 0.035 + 2.5) * 0.008,
+      heading: 285,
+      speedKmh: 15.2,
+      nextStop: 'Molino Stucky Giudecca',
+      destination: 'Tronchetto / Marittima',
+      passengersOnBoard: 38
+    },
+    {
+      id: 'ali_boat_25',
+      name: 'Alilaguna 25',
+      lineCode: 'ARANCIO',
+      lineName: 'Linea Arancio',
+      color: '#f39200',
+      lat: 45.4425 + Math.sin(t * 0.04 + 1.2) * 0.003,
+      lon: 12.3270 + Math.cos(t * 0.04 + 1.2) * 0.003,
+      heading: 135,
+      speedKmh: 9.8,
+      nextStop: 'San Stae',
+      destination: 'Rialto',
+      passengersOnBoard: 44
+    },
+    {
+      id: 'ali_boat_33',
+      name: 'Alilaguna 33',
+      lineCode: 'ROSSA',
+      lineName: 'Linea Rossa',
+      color: '#e30613',
+      lat: 45.4220 + Math.sin(t * 0.045 + 3.8) * 0.008,
+      lon: 12.3750 + Math.cos(t * 0.045 + 3.8) * 0.012,
+      heading: 240,
+      speedKmh: 18.0,
+      nextStop: 'Lido SME',
+      destination: 'San Marco Giardinetti',
+      passengersOnBoard: 53
+    },
+    {
+      id: 'ali_boat_09',
+      name: 'Alilaguna 09',
+      lineCode: 'VERDE',
+      lineName: 'Linea Verde',
+      color: '#009640',
+      lat: 45.4540 + Math.sin(t * 0.038 + 5.1) * 0.008,
+      lon: 12.3680 + Math.cos(t * 0.038 + 5.1) * 0.014,
+      heading: 75,
+      speedKmh: 16.5,
+      nextStop: 'Murano Faro',
+      destination: 'Burano / Torcello',
+      passengersOnBoard: 49
     }
   ];
 

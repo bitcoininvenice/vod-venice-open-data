@@ -31,13 +31,49 @@ export async function GET() {
     {
       id: 'arpav-3',
       stationName: 'Stazione Parco Bissuola',
-      location: 'Mestre Terraferma',
+      location: 'Mestre Terraferma (Fondo Urbano)',
       lat: 45.4985,
       lon: 12.2482,
       aqi: 'ACCETTABILE',
       pm10: 29,
       pm25: 18,
       no2: 38,
+      lastUpdate: 'Oggi, ore 09:00'
+    },
+    {
+      id: 'arpav-4',
+      stationName: 'Stazione Via Beccaria',
+      location: 'Marghera / Mestre (Traffico Stradale)',
+      lat: 45.4740,
+      lon: 12.2280,
+      aqi: 'ACCETTABILE',
+      pm10: 34,
+      pm25: 22,
+      no2: 44,
+      lastUpdate: 'Oggi, ore 09:00'
+    },
+    {
+      id: 'arpav-5',
+      stationName: 'Stazione Malcontenta',
+      location: 'Gronda Lagunare Sud-Ovest / Industriale',
+      lat: 45.4350,
+      lon: 12.2080,
+      aqi: 'ACCETTABILE',
+      pm10: 31,
+      pm25: 19,
+      no2: 36,
+      lastUpdate: 'Oggi, ore 09:00'
+    },
+    {
+      id: 'arpav-6',
+      stationName: 'Stazione Parco San Giuliano',
+      location: 'Gronda Lagunare Nord / San Giuliano',
+      lat: 45.4680,
+      lon: 12.2780,
+      aqi: 'BUONA',
+      pm10: 17,
+      pm25: 10,
+      no2: 22,
       lastUpdate: 'Oggi, ore 09:00'
     }
   ];

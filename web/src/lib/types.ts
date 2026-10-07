@@ -804,7 +804,7 @@ export interface PollenFamilyItem {
   level: 'BASSO' | 'MEDIO' | 'ALTO' | 'MOLTO_ALTO';
   concentrationGrainsM3: number;
   trend: 'STABILE' | 'CRESCITA' | 'DIMINUZIONE';
-  allergenicity: 'MOLTO_ALTA' | 'ALTA' | 'MEDIA';
+  allergenicity: 'MOLTO_ALTA' | 'ALTA' | 'MEDIA' | 'BASSA';
 }
 
 export interface PollenMonitoringStationItem {

@@ -44,6 +44,61 @@ export async function GET() {
       trend: currentHour < 11 ? 'IN_AUMENTO' : 'STABILE',
       crowdingLevel: multiplier > 0.6 ? 'ELEVATO' : 'MEDIO',
       accessFeeEnforced: true
+    },
+    {
+      id: 'flow-4',
+      sensorName: 'Ponte dell\'Accademia',
+      location: 'Dorsoduro ➔ San Marco (Gallerie Accademia)',
+      lat: 45.4315,
+      lon: 12.3288,
+      hourlyFlow: Math.round(2250 * multiplier + 240),
+      trend: currentHour < 12 ? 'IN_AUMENTO' : 'STABILE',
+      crowdingLevel: multiplier > 0.65 ? 'ELEVATO' : multiplier > 0.35 ? 'MEDIO' : 'BASSO',
+      accessFeeEnforced: true
+    },
+    {
+      id: 'flow-5',
+      sensorName: 'Piazza San Marco (Bocca di Piazza)',
+      location: 'Torre dell\'Orologio ➔ Mercerie San Marco',
+      lat: 45.4346,
+      lon: 12.3388,
+      hourlyFlow: Math.round(3650 * multiplier + 520),
+      trend: currentHour < 13 ? 'IN_AUMENTO' : 'STABILE',
+      crowdingLevel: multiplier > 0.6 ? 'ELEVATO' : 'MEDIO',
+      accessFeeEnforced: true
+    },
+    {
+      id: 'flow-6',
+      sensorName: 'Riva degli Schiavoni (Ponte della Paglia)',
+      location: 'Palazzo Ducale ➔ Riva Monumentale',
+      lat: 45.4338,
+      lon: 12.3410,
+      hourlyFlow: Math.round(3100 * multiplier + 380),
+      trend: currentHour < 12 ? 'IN_AUMENTO' : 'STABILE',
+      crowdingLevel: multiplier > 0.65 ? 'ELEVATO' : 'MEDIO',
+      accessFeeEnforced: true
+    },
+    {
+      id: 'flow-7',
+      sensorName: 'Strada Nova (Campo Santi Apostoli)',
+      location: 'Cannaregio ➔ Rialto Direttrice Centro',
+      lat: 45.4405,
+      lon: 12.3375,
+      hourlyFlow: Math.round(2650 * multiplier + 310),
+      trend: currentHour < 11 ? 'IN_AUMENTO' : 'STABILE',
+      crowdingLevel: multiplier > 0.6 ? 'ELEVATO' : 'MEDIO',
+      accessFeeEnforced: true
+    },
+    {
+      id: 'flow-8',
+      sensorName: 'Ponte degli Scalzi (Stazione FS)',
+      location: 'Fondamenta Santa Lucia ➔ Santa Croce',
+      lat: 45.4412,
+      lon: 12.3225,
+      hourlyFlow: Math.round(3300 * multiplier + 420),
+      trend: currentHour < 12 ? 'IN_AUMENTO' : 'STABILE',
+      crowdingLevel: multiplier > 0.65 ? 'ELEVATO' : 'MEDIO',
+      accessFeeEnforced: true
     }
   ];
 

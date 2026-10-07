@@ -77,6 +77,78 @@ export async function GET() {
       sestiere: 'Giudecca',
       details: 'Lungo il Canale della Giudecca'
     },
+    {
+      id: 'f-9',
+      name: 'Fontanella Campo San Giacomo da l\'Orio',
+      type: 'FOUNTAIN',
+      lat: 45.4402,
+      lon: 12.3268,
+      sestiere: 'Santa Croce',
+      details: 'Fontana in ghisa con rubinetto a pulsante nel campo alberato'
+    },
+    {
+      id: 'f-10',
+      name: 'Fontanella Campo Santa Maria Formosa',
+      type: 'FOUNTAIN',
+      lat: 45.4372,
+      lon: 12.3415,
+      sestiere: 'Castello',
+      details: 'Punto idrico pubblico attivo fronte Palazzo Querini Stampalia'
+    },
+    {
+      id: 'f-11',
+      name: 'Fontanella Campo San Barnaba',
+      type: 'FOUNTAIN',
+      lat: 45.4332,
+      lon: 12.3255,
+      sestiere: 'Dorsoduro',
+      details: 'Fontanella in ghisa presso il ponte e la barca di frutta e verdura'
+    },
+    {
+      id: 'f-12',
+      name: 'Fontanella Fondamenta de la Misericordia',
+      type: 'FOUNTAIN',
+      lat: 45.4450,
+      lon: 12.3320,
+      sestiere: 'Cannaregio',
+      details: 'Colonnina pubblica potabile lungo la fondamenta'
+    },
+    {
+      id: 'f-13',
+      name: 'Fontanella Campo San Zaccaria',
+      type: 'FOUNTAIN',
+      lat: 45.4348,
+      lon: 12.3430,
+      sestiere: 'Castello',
+      details: 'Fontana in pietra d\'Istria e ghisa adiacente alla chiesa'
+    },
+    {
+      id: 'f-14',
+      name: 'Fontanella Riva dei Sette Martiri',
+      type: 'FOUNTAIN',
+      lat: 45.4310,
+      lon: 12.3535,
+      sestiere: 'Castello',
+      details: 'Punto ristoro idrico fronte bacino marciano verso la Biennale'
+    },
+    {
+      id: 'f-15',
+      name: 'Fontanella Campo Sant\'Aponal',
+      type: 'FOUNTAIN',
+      lat: 45.4370,
+      lon: 12.3335,
+      sestiere: 'San Polo',
+      details: 'Fontanella storica al crocevia pedonale Rialto - San Polo'
+    },
+    {
+      id: 'f-16',
+      name: 'Fontanella Campo San Vio',
+      type: 'FOUNTAIN',
+      lat: 45.4312,
+      lon: 12.3340,
+      sestiere: 'Dorsoduro',
+      details: 'Fontanella pubblica a colonna affacciata verso il Canal Grande'
+    },
 
     // 2. Ponti con Rampe e Percorsi Accessibili (Comune di Venezia)
     {
@@ -116,6 +188,45 @@ export async function GET() {
       lon: 12.3530,
       sestiere: 'Castello',
       details: 'Rampa fissa per accesso Giardini della Biennale'
+    },
+    {
+      id: 'p-5',
+      name: 'Ponte de la Zecca / Molo Marciano',
+      type: 'ACCESSIBLE_BRIDGE',
+      lat: 45.4332,
+      lon: 12.3385,
+      sestiere: 'San Marco',
+      details: 'Rampa a pendenza dolce (5%) di collegamento Giardinetti Reali - Piazzetta San Marco',
+      accessibilityNote: 'Percorso monumentale accessibile PRM'
+    },
+    {
+      id: 'p-6',
+      name: 'Ponte del Cristo a San Marcuola',
+      type: 'ACCESSIBLE_BRIDGE',
+      lat: 45.4428,
+      lon: 12.3275,
+      sestiere: 'Cannaregio',
+      details: 'Ponte ad arco ribassato con servoscala elettrico e piattaforma mobile AVM',
+      accessibilityNote: 'Servizio di accompagnamento disabili su prenotazione'
+    },
+    {
+      id: 'p-7',
+      name: 'Ponte delle Guglie (Percorso Raccordato)',
+      type: 'ACCESSIBLE_BRIDGE',
+      lat: 45.4432,
+      lon: 12.3248,
+      sestiere: 'Cannaregio',
+      details: 'Scalini con pedata maggiorata e corsia centrale raccordata per carrelli e sedie a rotelle'
+    },
+    {
+      id: 'p-8',
+      name: 'Ponte San Barnaba (Rampa Antisdrucciolo)',
+      type: 'ACCESSIBLE_BRIDGE',
+      lat: 45.4335,
+      lon: 12.3250,
+      sestiere: 'Dorsoduro',
+      details: 'Ponte dotato di raccordo in legno multistrato marino resinato antisdrucciolo',
+      accessibilityNote: 'Percorso senza barriere Zattere - Ca\' Foscari'
     },
 
     // 3. Veritas - Punti Raccolta Rifiuti e Battelli
