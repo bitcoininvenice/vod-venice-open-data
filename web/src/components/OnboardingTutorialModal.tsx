@@ -57,20 +57,20 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
       content: (
         <div className="flex flex-col gap-3 text-xs leading-relaxed text-[var(--ink-2)]">
           <p>
-            VOD è una piattaforma cartografica open source ad alte prestazioni progettata per incrociare in tempo reale oltre <strong className="text-[var(--ink)]">25 fonti Open Data certificate</strong> su Venezia, la sua Laguna e la Terraferma.
+            VOD è una piattaforma cartografica ad alte prestazioni che incrocia in tempo reale oltre <strong className="text-[var(--ink)]">40 fonti Open Data certificate</strong> su Venezia centro storico, la Laguna e la Terraferma.
           </p>
           <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] font-mono">
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1">
-              <span className="text-cyan-400 font-bold">🌊 Laguna & Maree</span>
-              <span>CPSM, ARPAV, ISPRA, CNR-ISMAR e barriere MOSE.</span>
+              <span className="text-cyan-400 font-bold">🌊 Laguna, Maree & Subsidenza</span>
+              <span>CPSM, barriere MOSE, radar InSAR Copernicus EGMS e fondali.</span>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1">
-              <span className="text-emerald-400 font-bold">🚤 Mobilità & Flotte</span>
-              <span>ACTV, Alilaguna, AIS Navi e aerei VCE in tempo reale.</span>
+              <span className="text-emerald-400 font-bold">🚤 Mobilità, Canali & Treni</span>
+              <span>ACTV, Alilaguna, Barcavelox, franchi ponti, navi AIS e treni RFI.</span>
             </div>
           </div>
           <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-200">
-            💡 <strong>Mappa pulita di default:</strong> All'inizio non troverai icone sovrapposte: decidi tu quali livelli attivare per un'esplorazione chiara e senza distrazioni.
+            💡 <strong>Mappa pulita di default:</strong> All'inizio troverai la mappa vettoriale pulita: decidi tu quali livelli attivare per un'esplorazione chiara, fluida e senza distrazioni.
           </div>
         </div>
       )
@@ -84,25 +84,25 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
       content: (
         <div className="flex flex-col gap-3 text-xs leading-relaxed text-[var(--ink-2)]">
           <p>
-            Usa il pannello <strong className="text-[var(--ink)]">"Livelli & Filtri"</strong> a sinistra (o il pulsante in alto su mobile) per selezionare le informazioni:
+            Usa il pannello <strong className="text-[var(--ink)]">"Livelli & Filtri"</strong> a sinistra per attivare le informazioni d'interesse:
           </p>
           <div className="space-y-2 text-[11px]">
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-start gap-2.5">
               <span className="p-1 rounded-lg bg-sky-500/20 text-sky-400 font-bold">1</span>
               <div>
-                <strong className="text-[var(--ink)]">Trasporti & Mobilità:</strong> Rotte e vaporetti ACTV in movimento a 60 FPS, linee Alilaguna, navi AIS nei canali marittimi e voli su Marco Polo.
+                <strong className="text-[var(--ink)]">Mobilità Acquea & Terrestre:</strong> Vaporetti ACTV live, navette Alilaguna, treni RFI su Ponte della Libertà, limiti di velocità canali (Barcavelox), altezze libere ponti vs marea e stazi gondole.
               </div>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-start gap-2.5">
               <span className="p-1 rounded-lg bg-blue-500/20 text-blue-400 font-bold">2</span>
               <div>
-                <strong className="text-[var(--ink)]">Laguna, Maree & Ricerca:</strong> Stato paratoie MOSE, passerelle per l'acqua alta, briccole con fanali ritmici e piattaforma CNR Acqua Alta.
+                <strong className="text-[var(--ink)]">Laguna, Ambiente & Morfologia:</strong> Barriere MOSE, passerelle acqua alta, briccole di canale, barene Natura 2000, vento Scirocco/Bora e subsidenza radar InSAR Sentinel-1.
               </div>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-start gap-2.5">
               <span className="p-1 rounded-lg bg-purple-500/20 text-purple-400 font-bold">3</span>
               <div>
-                <strong className="text-[var(--ink)]">Città, Ambiente & Satelliti:</strong> Qualità dell'aria ARPAV, alberi monumentali, colonnine EV, flussi pedonali e satelliti radar Copernicus ESA/ASI.
+                <strong className="text-[var(--ink)]">Città, Patrimonio & Salute:</strong> I Nizioleti tradizionali, vere da pozzo storiche, campanili pendenti, idroambulanze SUEM 118, defibrillatori DAE, farmacie e isole di calore satellitari.
               </div>
             </div>
           </div>

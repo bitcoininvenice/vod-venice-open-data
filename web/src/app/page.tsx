@@ -41,8 +41,44 @@ import {
   BathingWaterItem,
   UrbanTreeItem,
   EvChargingItem,
-  WifiHotspotItem
+  WifiHotspotItem,
+  CanalSpeedLimitItem,
+  BridgeClearanceItem,
+  GondolaStationItem,
+  PublicDockItem,
+  SubsidenceInSARItem,
+  LagoonMorphologyItem,
+  MeteoMarineWindItem,
+  TrainLiveItem,
+  VeritasWasteBoatItem,
+  NizioletoCivicoItem,
+  VeniceWellItem,
+  BellTowerItem,
+  LagoonFortressIslandItem,
+  EmergencyWaterDockItem,
+  PublicDaeItem,
+  PharmacyDutyItem,
+  HeatIslandSurfaceTempItem
 } from '@/lib/types';
+import {
+  OPEN_CANAL_SPEED_LIMITS,
+  OPEN_BRIDGE_CLEARANCES,
+  OPEN_GONDOLA_STATIONS,
+  OPEN_PUBLIC_DOCKS,
+  OPEN_SUBSIDENCE_INSAR,
+  OPEN_LAGOON_MORPHOLOGY,
+  OPEN_METEO_MARINE_WIND,
+  OPEN_LIVE_TRAINS,
+  OPEN_VERITAS_WASTE_BOATS,
+  OPEN_NIZIOLETI_CIVICI,
+  OPEN_VENICE_WELLS,
+  OPEN_BELL_TOWERS,
+  OPEN_LAGOON_FORTRESS_ISLANDS,
+  OPEN_EMERGENCY_WATER_DOCKS,
+  OPEN_PUBLIC_DAE,
+  OPEN_PHARMACY_DUTY,
+  OPEN_HEAT_ISLAND_LST
+} from '@/lib/open-data-catalog';
 import { MOCK_CANTIERI, MOCK_STOPS } from '@/lib/db';
 import { NOTTE, CARTA, getDynamicPalette } from '@/lib/solar';
 
@@ -98,6 +134,31 @@ export default function HomePage() {
   const [showBathingWaters, setShowBathingWaters] = useState<boolean>(false);
   const [showTrees, setShowTrees] = useState<boolean>(false);
   const [showServicesVenice, setShowServicesVenice] = useState<boolean>(false);
+
+  // 1. Viabilità Acquea & Canali
+  const [showCanalLimits, setShowCanalLimits] = useState<boolean>(false);
+  const [showBridges, setShowBridges] = useState<boolean>(false);
+  const [showGondolas, setShowGondolas] = useState<boolean>(false);
+  const [showDocks, setShowDocks] = useState<boolean>(false);
+  // 2. Idrografia, Subsidenza & Morfologia
+  const [showSubsidence, setShowSubsidence] = useState<boolean>(false);
+  const [showMorphology, setShowMorphology] = useState<boolean>(false);
+  const [showMarineWind, setShowMarineWind] = useState<boolean>(false);
+  // 3. Ferrovia & Logistica
+  const [showTrains, setShowTrains] = useState<boolean>(false);
+  const [showWasteBoats, setShowWasteBoats] = useState<boolean>(false);
+  // 4. Patrimonio Storico & Nizioleti
+  const [showNizioleti, setShowNizioleti] = useState<boolean>(false);
+  const [showWells, setShowWells] = useState<boolean>(false);
+  const [showBellTowers, setShowBellTowers] = useState<boolean>(false);
+  const [showFortresses, setShowFortresses] = useState<boolean>(false);
+  // 5. Salute Pubblica & SUEM 118
+  const [showEmergencyDocks, setShowEmergencyDocks] = useState<boolean>(false);
+  const [showDae, setShowDae] = useState<boolean>(false);
+  const [showPharmacies, setShowPharmacies] = useState<boolean>(false);
+  // 6. Microclima & Isole Calore
+  const [showHeatIslands, setShowHeatIslands] = useState<boolean>(false);
+
   const [bufferRadiusMeters, setBufferRadiusMeters] = useState<number>(200);
   const [selectedCategory, setSelectedCategory] = useState<TransportModeCategory | 'all'>('all');
 
@@ -125,6 +186,26 @@ export default function HomePage() {
   const [trees, setTrees] = useState<UrbanTreeItem[]>([]);
   const [evCharging, setEvCharging] = useState<EvChargingItem[]>([]);
   const [wifiHotspots, setWifiHotspots] = useState<WifiHotspotItem[]>([]);
+
+  // 17 New Open Data Collections
+  const [canalSpeedLimits, setCanalSpeedLimits] = useState<CanalSpeedLimitItem[]>(OPEN_CANAL_SPEED_LIMITS);
+  const [bridges, setBridges] = useState<BridgeClearanceItem[]>(OPEN_BRIDGE_CLEARANCES);
+  const [gondolas, setGondolas] = useState<GondolaStationItem[]>(OPEN_GONDOLA_STATIONS);
+  const [docks, setDocks] = useState<PublicDockItem[]>(OPEN_PUBLIC_DOCKS);
+  const [subsidencePoints, setSubsidencePoints] = useState<SubsidenceInSARItem[]>(OPEN_SUBSIDENCE_INSAR);
+  const [lagoonMorphology, setLagoonMorphology] = useState<LagoonMorphologyItem[]>(OPEN_LAGOON_MORPHOLOGY);
+  const [marineWindStations, setMarineWindStations] = useState<MeteoMarineWindItem[]>(OPEN_METEO_MARINE_WIND);
+  const [liveTrains, setLiveTrains] = useState<TrainLiveItem[]>(OPEN_LIVE_TRAINS);
+  const [wasteBoats, setWasteBoats] = useState<VeritasWasteBoatItem[]>(OPEN_VERITAS_WASTE_BOATS);
+  const [nizioleti, setNizioleti] = useState<NizioletoCivicoItem[]>(OPEN_NIZIOLETI_CIVICI);
+  const [wells, setWells] = useState<VeniceWellItem[]>(OPEN_VENICE_WELLS);
+  const [bellTowers, setBellTowers] = useState<BellTowerItem[]>(OPEN_BELL_TOWERS);
+  const [fortressIslands, setFortressIslands] = useState<LagoonFortressIslandItem[]>(OPEN_LAGOON_FORTRESS_ISLANDS);
+  const [emergencyDocks, setEmergencyDocks] = useState<EmergencyWaterDockItem[]>(OPEN_EMERGENCY_WATER_DOCKS);
+  const [daeList, setDaeList] = useState<PublicDaeItem[]>(OPEN_PUBLIC_DAE);
+  const [pharmacies, setPharmacies] = useState<PharmacyDutyItem[]>(OPEN_PHARMACY_DUTY);
+  const [heatIslands, setHeatIslands] = useState<HeatIslandSurfaceTempItem[]>(OPEN_HEAT_ISLAND_LST);
+
   const [tideLevel, setTideLevel] = useState<number>(76);
 
   // Active selections & Modals
@@ -175,6 +256,29 @@ export default function HomePage() {
     setShowBathingWaters(active);
     setShowTrees(active);
     setShowServicesVenice(active);
+    // 1. Viabilità Acquea & Canali
+    setShowCanalLimits(active);
+    setShowBridges(active);
+    setShowGondolas(active);
+    setShowDocks(active);
+    // 2. Idrografia, Subsidenza & Morfologia
+    setShowSubsidence(active);
+    setShowMorphology(active);
+    setShowMarineWind(active);
+    // 3. Ferrovia & Logistica
+    setShowTrains(active);
+    setShowWasteBoats(active);
+    // 4. Patrimonio Storico & Nizioleti
+    setShowNizioleti(active);
+    setShowWells(active);
+    setShowBellTowers(active);
+    setShowFortresses(active);
+    // 5. Salute Pubblica & SUEM 118
+    setShowEmergencyDocks(active);
+    setShowDae(active);
+    setShowPharmacies(active);
+    // 6. Microclima & Isole Calore
+    setShowHeatIslands(active);
   };
 
   const applyPreset = (preset: MapPresetType) => {
@@ -196,12 +300,22 @@ export default function HomePage() {
       setShowShips(true);
       setShowShipRoutes(true);
       setShowFlights(true);
+      setShowCanalLimits(true);
+      setShowBridges(true);
+      setShowGondolas(true);
+      setShowDocks(true);
+      setShowTrains(true);
+      setShowWasteBoats(true);
     } else if (preset === 'lagoon') {
       setShowMose(true);
       setShowPasserelle(true);
       setShowMarineSignals(true);
       setShowOceanStations(true);
       setShowBathingWaters(true);
+      setShowSubsidence(true);
+      setShowMorphology(true);
+      setShowMarineWind(true);
+      setShowFortresses(true);
     } else if (preset === 'city') {
       setShowCityAssets(true);
       setShowTrees(true);
@@ -210,8 +324,17 @@ export default function HomePage() {
       setShowCantieri(true);
       setShowAirQuality(true);
       setShowPedestrianFlows(true);
+      setShowNizioleti(true);
+      setShowWells(true);
+      setShowBellTowers(true);
+      setShowEmergencyDocks(true);
+      setShowDae(true);
+      setShowPharmacies(true);
+      setShowHeatIslands(true);
     } else if (preset === 'satellites') {
       setShowSatellites(true);
+      setShowSubsidence(true);
+      setShowHeatIslands(true);
     }
   };
 
@@ -349,6 +472,77 @@ export default function HomePage() {
         }
       })
       .catch((err) => console.warn('Using fallback venice assets:', err));
+
+    // 1. Waterways & Canals (Speed limits, bridges, gondolas, docks)
+    fetch('/api/waterways')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          if (data.data.canalSpeedLimits) setCanalSpeedLimits(data.data.canalSpeedLimits);
+          if (data.data.bridges) setBridges(data.data.bridges);
+          if (data.data.gondolas) setGondolas(data.data.gondolas);
+          if (data.data.docks) setDocks(data.data.docks);
+        }
+      })
+      .catch((err) => console.warn('Using fallback waterways:', err));
+
+    // 2. Lagoon Morphology & InSAR Subsidence (Copernicus EGMS, Natura 2000, ISPRA)
+    fetch('/api/lagoon-morphology')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          if (data.data.subsidencePoints) setSubsidencePoints(data.data.subsidencePoints);
+          if (data.data.lagoonMorphology) setLagoonMorphology(data.data.lagoonMorphology);
+          if (data.data.marineWindStations) setMarineWindStations(data.data.marineWindStations);
+        }
+      })
+      .catch((err) => console.warn('Using fallback lagoon morphology:', err));
+
+    // 3. Rail & Logistics (Viaggiatreno/RFI trains, Veritas waste boats)
+    fetch('/api/rail-logistics')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          if (data.data.liveTrains) setLiveTrains(data.data.liveTrains);
+          if (data.data.wasteBoats) setWasteBoats(data.data.wasteBoats);
+        }
+      })
+      .catch((err) => console.warn('Using fallback rail/logistics:', err));
+
+    // 4. Historical Heritage & Toponymy (Nizioleti, Pozzi, Campanili, Forti)
+    fetch('/api/heritage')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          if (data.data.nizioleti) setNizioleti(data.data.nizioleti);
+          if (data.data.wells) setWells(data.data.wells);
+          if (data.data.bellTowers) setBellTowers(data.data.bellTowers);
+          if (data.data.fortressIslands) setFortressIslands(data.data.fortressIslands);
+        }
+      })
+      .catch((err) => console.warn('Using fallback heritage:', err));
+
+    // 5. Emergency & Healthcare (SUEM 118 docks, DAE, Pharmacies)
+    fetch('/api/emergency-health')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          if (data.data.emergencyDocks) setEmergencyDocks(data.data.emergencyDocks);
+          if (data.data.daeList) setDaeList(data.data.daeList);
+          if (data.data.pharmacies) setPharmacies(data.data.pharmacies);
+        }
+      })
+      .catch((err) => console.warn('Using fallback emergency health:', err));
+
+    // 6. Urban Microclimate (Copernicus LST Urban Heat Islands)
+    fetch('/api/urban-microclimate')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          if (data.data.heatIslands) setHeatIslands(data.data.heatIslands);
+        }
+      })
+      .catch((err) => console.warn('Using fallback urban microclimate:', err));
 
     return () => {
       clearInterval(flightInterval);
@@ -508,6 +702,47 @@ export default function HomePage() {
           onSelectShip={setSelectedShip}
           onSelectMose={() => setIsMoseModalOpen(true)}
           focusedCoordinates={focusedCoordinates}
+          // 1. Viabilità Acquea & Canali
+          showCanalLimits={showCanalLimits}
+          canalSpeedLimits={canalSpeedLimits}
+          showBridges={showBridges}
+          bridges={bridges}
+          showGondolas={showGondolas}
+          gondolas={gondolas}
+          showDocks={showDocks}
+          docks={docks}
+          // 2. Idrografia, Subsidenza & Morfologia
+          showSubsidence={showSubsidence}
+          subsidencePoints={subsidencePoints}
+          showMorphology={showMorphology}
+          lagoonMorphology={lagoonMorphology}
+          showMarineWind={showMarineWind}
+          marineWindStations={marineWindStations}
+          // 3. Ferrovia & Logistica
+          showTrains={showTrains}
+          liveTrains={liveTrains}
+          showWasteBoats={showWasteBoats}
+          wasteBoats={wasteBoats}
+          // 4. Patrimonio Storico & Nizioleti
+          showNizioleti={showNizioleti}
+          nizioleti={nizioleti}
+          showWells={showWells}
+          wells={wells}
+          showBellTowers={showBellTowers}
+          bellTowers={bellTowers}
+          showFortresses={showFortresses}
+          fortressIslands={fortressIslands}
+          // 5. Salute Pubblica & SUEM 118
+          showEmergencyDocks={showEmergencyDocks}
+          emergencyDocks={emergencyDocks}
+          showDae={showDae}
+          daeList={daeList}
+          showPharmacies={showPharmacies}
+          pharmacies={pharmacies}
+          // 6. Microclima & Isole Calore
+          showHeatIslands={showHeatIslands}
+          heatIslands={heatIslands}
+          tideLevel={tideLevel}
         />
 
         {/* Floating Left: Desktop Layer & Filter Panel */}
@@ -566,6 +801,63 @@ export default function HomePage() {
             showSatellites={showSatellites}
             onToggleSatellites={() => setShowSatellites((p) => !p)}
             satellitesCount={satellites.length}
+            // 1. Viabilità Acquea & Canali
+            showCanalLimits={showCanalLimits}
+            onToggleCanalLimits={() => setShowCanalLimits((p) => !p)}
+            canalLimitsCount={canalSpeedLimits.length}
+            showBridges={showBridges}
+            onToggleBridges={() => setShowBridges((p) => !p)}
+            bridgesCount={bridges.length}
+            showGondolas={showGondolas}
+            onToggleGondolas={() => setShowGondolas((p) => !p)}
+            gondolasCount={gondolas.length}
+            showDocks={showDocks}
+            onToggleDocks={() => setShowDocks((p) => !p)}
+            docksCount={docks.length}
+            // 2. Idrografia, Subsidenza & Morfologia
+            showSubsidence={showSubsidence}
+            onToggleSubsidence={() => setShowSubsidence((p) => !p)}
+            subsidenceCount={subsidencePoints.length}
+            showMorphology={showMorphology}
+            onToggleMorphology={() => setShowMorphology((p) => !p)}
+            morphologyCount={lagoonMorphology.length}
+            showMarineWind={showMarineWind}
+            onToggleMarineWind={() => setShowMarineWind((p) => !p)}
+            marineWindCount={marineWindStations.length}
+            // 3. Ferrovia & Logistica
+            showTrains={showTrains}
+            onToggleTrains={() => setShowTrains((p) => !p)}
+            trainsCount={liveTrains.length}
+            showWasteBoats={showWasteBoats}
+            onToggleWasteBoats={() => setShowWasteBoats((p) => !p)}
+            wasteBoatsCount={wasteBoats.length}
+            // 4. Patrimonio Storico & Nizioleti
+            showNizioleti={showNizioleti}
+            onToggleNizioleti={() => setShowNizioleti((p) => !p)}
+            nizioletiCount={nizioleti.length}
+            showWells={showWells}
+            onToggleWells={() => setShowWells((p) => !p)}
+            wellsCount={wells.length}
+            showBellTowers={showBellTowers}
+            onToggleBellTowers={() => setShowBellTowers((p) => !p)}
+            bellTowersCount={bellTowers.length}
+            showFortresses={showFortresses}
+            onToggleFortresses={() => setShowFortresses((p) => !p)}
+            fortressesCount={fortressIslands.length}
+            // 5. Salute Pubblica & SUEM 118
+            showEmergencyDocks={showEmergencyDocks}
+            onToggleEmergencyDocks={() => setShowEmergencyDocks((p) => !p)}
+            emergencyDocksCount={emergencyDocks.length}
+            showDae={showDae}
+            onToggleDae={() => setShowDae((p) => !p)}
+            daeCount={daeList.length}
+            showPharmacies={showPharmacies}
+            onTogglePharmacies={() => setShowPharmacies((p) => !p)}
+            pharmaciesCount={pharmacies.length}
+            // 6. Microclima & Isole Calore
+            showHeatIslands={showHeatIslands}
+            onToggleHeatIslands={() => setShowHeatIslands((p) => !p)}
+            heatIslandsCount={heatIslands.length}
             showSpatialBuffer={showSpatialBuffer}
             onToggleSpatialBuffer={() => setShowSpatialBuffer((p) => !p)}
             bufferRadiusMeters={bufferRadiusMeters}
@@ -653,6 +945,63 @@ export default function HomePage() {
                 showSatellites={showSatellites}
                 onToggleSatellites={() => setShowSatellites((p) => !p)}
                 satellitesCount={satellites.length}
+                // 1. Viabilità Acquea & Canali
+                showCanalLimits={showCanalLimits}
+                onToggleCanalLimits={() => setShowCanalLimits((p) => !p)}
+                canalLimitsCount={canalSpeedLimits.length}
+                showBridges={showBridges}
+                onToggleBridges={() => setShowBridges((p) => !p)}
+                bridgesCount={bridges.length}
+                showGondolas={showGondolas}
+                onToggleGondolas={() => setShowGondolas((p) => !p)}
+                gondolasCount={gondolas.length}
+                showDocks={showDocks}
+                onToggleDocks={() => setShowDocks((p) => !p)}
+                docksCount={docks.length}
+                // 2. Idrografia, Subsidenza & Morfologia
+                showSubsidence={showSubsidence}
+                onToggleSubsidence={() => setShowSubsidence((p) => !p)}
+                subsidenceCount={subsidencePoints.length}
+                showMorphology={showMorphology}
+                onToggleMorphology={() => setShowMorphology((p) => !p)}
+                morphologyCount={lagoonMorphology.length}
+                showMarineWind={showMarineWind}
+                onToggleMarineWind={() => setShowMarineWind((p) => !p)}
+                marineWindCount={marineWindStations.length}
+                // 3. Ferrovia & Logistica
+                showTrains={showTrains}
+                onToggleTrains={() => setShowTrains((p) => !p)}
+                trainsCount={liveTrains.length}
+                showWasteBoats={showWasteBoats}
+                onToggleWasteBoats={() => setShowWasteBoats((p) => !p)}
+                wasteBoatsCount={wasteBoats.length}
+                // 4. Patrimonio Storico & Nizioleti
+                showNizioleti={showNizioleti}
+                onToggleNizioleti={() => setShowNizioleti((p) => !p)}
+                nizioletiCount={nizioleti.length}
+                showWells={showWells}
+                onToggleWells={() => setShowWells((p) => !p)}
+                wellsCount={wells.length}
+                showBellTowers={showBellTowers}
+                onToggleBellTowers={() => setShowBellTowers((p) => !p)}
+                bellTowersCount={bellTowers.length}
+                showFortresses={showFortresses}
+                onToggleFortresses={() => setShowFortresses((p) => !p)}
+                fortressesCount={fortressIslands.length}
+                // 5. Salute Pubblica & SUEM 118
+                showEmergencyDocks={showEmergencyDocks}
+                onToggleEmergencyDocks={() => setShowEmergencyDocks((p) => !p)}
+                emergencyDocksCount={emergencyDocks.length}
+                showDae={showDae}
+                onToggleDae={() => setShowDae((p) => !p)}
+                daeCount={daeList.length}
+                showPharmacies={showPharmacies}
+                onTogglePharmacies={() => setShowPharmacies((p) => !p)}
+                pharmaciesCount={pharmacies.length}
+                // 6. Microclima & Isole Calore
+                showHeatIslands={showHeatIslands}
+                onToggleHeatIslands={() => setShowHeatIslands((p) => !p)}
+                heatIslandsCount={heatIslands.length}
                 showSpatialBuffer={showSpatialBuffer}
                 onToggleSpatialBuffer={() => setShowSpatialBuffer((p) => !p)}
                 bufferRadiusMeters={bufferRadiusMeters}
@@ -740,6 +1089,7 @@ export default function HomePage() {
       <VeniceFeatureDetailModal
         feature={selectedFeature}
         onClose={() => setSelectedFeature(null)}
+        currentTideLevelCm={tideLevel}
       />
 
       <SpatialAnalysisModal

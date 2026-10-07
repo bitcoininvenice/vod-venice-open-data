@@ -478,3 +478,232 @@ export interface WifiHotspotItem {
   isFreePublic: boolean;
 }
 
+// ==========================================
+// 1. VIABILITÀ ACQUEA & CANALI (Comune di Venezia / Atlante Laguna / GeoSMA)
+// ==========================================
+export interface CanalSpeedLimitItem {
+  id: string;
+  channelName: string;
+  maxSpeedKmh: number; // 5, 7, 11, 20 km/h
+  isBarcavelox: boolean;
+  zoneType: 'CANALE_INTERNO' | 'CANALE_PRINCIPALE' | 'LAGUNA_APERTA' | 'ZTL_ACQUEA';
+  path: [number, number][]; // LineString [lon, lat]
+  ordinanza: string;
+  color: string;
+  description: string;
+}
+
+export interface BridgeClearanceItem {
+  id: string;
+  bridgeName: string;
+  rioName: string;
+  lat: number;
+  lon: number;
+  clearanceCmZeroMarea: number; // Altezza libera sotto l'arco allo zero mareografico (cm)
+  stepsCount: number;
+  isAccessibleRamp: boolean;
+  minNavigableTideCm: number; // Marea max oltre la quale un motoscafo standard non passa
+  historicalNotes: string;
+}
+
+export interface GondolaStationItem {
+  id: string;
+  name: string;
+  type: 'TRAGHETTO_DA_PARADA' | 'STAZIO_GONDOLA';
+  crossingPath?: [number, number][]; // Per i traghetti che attraversano il Canal Grande
+  lat: number;
+  lon: number;
+  activeGondolas: number;
+  priceEur: number;
+  openingHours: string;
+  managedBy: string;
+}
+
+export interface PublicDockItem {
+  id: string;
+  name: string;
+  lat: number;
+  lon: number;
+  dockType: 'MERCI_CARICO_SCARICO' | 'TAXI_ACQUEO' | 'DISABILI' | 'ORMEGGIO_PUBBLICO';
+  maxStayMinutes: number;
+  managedBy: string;
+}
+
+// ==========================================
+// 2. IDROGRAFIA, SUBSIDENZA & MORFOLOGIA LAGUNARE (Copernicus EGMS / CNR-ISMAR / ISPRA)
+// ==========================================
+export interface SubsidenceInSARItem {
+  id: string;
+  location: string;
+  lat: number;
+  lon: number;
+  velocityMmYear: number; // Velocità verticale millimetri/anno (es. -1.8 mm/anno)
+  accelerationMmYear2: number;
+  coherence: number; // 0.0 - 1.0 qualità del punto scatterer permanente
+  satellite: 'Sentinel-1 InSAR (Copernicus EGMS)' | 'COSMO-SkyMed (ASI)';
+  trend: 'STABILE' | 'SUBSIDENZA_MODERATA' | 'SUBSIDENZA_ACCELERATA';
+  historicalPeriod: string;
+}
+
+export interface LagoonMorphologyItem {
+  id: string;
+  name: string;
+  type: 'BARENA_NATURALE' | 'VELMA' | 'CASSA_COLMATA' | 'VALLE_DA_PESCA' | 'CANALE_PROFONDO';
+  center: [number, number]; // [lon, lat]
+  coordinates: [number, number][]; // Poligono o perimetro
+  areaHectares: number;
+  avgDepthMeters: number; // Da -0.4m per barena a -14.5m per canale
+  ramsarProtected: boolean;
+  protectionDirective: string;
+  floraFauna: string;
+}
+
+export interface MeteoMarineWindItem {
+  id: string;
+  stationName: string;
+  lat: number;
+  lon: number;
+  windDirection: 'SCIROCCO' | 'BORA' | 'LIBECCIO' | 'MAESTRALE' | 'TRAMONTANA';
+  windDirectionDeg: number;
+  windSpeedKmh: number;
+  gustSpeedKmh: number;
+  waveHeightMeters: number;
+  tidePushRisk: 'BASSO' | 'MODERATO' | 'ALTO' | 'CRITICO';
+  officialSource: string;
+}
+
+// ==========================================
+// 3. FERROVIA & LOGISTICA URBANA (Viaggiatreno RFI / Veritas)
+// ==========================================
+export interface TrainLiveItem {
+  id: string;
+  trainNumber: string;
+  trainType: 'FRECCIAROSSA' | 'REGIONALE_VELOCE' | 'ITALO' | 'EUROCITY';
+  origin: string;
+  destination: string;
+  currentLocation: string;
+  lat: number;
+  lon: number;
+  delayMinutes: number;
+  speedKmh: number;
+  platform: string;
+  status: 'IN_ORARIO' | 'IN_RITARDO' | 'IN_ARRIVO';
+  routeProgress: number; // 0..1 lungo il Ponte della Libertà
+}
+
+export interface VeritasWasteBoatItem {
+  id: string;
+  boatCode: string;
+  assignedZone: string;
+  dockName: string;
+  lat: number;
+  lon: number;
+  collectionType: 'INDIFFERENZIATO' | 'CARTA_CARTONE' | 'PLASTICA_VETRO_LATTINE';
+  scheduleHours: string;
+  capacityKg: number;
+  isOperatingNow: boolean;
+}
+
+// ==========================================
+// 4. PATRIMONIO STORICO & NIZIOLETI (Venice Project Center / Soprintendenza / Demanio)
+// ==========================================
+export interface NizioletoCivicoItem {
+  id: string;
+  sestiere: 'San Marco' | 'Castello' | 'Cannaregio' | 'San Polo' | 'Santa Croce' | 'Dorsoduro' | 'Giudecca';
+  civicNumber: number;
+  streetName: string;
+  nizioletoText: string;
+  historicalNotes: string;
+  lat: number;
+  lon: number;
+}
+
+export interface VeniceWellItem {
+  id: string;
+  name: string;
+  century: string;
+  material: 'PIETRA_D_ISTRIA' | 'ROSSO_DI_VERONA' | 'MARMO_GRECO';
+  style: 'GOTICO' | 'RINASCIMENTALE' | 'VENETO_BIZANTINO';
+  campo: string;
+  lat: number;
+  lon: number;
+  conservationState: 'OTTIMO' | 'BUONO' | 'RESTAURATO';
+  cisternaDepthMeters: number;
+}
+
+export interface BellTowerItem {
+  id: string;
+  name: string;
+  heightMeters: number;
+  tiltAngleDeg: number; // Grado di inclinazione
+  isLeaning: boolean;
+  yearBuilt: number;
+  lat: number;
+  lon: number;
+  description: string;
+}
+
+export interface LagoonFortressIslandItem {
+  id: string;
+  name: string;
+  era: 'SERENISSIMA_REPUBBLICA' | 'NAPOLEONICA' | 'ASBURGICA' | 'SANITARIO_MEDIEVALE';
+  status: 'MUSEO_APERTO' | 'ISOLA_ABBANDONATA' | 'RESTAURO_IN_CORSO' | 'ZONA_MILITARE_DISMESSA';
+  areaMq: number;
+  lat: number;
+  lon: number;
+  description: string;
+}
+
+// ==========================================
+// 5. SALUTE & EMERGENZE SANITARIE (SUEM 118 / ULSS 3 / Regione Veneto)
+// ==========================================
+export interface EmergencyWaterDockItem {
+  id: string;
+  name: string;
+  hospital: string;
+  dockCode: string;
+  lat: number;
+  lon: number;
+  is24hOperative: boolean;
+  phone: string;
+  hasDirectHospitalRamp: boolean;
+}
+
+export interface PublicDaeItem {
+  id: string;
+  code: string;
+  location: string;
+  lat: number;
+  lon: number;
+  accessType: 'PUBBLICO_H24' | 'ORARIO_DIURNO';
+  operator: string;
+  lastInspected: string;
+}
+
+export interface PharmacyDutyItem {
+  id: string;
+  name: string;
+  address: string;
+  lat: number;
+  lon: number;
+  isOnDutyNow: boolean;
+  isNightShift: boolean;
+  phone: string;
+}
+
+// ==========================================
+// 6. MICROCLIMA & ISOLE DI CALORE (Copernicus LST / Landsat Thermal)
+// ==========================================
+export interface HeatIslandSurfaceTempItem {
+  id: string;
+  zoneName: string;
+  lat: number;
+  lon: number;
+  surfaceTempCelsius: number;
+  airTempDelta: number; // Gradi rispetto alla temperatura di riferimento
+  surfaceType: 'PIETRA_ISTRIA' | 'TETTO_TEGOLE' | 'ACQUA_CANALE' | 'VERDE_URBANO' | 'ASFALTO_PORTUALE';
+  coolingEffect: 'ALTO' | 'NEUTRO' | 'ISOLA_DI_CALORE';
+  satelliteMission: string;
+}
+
+

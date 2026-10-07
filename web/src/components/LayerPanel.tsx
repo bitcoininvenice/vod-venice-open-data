@@ -27,14 +27,22 @@ import {
   Zap,
   LifeBuoy,
   ShieldAlert,
-  Sparkles
+  Sparkles,
+  Gauge,
+  Train,
+  Trash2,
+  Landmark,
+  Bell,
+  HeartPulse,
+  Pill,
+  ThermometerSun
 } from 'lucide-react';
 import { TransportModeCategory } from '@/lib/types';
 
 interface LayerPanelProps {
   onTurnAllOff?: () => void;
   onTurnAllOn?: () => void;
-  onApplyPreset?: (preset: 'mobility' | 'lagoon' | 'city' | 'satellites') => void;
+  onApplyPreset?: (preset: 'mobility' | 'lagoon' | 'city' | 'satellites' | 'clean' | 'all') => void;
   showRoutes: boolean;
   onToggleRoutes: () => void;
   showStops: boolean;
@@ -85,6 +93,63 @@ interface LayerPanelProps {
   showSatellites?: boolean;
   onToggleSatellites?: () => void;
   satellitesCount?: number;
+  // 1. Viabilità Acquea & Canali
+  showCanalLimits?: boolean;
+  onToggleCanalLimits?: () => void;
+  canalLimitsCount?: number;
+  showBridges?: boolean;
+  onToggleBridges?: () => void;
+  bridgesCount?: number;
+  showGondolas?: boolean;
+  onToggleGondolas?: () => void;
+  gondolasCount?: number;
+  showDocks?: boolean;
+  onToggleDocks?: () => void;
+  docksCount?: number;
+  // 2. Idrografia, Subsidenza & Morfologia
+  showSubsidence?: boolean;
+  onToggleSubsidence?: () => void;
+  subsidenceCount?: number;
+  showMorphology?: boolean;
+  onToggleMorphology?: () => void;
+  morphologyCount?: number;
+  showMarineWind?: boolean;
+  onToggleMarineWind?: () => void;
+  marineWindCount?: number;
+  // 3. Ferrovia & Logistica
+  showTrains?: boolean;
+  onToggleTrains?: () => void;
+  trainsCount?: number;
+  showWasteBoats?: boolean;
+  onToggleWasteBoats?: () => void;
+  wasteBoatsCount?: number;
+  // 4. Patrimonio Storico & Nizioleti
+  showNizioleti?: boolean;
+  onToggleNizioleti?: () => void;
+  nizioletiCount?: number;
+  showWells?: boolean;
+  onToggleWells?: () => void;
+  wellsCount?: number;
+  showBellTowers?: boolean;
+  onToggleBellTowers?: () => void;
+  bellTowersCount?: number;
+  showFortresses?: boolean;
+  onToggleFortresses?: () => void;
+  fortressesCount?: number;
+  // 5. Salute Pubblica & SUEM 118
+  showEmergencyDocks?: boolean;
+  onToggleEmergencyDocks?: () => void;
+  emergencyDocksCount?: number;
+  showDae?: boolean;
+  onToggleDae?: () => void;
+  daeCount?: number;
+  showPharmacies?: boolean;
+  onTogglePharmacies?: () => void;
+  pharmaciesCount?: number;
+  // 6. Microclima & Isole Calore
+  showHeatIslands?: boolean;
+  onToggleHeatIslands?: () => void;
+  heatIslandsCount?: number;
   showSpatialBuffer: boolean;
   onToggleSpatialBuffer: () => void;
   bufferRadiusMeters: number;
@@ -150,6 +215,57 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   showSatellites = true,
   onToggleSatellites,
   satellitesCount = 0,
+  showCanalLimits = false,
+  onToggleCanalLimits,
+  canalLimitsCount = 0,
+  showBridges = false,
+  onToggleBridges,
+  bridgesCount = 0,
+  showGondolas = false,
+  onToggleGondolas,
+  gondolasCount = 0,
+  showDocks = false,
+  onToggleDocks,
+  docksCount = 0,
+  showSubsidence = false,
+  onToggleSubsidence,
+  subsidenceCount = 0,
+  showMorphology = false,
+  onToggleMorphology,
+  morphologyCount = 0,
+  showMarineWind = false,
+  onToggleMarineWind,
+  marineWindCount = 0,
+  showTrains = false,
+  onToggleTrains,
+  trainsCount = 0,
+  showWasteBoats = false,
+  onToggleWasteBoats,
+  wasteBoatsCount = 0,
+  showNizioleti = false,
+  onToggleNizioleti,
+  nizioletiCount = 0,
+  showWells = false,
+  onToggleWells,
+  wellsCount = 0,
+  showBellTowers = false,
+  onToggleBellTowers,
+  bellTowersCount = 0,
+  showFortresses = false,
+  onToggleFortresses,
+  fortressesCount = 0,
+  showEmergencyDocks = false,
+  onToggleEmergencyDocks,
+  emergencyDocksCount = 0,
+  showDae = false,
+  onToggleDae,
+  daeCount = 0,
+  showPharmacies = false,
+  onTogglePharmacies,
+  pharmaciesCount = 0,
+  showHeatIslands = false,
+  onToggleHeatIslands,
+  heatIslandsCount = 0,
   showSpatialBuffer,
   onToggleSpatialBuffer,
   bufferRadiusMeters,
@@ -448,6 +564,162 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </div>
               {showParkings ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
+
+            {/* Limiti Velocità & Barcavelox */}
+            {onToggleCanalLimits && (
+              <button
+                type="button"
+                onClick={onToggleCanalLimits}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showCanalLimits
+                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Gauge className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Limiti Velocità Canali & Barcavelox</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {canalLimitsCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold">
+                      {canalLimitsCount}
+                    </span>
+                  )}
+                  {showCanalLimits ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Franchi di Tiro Ponti vs Marea */}
+            {onToggleBridges && (
+              <button
+                type="button"
+                onClick={onToggleBridges}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showBridges
+                    ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Navigation className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Franchi di Tiro Ponti vs Marea</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {bridgesCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-bold">
+                      {bridgesCount}
+                    </span>
+                  )}
+                  {showBridges ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Traghetti da Parada & Stazi Gondole */}
+            {onToggleGondolas && (
+              <button
+                type="button"
+                onClick={onToggleGondolas}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showGondolas
+                    ? 'bg-purple-500/15 text-purple-300 border-purple-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Waves className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Traghetti da Parada & Gondole</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {gondolasCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-bold">
+                      {gondolasCount}
+                    </span>
+                  )}
+                  {showGondolas ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Rive Merci & Taxi Acquei */}
+            {onToggleDocks && (
+              <button
+                type="button"
+                onClick={onToggleDocks}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showDocks
+                    ? 'bg-blue-500/15 text-blue-300 border-blue-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Anchor className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Rive Merci & Approdi Taxi</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {docksCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 font-bold">
+                      {docksCount}
+                    </span>
+                  )}
+                  {showDocks ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Treni Live Ponte della Libertà (RFI) */}
+            {onToggleTrains && (
+              <button
+                type="button"
+                onClick={onToggleTrains}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showTrains
+                    ? 'bg-red-500/15 text-red-300 border-red-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Train className="w-3.5 h-3.5 text-red-400" />
+                  <span>Treni Live Ponte Libertà (RFI)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {trainsCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-red-500/20 text-red-300 font-bold">
+                      {trainsCount}
+                    </span>
+                  )}
+                  {showTrains ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Battelli Raccolta Veritas */}
+            {onToggleWasteBoats && (
+              <button
+                type="button"
+                onClick={onToggleWasteBoats}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showWasteBoats
+                    ? 'bg-lime-500/15 text-lime-300 border-lime-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Trash2 className="w-3.5 h-3.5 text-lime-400" />
+                  <span>Battelli Raccolta Rifiuti Veritas</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {wasteBoatsCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-lime-500/20 text-lime-300 font-bold">
+                      {wasteBoatsCount}
+                    </span>
+                  )}
+                  {showWasteBoats ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -584,6 +856,110 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                     </span>
                   )}
                   {showBathingWaters ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Subsidenza InSAR (Copernicus EGMS) */}
+            {onToggleSubsidence && (
+              <button
+                type="button"
+                onClick={onToggleSubsidence}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showSubsidence
+                    ? 'bg-rose-500/15 text-rose-300 border-rose-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Layers className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Subsidenza InSAR (Copernicus EGMS)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {subsidenceCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-bold">
+                      {subsidenceCount}
+                    </span>
+                  )}
+                  {showSubsidence ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Morfologia Barene & Velme (Natura 2000) */}
+            {onToggleMorphology && (
+              <button
+                type="button"
+                onClick={onToggleMorphology}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showMorphology
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Trees className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Barene, Velme & Rete Natura 2000</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {morphologyCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                      {morphologyCount}
+                    </span>
+                  )}
+                  {showMorphology ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Stazioni Vento Meteomarine (Scirocco/Bora) */}
+            {onToggleMarineWind && (
+              <button
+                type="button"
+                onClick={onToggleMarineWind}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showMarineWind
+                    ? 'bg-teal-500/15 text-teal-300 border-teal-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Wind className="w-3.5 h-3.5 text-teal-400" />
+                  <span>Vento Scirocco/Bora & Onde ISPRA</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {marineWindCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-teal-500/20 text-teal-300 font-bold">
+                      {marineWindCount}
+                    </span>
+                  )}
+                  {showMarineWind ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Fortezze Lagunari & Isole Storiche */}
+            {onToggleFortresses && (
+              <button
+                type="button"
+                onClick={onToggleFortresses}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showFortresses
+                    ? 'bg-stone-500/15 text-stone-300 border-stone-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="w-3.5 h-3.5 text-stone-400" />
+                  <span>Fortezze, Ottagoni & Lazzaretti</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {fortressesCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-stone-500/20 text-stone-300 font-bold">
+                      {fortressesCount}
+                    </span>
+                  )}
+                  {showFortresses ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 </div>
               </button>
             )}
@@ -787,6 +1163,188 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 {showSatellites ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
               </div>
             </button>
+
+            {/* I Nizioleti & Civici Tradizionali */}
+            {onToggleNizioleti && (
+              <button
+                type="button"
+                onClick={onToggleNizioleti}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showNizioleti
+                    ? 'bg-neutral-800 text-white border-neutral-600 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Landmark className="w-3.5 h-3.5 text-neutral-300" />
+                  <span>I Nizioleti & Toponomastica Civici</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {nizioletiCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-700 text-neutral-200 font-bold">
+                      {nizioletiCount}
+                    </span>
+                  )}
+                  {showNizioleti ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Vere da Pozzo Storiche */}
+            {onToggleWells && (
+              <button
+                type="button"
+                onClick={onToggleWells}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showWells
+                    ? 'bg-amber-600/15 text-amber-300 border-amber-600/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Landmark className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Vere da Pozzo Storiche (Wells)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {wellsCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold">
+                      {wellsCount}
+                    </span>
+                  )}
+                  {showWells ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Campanili & Torri Pendenti */}
+            {onToggleBellTowers && (
+              <button
+                type="button"
+                onClick={onToggleBellTowers}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showBellTowers
+                    ? 'bg-orange-500/15 text-orange-300 border-orange-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Bell className="w-3.5 h-3.5 text-orange-400" />
+                  <span>Campanili & Torri Pendenti</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {bellTowersCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-300 font-bold">
+                      {bellTowersCount}
+                    </span>
+                  )}
+                  {showBellTowers ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Pontili Idroambulanze SUEM 118 */}
+            {onToggleEmergencyDocks && (
+              <button
+                type="button"
+                onClick={onToggleEmergencyDocks}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showEmergencyDocks
+                    ? 'bg-red-500/15 text-red-300 border-red-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <HeartPulse className="w-3.5 h-3.5 text-red-400" />
+                  <span>Pontili Idroambulanze SUEM 118</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {emergencyDocksCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-red-500/20 text-red-300 font-bold">
+                      {emergencyDocksCount}
+                    </span>
+                  )}
+                  {showEmergencyDocks ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Defibrillatori Pubblici DAE H24 */}
+            {onToggleDae && (
+              <button
+                type="button"
+                onClick={onToggleDae}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showDae
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <HeartPulse className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Defibrillatori Pubblici DAE</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {daeCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                      {daeCount}
+                    </span>
+                  )}
+                  {showDae ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Farmacie di Turno Live */}
+            {onTogglePharmacies && (
+              <button
+                type="button"
+                onClick={onTogglePharmacies}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showPharmacies
+                    ? 'bg-green-500/15 text-green-300 border-green-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Pill className="w-3.5 h-3.5 text-green-400" />
+                  <span>Farmacie di Turno Live</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {pharmaciesCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-green-500/20 text-green-300 font-bold">
+                      {pharmaciesCount}
+                    </span>
+                  )}
+                  {showPharmacies ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Isole di Calore & LST Satellitare */}
+            {onToggleHeatIslands && (
+              <button
+                type="button"
+                onClick={onToggleHeatIslands}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showHeatIslands
+                    ? 'bg-orange-500/15 text-orange-300 border-orange-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <ThermometerSun className="w-3.5 h-3.5 text-orange-400" />
+                  <span>Isole di Calore & LST Copernicus</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {heatIslandsCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-300 font-bold">
+                      {heatIslandsCount}
+                    </span>
+                  )}
+                  {showHeatIslands ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
           </div>
         )}
       </div>

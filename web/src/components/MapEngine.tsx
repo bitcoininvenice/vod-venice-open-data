@@ -25,7 +25,24 @@ import {
   BathingWaterItem,
   UrbanTreeItem,
   EvChargingItem,
-  WifiHotspotItem
+  WifiHotspotItem,
+  CanalSpeedLimitItem,
+  BridgeClearanceItem,
+  GondolaStationItem,
+  PublicDockItem,
+  SubsidenceInSARItem,
+  LagoonMorphologyItem,
+  MeteoMarineWindItem,
+  TrainLiveItem,
+  VeritasWasteBoatItem,
+  NizioletoCivicoItem,
+  VeniceWellItem,
+  BellTowerItem,
+  LagoonFortressIslandItem,
+  EmergencyWaterDockItem,
+  PublicDaeItem,
+  PharmacyDutyItem,
+  HeatIslandSurfaceTempItem
 } from '@/lib/types';
 import { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import { D, LAND, CFG } from '@/lib/simulation-data';
@@ -304,6 +321,42 @@ interface MapEngineProps {
   onSelectShip?: (ship: ShipItem) => void;
   onSelectMose?: () => void;
   focusedCoordinates?: { lat: number; lon: number } | null;
+  // New Open Data Feeds
+  showCanalLimits?: boolean;
+  canalSpeedLimits?: CanalSpeedLimitItem[];
+  showBridges?: boolean;
+  bridges?: BridgeClearanceItem[];
+  showGondolas?: boolean;
+  gondolas?: GondolaStationItem[];
+  showDocks?: boolean;
+  docks?: PublicDockItem[];
+  showSubsidence?: boolean;
+  subsidencePoints?: SubsidenceInSARItem[];
+  showMorphology?: boolean;
+  lagoonMorphology?: LagoonMorphologyItem[];
+  showMarineWind?: boolean;
+  marineWindStations?: MeteoMarineWindItem[];
+  showTrains?: boolean;
+  liveTrains?: TrainLiveItem[];
+  showWasteBoats?: boolean;
+  wasteBoats?: VeritasWasteBoatItem[];
+  showNizioleti?: boolean;
+  nizioleti?: NizioletoCivicoItem[];
+  showWells?: boolean;
+  wells?: VeniceWellItem[];
+  showBellTowers?: boolean;
+  bellTowers?: BellTowerItem[];
+  showFortresses?: boolean;
+  fortressIslands?: LagoonFortressIslandItem[];
+  showEmergencyDocks?: boolean;
+  emergencyDocks?: EmergencyWaterDockItem[];
+  showDae?: boolean;
+  daeList?: PublicDaeItem[];
+  showPharmacies?: boolean;
+  pharmacies?: PharmacyDutyItem[];
+  showHeatIslands?: boolean;
+  heatIslands?: HeatIslandSurfaceTempItem[];
+  tideLevel?: number;
 }
 
 export const MapEngine: React.FC<MapEngineProps> = ({
@@ -364,7 +417,42 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   onSelectAirport,
   onSelectShip,
   onSelectMose,
-  focusedCoordinates
+  focusedCoordinates,
+  showCanalLimits = false,
+  canalSpeedLimits = [],
+  showBridges = false,
+  bridges = [],
+  showGondolas = false,
+  gondolas = [],
+  showDocks = false,
+  docks = [],
+  showSubsidence = false,
+  subsidencePoints = [],
+  showMorphology = false,
+  lagoonMorphology = [],
+  showMarineWind = false,
+  marineWindStations = [],
+  showTrains = false,
+  liveTrains = [],
+  showWasteBoats = false,
+  wasteBoats = [],
+  showNizioleti = false,
+  nizioleti = [],
+  showWells = false,
+  wells = [],
+  showBellTowers = false,
+  bellTowers = [],
+  showFortresses = false,
+  fortressIslands = [],
+  showEmergencyDocks = false,
+  emergencyDocks = [],
+  showDae = false,
+  daeList = [],
+  showPharmacies = false,
+  pharmacies = [],
+  showHeatIslands = false,
+  heatIslands = [],
+  tideLevel = 76
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -1054,6 +1142,329 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           if (Math.hypot(clickX - wx, clickY - wy) <= 20) {
             if (onSelectFeature) {
               onSelectFeature({ type: 'wifiHotspot', data: wf });
+              setSelectedVehicle(null);
+              setSelectedFlight(null);
+              setSelectedShipOnMap(null);
+              setSelectedAlilagunaBoat(null);
+              setSelectedSatellite(null);
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    // 1m. Hit test Franchi di Tiro Ponti
+    if (showBridges && bridges && bridges.length > 0) {
+      for (const b of bridges) {
+        const bx = (mx(b.lon) - camera.x0) * camera.s;
+        const by = (my(b.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - bx, clickY - by) <= 22) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'bridgeClearance', data: b });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1n. Hit test Traghetti da Parada & Stazi Gondole
+    if (showGondolas && gondolas && gondolas.length > 0) {
+      for (const g of gondolas) {
+        const gx = (mx(g.lon) - camera.x0) * camera.s;
+        const gy = (my(g.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - gx, clickY - gy) <= 20) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'gondolaStation', data: g });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1o. Hit test Rive d'Approdo Pubbliche & Merci
+    if (showDocks && docks && docks.length > 0) {
+      for (const d of docks) {
+        const dx = (mx(d.lon) - camera.x0) * camera.s;
+        const dy = (my(d.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - dx, clickY - dy) <= 20) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'publicDock', data: d });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1p. Hit test Subsidenza InSAR (Copernicus EGMS)
+    if (showSubsidence && subsidencePoints && subsidencePoints.length > 0) {
+      for (const sub of subsidencePoints) {
+        const sxPos = (mx(sub.lon) - camera.x0) * camera.s;
+        const syPos = (my(sub.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - sxPos, clickY - syPos) <= 22) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'subsidence', data: sub });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1q. Hit test Morfologia Barene & Velme
+    if (showMorphology && lagoonMorphology && lagoonMorphology.length > 0) {
+      for (const morph of lagoonMorphology) {
+        const cx = (mx(morph.center[0]) - camera.x0) * camera.s;
+        const cy = (my(morph.center[1]) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - cx, clickY - cy) <= 26) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'lagoonMorphology', data: morph });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1r. Hit test Stazioni Vento Meteomarino (Scirocco/Bora)
+    if (showMarineWind && marineWindStations && marineWindStations.length > 0) {
+      for (const w of marineWindStations) {
+        const wx = (mx(w.lon) - camera.x0) * camera.s;
+        const wy = (my(w.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - wx, clickY - wy) <= 24) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'marineWind', data: w });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1s. Hit test Treni Live Ponte Libertà
+    if (showTrains && liveTrains && liveTrains.length > 0) {
+      for (const tr of liveTrains) {
+        const tx = (mx(tr.lon) - camera.x0) * camera.s;
+        const ty = (my(tr.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - tx, clickY - ty) <= 24) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'trainLive', data: tr });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1t. Hit test Battelli Ecologici Veritas
+    if (showWasteBoats && wasteBoats && wasteBoats.length > 0) {
+      for (const wb of wasteBoats) {
+        const bx = (mx(wb.lon) - camera.x0) * camera.s;
+        const by = (my(wb.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - bx, clickY - by) <= 20) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'wasteBoat', data: wb });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1u. Hit test Nizioleti Tradizionali
+    if (showNizioleti && nizioleti && nizioleti.length > 0) {
+      for (const niz of nizioleti) {
+        const nx = (mx(niz.lon) - camera.x0) * camera.s;
+        const ny = (my(niz.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - nx, clickY - ny) <= 20) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'nizioleto', data: niz });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1v. Hit test Vere da Pozzo Storiche
+    if (showWells && wells && wells.length > 0) {
+      for (const w of wells) {
+        const wx = (mx(w.lon) - camera.x0) * camera.s;
+        const wy = (my(w.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - wx, clickY - wy) <= 20) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'veniceWell', data: w });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1w. Hit test Campanili & Torri Pendenti
+    if (showBellTowers && bellTowers && bellTowers.length > 0) {
+      for (const bt of bellTowers) {
+        const bx = (mx(bt.lon) - camera.x0) * camera.s;
+        const by = (my(bt.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - bx, clickY - by) <= 24) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'bellTower', data: bt });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1x. Hit test Fortezze Lagunari & Isole
+    if (showFortresses && fortressIslands && fortressIslands.length > 0) {
+      for (const fort of fortressIslands) {
+        const fx = (mx(fort.lon) - camera.x0) * camera.s;
+        const fy = (my(fort.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - fx, clickY - fy) <= 26) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'fortressIsland', data: fort });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1y. Hit test Sanità SUEM 118, DAE & Farmacie
+    if (showEmergencyDocks && emergencyDocks && emergencyDocks.length > 0) {
+      for (const ed of emergencyDocks) {
+        const ex = (mx(ed.lon) - camera.x0) * camera.s;
+        const ey = (my(ed.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - ex, clickY - ey) <= 22) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'emergencyDock', data: ed });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    if (showDae && daeList && daeList.length > 0) {
+      for (const dae of daeList) {
+        const dx = (mx(dae.lon) - camera.x0) * camera.s;
+        const dy = (my(dae.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - dx, clickY - dy) <= 20) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'publicDae', data: dae });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    if (showPharmacies && pharmacies && pharmacies.length > 0) {
+      for (const ph of pharmacies) {
+        const px = (mx(ph.lon) - camera.x0) * camera.s;
+        const py = (my(ph.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - px, clickY - py) <= 20) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'pharmacy', data: ph });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1z. Hit test Isole di Calore LST
+    if (showHeatIslands && heatIslands && heatIslands.length > 0) {
+      for (const hi of heatIslands) {
+        const hx = (mx(hi.lon) - camera.x0) * camera.s;
+        const hy = (my(hi.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - hx, clickY - hy) <= 26) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'heatIsland', data: hi });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1aa. Hit test Limiti Velocità Canali
+    if (showCanalLimits && canalSpeedLimits && canalSpeedLimits.length > 0) {
+      for (const sl of canalSpeedLimits) {
+        for (const pt of sl.path) {
+          const px = (mx(pt[0]) - camera.x0) * camera.s;
+          const py = (my(pt[1]) - camera.y0) * camera.s;
+          if (Math.hypot(clickX - px, clickY - py) <= 18) {
+            if (onSelectFeature) {
+              onSelectFeature({ type: 'speedLimit', data: sl });
               setSelectedVehicle(null);
               setSelectedFlight(null);
               setSelectedShipOnMap(null);
@@ -2778,6 +3189,553 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         }
       }
 
+      // 25. Render Limiti di Velocità & Aree Blu (Canali)
+      if (showCanalLimits && canalSpeedLimits && canalSpeedLimits.length > 0) {
+        for (const limit of canalSpeedLimits) {
+          if (!limit.path || limit.path.length < 2) continue;
+          ctx.save();
+          ctx.beginPath();
+          limit.path.forEach((pt, idx) => {
+            const px = sx(mx(pt[0]));
+            const py = sy(my(pt[1]));
+            if (idx === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          });
+          // Speed route line
+          ctx.strokeStyle = limit.color;
+          ctx.lineWidth = Math.max(3, 5 * (camera.s / 0.04));
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.globalAlpha = 0.85;
+          ctx.stroke();
+
+          // Dashed center guideline
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 6]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Speedometer badge at midpoint
+          if (camera.s > 0.03) {
+            const midIdx = Math.floor(limit.path.length / 2);
+            const midPt = limit.path[midIdx];
+            const lx = sx(mx(midPt[0]));
+            const ly = sy(my(midPt[1]));
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(lx, ly, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = limit.color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.font = 'bold 9px "DM Mono", monospace';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${limit.maxSpeedKmh}`, lx, ly);
+            ctx.textAlign = 'start';
+            ctx.textBaseline = 'alphabetic';
+          }
+          ctx.restore();
+        }
+      }
+
+      // 26. Render Franchi di Tiro Ponti & Altezze Marea
+      if (showBridges && bridges && bridges.length > 0) {
+        for (const b of bridges) {
+          const bx = sx(mx(b.lon));
+          const by = sy(my(b.lat));
+          ctx.save();
+
+          const liveClearance = b.clearanceCmZeroMarea - tideLevel;
+          const isNavigable = liveClearance >= 160;
+
+          // Bridge arch icon
+          ctx.fillStyle = isNavigable ? '#06b6d4' : '#ef4444';
+          ctx.beginPath();
+          ctx.arc(bx, by, 5, Math.PI, 0, false); // Arch shape
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          if (camera.s > 0.04) {
+            ctx.font = 'bold 7.5px "DM Mono", monospace';
+            ctx.fillStyle = isNavigable ? '#22d3ee' : '#f87171';
+            ctx.fillText(`🌉 ${b.bridgeName.split(' ')[1] || b.bridgeName} (${liveClearance}cm)`, bx + 7, by + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 27. Render Traghetti da Parada & Stazi Gondole
+      if (showGondolas && gondolas && gondolas.length > 0) {
+        for (const g of gondolas) {
+          const gx = sx(mx(g.lon));
+          const gy = sy(my(g.lat));
+          ctx.save();
+
+          // If traghetto with crossing path, draw dotted crossing line
+          if (g.crossingPath && g.crossingPath.length === 2) {
+            const p1x = sx(mx(g.crossingPath[0][0]));
+            const p1y = sy(my(g.crossingPath[0][1]));
+            const p2x = sx(mx(g.crossingPath[1][0]));
+            const p2y = sy(my(g.crossingPath[1][1]));
+            ctx.strokeStyle = '#c084fc';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([3, 4]);
+            ctx.beginPath();
+            ctx.moveTo(p1x, p1y);
+            ctx.lineTo(p2x, p2y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+
+          // Gondola badge
+          ctx.fillStyle = '#a855f7';
+          ctx.beginPath();
+          ctx.arc(gx, gy, 5.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          // Oar / Ferro da prua symbol
+          ctx.font = 'bold 7px sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('🚣', gx - 4.5, gy + 3);
+
+          if (camera.s > 0.045) {
+            ctx.font = '600 8px "DM Mono", monospace';
+            ctx.fillStyle = '#d8b4fe';
+            ctx.fillText(g.type === 'TRAGHETTO_DA_PARADA' ? `Parada (€${g.priceEur})` : `Stazio (${g.activeGondolas})`, gx + 8, gy + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 28. Render Rive d'Approdo Pubbliche & Merci
+      if (showDocks && docks && docks.length > 0) {
+        for (const d of docks) {
+          const dx = sx(mx(d.lon));
+          const dy = sy(my(d.lat));
+          ctx.save();
+          ctx.fillStyle = '#3b82f6';
+          ctx.beginPath();
+          ctx.arc(dx, dy, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          ctx.font = 'bold 7px sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('⚓', dx - 3.5, dy + 2.5);
+
+          if (camera.s > 0.04) {
+            ctx.font = '600 8px "DM Mono", monospace';
+            ctx.fillStyle = '#60a5fa';
+            ctx.fillText(`Riva Merci (${d.maxStayMinutes}m)`, dx + 8, dy + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 29. Render Subsidenza InSAR (Copernicus EGMS)
+      if (showSubsidence && subsidencePoints && subsidencePoints.length > 0) {
+        for (const sub of subsidencePoints) {
+          const sxPos = sx(mx(sub.lon));
+          const syPos = sy(my(sub.lat));
+          ctx.save();
+
+          // Pulsating displacement circle
+          const rateColor = sub.velocityMmYear < -2.0 ? '#f43f5e' : '#fb923c';
+          ctx.fillStyle = rateColor;
+          ctx.globalAlpha = 0.25;
+          ctx.beginPath();
+          ctx.arc(sxPos, syPos, 14, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.globalAlpha = 1.0;
+          ctx.beginPath();
+          ctx.arc(sxPos, syPos, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          if (camera.s > 0.03) {
+            ctx.font = 'bold 8px "DM Mono", monospace';
+            ctx.fillStyle = rateColor;
+            ctx.fillText(`${sub.velocityMmYear} mm/a`, sxPos + 7, syPos + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 30. Render Morfologia Barene & Velme (Natura 2000)
+      if (showMorphology && lagoonMorphology && lagoonMorphology.length > 0) {
+        for (const morph of lagoonMorphology) {
+          if (!morph.coordinates || morph.coordinates.length < 3) continue;
+          ctx.save();
+          ctx.beginPath();
+          morph.coordinates.forEach((pt, idx) => {
+            const px = sx(mx(pt[0]));
+            const py = sy(my(pt[1]));
+            if (idx === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          });
+          ctx.closePath();
+          ctx.fillStyle = morph.type === 'BARENA_NATURALE' ? 'rgba(16, 185, 129, 0.25)' : 'rgba(14, 165, 233, 0.20)';
+          ctx.fill();
+          ctx.strokeStyle = '#10b981';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Center label
+          const cx = sx(mx(morph.center[0]));
+          const cy = sy(my(morph.center[1]));
+          if (camera.s > 0.02) {
+            ctx.font = 'bold 8.5px "DM Mono", monospace';
+            ctx.fillStyle = '#34d399';
+            ctx.fillText(`🌿 ${morph.name} (${morph.areaHectares}ha)`, cx - 30, cy);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 31. Render Stazioni Vento Meteomarine (Scirocco / Bora)
+      if (showMarineWind && marineWindStations && marineWindStations.length > 0) {
+        for (const w of marineWindStations) {
+          const wx = sx(mx(w.lon));
+          const wy = sy(my(w.lat));
+          ctx.save();
+
+          // Compass arrow pointing in wind direction
+          const rad = (w.windDirectionDeg * Math.PI) / 180;
+          ctx.translate(wx, wy);
+          ctx.rotate(rad);
+
+          // Arrow head
+          ctx.fillStyle = w.tidePushRisk === 'CRITICO' || w.tidePushRisk === 'ALTO' ? '#f43f5e' : '#14b8a6';
+          ctx.beginPath();
+          ctx.moveTo(0, -12);
+          ctx.lineTo(5, 6);
+          ctx.lineTo(0, 3);
+          ctx.lineTo(-5, 6);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.restore();
+
+          if (camera.s > 0.025) {
+            ctx.font = 'bold 8px "DM Mono", monospace';
+            ctx.fillStyle = '#2dd4bf';
+            ctx.fillText(`${w.windDirection} ${w.windSpeedKmh}km/h (Hs ${w.waveHeightMeters}m)`, wx + 10, wy + 3);
+          }
+        }
+      }
+
+      // 32. Render Treni Live su Ponte della Libertà & RFI
+      if (showTrains && liveTrains && liveTrains.length > 0) {
+        for (const tr of liveTrains) {
+          const tx = sx(mx(tr.lon));
+          const ty = sy(my(tr.lat));
+          ctx.save();
+
+          // Sleek high-speed train body
+          ctx.fillStyle = tr.trainType === 'FRECCIAROSSA' ? '#dc2626' : '#2563eb';
+          ctx.beginPath();
+          ctx.roundRect(tx - 12, ty - 4.5, 24, 9, 4);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          // Headlight glow
+          ctx.fillStyle = '#fef08a';
+          ctx.beginPath();
+          ctx.arc(tx + 12, ty, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (camera.s > 0.025) {
+            ctx.font = 'bold 8px "DM Mono", monospace';
+            ctx.fillStyle = '#f87171';
+            ctx.fillText(`🚆 ${tr.trainNumber} (${tr.speedKmh} km/h)`, tx - 14, ty - 8);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 33. Render Battelli Ecologici Veritas
+      if (showWasteBoats && wasteBoats && wasteBoats.length > 0) {
+        for (const wb of wasteBoats) {
+          const bx = sx(mx(wb.lon));
+          const by = sy(my(wb.lat));
+          ctx.save();
+
+          ctx.fillStyle = '#84cc16';
+          ctx.beginPath();
+          ctx.arc(bx, by, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          ctx.font = 'bold 7px sans-serif';
+          ctx.fillStyle = '#000000';
+          ctx.fillText('♻️', bx - 3.5, by + 2.5);
+
+          if (camera.s > 0.04) {
+            ctx.font = '600 7.5px "DM Mono", monospace';
+            ctx.fillStyle = '#a3e635';
+            ctx.fillText(wb.boatCode, bx + 7, by + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 34. Render Nizioleti Tradizionali & Toponomastica
+      if (showNizioleti && nizioleti && nizioleti.length > 0) {
+        for (const niz of nizioleti) {
+          const nx = sx(mx(niz.lon));
+          const ny = sy(my(niz.lat));
+          ctx.save();
+
+          // Characteristic Venetian white plaque with black border
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(nx - 4, ny - 4, 8, 8);
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(nx - 4, ny - 4, 8, 8);
+
+          if (camera.s > 0.05) {
+            ctx.font = 'bold 8px serif';
+            ctx.fillStyle = '#0f172a';
+            const label = `${niz.streetName} (${niz.civicNumber})`;
+            const tW = ctx.measureText(label).width;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(nx + 6, ny - 6, tW + 6, 12);
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(nx + 6, ny - 6, tW + 6, 12);
+            ctx.fillStyle = '#000000';
+            ctx.fillText(label, nx + 9, ny + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 35. Render Vere da Pozzo Storiche
+      if (showWells && wells && wells.length > 0) {
+        for (const w of wells) {
+          const wx = sx(mx(w.lon));
+          const wy = sy(my(w.lat));
+          ctx.save();
+
+          // Well stone ring
+          ctx.fillStyle = '#d97706';
+          ctx.beginPath();
+          ctx.arc(wx, wy, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // Hole in the center
+          ctx.fillStyle = '#1c1917';
+          ctx.beginPath();
+          ctx.arc(wx, wy, 1.8, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (camera.s > 0.05) {
+            ctx.font = '600 7.5px "DM Mono", monospace';
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillText(w.name.split(' ')[4] || w.name, wx + 7, wy + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 36. Render Campanili & Torri Pendenti
+      if (showBellTowers && bellTowers && bellTowers.length > 0) {
+        for (const bt of bellTowers) {
+          const bx = sx(mx(bt.lon));
+          const by = sy(my(bt.lat));
+          ctx.save();
+
+          ctx.fillStyle = bt.isLeaning ? '#f97316' : '#ea580c';
+          ctx.beginPath();
+          ctx.arc(bx, by, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.font = 'bold 7px sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('🔔', bx - 3.5, by + 2.5);
+
+          if (camera.s > 0.03) {
+            ctx.font = 'bold 8px "DM Mono", monospace';
+            ctx.fillStyle = '#fdba74';
+            ctx.fillText(bt.isLeaning ? `${bt.name} (Pendente ${bt.tiltAngleDeg}°)` : bt.name, bx + 8, by + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 37. Render Fortezze Lagunari & Isole Storiche
+      if (showFortresses && fortressIslands && fortressIslands.length > 0) {
+        for (const fort of fortressIslands) {
+          const fx = sx(mx(fort.lon));
+          const fy = sy(my(fort.lat));
+          ctx.save();
+
+          // Star fort bastion badge
+          ctx.fillStyle = '#78716c';
+          ctx.beginPath();
+          ctx.arc(fx, fy, 7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#e7e5e4';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.font = 'bold 8px sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('🏰', fx - 4, fy + 3);
+
+          if (camera.s > 0.02) {
+            ctx.font = 'bold 8.5px "DM Mono", monospace';
+            ctx.fillStyle = '#d6d3d1';
+            ctx.fillText(`🏰 ${fort.name}`, fx + 10, fy + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 38. Render Rete Sanitaria SUEM 118, DAE & Farmacie
+      if (showEmergencyDocks && emergencyDocks && emergencyDocks.length > 0) {
+        for (const ed of emergencyDocks) {
+          const ex = sx(mx(ed.lon));
+          const ey = sy(my(ed.lat));
+          ctx.save();
+
+          ctx.fillStyle = '#ef4444';
+          ctx.beginPath();
+          ctx.arc(ex, ey, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.font = 'bold 7px sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('🚑', ex - 3.5, ey + 2.5);
+
+          if (camera.s > 0.035) {
+            ctx.font = 'bold 8px "DM Mono", monospace';
+            ctx.fillStyle = '#f87171';
+            ctx.fillText(`SUEM 118 ${ed.dockCode}`, ex + 8, ey + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      if (showDae && daeList && daeList.length > 0) {
+        for (const dae of daeList) {
+          const dx = sx(mx(dae.lon));
+          const dy = sy(my(dae.lat));
+          ctx.save();
+
+          ctx.fillStyle = '#10b981';
+          ctx.beginPath();
+          ctx.arc(dx, dy, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          ctx.font = 'bold 6.5px sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('❤️', dx - 3, dy + 2);
+
+          if (camera.s > 0.05) {
+            ctx.font = '600 7.5px "DM Mono", monospace';
+            ctx.fillStyle = '#34d399';
+            ctx.fillText('DAE', dx + 7, dy + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      if (showPharmacies && pharmacies && pharmacies.length > 0) {
+        for (const ph of pharmacies) {
+          const px = sx(mx(ph.lon));
+          const py = sy(my(ph.lat));
+          ctx.save();
+
+          ctx.fillStyle = '#22c55e';
+          ctx.beginPath();
+          ctx.arc(px, py, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          ctx.font = 'bold 6.5px sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('💊', px - 3, py + 2);
+
+          if (camera.s > 0.05) {
+            ctx.font = '600 7.5px "DM Mono", monospace';
+            ctx.fillStyle = '#4ade80';
+            ctx.fillText(`Farmacia ${ph.isOnDutyNow ? '(Aperta)' : ''}`, px + 7, py + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 39. Render Isole di Calore / LST Satellitare Copernicus
+      if (showHeatIslands && heatIslands && heatIslands.length > 0) {
+        for (const hi of heatIslands) {
+          const hx = sx(mx(hi.lon));
+          const hy = sy(my(hi.lat));
+          ctx.save();
+
+          const isHot = hi.coolingEffect === 'ISOLA_DI_CALORE';
+          const rad = Math.max(14, 28 * (camera.s / 0.03));
+
+          // Radial gradient heatmap blob
+          const grad = ctx.createRadialGradient(hx, hy, 2, hx, hy, rad);
+          if (isHot) {
+            grad.addColorStop(0, 'rgba(239, 68, 68, 0.45)');
+            grad.addColorStop(0.6, 'rgba(249, 115, 22, 0.25)');
+            grad.addColorStop(1, 'rgba(249, 115, 22, 0.0)');
+          } else {
+            grad.addColorStop(0, 'rgba(6, 182, 212, 0.45)');
+            grad.addColorStop(0.6, 'rgba(14, 165, 233, 0.25)');
+            grad.addColorStop(1, 'rgba(14, 165, 233, 0.0)');
+          }
+
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(hx, hy, rad, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (camera.s > 0.02) {
+            ctx.font = 'bold 8px "DM Mono", monospace';
+            ctx.fillStyle = isHot ? '#f87171' : '#38bdf8';
+            ctx.fillText(`🌡️ ${hi.surfaceTempCelsius}°C (${hi.airTempDelta > 0 ? '+' : ''}${hi.airTempDelta}°C)`, hx - 20, hy);
+          }
+          ctx.restore();
+        }
+      }
+
       ctx.restore();
       animId = requestAnimationFrame(render);
     };
@@ -2838,6 +3796,41 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     selectedCategory,
     cantieri,
     stops,
+    showCanalLimits,
+    canalSpeedLimits,
+    showBridges,
+    bridges,
+    showGondolas,
+    gondolas,
+    showDocks,
+    docks,
+    showSubsidence,
+    subsidencePoints,
+    showMorphology,
+    lagoonMorphology,
+    showMarineWind,
+    marineWindStations,
+    showTrains,
+    liveTrains,
+    showWasteBoats,
+    wasteBoats,
+    showNizioleti,
+    nizioleti,
+    showWells,
+    wells,
+    showBellTowers,
+    bellTowers,
+    showFortresses,
+    fortressIslands,
+    showEmergencyDocks,
+    emergencyDocks,
+    showDae,
+    daeList,
+    showPharmacies,
+    pharmacies,
+    showHeatIslands,
+    heatIslands,
+    tideLevel,
     W,
     mx,
     my
