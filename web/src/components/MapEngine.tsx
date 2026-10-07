@@ -561,53 +561,58 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   const updateCameraToPreset = useCallback((preset: CameraViewPreset, containerWidth: number, containerHeight: number) => {
     const cw = containerWidth || (typeof window !== 'undefined' ? window.innerWidth : 1280);
     const ch = containerHeight || (typeof window !== 'undefined' ? window.innerHeight - 56 : 720);
+    const isMobile = cw < 768;
+    const bottomInset = isMobile ? 130 : 0; // Account for floating TimelineControls on mobile
+    const chEffective = ch - bottomInset;
 
     let target = { x0: 0, y0: 0, s: 0.02 };
 
     if (preset === 'lagoon') {
       // Entire Venetian Lagoon (Chioggia to Jesolo, Marghera to Lido)
-      // Center coordinates in middle lagoon (lon: 12.3380, lat: 45.4380)
-      const s = Math.min(cw / 21000, ch / 25000);
+      // On mobile portrait: center around 45.4150 (Bacino San Marco / Lido / Giudecca) so Venice and the lagoon channels are centered between Header and TimelineControls
+      const s = isMobile ? Math.min(cw / 19500, chEffective / 22000) : Math.min(cw / 21000, ch / 25000);
+      const centerLon = 12.3380;
+      const centerLat = isMobile ? 45.4150 : 45.4380;
       target = {
         s,
-        x0: mx(12.3380) - cw / (2 * s),
-        y0: my(45.4380) - ch / (2 * s)
+        x0: mx(centerLon) - cw / (2 * s),
+        y0: my(centerLat) - chEffective / (2 * s)
       };
     } else if (preset === 'venezia') {
       // Historical Venice (San Marco, Rialto, Canal Grande, Giudecca, Piazzale Roma)
       // Center coordinates (lon: 12.3358, lat: 45.4371)
-      const s = Math.min(cw / 6200, ch / 5000);
+      const s = isMobile ? Math.min(cw / 5400, chEffective / 4600) : Math.min(cw / 6200, ch / 5000);
       target = {
         s,
         x0: mx(12.3358) - cw / (2 * s),
-        y0: my(45.4371) - ch / (2 * s)
+        y0: my(45.4371) - chEffective / (2 * s)
       };
     } else if (preset === 'mestre') {
       // Mainland Mestre (Piazza Ferretto, Stazione FS, Marghera, Parco San Giuliano)
       // Center coordinates (lon: 12.2420, lat: 45.4880)
-      const s = Math.min(cw / 7500, ch / 6200);
+      const s = isMobile ? Math.min(cw / 6800, chEffective / 5600) : Math.min(cw / 7500, ch / 6200);
       target = {
         s,
         x0: mx(12.2420) - cw / (2 * s),
-        y0: my(45.4880) - ch / (2 * s)
+        y0: my(45.4880) - chEffective / (2 * s)
       };
     } else if (preset === 'lido') {
       // Lido di Venezia (Piazzale SME, Gran Viale, San Nicolò, Darsena)
       // Center coordinates (lon: 12.3685, lat: 45.4180)
-      const s = Math.min(cw / 6800, ch / 6400);
+      const s = isMobile ? Math.min(cw / 6000, chEffective / 5600) : Math.min(cw / 6800, ch / 6400);
       target = {
         s,
         x0: mx(12.3685) - cw / (2 * s),
-        y0: my(45.4180) - ch / (2 * s)
+        y0: my(45.4180) - chEffective / (2 * s)
       };
     } else if (preset === 'aeroporto') {
       // Marco Polo VCE Airport Hub (Runway 04R/22L, Terminal, Darsena Alilaguna)
       // Center coordinates (lon: 12.3480, lat: 45.5030)
-      const s = Math.min(cw / 5800, ch / 5200);
+      const s = isMobile ? Math.min(cw / 5200, chEffective / 4600) : Math.min(cw / 5800, ch / 5200);
       target = {
         s,
         x0: mx(12.3480) - cw / (2 * s),
-        y0: my(45.5030) - ch / (2 * s)
+        y0: my(45.5030) - chEffective / (2 * s)
       };
     }
 

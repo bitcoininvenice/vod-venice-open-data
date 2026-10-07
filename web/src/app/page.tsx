@@ -889,19 +889,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Mobile Floating Action Button (FAB) to open Filters & Layers */}
-        <div className="md:hidden absolute top-3 left-3 z-20">
-          <button
-            type="button"
-            onClick={() => setIsLayerPanelOpenMobile(true)}
-            className="glass-panel px-3 py-1.5 rounded-full border border-cyan-500/30 text-xs text-[var(--ink)] flex items-center gap-1.5 shadow-lg active:scale-95 transition-all cursor-pointer"
-          >
-            <Layers className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="font-medium text-[11px]">Livelli & Filtri</span>
-          </button>
-        </div>
-
-        {/* Mobile Bottom Sheet Drawer for LayerPanel */}
+        {/* Mobile Bottom Sheet Drawer for LayerPanel (triggered by Header [Filtri] button) */}
         {isLayerPanelOpenMobile && (
           <div
             className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end justify-center animate-in fade-in duration-200"
