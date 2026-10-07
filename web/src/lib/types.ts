@@ -347,6 +347,9 @@ export interface AlilagunaBoat {
   nextStop: string;
   destination: string;
   passengersOnBoard: number;
+  scheduledDeparture?: string;
+  scheduledArrival?: string;
+  tripProgress?: number;
 }
 
 export interface SatelliteItem {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { MapEngine } from '@/components/MapEngine';
 import { TimelineControls } from '@/components/TimelineControls';
@@ -95,6 +95,7 @@ import {
 } from '@/lib/open-data-catalog';
 import { MOCK_CANTIERI, MOCK_STOPS } from '@/lib/db';
 import { NOTTE, CARTA, getDynamicPalette } from '@/lib/solar';
+import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { useTranslation } from '@/lib/i18n';
 
 export default function HomePage() {
@@ -200,7 +201,10 @@ export default function HomePage() {
   const [pedestrianFlows, setPedestrianFlows] = useState<PedestrianFlowItem[]>([]);
   const [alilagunaRoutes, setAlilagunaRoutes] = useState<AlilagunaRoute[]>([]);
   const [alilagunaStops, setAlilagunaStops] = useState<AlilagunaStop[]>([]);
-  const [alilagunaBoats, setAlilagunaBoats] = useState<AlilagunaBoat[]>([]);
+  // Deterministic official GTFS Timetable fleet for Alilaguna: synchronized with currentTimeSeconds
+  const alilagunaBoats = useMemo(() => {
+    return getScheduledAlilagunaBoats(currentTimeSeconds);
+  }, [currentTimeSeconds]);
   const [satellites, setSatellites] = useState<SatelliteItem[]>([]);
   const [passerelle, setPasserelle] = useState<PasserellaItem[]>([]);
   const [briccole, setBriccole] = useState<BriccolaSignalItem[]>([]);
@@ -473,7 +477,6 @@ export default function HomePage() {
           if (data.success) {
             if (data.routes) setAlilagunaRoutes(data.routes);
             if (data.stops) setAlilagunaStops(data.stops);
-            if (data.boats) setAlilagunaBoats(data.boats);
           }
         })
         .catch((err) => console.warn('Using fallback alilaguna:', err));

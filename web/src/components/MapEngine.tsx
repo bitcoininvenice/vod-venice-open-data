@@ -52,6 +52,7 @@ import {
 import { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import { D, LAND, CFG } from '@/lib/simulation-data';
 import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
+import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { useTranslation } from '@/lib/i18n';
 
 const MARITIME_CHANNELS = [
@@ -205,45 +206,6 @@ function getLiveShip(
   const wps = channel.waypoints.map((w) => ({ lon: w.lon, lat: w.lat }));
   const cycle = 2400; // 40 min roundtrip
   const hash = (parseInt(sh.mmsi, 10) || 1) * 47;
-  const p = ((t + hash) % cycle) / cycle;
-
-  if (p <= 0.5) {
-    const prog = p * 2;
-    return interpolateAlongWaypoints(wps, prog);
-  } else {
-    const prog = (1 - p) * 2;
-    const pt = interpolateAlongWaypoints(wps, prog);
-    return {
-      lon: pt.lon,
-      lat: pt.lat,
-      heading: (pt.heading + 180) % 360
-    };
-  }
-}
-
-// Live kinematics for Alilaguna waterbuses along route shapes
-function getLiveAlilagunaBoat(
-  b: AlilagunaBoat,
-  t: number,
-  routes: AlilagunaRoute[]
-): { lon: number; lat: number; heading: number } {
-  const route = routes.find((r) => r.lineCode === b.lineCode || r.id === b.lineCode);
-  if (!route || !route.shape || route.shape.length < 2) {
-    const rad = (b.heading * Math.PI) / 180;
-    const cycle = 1200;
-    const hash = (parseInt(b.id.replace(/\D/g, ''), 10) || 1) * 59;
-    const p = ((t + hash) % cycle) / cycle;
-    const dist = (p - 0.5) * 0.02;
-    return {
-      lon: b.lon + Math.sin(rad) * dist,
-      lat: b.lat + Math.cos(rad) * dist,
-      heading: b.heading
-    };
-  }
-
-  const wps = route.shape.map((pt) => ({ lon: pt[0], lat: pt[1] }));
-  const cycle = 1800; // 30 min roundtrip
-  const hash = (parseInt(b.id.replace(/\D/g, ''), 10) || 1) * 113;
   const p = ((t + hash) % cycle) / cycle;
 
   if (p <= 0.5) {
@@ -993,19 +955,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
     }
 
-    // 1d. Hit test Alilaguna Waterbuses (with live route motion)
-    if (showAlilaguna && alilagunaBoats && alilagunaBoats.length > 0) {
-      for (const b of alilagunaBoats) {
-        const live = getLiveAlilagunaBoat(b, currentTimeSeconds, alilagunaRoutes);
-        const bxPos = (mx(live.lon) - camera.x0) * camera.s;
-        const byPos = (my(live.lat) - camera.y0) * camera.s;
+    // 1d. Hit test Alilaguna Waterbuses (Deterministic Official GTFS Timetable)
+    if (showAlilaguna) {
+      const scheduledBoats = getScheduledAlilagunaBoats(currentTimeSeconds);
+      for (const b of scheduledBoats) {
+        const bxPos = (mx(b.lon) - camera.x0) * camera.s;
+        const byPos = (my(b.lat) - camera.y0) * camera.s;
         if (Math.hypot(clickX - bxPos, clickY - byPos) <= 22) {
-          setSelectedAlilagunaBoat({
-            ...b,
-            lon: live.lon,
-            lat: live.lat,
-            heading: live.heading
-          });
+          setSelectedAlilagunaBoat(b);
           setSelectedVehicle(null);
           setSelectedFlight(null);
           setSelectedShipOnMap(null);
@@ -2852,16 +2809,16 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           }
         }
 
-        // 17c. Alilaguna Active Waterbuses in Navigation
-        if (alilagunaBoats && alilagunaBoats.length > 0) {
-          for (const b of alilagunaBoats) {
-            const live = getLiveAlilagunaBoat(b, currentTimeSeconds, alilagunaRoutes);
-            const bx = sx(mx(live.lon));
-            const by = sy(my(live.lat));
+        // 17c. Alilaguna Active Waterbuses in Navigation (Deterministic Official GTFS Timetable Twin)
+        const scheduledAlilagunaFleet = getScheduledAlilagunaBoats(currentTimeSeconds);
+        if (scheduledAlilagunaFleet.length > 0) {
+          for (const b of scheduledAlilagunaFleet) {
+            const bx = sx(mx(b.lon));
+            const by = sy(my(b.lat));
             if (bx < -60 || bx > cw + 60 || by < -60 || by > ch + 60) continue;
 
             const isSelected = selectedAlilagunaBoat?.id === b.id;
-            const headingRad = (live.heading * Math.PI) / 180;
+            const headingRad = (b.heading * Math.PI) / 180;
 
             // Wake foam trail
             ctx.save();
@@ -4640,6 +4597,13 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               <span className="font-mono font-bold text-cyan-400">{selectedAlilagunaBoat.passengersOnBoard} pax</span>
             </div>
           </div>
+
+          {selectedAlilagunaBoat.scheduledDeparture && (
+            <div className="flex items-center justify-between text-[11px] font-mono text-[var(--ink-2)] bg-[var(--rule)]/30 px-2.5 py-1.5 rounded-xl border border-[var(--rule)]">
+              <span className="text-amber-400 font-semibold">{language === 'it' ? 'Partenza:' : 'Dep:'} {selectedAlilagunaBoat.scheduledDeparture}</span>
+              <span className="text-cyan-400 font-semibold">{language === 'it' ? 'Arrivo previsto:' : 'ETA:'} {selectedAlilagunaBoat.scheduledArrival}</span>
+            </div>
+          )}
 
           <div className="flex items-center justify-between pt-1 border-t border-[var(--rule)] text-[11px] font-mono text-[var(--ink-2)]">
             <span>{t('map.track')}: {selectedAlilagunaBoat.heading}°</span>
