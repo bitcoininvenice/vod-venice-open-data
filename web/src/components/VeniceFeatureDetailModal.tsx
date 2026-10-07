@@ -50,8 +50,14 @@ import {
   EmergencyWaterDockItem,
   PublicDaeItem,
   PharmacyDutyItem,
-  HeatIslandSurfaceTempItem
+  HeatIslandSurfaceTempItem,
+  LagoonWaterQualityItem,
+  TouristAccommodationItem,
+  RegionalBikeRouteItem,
+  PollenMonitoringStationItem,
+  LagoonTributaryRiverItem
 } from '@/lib/types';
+import { Droplet, Building2, Bike, Flower2, GitBranch } from 'lucide-react';
 
 export type VeniceFeatureSelected =
   | { type: 'passerella'; data: PasserellaItem }
@@ -77,7 +83,12 @@ export type VeniceFeatureSelected =
   | { type: 'emergencyDock'; data: EmergencyWaterDockItem }
   | { type: 'publicDae'; data: PublicDaeItem }
   | { type: 'pharmacy'; data: PharmacyDutyItem }
-  | { type: 'heatIsland'; data: HeatIslandSurfaceTempItem };
+  | { type: 'heatIsland'; data: HeatIslandSurfaceTempItem }
+  | { type: 'lagoonWater'; data: LagoonWaterQualityItem }
+  | { type: 'accommodation'; data: TouristAccommodationItem }
+  | { type: 'bikeRoute'; data: RegionalBikeRouteItem }
+  | { type: 'pollenStation'; data: PollenMonitoringStationItem }
+  | { type: 'tributaryRiver'; data: LagoonTributaryRiverItem };
 
 interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
@@ -170,6 +181,21 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             {feature.type === 'heatIsland' && (
               <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400"><ThermometerSun className="w-5 h-5" /></div>
             )}
+            {feature.type === 'lagoonWater' && (
+              <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400"><Droplet className="w-5 h-5" /></div>
+            )}
+            {feature.type === 'accommodation' && (
+              <div className="p-2 rounded-xl bg-fuchsia-500/20 text-fuchsia-400"><Building2 className="w-5 h-5" /></div>
+            )}
+            {feature.type === 'bikeRoute' && (
+              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400"><Bike className="w-5 h-5" /></div>
+            )}
+            {feature.type === 'pollenStation' && (
+              <div className="p-2 rounded-xl bg-lime-500/20 text-lime-400"><Flower2 className="w-5 h-5" /></div>
+            )}
+            {feature.type === 'tributaryRiver' && (
+              <div className="p-2 rounded-xl bg-sky-500/20 text-sky-400"><GitBranch className="w-5 h-5" /></div>
+            )}
 
             <div>
               <h2 className="text-base font-bold leading-tight">
@@ -197,6 +223,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'publicDae' && `Defibrillatore DAE: ${feature.data.code}`}
                 {feature.type === 'pharmacy' && feature.data.name}
                 {feature.type === 'heatIsland' && `Isola di Calore: ${feature.data.zoneName}`}
+                {feature.type === 'lagoonWater' && `Acque ARPAV: ${feature.data.stationName}`}
+                {feature.type === 'accommodation' && `Pressione Ricettiva: ${feature.data.zoneName}`}
+                {feature.type === 'bikeRoute' && feature.data.routeName}
+                {feature.type === 'pollenStation' && feature.data.stationName}
+                {feature.type === 'tributaryRiver' && `Fiume Scolante: ${feature.data.riverName}`}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
                 {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
@@ -206,6 +237,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'nizioleto' && `Sestiere ${feature.data.sestiere} · Civico ${feature.data.civicNumber}`}
                 {feature.type === 'emergencyDock' && `SUEM 118 · ${feature.data.hospital}`}
                 {feature.type === 'heatIsland' && `Temp. Superficiale: ${feature.data.surfaceTempCelsius}°C`}
+                {feature.type === 'lagoonWater' && `Bacino ${feature.data.subBasin.replace(/_/g, ' ')} · Stato Trofico: ${feature.data.trophicState}`}
+                {feature.type === 'accommodation' && `Densità: ${feature.data.densityCategory} · ${feature.data.bedsPerResidentRatio} posti letto per residente`}
+                {feature.type === 'bikeRoute' && `Lunghezza: ${feature.data.lengthKm} km · ${feature.data.section}`}
+                {feature.type === 'pollenStation' && `Rischio Allergico: ${feature.data.overallAllergyRisk} · ${feature.data.locationName}`}
+                {feature.type === 'tributaryRiver' && `Portata: ${feature.data.avgFlowM3s} m³/s · ${feature.data.mouthZone}`}
               </span>
             </div>
           </div>
@@ -610,6 +646,188 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <p className="text-[var(--ink-2)]">Zona assegnata: <b>{feature.data.assignedZone}</b></p>
               <span className="text-[11px] text-[var(--ink-3)]">
                 Frazione raccolta: <b>{feature.data.collectionType.replace(/_/g, ' ')}</b> · Orario: <b>{feature.data.scheduleHours}</b>
+              </span>
+            </div>
+          )}
+
+          {feature.type === 'lagoonWater' && (
+            <div className="flex flex-col gap-3">
+              <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-mono text-cyan-400 font-bold">Stato Trofico Lagunare</span>
+                  <p className="text-lg font-bold text-[var(--ink)]">{feature.data.trophicState}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] uppercase font-mono text-[var(--ink-3)]">Profondità Sonda</span>
+                  <p className="text-sm font-mono font-bold text-cyan-300">-{feature.data.monitoringDepthMeters} m</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Salinità</span>
+                  <p className="text-base font-bold font-mono text-cyan-400">{feature.data.salinityPsu} <span className="text-xs">PSU</span></p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Temp. Acqua</span>
+                  <p className="text-base font-bold font-mono text-amber-400">{feature.data.waterTempCelsius}°C</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">pH Acqueo</span>
+                  <p className="text-base font-bold font-mono text-emerald-400">{feature.data.ph}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Ossigeno O₂</span>
+                  <p className="text-base font-bold font-mono text-blue-400">{feature.data.dissolvedOxygenPercent}%</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Torbidità</span>
+                  <p className="text-base font-bold font-mono text-slate-300">{feature.data.turbidityNtu} <span className="text-xs">NTU</span></p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Conducibilità</span>
+                  <p className="text-base font-bold font-mono text-purple-400">{feature.data.conductivityMsCm} <span className="text-xs">mS/cm</span></p>
+                </div>
+              </div>
+
+              <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
+                Fonte: <b>{feature.data.officialSource}</b>
+              </span>
+            </div>
+          )}
+
+          {feature.type === 'accommodation' && (
+            <div className="flex flex-col gap-3">
+              <div className={`p-3 rounded-xl border ${feature.data.densityCategory === 'CRITICA' ? 'bg-rose-500/10 border-rose-500/40 text-rose-300' : 'bg-fuchsia-500/10 border-fuchsia-500/30 text-fuchsia-300'}`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-mono font-bold">Indice Overtourism</span>
+                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-rose-500/20">{feature.data.densityCategory}</span>
+                </div>
+                <p className="text-sm mt-1 text-[var(--ink)]">
+                  Rapporto: <b>{feature.data.bedsPerResidentRatio} posti letto turistici per ciascun residente</b>
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Posti Letto Totali</span>
+                  <p className="text-xl font-bold font-mono text-fuchsia-400">{feature.data.totalBeds.toLocaleString()}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Strutture Censite</span>
+                  <p className="text-xl font-bold font-mono text-purple-400">{feature.data.totalStructures.toLocaleString()}</p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex flex-col gap-1.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-[var(--ink-2)]">Settore Alberghiero (Hotel):</span>
+                  <span className="font-bold font-mono text-[var(--ink)]">{feature.data.hotelCount} hotel (5★: {feature.data.starRatingBreakdown.fiveStar}, 4★: {feature.data.starRatingBreakdown.fourStar}, 3★: {feature.data.starRatingBreakdown.threeStar})</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-[var(--rule)] pt-1.5">
+                  <span className="text-[var(--ink-2)]">Extra-Alberghiero (B&B e Locazioni):</span>
+                  <span className="font-bold font-mono text-fuchsia-400">{feature.data.extraHotelCount} (Locazioni: {feature.data.starRatingBreakdown.holidayHomes}, B&B: {feature.data.starRatingBreakdown.bAndB})</span>
+                </div>
+              </div>
+
+              <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
+                Fonte: <b>{feature.data.officialSource}</b>
+              </span>
+            </div>
+          )}
+
+          {feature.type === 'bikeRoute' && (
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-3 gap-2">
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                  <span className="text-[10px] text-emerald-400 uppercase font-mono font-bold">Lunghezza</span>
+                  <p className="text-lg font-bold font-mono text-emerald-300">{feature.data.lengthKm} km</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Fondo Stradale</span>
+                  <p className="text-xs font-bold text-[var(--ink)] mt-1">{feature.data.surfaceType.replace(/_/g, ' ')}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Difficoltà</span>
+                  <p className="text-xs font-bold text-cyan-400 mt-1">{feature.data.difficulty.replace(/_/g, ' ')}</p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-xs">
+                <span className="text-[10px] font-mono text-cyan-400 uppercase font-bold">Interscambio Lagunare Intermodale:</span>
+                <p className="text-[var(--ink)] mt-0.5 font-medium">{feature.data.ferryInterchange}</p>
+              </div>
+
+              <p className="text-xs text-[var(--ink-2)] leading-relaxed">{feature.data.description}</p>
+
+              <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
+                Fonte: <b>{feature.data.officialSource}</b>
+              </span>
+            </div>
+          )}
+
+          {feature.type === 'pollenStation' && (
+            <div className="flex flex-col gap-3">
+              <div className="p-3 rounded-xl bg-lime-500/10 border border-lime-500/30 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-mono text-lime-400 font-bold">Rischio Allergico Attuale</span>
+                  <p className="text-lg font-bold text-[var(--ink)]">{feature.data.overallAllergyRisk}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] uppercase font-mono text-[var(--ink-3)]">Campionatore</span>
+                  <p className="text-xs font-mono text-[var(--ink-2)]">{feature.data.samplerType.replace(/_/g, ' ')}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[11px] font-mono text-[var(--ink-3)] uppercase">Famiglie Botaniche Rilevate (grani / m³):</span>
+                {feature.data.pollens.map((p, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-black/20 border border-[var(--rule)] text-xs">
+                    <div>
+                      <b className="text-[var(--ink)]">{p.family}</b>
+                      <span className="block text-[10px] text-[var(--ink-3)]">{p.commonName}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-amber-400">{p.concentrationGrainsM3} gr/m³</span>
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${p.level === 'ALTO' ? 'bg-rose-500/20 text-rose-300' : p.level === 'MEDIO' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
+                        {p.level}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
+                Fonte: <b>{feature.data.officialSource}</b>
+              </span>
+            </div>
+          )}
+
+          {feature.type === 'tributaryRiver' && (
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-3 gap-2">
+                <div className="p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/30">
+                  <span className="text-[10px] text-sky-400 uppercase font-mono font-bold">Portata Media</span>
+                  <p className="text-lg font-bold font-mono text-sky-300">{feature.data.avgFlowM3s} m³/s</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Bacino Scolante</span>
+                  <p className="text-base font-bold font-mono text-[var(--ink)]">{feature.data.basinAreaKm2} km²</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Stato Qualità</span>
+                  <p className="text-base font-bold font-mono text-emerald-400">{feature.data.waterQualityState}</p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex flex-col gap-1 text-xs">
+                <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase">Consorzio di Bonifica Competente:</span>
+                <p className="font-bold text-[var(--ink)]">{feature.data.managementConsortium}</p>
+                <p className="text-[var(--ink-2)] mt-1">{feature.data.freshwaterInputNotes}</p>
+              </div>
+
+              <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
+                Fonte: <b>{feature.data.officialSource}</b>
               </span>
             </div>
           )}

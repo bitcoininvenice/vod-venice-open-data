@@ -19,7 +19,7 @@ import {
   EyeOff
 } from 'lucide-react';
 
-export type MapPresetType = 'mobility' | 'lagoon' | 'city' | 'satellites' | 'clean' | 'all';
+export type MapPresetType = 'mobility' | 'lagoon' | 'city' | 'satellites' | 'regional' | 'clean' | 'all';
 
 interface OnboardingTutorialModalProps {
   isOpen: boolean;

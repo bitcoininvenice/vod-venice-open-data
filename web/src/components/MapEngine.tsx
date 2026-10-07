@@ -42,7 +42,12 @@ import {
   EmergencyWaterDockItem,
   PublicDaeItem,
   PharmacyDutyItem,
-  HeatIslandSurfaceTempItem
+  HeatIslandSurfaceTempItem,
+  LagoonWaterQualityItem,
+  TouristAccommodationItem,
+  RegionalBikeRouteItem,
+  PollenMonitoringStationItem,
+  LagoonTributaryRiverItem
 } from '@/lib/types';
 import { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import { D, LAND, CFG } from '@/lib/simulation-data';
@@ -356,6 +361,17 @@ interface MapEngineProps {
   pharmacies?: PharmacyDutyItem[];
   showHeatIslands?: boolean;
   heatIslands?: HeatIslandSurfaceTempItem[];
+  // Open Data Regione Veneto (dati.veneto.it)
+  showLagoonWater?: boolean;
+  lagoonWaterQuality?: LagoonWaterQualityItem[];
+  showAccommodations?: boolean;
+  touristAccommodations?: TouristAccommodationItem[];
+  showBikeRoutes?: boolean;
+  regionalBikeRoutes?: RegionalBikeRouteItem[];
+  showPollenStations?: boolean;
+  pollenMonitoringStations?: PollenMonitoringStationItem[];
+  showTributaries?: boolean;
+  lagoonTributaryRivers?: LagoonTributaryRiverItem[];
   tideLevel?: number;
   isDesktopLayerPanelOpen?: boolean;
 }
@@ -453,6 +469,16 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   pharmacies = [],
   showHeatIslands = false,
   heatIslands = [],
+  showLagoonWater = false,
+  lagoonWaterQuality = [],
+  showAccommodations = false,
+  touristAccommodations = [],
+  showBikeRoutes = false,
+  regionalBikeRoutes = [],
+  showPollenStations = false,
+  pollenMonitoringStations = [],
+  showTributaries = false,
+  lagoonTributaryRivers = [],
   tideLevel = 76,
   isDesktopLayerPanelOpen = true
 }) => {
@@ -1459,6 +1485,118 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             setSelectedAlilagunaBoat(null);
             setSelectedSatellite(null);
             return;
+          }
+        }
+      }
+    }
+
+    // 1ab. Hit test Acque Lagunari ARPAV (Dati Sonda)
+    if (showLagoonWater && lagoonWaterQuality && lagoonWaterQuality.length > 0) {
+      for (const wq of lagoonWaterQuality) {
+        const wx = (mx(wq.lon) - camera.x0) * camera.s;
+        const wy = (my(wq.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - wx, clickY - wy) <= 24) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'lagoonWater', data: wq });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1ac. Hit test Strutture Ricettive & Overtourism
+    if (showAccommodations && touristAccommodations && touristAccommodations.length > 0) {
+      for (const acc of touristAccommodations) {
+        const ax = (mx(acc.lon) - camera.x0) * camera.s;
+        const ay = (my(acc.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - ax, clickY - ay) <= 28) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'accommodation', data: acc });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1ad. Hit test Ciclovia delle Isole di Venezia
+    if (showBikeRoutes && regionalBikeRoutes && regionalBikeRoutes.length > 0) {
+      for (const br of regionalBikeRoutes) {
+        for (const pt of br.path) {
+          const bx = (mx(pt[0]) - camera.x0) * camera.s;
+          const by = (my(pt[1]) - camera.y0) * camera.s;
+          if (Math.hypot(clickX - bx, clickY - by) <= 20) {
+            if (onSelectFeature) {
+              onSelectFeature({ type: 'bikeRoute', data: br });
+              setSelectedVehicle(null);
+              setSelectedFlight(null);
+              setSelectedShipOnMap(null);
+              setSelectedAlilagunaBoat(null);
+              setSelectedSatellite(null);
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    // 1ae. Hit test Monitoraggio Pollini ARPAV
+    if (showPollenStations && pollenMonitoringStations && pollenMonitoringStations.length > 0) {
+      for (const pol of pollenMonitoringStations) {
+        const px = (mx(pol.lon) - camera.x0) * camera.s;
+        const py = (my(pol.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - px, clickY - py) <= 24) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'pollenStation', data: pol });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
+    // 1af. Hit test Fiumi Scolanti & Bacino Laguna
+    if (showTributaries && lagoonTributaryRivers && lagoonTributaryRivers.length > 0) {
+      for (const riv of lagoonTributaryRivers) {
+        const rx = (mx(riv.lon) - camera.x0) * camera.s;
+        const ry = (my(riv.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - rx, clickY - ry) <= 26) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'tributaryRiver', data: riv });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+        for (const pt of riv.path) {
+          const px = (mx(pt[0]) - camera.x0) * camera.s;
+          const py = (my(pt[1]) - camera.y0) * camera.s;
+          if (Math.hypot(clickX - px, clickY - py) <= 20) {
+            if (onSelectFeature) {
+              onSelectFeature({ type: 'tributaryRiver', data: riv });
+              setSelectedVehicle(null);
+              setSelectedFlight(null);
+              setSelectedShipOnMap(null);
+              setSelectedAlilagunaBoat(null);
+              setSelectedSatellite(null);
+              return;
+            }
           }
         }
       }
@@ -3756,6 +3894,204 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         }
       }
 
+      // 40. Render Acque Lagunari ARPAV (Dati Sonda Multiparametrici)
+      if (showLagoonWater && lagoonWaterQuality && lagoonWaterQuality.length > 0) {
+        for (const wq of lagoonWaterQuality) {
+          const wx = sx(mx(wq.lon));
+          const wy = sy(my(wq.lat));
+          ctx.save();
+
+          // Pulsing halo in cyan
+          const pulse = (Math.sin(Date.now() / 600 + wq.lat * 10) + 1) / 2;
+          ctx.fillStyle = isDark ? 'rgba(6, 182, 212, 0.25)' : 'rgba(2, 132, 199, 0.25)';
+          ctx.beginPath();
+          ctx.arc(wx, wy, 10 + pulse * 6, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Station dot
+          ctx.fillStyle = isDark ? '#06b6d4' : '#0284c7';
+          ctx.beginPath();
+          ctx.arc(wx, wy, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          // Droplet / probe icon
+          ctx.font = 'bold 7px sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('💧', wx - 3.5, wy + 2.5);
+
+          if (camera.s > 0.02) {
+            ctx.font = 'bold 8px "DM Mono", monospace';
+            ctx.fillStyle = isDark ? '#22d3ee' : '#0369a1';
+            ctx.fillText(`${wq.salinityPsu} PSU · ${wq.waterTempCelsius}°C`, wx + 8, wy + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 41. Render Strutture Ricettive & Overtourism (Regione del Veneto)
+      if (showAccommodations && touristAccommodations && touristAccommodations.length > 0) {
+        for (const acc of touristAccommodations) {
+          const ax = sx(mx(acc.lon));
+          const ay = sy(my(acc.lat));
+          ctx.save();
+
+          // Heatmap zone circle scaled by beds
+          const baseRadius = Math.max(16, 26 * (camera.s / 0.03));
+          const isCritical = acc.densityCategory === 'CRITICA';
+          const grad = ctx.createRadialGradient(ax, ay, 2, ax, ay, baseRadius);
+          if (isCritical) {
+            grad.addColorStop(0, 'rgba(236, 72, 153, 0.50)');
+            grad.addColorStop(0.7, 'rgba(217, 70, 239, 0.25)');
+            grad.addColorStop(1, 'rgba(217, 70, 239, 0.0)');
+          } else {
+            grad.addColorStop(0, 'rgba(168, 85, 247, 0.45)');
+            grad.addColorStop(0.7, 'rgba(147, 51, 234, 0.20)');
+            grad.addColorStop(1, 'rgba(147, 51, 234, 0.0)');
+          }
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(ax, ay, baseRadius, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Center core icon
+          ctx.fillStyle = isCritical ? '#ec4899' : '#a855f7';
+          ctx.beginPath();
+          ctx.arc(ax, ay, 5.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          ctx.font = 'bold 7px sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('🏨', ax - 3.5, ay + 2.5);
+
+          if (camera.s > 0.02) {
+            ctx.font = 'bold 8px "DM Mono", monospace';
+            ctx.fillStyle = isCritical ? (isDark ? '#f472b6' : '#be185d') : (isDark ? '#c084fc' : '#7e22ce');
+            ctx.fillText(`${acc.totalBeds.toLocaleString()} letti (${acc.bedsPerResidentRatio}x res)`, ax + 9, ay + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 42. Render Ciclovia delle Isole di Venezia
+      if (showBikeRoutes && regionalBikeRoutes && regionalBikeRoutes.length > 0) {
+        for (const br of regionalBikeRoutes) {
+          if (!br.path || br.path.length < 2) continue;
+          ctx.save();
+          ctx.strokeStyle = isDark ? '#10b981' : '#047857';
+          ctx.lineWidth = 2.5;
+          ctx.setLineDash([6, 3]);
+          ctx.beginPath();
+          br.path.forEach((pt, idx) => {
+            const px = sx(mx(pt[0]));
+            const py = sy(my(pt[1]));
+            if (idx === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          });
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Start & End markers
+          const startPt = br.path[0];
+          const endPt = br.path[br.path.length - 1];
+          const sxStart = sx(mx(startPt[0]));
+          const syStart = sy(my(startPt[1]));
+          const sxEnd = sx(mx(endPt[0]));
+          const syEnd = sy(my(endPt[1]));
+
+          ctx.fillStyle = '#10b981';
+          ctx.beginPath();
+          ctx.arc(sxStart, syStart, 4.5, 0, Math.PI * 2);
+          ctx.arc(sxEnd, syEnd, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // Bike Route Label
+          const midPt = br.path[Math.floor(br.path.length / 2)];
+          const mxMid = sx(mx(midPt[0]));
+          const myMid = sy(my(midPt[1]));
+          if (camera.s > 0.015) {
+            ctx.font = 'bold 8.5px "DM Mono", monospace';
+            ctx.fillStyle = isDark ? '#34d399' : '#065f46';
+            ctx.fillText(`🚴 ${br.routeName} (${br.lengthKm} km)`, mxMid + 6, myMid - 4);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 43. Render Bollettino Pollini ARPAV
+      if (showPollenStations && pollenMonitoringStations && pollenMonitoringStations.length > 0) {
+        for (const pol of pollenMonitoringStations) {
+          const px = sx(mx(pol.lon));
+          const py = sy(my(pol.lat));
+          ctx.save();
+
+          const isHigh = pol.overallAllergyRisk === 'ALTO';
+          ctx.fillStyle = isHigh ? '#f59e0b' : '#84cc16';
+          ctx.beginPath();
+          ctx.arc(px, py, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          ctx.font = 'bold 7px sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('🌿', px - 3.5, py + 2.5);
+
+          if (camera.s > 0.02) {
+            ctx.font = 'bold 8px "DM Mono", monospace';
+            ctx.fillStyle = isHigh ? (isDark ? '#fbbf24' : '#b45309') : (isDark ? '#a3e635' : '#4d7c0f');
+            ctx.fillText(`Pollini: Rischio ${pol.overallAllergyRisk}`, px + 8, py + 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 44. Render Fiumi Tributari & Bacino Scolante
+      if (showTributaries && lagoonTributaryRivers && lagoonTributaryRivers.length > 0) {
+        for (const riv of lagoonTributaryRivers) {
+          if (!riv.path || riv.path.length < 2) continue;
+          ctx.save();
+          ctx.strokeStyle = isDark ? '#38bdf8' : '#0284c7';
+          ctx.lineWidth = 2.8;
+          ctx.beginPath();
+          riv.path.forEach((pt, idx) => {
+            const px = sx(mx(pt[0]));
+            const py = sy(my(pt[1]));
+            if (idx === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          });
+          ctx.stroke();
+
+          // Mouth delta point
+          const mouthPt = riv.path[riv.path.length - 1];
+          const mxMouth = sx(mx(mouthPt[0]));
+          const myMouth = sy(my(mouthPt[1]));
+          ctx.fillStyle = isDark ? '#38bdf8' : '#0284c7';
+          ctx.beginPath();
+          ctx.arc(mxMouth, myMouth, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          if (camera.s > 0.015) {
+            ctx.font = 'bold 8px "DM Mono", monospace';
+            ctx.fillStyle = isDark ? '#7dd3fc' : '#0369a1';
+            ctx.fillText(`🌊 ${riv.riverName} (${riv.avgFlowM3s} m³/s)`, mxMouth + 8, myMouth + 3);
+          }
+          ctx.restore();
+        }
+      }
+
       ctx.restore();
       animId = requestAnimationFrame(render);
     };
@@ -3850,6 +4186,16 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     pharmacies,
     showHeatIslands,
     heatIslands,
+    showLagoonWater,
+    lagoonWaterQuality,
+    showAccommodations,
+    touristAccommodations,
+    showBikeRoutes,
+    regionalBikeRoutes,
+    showPollenStations,
+    pollenMonitoringStations,
+    showTributaries,
+    lagoonTributaryRivers,
     tideLevel,
     W,
     mx,

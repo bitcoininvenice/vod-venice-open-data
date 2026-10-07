@@ -58,8 +58,20 @@ import {
   EmergencyWaterDockItem,
   PublicDaeItem,
   PharmacyDutyItem,
-  HeatIslandSurfaceTempItem
+  HeatIslandSurfaceTempItem,
+  LagoonWaterQualityItem,
+  TouristAccommodationItem,
+  RegionalBikeRouteItem,
+  PollenMonitoringStationItem,
+  LagoonTributaryRiverItem
 } from '@/lib/types';
+import {
+  REGIONAL_LAGOON_WATER_QUALITY,
+  REGIONAL_TOURIST_ACCOMMODATIONS,
+  REGIONAL_BIKE_ROUTES,
+  REGIONAL_POLLEN_STATIONS,
+  REGIONAL_TRIBUTARY_RIVERS
+} from '@/lib/regionalVenetoData';
 import {
   OPEN_CANAL_SPEED_LIMITS,
   OPEN_BRIDGE_CLEARANCES,
@@ -159,6 +171,12 @@ export default function HomePage() {
   const [showPharmacies, setShowPharmacies] = useState<boolean>(false);
   // 6. Microclima & Isole Calore
   const [showHeatIslands, setShowHeatIslands] = useState<boolean>(false);
+  // 7. Open Data Regione Veneto (dati.veneto.it)
+  const [showLagoonWater, setShowLagoonWater] = useState<boolean>(false);
+  const [showAccommodations, setShowAccommodations] = useState<boolean>(false);
+  const [showBikeRoutes, setShowBikeRoutes] = useState<boolean>(false);
+  const [showPollenStations, setShowPollenStations] = useState<boolean>(false);
+  const [showTributaries, setShowTributaries] = useState<boolean>(false);
 
   const [bufferRadiusMeters, setBufferRadiusMeters] = useState<number>(200);
   const [selectedCategory, setSelectedCategory] = useState<TransportModeCategory | 'all'>('all');
@@ -206,6 +224,13 @@ export default function HomePage() {
   const [daeList, setDaeList] = useState<PublicDaeItem[]>(OPEN_PUBLIC_DAE);
   const [pharmacies, setPharmacies] = useState<PharmacyDutyItem[]>(OPEN_PHARMACY_DUTY);
   const [heatIslands, setHeatIslands] = useState<HeatIslandSurfaceTempItem[]>(OPEN_HEAT_ISLAND_LST);
+
+  // 5 Open Data Regione Veneto collections (dati.veneto.it)
+  const [lagoonWaterQuality, setLagoonWaterQuality] = useState<LagoonWaterQualityItem[]>(REGIONAL_LAGOON_WATER_QUALITY);
+  const [touristAccommodations, setTouristAccommodations] = useState<TouristAccommodationItem[]>(REGIONAL_TOURIST_ACCOMMODATIONS);
+  const [regionalBikeRoutes, setRegionalBikeRoutes] = useState<RegionalBikeRouteItem[]>(REGIONAL_BIKE_ROUTES);
+  const [pollenMonitoringStations, setPollenMonitoringStations] = useState<PollenMonitoringStationItem[]>(REGIONAL_POLLEN_STATIONS);
+  const [lagoonTributaryRivers, setLagoonTributaryRivers] = useState<LagoonTributaryRiverItem[]>(REGIONAL_TRIBUTARY_RIVERS);
 
   const [tideLevel, setTideLevel] = useState<number>(76);
 
@@ -280,6 +305,12 @@ export default function HomePage() {
     setShowPharmacies(active);
     // 6. Microclima & Isole Calore
     setShowHeatIslands(active);
+    // 7. Open Data Regione Veneto (dati.veneto.it)
+    setShowLagoonWater(active);
+    setShowAccommodations(active);
+    setShowBikeRoutes(active);
+    setShowPollenStations(active);
+    setShowTributaries(active);
   };
 
   const applyPreset = (preset: MapPresetType) => {
@@ -336,6 +367,13 @@ export default function HomePage() {
       setShowSatellites(true);
       setShowSubsidence(true);
       setShowHeatIslands(true);
+    } else if (preset === 'regional') {
+      setShowLagoonWater(true);
+      setShowAccommodations(true);
+      setShowBikeRoutes(true);
+      setShowPollenStations(true);
+      setShowTributaries(true);
+      setCurrentView('lagoon');
     }
   };
 
@@ -544,6 +582,20 @@ export default function HomePage() {
         }
       })
       .catch((err) => console.warn('Using fallback urban microclimate:', err));
+
+    // 7. Open Data Regione Veneto (dati.veneto.it)
+    fetch('/api/regional-data')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          if (data.data.waterQuality) setLagoonWaterQuality(data.data.waterQuality);
+          if (data.data.accommodations) setTouristAccommodations(data.data.accommodations);
+          if (data.data.bikeRoutes) setRegionalBikeRoutes(data.data.bikeRoutes);
+          if (data.data.pollenStations) setPollenMonitoringStations(data.data.pollenStations);
+          if (data.data.tributaryRivers) setLagoonTributaryRivers(data.data.tributaryRivers);
+        }
+      })
+      .catch((err) => console.warn('Using fallback regional data:', err));
 
     return () => {
       clearInterval(flightInterval);
@@ -770,6 +822,17 @@ export default function HomePage() {
           // 6. Microclima & Isole Calore
           showHeatIslands={showHeatIslands}
           heatIslands={heatIslands}
+          // 7. Open Data Regione Veneto (dati.veneto.it)
+          showLagoonWater={showLagoonWater}
+          lagoonWaterQuality={lagoonWaterQuality}
+          showAccommodations={showAccommodations}
+          touristAccommodations={touristAccommodations}
+          showBikeRoutes={showBikeRoutes}
+          regionalBikeRoutes={regionalBikeRoutes}
+          showPollenStations={showPollenStations}
+          pollenMonitoringStations={pollenMonitoringStations}
+          showTributaries={showTributaries}
+          lagoonTributaryRivers={lagoonTributaryRivers}
           tideLevel={tideLevel}
           isDesktopLayerPanelOpen={isDesktopLayerPanelOpen}
         />
@@ -889,6 +952,22 @@ export default function HomePage() {
               showHeatIslands={showHeatIslands}
               onToggleHeatIslands={() => setShowHeatIslands((p) => !p)}
               heatIslandsCount={heatIslands.length}
+              // 7. Open Data Regione Veneto (dati.veneto.it)
+              showLagoonWater={showLagoonWater}
+              onToggleLagoonWater={() => setShowLagoonWater((p) => !p)}
+              lagoonWaterCount={lagoonWaterQuality.length}
+              showAccommodations={showAccommodations}
+              onToggleAccommodations={() => setShowAccommodations((p) => !p)}
+              accommodationsCount={touristAccommodations.length}
+              showBikeRoutes={showBikeRoutes}
+              onToggleBikeRoutes={() => setShowBikeRoutes((p) => !p)}
+              bikeRoutesCount={regionalBikeRoutes.length}
+              showPollenStations={showPollenStations}
+              onTogglePollenStations={() => setShowPollenStations((p) => !p)}
+              pollenStationsCount={pollenMonitoringStations.length}
+              showTributaries={showTributaries}
+              onToggleTributaries={() => setShowTributaries((p) => !p)}
+              tributariesCount={lagoonTributaryRivers.length}
               showSpatialBuffer={showSpatialBuffer}
               onToggleSpatialBuffer={() => setShowSpatialBuffer((p) => !p)}
               bufferRadiusMeters={bufferRadiusMeters}
@@ -909,7 +988,7 @@ export default function HomePage() {
             >
               <Layers className="w-4 h-4 text-cyan-400 group-hover:rotate-12 transition-transform" />
               <span className="font-semibold">Livelli & Filtri</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-mono">40</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-mono">45</span>
             </button>
           </div>
         )}
@@ -1035,6 +1114,22 @@ export default function HomePage() {
                 showHeatIslands={showHeatIslands}
                 onToggleHeatIslands={() => setShowHeatIslands((p) => !p)}
                 heatIslandsCount={heatIslands.length}
+                // 7. Open Data Regione Veneto (dati.veneto.it)
+                showLagoonWater={showLagoonWater}
+                onToggleLagoonWater={() => setShowLagoonWater((p) => !p)}
+                lagoonWaterCount={lagoonWaterQuality.length}
+                showAccommodations={showAccommodations}
+                onToggleAccommodations={() => setShowAccommodations((p) => !p)}
+                accommodationsCount={touristAccommodations.length}
+                showBikeRoutes={showBikeRoutes}
+                onToggleBikeRoutes={() => setShowBikeRoutes((p) => !p)}
+                bikeRoutesCount={regionalBikeRoutes.length}
+                showPollenStations={showPollenStations}
+                onTogglePollenStations={() => setShowPollenStations((p) => !p)}
+                pollenStationsCount={pollenMonitoringStations.length}
+                showTributaries={showTributaries}
+                onToggleTributaries={() => setShowTributaries((p) => !p)}
+                tributariesCount={lagoonTributaryRivers.length}
                 showSpatialBuffer={showSpatialBuffer}
                 onToggleSpatialBuffer={() => setShowSpatialBuffer((p) => !p)}
                 bufferRadiusMeters={bufferRadiusMeters}

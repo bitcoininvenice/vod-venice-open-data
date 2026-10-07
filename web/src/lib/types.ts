@@ -706,4 +706,101 @@ export interface HeatIslandSurfaceTempItem {
   satelliteMission: string;
 }
 
+// ==========================================
+// 7. OPEN DATA REGIONE VENETO (dati.veneto.it / ARPAV / Direzione Turismo)
+// ==========================================
+export interface LagoonWaterQualityItem {
+  id: string;
+  stationName: string;
+  subBasin: 'LAGUNA_NORD' | 'LAGUNA_CENTRO' | 'LAGUNA_SUD';
+  lat: number;
+  lon: number;
+  waterTempCelsius: number;
+  salinityPsu: number; // Salinità in Practical Salinity Units
+  dissolvedOxygenPercent: number; // % saturazione ossigeno disciolto
+  dissolvedOxygenMgL: number; // mg/L
+  ph: number;
+  turbidityNtu: number; // Torbidità NTU
+  conductivityMsCm: number; // Conducibilità mS/cm
+  trophicState: 'BUONO' | 'ELEVATO' | 'SUFFICIENTE' | 'CRITICO';
+  monitoringDepthMeters: number;
+  lastUpdated: string;
+  officialSource: string;
+}
+
+export interface TouristAccommodationItem {
+  id: string;
+  zoneName: string;
+  sestiereOrLocation: string;
+  lat: number;
+  lon: number;
+  totalStructures: number;
+  totalBeds: number;
+  hotelCount: number;
+  extraHotelCount: number; // B&B, locazioni turistiche, affittacamere
+  densityCategory: 'CRITICA' | 'MOLTO_ALTA' | 'ALTA' | 'MODERATA';
+  bedsPerResidentRatio: number; // Rapporto posti letto turistici / popolazione residente
+  starRatingBreakdown: {
+    fiveStar: number;
+    fourStar: number;
+    threeStar: number;
+    twoOneStar: number;
+    bAndB: number;
+    holidayHomes: number;
+  };
+  officialSource: string;
+}
+
+export interface RegionalBikeRouteItem {
+  id: string;
+  routeName: string;
+  section: string;
+  surfaceType: 'ASFALTO_CICLABILE' | 'PIETRA_MURAZZI' | 'SENTIERO_STERRATO';
+  lengthKm: number;
+  elevationGainM: number;
+  difficulty: 'FACILE_PANORAMICO' | 'MEDIO' | 'CICLOTURISMO';
+  ferryInterchange: string;
+  path: [number, number][]; // [lon, lat]
+  description: string;
+  officialSource: string;
+}
+
+export interface PollenFamilyItem {
+  family: string;
+  commonName: string;
+  level: 'BASSO' | 'MEDIO' | 'ALTO' | 'MOLTO_ALTO';
+  concentrationGrainsM3: number;
+  trend: 'STABILE' | 'CRESCITA' | 'DIMINUZIONE';
+  allergenicity: 'MOLTO_ALTA' | 'ALTA' | 'MEDIA';
+}
+
+export interface PollenMonitoringStationItem {
+  id: string;
+  stationName: string;
+  locationName: string;
+  lat: number;
+  lon: number;
+  pollens: PollenFamilyItem[];
+  overallAllergyRisk: 'BASSO' | 'MEDIO' | 'ALTO';
+  samplerType: 'CAPTOR_VOLUMETRICO_BURKARD' | 'AUTOMATICO_CONTINUO';
+  bulletinWeek: string;
+  officialSource: string;
+}
+
+export interface LagoonTributaryRiverItem {
+  id: string;
+  riverName: string;
+  mouthZone: string;
+  lat: number;
+  lon: number;
+  path: [number, number][]; // [lon, lat]
+  avgFlowM3s: number; // Portata idrica media m³/s
+  basinAreaKm2: number;
+  waterQualityState: 'BUONO' | 'SUFFICIENTE' | 'ELEVATO';
+  managementConsortium: string;
+  freshwaterInputNotes: string;
+  officialSource: string;
+}
+
+
 

@@ -37,14 +37,18 @@ import {
   Bell,
   HeartPulse,
   Pill,
-  ThermometerSun
+  ThermometerSun,
+  Building2,
+  Bike,
+  Flower2,
+  GitBranch
 } from 'lucide-react';
 import { TransportModeCategory } from '@/lib/types';
 
 interface LayerPanelProps {
   onTurnAllOff?: () => void;
   onTurnAllOn?: () => void;
-  onApplyPreset?: (preset: 'mobility' | 'lagoon' | 'city' | 'satellites' | 'clean' | 'all') => void;
+  onApplyPreset?: (preset: 'mobility' | 'lagoon' | 'city' | 'satellites' | 'regional' | 'clean' | 'all') => void;
   showRoutes: boolean;
   onToggleRoutes: () => void;
   showStops: boolean;
@@ -152,6 +156,22 @@ interface LayerPanelProps {
   showHeatIslands?: boolean;
   onToggleHeatIslands?: () => void;
   heatIslandsCount?: number;
+  // 7. Open Data Regione Veneto (dati.veneto.it)
+  showLagoonWater?: boolean;
+  onToggleLagoonWater?: () => void;
+  lagoonWaterCount?: number;
+  showAccommodations?: boolean;
+  onToggleAccommodations?: () => void;
+  accommodationsCount?: number;
+  showBikeRoutes?: boolean;
+  onToggleBikeRoutes?: () => void;
+  bikeRoutesCount?: number;
+  showPollenStations?: boolean;
+  onTogglePollenStations?: () => void;
+  pollenStationsCount?: number;
+  showTributaries?: boolean;
+  onToggleTributaries?: () => void;
+  tributariesCount?: number;
   showSpatialBuffer: boolean;
   onToggleSpatialBuffer: () => void;
   bufferRadiusMeters: number;
@@ -268,6 +288,21 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   showHeatIslands = false,
   onToggleHeatIslands,
   heatIslandsCount = 0,
+  showLagoonWater = false,
+  onToggleLagoonWater,
+  lagoonWaterCount = 0,
+  showAccommodations = false,
+  onToggleAccommodations,
+  accommodationsCount = 0,
+  showBikeRoutes = false,
+  onToggleBikeRoutes,
+  bikeRoutesCount = 0,
+  showPollenStations = false,
+  onTogglePollenStations,
+  pollenStationsCount = 0,
+  showTributaries = false,
+  onToggleTributaries,
+  tributariesCount = 0,
   showSpatialBuffer,
   onToggleSpatialBuffer,
   bufferRadiusMeters,
@@ -282,6 +317,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
     mobility: false,
     lagoon: false,
     city: false,
+    regional: false,
     actv: false
   });
 
@@ -357,7 +393,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               type="button"
               onClick={() => {
                 onTurnAllOff();
-                setSectionOpen({ mobility: false, lagoon: false, city: false, actv: false });
+                setSectionOpen({ mobility: false, lagoon: false, city: false, regional: false, actv: false });
               }}
               className="flex-1 py-1.5 px-2 rounded-xl bg-[var(--rule)]/40 hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] font-mono text-[11px] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
               title="Disattiva tutti i livelli per una mappa pulita"
@@ -371,7 +407,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               type="button"
               onClick={() => {
                 onTurnAllOn();
-                setSectionOpen({ mobility: true, lagoon: true, city: true, actv: false });
+                setSectionOpen({ mobility: true, lagoon: true, city: true, regional: true, actv: false });
               }}
               className="flex-1 py-1.5 px-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 font-mono text-[11px] flex items-center justify-center gap-1.5 border border-cyan-500/20 transition-all cursor-pointer"
               title="Attiva tutti i livelli contemporaneamente"
@@ -414,7 +450,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 type="button"
                 onClick={() => {
                   onApplyPreset('mobility');
-                  setSectionOpen({ mobility: true, lagoon: false, city: false, actv: false });
+                  setSectionOpen({ mobility: true, lagoon: false, city: false, regional: false, actv: false });
                 }}
                 className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-sky-500/20 text-sky-400 hover:text-sky-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-sky-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
               >
@@ -424,7 +460,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 type="button"
                 onClick={() => {
                   onApplyPreset('lagoon');
-                  setSectionOpen({ mobility: false, lagoon: true, city: false, actv: false });
+                  setSectionOpen({ mobility: false, lagoon: true, city: false, regional: false, actv: false });
                 }}
                 className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-blue-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
               >
@@ -434,7 +470,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 type="button"
                 onClick={() => {
                   onApplyPreset('city');
-                  setSectionOpen({ mobility: false, lagoon: false, city: true, actv: false });
+                  setSectionOpen({ mobility: false, lagoon: false, city: true, regional: false, actv: false });
                 }}
                 className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-emerald-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
               >
@@ -444,11 +480,21 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 type="button"
                 onClick={() => {
                   onApplyPreset('satellites');
-                  setSectionOpen({ mobility: false, lagoon: true, city: false, actv: false });
+                  setSectionOpen({ mobility: false, lagoon: true, city: false, regional: false, actv: false });
                 }}
                 className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-purple-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
               >
                 <span>🛰️ Satelliti</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onApplyPreset('regional');
+                  setSectionOpen({ mobility: false, lagoon: false, city: false, regional: true, actv: false });
+                }}
+                className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-teal-500/20 text-teal-400 hover:text-teal-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-teal-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
+              >
+                <span>🏛️ Regione Veneto</span>
               </button>
             </div>
 
@@ -1424,6 +1470,159 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                     </span>
                   )}
                   {showHeatIslands ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* SECTION: Open Data Regione Veneto (dati.veneto.it) */}
+      <div className="flex flex-col gap-2 pt-2 border-t border-[var(--rule)]">
+        <button
+          type="button"
+          onClick={() => toggleSection('regional')}
+          className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-[var(--ink-3)] hover:text-[var(--ink)] cursor-pointer"
+        >
+          <span className="flex items-center gap-1.5 font-bold text-teal-400">
+            🏛️ Open Data Veneto (dati.veneto.it)
+          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-mono text-[var(--ink-3)] lowercase">
+              {[showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries].filter(Boolean).length}/5
+            </span>
+            {sectionOpen.regional ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </div>
+        </button>
+
+        {sectionOpen.regional && (
+          <div className="flex flex-col gap-1.5 animate-in fade-in duration-150">
+            {/* 1. Acque Lagunari ARPAV (Dati Sonda) */}
+            {onToggleLagoonWater && (
+              <button
+                type="button"
+                onClick={onToggleLagoonWater}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showLagoonWater
+                    ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Droplets className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Acque Lagunari ARPAV (Sonde)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {lagoonWaterCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-bold">
+                      {lagoonWaterCount}
+                    </span>
+                  )}
+                  {showLagoonWater ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* 2. Strutture Ricettive & Overtourism */}
+            {onToggleAccommodations && (
+              <button
+                type="button"
+                onClick={onToggleAccommodations}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showAccommodations
+                    ? 'bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-3.5 h-3.5 text-fuchsia-400" />
+                  <span>Strutture Ricettive & Overtourism</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {accommodationsCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-fuchsia-500/20 text-fuchsia-300 font-bold">
+                      {accommodationsCount}
+                    </span>
+                  )}
+                  {showAccommodations ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* 3. Ciclovia delle Isole di Venezia */}
+            {onToggleBikeRoutes && (
+              <button
+                type="button"
+                onClick={onToggleBikeRoutes}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showBikeRoutes
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Bike className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Ciclovia delle Isole (Lido & Pellestrina)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {bikeRoutesCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                      {bikeRoutesCount}
+                    </span>
+                  )}
+                  {showBikeRoutes ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* 4. Bollettino Pollini ARPAV */}
+            {onTogglePollenStations && (
+              <button
+                type="button"
+                onClick={onTogglePollenStations}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showPollenStations
+                    ? 'bg-lime-500/15 text-lime-300 border-lime-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Flower2 className="w-3.5 h-3.5 text-lime-400" />
+                  <span>Monitoraggio Pollini ARPAV (Venezia/Mestre)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {pollenStationsCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-lime-500/20 text-lime-300 font-bold">
+                      {pollenStationsCount}
+                    </span>
+                  )}
+                  {showPollenStations ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* 5. Bacino Scolante & Fiumi Tributari */}
+            {onToggleTributaries && (
+              <button
+                type="button"
+                onClick={onToggleTributaries}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  showTributaries
+                    ? 'bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <GitBranch className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Bacino Scolante & Fiumi Tributari</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {tributariesCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-bold">
+                      {tributariesCount}
+                    </span>
+                  )}
+                  {showTributaries ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 </div>
               </button>
             )}
