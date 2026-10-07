@@ -262,7 +262,7 @@ export const ALILAGUNA_ROUTES: AlilagunaRoute[] = [
     name: 'Linea Blu',
     lineCode: 'BLU',
     color: '#0055a5',
-    terminalA: 'Aeroporto Marco Polo ✈️',
+    terminalA: 'Aeroporto Marco Polo',
     terminalB: 'Stazione Marittima / Tronchetto',
     description: 'Laguna Nord - Murano - Lido - San Marco - Giudecca - Terminal Crociere',
     frequencyMinutes: 30,
@@ -285,7 +285,7 @@ export const ALILAGUNA_ROUTES: AlilagunaRoute[] = [
     name: 'Linea Arancio',
     lineCode: 'ARANCIO',
     color: '#f39200',
-    terminalA: 'Aeroporto Marco Polo ✈️',
+    terminalA: 'Aeroporto Marco Polo',
     terminalB: 'Santa Maria del Giglio',
     description: 'Rotta diretta aeroporto - Cannaregio - Canal Grande fino a Rialto e Giglio',
     frequencyMinutes: 30,
@@ -307,7 +307,7 @@ export const ALILAGUNA_ROUTES: AlilagunaRoute[] = [
     name: 'Linea Rossa',
     lineCode: 'ROSSA',
     color: '#e30613',
-    terminalA: 'Aeroporto Marco Polo ✈️',
+    terminalA: 'Aeroporto Marco Polo',
     terminalB: 'San Marco (Giardinetti)',
     description: 'Linea express stagionale Aeroporto - Murano Museo - Certosa - Lido - San Marco',
     frequencyMinutes: 60,
@@ -426,7 +426,7 @@ const PROFILES: ScheduleDirectionProfile[] = [
     shape: PREP_BLU_OUT,
     totalDurationSeconds: 5040,
     stops: [
-      { name: 'Aeroporto Marco Polo ✈️', timeOffset: 0, distanceMeters: 0 },
+      { name: 'Aeroporto Marco Polo', timeOffset: 0, distanceMeters: 0 },
       { name: 'Murano Colonna', timeOffset: 1800, distanceMeters: PREP_BLU_OUT.totalDist * 0.28 },
       { name: 'Fondamente Nove', timeOffset: 2400, distanceMeters: PREP_BLU_OUT.totalDist * 0.38 },
       { name: 'Arsenale', timeOffset: 3120, distanceMeters: PREP_BLU_OUT.totalDist * 0.54 },
@@ -452,7 +452,7 @@ const PROFILES: ScheduleDirectionProfile[] = [
     lineName: 'Linea Blu',
     color: '#0055a5',
     direction: 'INBOUND',
-    headsign: 'Aeroporto Marco Polo ✈️ via San Marco & Murano',
+    headsign: 'Aeroporto Marco Polo via San Marco & Murano',
     shape: PREP_BLU_IN,
     totalDurationSeconds: 5040,
     stops: [
@@ -465,7 +465,7 @@ const PROFILES: ScheduleDirectionProfile[] = [
       { name: 'Lido Santa Maria Elisabetta', timeOffset: 1920, distanceMeters: PREP_BLU_IN.totalDist * 0.46 },
       { name: 'Fondamente Nove', timeOffset: 2640, distanceMeters: PREP_BLU_IN.totalDist * 0.62 },
       { name: 'Murano Colonna', timeOffset: 3240, distanceMeters: PREP_BLU_IN.totalDist * 0.72 },
-      { name: 'Aeroporto Marco Polo ✈️', timeOffset: 5040, distanceMeters: PREP_BLU_IN.totalDist }
+      { name: 'Aeroporto Marco Polo', timeOffset: 5040, distanceMeters: PREP_BLU_IN.totalDist }
     ],
     // 38 departures: every 30 min from 05:00 to 23:30
     departures: [
@@ -486,7 +486,7 @@ const PROFILES: ScheduleDirectionProfile[] = [
     shape: PREP_ARANCIO_OUT,
     totalDurationSeconds: 4200,
     stops: [
-      { name: 'Aeroporto Marco Polo ✈️', timeOffset: 0, distanceMeters: 0 },
+      { name: 'Aeroporto Marco Polo', timeOffset: 0, distanceMeters: 0 },
       { name: 'Fondamente Nove', timeOffset: 2280, distanceMeters: PREP_ARANCIO_OUT.totalDist * 0.48 },
       { name: "Madonna dell'Orto", timeOffset: 2520, distanceMeters: PREP_ARANCIO_OUT.totalDist * 0.54 },
       { name: 'Ponte delle Guglie', timeOffset: 2760, distanceMeters: PREP_ARANCIO_OUT.totalDist * 0.60 },
@@ -511,7 +511,7 @@ const PROFILES: ScheduleDirectionProfile[] = [
     lineName: 'Linea Arancio',
     color: '#f39200',
     direction: 'INBOUND',
-    headsign: 'Aeroporto Marco Polo ✈️ via Rialto & Cannaregio',
+    headsign: 'Aeroporto Marco Polo via Rialto & Cannaregio',
     shape: PREP_ARANCIO_IN,
     totalDurationSeconds: 4200,
     stops: [
@@ -523,7 +523,7 @@ const PROFILES: ScheduleDirectionProfile[] = [
       { name: 'Ponte delle Guglie', timeOffset: 1440, distanceMeters: PREP_ARANCIO_IN.totalDist * 0.40 },
       { name: "Madonna dell'Orto", timeOffset: 1680, distanceMeters: PREP_ARANCIO_IN.totalDist * 0.46 },
       { name: 'Fondamente Nove', timeOffset: 1920, distanceMeters: PREP_ARANCIO_IN.totalDist * 0.52 },
-      { name: 'Aeroporto Marco Polo ✈️', timeOffset: 4200, distanceMeters: PREP_ARANCIO_IN.totalDist }
+      { name: 'Aeroporto Marco Polo', timeOffset: 4200, distanceMeters: PREP_ARANCIO_IN.totalDist }
     ],
     // 33 departures: every 30 min from 06:30 to 22:30
     departures: [
@@ -544,7 +544,7 @@ const PROFILES: ScheduleDirectionProfile[] = [
     shape: PREP_ROSSA_OUT,
     totalDurationSeconds: 3600,
     stops: [
-      { name: 'Aeroporto Marco Polo ✈️', timeOffset: 0, distanceMeters: 0 },
+      { name: 'Aeroporto Marco Polo', timeOffset: 0, distanceMeters: 0 },
       { name: 'Murano Museo', timeOffset: 1800, distanceMeters: PREP_ROSSA_OUT.totalDist * 0.40 },
       { name: 'Isola della Certosa', timeOffset: 2460, distanceMeters: PREP_ROSSA_OUT.totalDist * 0.60 },
       { name: 'Lido Santa Maria Elisabetta', timeOffset: 2820, distanceMeters: PREP_ROSSA_OUT.totalDist * 0.72 },
@@ -560,7 +560,7 @@ const PROFILES: ScheduleDirectionProfile[] = [
     lineName: 'Linea Rossa',
     color: '#e30613',
     direction: 'INBOUND',
-    headsign: 'Aeroporto Marco Polo ✈️ via Lido & Murano',
+    headsign: 'Aeroporto Marco Polo via Lido & Murano',
     shape: PREP_ROSSA_IN,
     totalDurationSeconds: 3600,
     stops: [
@@ -568,7 +568,7 @@ const PROFILES: ScheduleDirectionProfile[] = [
       { name: 'Lido Santa Maria Elisabetta', timeOffset: 780, distanceMeters: PREP_ROSSA_IN.totalDist * 0.28 },
       { name: 'Isola della Certosa', timeOffset: 1140, distanceMeters: PREP_ROSSA_IN.totalDist * 0.40 },
       { name: 'Murano Museo', timeOffset: 1800, distanceMeters: PREP_ROSSA_IN.totalDist * 0.60 },
-      { name: 'Aeroporto Marco Polo ✈️', timeOffset: 3600, distanceMeters: PREP_ROSSA_IN.totalDist }
+      { name: 'Aeroporto Marco Polo', timeOffset: 3600, distanceMeters: PREP_ROSSA_IN.totalDist }
     ],
     // 10 departures: every 60 min from 10:20 to 19:20
     departures: [37200, 40800, 44400, 48000, 51600, 55200, 58800, 62400, 66000, 69600]

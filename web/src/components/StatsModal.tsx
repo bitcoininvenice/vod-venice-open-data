@@ -90,13 +90,13 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs">
           {[
             { id: 'all', label: language === 'it' ? 'Tutti i Dati' : 'All Data', count: 26 },
-            { id: 'maree_aria', label: language === 'it' ? '🌊 Maree & Aria ARPAV' : '🌊 Tides & ARPAV Air', count: 4 },
-            { id: 'laguna_scienza', label: language === 'it' ? '🔬 CNR, Onde & Passerelle' : '🔬 CNR, Waves & Walkways', count: 4 },
-            { id: 'marittimo', label: language === 'it' ? '🚢 Porto, AIS & Canali' : '🚢 Port, AIS & Channels', count: 3 },
-            { id: 'trasporti', label: language === 'it' ? '🚤 ACTV & Alilaguna' : '🚤 ACTV & Alilaguna', count: 4 },
-            { id: 'aeroporto', label: language === 'it' ? '✈️ Voli & VCE Hub' : '✈️ Flights & VCE Hub', count: 2 },
-            { id: 'satelliti', label: language === 'it' ? '🛰️ Satelliti & Radar SAR' : '🛰️ Satellites & SAR Radar', count: 2 },
-            { id: 'pedoni_citta', label: language === 'it' ? '🚶 Flussi & Servizi Città' : '🚶 Pedestrian Flows & City Services', count: 7 }
+            { id: 'maree_aria', label: language === 'it' ? 'Maree & Aria ARPAV' : 'Tides & ARPAV Air', count: 4 },
+            { id: 'laguna_scienza', label: language === 'it' ? 'CNR, Onde & Passerelle' : 'CNR, Waves & Walkways', count: 4 },
+            { id: 'marittimo', label: language === 'it' ? 'Porto, AIS & Canali' : 'Port, AIS & Channels', count: 3 },
+            { id: 'trasporti', label: language === 'it' ? 'ACTV & Alilaguna' : 'ACTV & Alilaguna', count: 4 },
+            { id: 'aeroporto', label: language === 'it' ? 'Voli & VCE Hub' : 'Flights & VCE Hub', count: 2 },
+            { id: 'satelliti', label: language === 'it' ? 'Satelliti & Radar SAR' : 'Satellites & SAR Radar', count: 2 },
+            { id: 'pedoni_citta', label: language === 'it' ? 'Flussi & Servizi Città' : 'Pedestrian Flows & City Services', count: 7 }
           ].map((tab) => (
             <button
               key={tab.id}

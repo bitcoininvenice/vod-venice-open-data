@@ -15,7 +15,10 @@ import {
   Sparkles,
   EyeOff,
   BookOpen,
-  ExternalLink
+  ExternalLink,
+  Lightbulb,
+  Calendar,
+  FastForward
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -66,19 +69,28 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
           </p>
           <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] font-mono">
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1">
-              <span className="text-cyan-400 font-bold">🌊 {language === 'it' ? 'Laguna, Maree & Subsidenza' : 'Lagoon, Tides & Subsidence'}</span>
+              <span className="text-cyan-400 font-bold flex items-center gap-1.5">
+                <Waves className="w-3.5 h-3.5" />
+                <span>{language === 'it' ? 'Laguna, Maree & Subsidenza' : 'Lagoon, Tides & Subsidence'}</span>
+              </span>
               <span>{language === 'it' ? 'CPSM, barriere MOSE, radar InSAR Copernicus EGMS e fondali.' : 'CPSM, MOSE storm gates, Copernicus EGMS InSAR radar and bathymetry.'}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1">
-              <span className="text-emerald-400 font-bold">🚤 {language === 'it' ? 'Mobilità, Canali & Treni' : 'Mobility, Canals & Rail'}</span>
+              <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                <Ship className="w-3.5 h-3.5" />
+                <span>{language === 'it' ? 'Mobilità, Canali & Treni' : 'Mobility, Canals & Rail'}</span>
+              </span>
               <span>{language === 'it' ? 'ACTV, Alilaguna, Barcavelox, franchi ponti, navi AIS e treni RFI.' : 'ACTV, Alilaguna, Barcavelox, bridge clearance, AIS vessels and trains.'}</span>
             </div>
           </div>
-          <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-200">
-            💡 <strong>{language === 'it' ? 'Mappa pulita di default:' : 'Clean map by default:'}</strong>{' '}
-            {language === 'it'
-              ? "All'inizio troverai la mappa vettoriale pulita: decidi tu quali livelli attivare per un'esplorazione chiara, fluida e senza distrazioni."
-              : 'You will find a clean vector map at start: choose which layers to toggle for a crisp, focused exploration.'}
+          <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-200 flex items-start gap-2">
+            <Lightbulb className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+            <div>
+              <strong>{language === 'it' ? 'Mappa pulita di default:' : 'Clean map by default:'}</strong>{' '}
+              {language === 'it'
+                ? "All'inizio troverai la mappa vettoriale pulita: decidi tu quali livelli attivare per un'esplorazione chiara, fluida e senza distrazioni."
+                : 'You will find a clean vector map at start: choose which layers to toggle for a crisp, focused exploration.'}
+            </div>
           </div>
         </div>
       )
@@ -262,22 +274,31 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
           </p>
           <div className="space-y-2 text-[11px]">
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-center justify-between">
-              <span className="text-[var(--ink)]">🔴 <strong>{language === 'it' ? 'Modalità ORA LIVE:' : 'LIVE NOW Mode:'}</strong></span>
+              <span className="text-[var(--ink)] flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                <strong>{language === 'it' ? 'Modalità ORA LIVE:' : 'LIVE NOW Mode:'}</strong>
+              </span>
               <span className="text-cyan-400 font-mono">{language === 'it' ? '1:1 Orario Reale di Venezia' : '1:1 Real Venice Time'}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-center justify-between">
-              <span className="text-[var(--ink)]">⏩ <strong>{language === 'it' ? 'Scrubber & Velocità:' : 'Scrubber & Speed:'}</strong></span>
+              <span className="text-[var(--ink)] flex items-center gap-2">
+                <FastForward className="w-3.5 h-3.5 text-amber-400" />
+                <strong>{language === 'it' ? 'Scrubber & Velocità:' : 'Scrubber & Speed:'}</strong>
+              </span>
               <span className="text-amber-400 font-mono">{language === 'it' ? 'Fino a 720x orario programmato' : 'Up to 720x speed'}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-center justify-between">
-              <span className="text-[var(--ink)]">📅 <strong>{language === 'it' ? 'Calendario Feriale / Festivo:' : 'Weekday / Holiday Calendar:'}</strong></span>
+              <span className="text-[var(--ink)] flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                <strong>{language === 'it' ? 'Calendario Feriale / Festivo:' : 'Weekday / Holiday Calendar:'}</strong>
+              </span>
               <span className="text-emerald-400 font-mono">{language === 'it' ? 'Orari GTFS ufficiali ACTV' : 'Official ACTV GTFS schedules'}</span>
             </div>
           </div>
           <p className="text-[11px] text-[var(--ink-3)] pt-1">
             {language === 'it'
-              ? 'Puoi riaprire questa guida in qualsiasi momento cliccando sul tasto ❓ Guida nella barra superiore.'
-              : 'You can reopen this guide anytime by clicking the ❓ Guide button in the top navigation bar.'}
+              ? 'Puoi riaprire questa guida in qualsiasi momento cliccando sul tasto Guida nella barra superiore.'
+              : 'You can reopen this guide anytime by clicking the Guide button in the top navigation bar.'}
           </p>
         </div>
       )

@@ -124,7 +124,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[11px] font-medium text-[var(--ink)]">{r.description}</span>
                   <span className="text-[10px] font-mono text-[var(--ink-3)] truncate">
-                    {language === 'it' ? 'Da' : 'From'}: {r.terminalA} ➔ {language === 'it' ? 'A' : 'To'}: {r.terminalB}
+                    {language === 'it' ? 'Da' : 'From'}: {r.terminalA} → {language === 'it' ? 'A' : 'To'}: {r.terminalB}
                   </span>
                 </div>
 

@@ -27,7 +27,8 @@ import {
   ArrowRight,
   Plane,
   Thermometer,
-  Cloud
+  Cloud,
+  Info
 } from 'lucide-react';
 import {
   PasserellaItem,
@@ -244,7 +245,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
                 {feature.type === 'bridgeClearance' && `${language === 'it' ? 'Franco zero marea' : 'Air draft at zero tide'}: ${feature.data.clearanceCmZeroMarea} cm`}
                 {feature.type === 'subsidence' && `${feature.data.satellite} · Trend: ${feature.data.trend}`}
-                {feature.type === 'trainLive' && `${feature.data.origin} ➔ ${feature.data.destination}`}
+                {feature.type === 'trainLive' && `${feature.data.origin} → ${feature.data.destination}`}
                 {feature.type === 'nizioleto' && `${language === 'it' ? 'Sestiere' : 'District'} ${feature.data.sestiere} · ${language === 'it' ? 'Civico' : 'Street No.'} ${feature.data.civicNumber}`}
                 {feature.type === 'emergencyDock' && `SUEM 118 · ${feature.data.hospital}`}
                 {feature.type === 'heatIsland' && `${language === 'it' ? 'Temp. Superficiale' : 'Surface Temp'}: ${feature.data.surfaceTempCelsius}°C`}
@@ -524,7 +525,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 </div>
                 <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
                   <span className="text-[var(--ink-2)]">{language === 'it' ? 'Connessione di Linea' : 'Line Connection'}</span>
-                  <span className="font-semibold text-[var(--ink)]">{feature.data.origin} ➔ {feature.data.destination}</span>
+                  <span className="font-semibold text-[var(--ink)]">{feature.data.origin} → {feature.data.destination}</span>
                 </div>
                 <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
                   <span className="text-[var(--ink-2)]">{language === 'it' ? 'Ubicazione' : 'Location'}</span>
@@ -532,10 +533,13 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-300 leading-relaxed">
-                ℹ️ {language === 'it'
-                  ? "Dato istituzionale certificato RFI (Prospetto Informativo della Rete PIR / FS Italiane). Riporta le caratteristiche fisiche e infrastrutturali del nodo ferroviario lagunare. Non include posizioni simulate."
-                  : "Certified institutional data from RFI (Network Statement / FS Italiane). Reports physical and infrastructural features of the lagoon rail network without synthetic simulations."}
+              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-300 leading-relaxed flex items-start gap-2">
+                <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                <span>
+                  {language === 'it'
+                    ? "Dato istituzionale certificato RFI (Prospetto Informativo della Rete PIR / FS Italiane). Riporta le caratteristiche fisiche e infrastrutturali del nodo ferroviario lagunare. Non include posizioni simulate."
+                    : "Certified institutional data from RFI (Network Statement / FS Italiane). Reports physical and infrastructural features of the lagoon rail network without synthetic simulations."}
+                </span>
               </div>
             </>
           )}
@@ -573,10 +577,13 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-300 leading-relaxed">
-                ℹ️ {language === 'it'
-                  ? "Dato istituzionale verificato AVM S.p.A. / Metropark FS. Il Comune di Venezia non pubblica tramite API aperte l'occupazione istantanea delle spire (visibile solo da PMV stradali fisici). La piattaforma esclude rigorosamente stime o dati sintetici non certificati."
-                  : "Verified institutional data from AVM S.p.A. / Metropark FS. Real-time induction loop counts are not published via open APIs by the Municipality (only shown on roadside PMV signs). The platform strictly excludes unverified synthetic estimates."}
+              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-300 leading-relaxed flex items-start gap-2">
+                <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                <span>
+                  {language === 'it'
+                    ? "Dato istituzionale verificato AVM S.p.A. / Metropark FS. Il Comune di Venezia non pubblica tramite API aperte l'occupazione istantanea delle spire (visibile solo da PMV stradali fisici). La piattaforma esclude rigorosamente stime o dati sintetici non certificati."
+                    : "Verified institutional data from AVM S.p.A. / Metropark FS. Real-time induction loop counts are not published via open APIs by the Municipality (only shown on roadside PMV signs). The platform strictly excludes unverified synthetic estimates."}
+                </span>
               </div>
             </>
           )}
@@ -882,7 +889,9 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex flex-col gap-1.5 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-[var(--ink-2)]">{language === 'it' ? 'Settore Alberghiero (Hotel):' : 'Hotel Sector:'}</span>
-                  <span className="font-bold font-mono text-[var(--ink)]">{feature.data.hotelCount} hotel (5★: {feature.data.starRatingBreakdown.fiveStar}, 4★: {feature.data.starRatingBreakdown.fourStar}, 3★: {feature.data.starRatingBreakdown.threeStar})</span>
+                  <span className="font-bold font-mono text-[var(--ink)]">
+                    {feature.data.hotelCount} hotel ({language === 'it' ? `5 stelle: ${feature.data.starRatingBreakdown.fiveStar}, 4 stelle: ${feature.data.starRatingBreakdown.fourStar}, 3 stelle: ${feature.data.starRatingBreakdown.threeStar}` : `5-star: ${feature.data.starRatingBreakdown.fiveStar}, 4-star: ${feature.data.starRatingBreakdown.fourStar}, 3-star: ${feature.data.starRatingBreakdown.threeStar}`})
+                  </span>
                 </div>
                 <div className="flex items-center justify-between border-t border-[var(--rule)] pt-1.5">
                   <span className="text-[var(--ink-2)]">{language === 'it' ? 'Extra-Alberghiero (B&B e Locazioni):' : 'Non-Hotel Sector (B&B & Rentals):'}</span>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CameraViewPreset, PaletteTheme } from '@/lib/types';
-import { Compass, Moon, Sun, Sparkles, Layers, BarChart3, ShieldAlert, HelpCircle, Globe } from 'lucide-react';
+import { Compass, Moon, Sun, Sparkles, Layers, BarChart3, ShieldAlert, HelpCircle, Globe, Waves, Wind, Ship, Satellite, Construction } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
 interface HeaderProps {
@@ -68,8 +68,8 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Mobile-only quick actions */}
         <div className="flex items-center gap-1.5 md:hidden shrink-0">
           {/* Tide Pill Mobile */}
-          <div className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/30 shrink-0">
-            <span>🌊</span>
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/30 shrink-0">
+            <Waves className="w-3.5 h-3.5" />
             <span className="font-bold text-[var(--ink)]">+{tideLevel}</span>
           </div>
 
@@ -154,25 +154,29 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="hidden md:flex items-center gap-2">
         {/* Tide level badge (Centro Maree) */}
         <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-blue-500/10 text-blue-400 border border-blue-500/30">
-          <span>🌊 {t('header.tide')}:</span>
+          <Waves className="w-3.5 h-3.5" />
+          <span>{t('header.tide')}:</span>
           <span className="font-bold text-[var(--ink)]">+{tideLevel} cm</span>
         </div>
 
         {/* Air Quality badge (ARPAV) */}
         <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-          <span>🍃 {t('header.airQuality')}:</span>
+          <Wind className="w-3.5 h-3.5" />
+          <span>{t('header.airQuality')}:</span>
           <span className="font-bold text-[var(--ink)]">AQI {airAqi}</span>
         </div>
 
         {/* Ships badge (AIS) */}
         <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
-          <span>🚢 {t('header.ships')}:</span>
+          <Ship className="w-3.5 h-3.5" />
+          <span>{t('header.ships')}:</span>
           <span className="font-bold text-[var(--ink)]">{activeShipsCount} AIS</span>
         </div>
 
         {/* Satellites badge (Copernicus / ASI) */}
         <div className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/30">
-          <span>🛰️ {t('header.satellites')}:</span>
+          <Satellite className="w-3.5 h-3.5" />
+          <span>{t('header.satellites')}:</span>
           <span className="font-bold text-[var(--ink)]">{activeSatellitesCount} ESA/ASI</span>
         </div>
 
@@ -183,7 +187,8 @@ export const Header: React.FC<HeaderProps> = ({
           className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition-all cursor-pointer"
           title={t('header.spatialTitle')}
         >
-          <span>🚧 {t('header.spatialIntersection')}:</span>
+          <Construction className="w-3.5 h-3.5" />
+          <span>{t('header.spatialIntersection')}:</span>
           <span className="font-bold text-[var(--ink)]">{activeCantieriCount} {t('header.cantieriCount')}</span>
         </button>
 

@@ -9,7 +9,7 @@ export const SCHEDULED_VCE_FLIGHTS: FlightItem[] = [
   {
     icao24: '40082c',
     callsign: 'BAW578',
-    country: 'United Kingdom 🇬🇧',
+    country: 'United Kingdom',
     lat: 45.3620,
     lon: 12.4480,
     altitudeMeters: 850,
@@ -23,7 +23,7 @@ export const SCHEDULED_VCE_FLIGHTS: FlightItem[] = [
   {
     icao24: '3c66ad',
     callsign: 'DLH324',
-    country: 'Germany 🇩🇪',
+    country: 'Germany',
     lat: 45.4150,
     lon: 12.4100,
     altitudeMeters: 520,
@@ -37,7 +37,7 @@ export const SCHEDULED_VCE_FLIGHTS: FlightItem[] = [
   {
     icao24: '3949e2',
     callsign: 'AFR1126',
-    country: 'France 🇫🇷',
+    country: 'France',
     lat: 45.2850,
     lon: 12.4950,
     altitudeMeters: 1450,
@@ -51,7 +51,7 @@ export const SCHEDULED_VCE_FLIGHTS: FlightItem[] = [
   {
     icao24: '896489',
     callsign: 'UAE135',
-    country: 'United Arab Emirates 🇦🇪',
+    country: 'United Arab Emirates',
     lat: 45.2100,
     lon: 12.5600,
     altitudeMeters: 2400,
@@ -65,7 +65,7 @@ export const SCHEDULED_VCE_FLIGHTS: FlightItem[] = [
   {
     icao24: '300305',
     callsign: 'ITY1467',
-    country: 'Italy 🇮🇹',
+    country: 'Italy',
     lat: 45.5680,
     lon: 12.3920,
     altitudeMeters: 1650,
@@ -79,7 +79,7 @@ export const SCHEDULED_VCE_FLIGHTS: FlightItem[] = [
   {
     icao24: '4ca831',
     callsign: 'RYR3917',
-    country: 'Ireland 🇮🇪',
+    country: 'Ireland',
     lat: 45.6120,
     lon: 12.4250,
     altitudeMeters: 2800,
@@ -93,7 +93,7 @@ export const SCHEDULED_VCE_FLIGHTS: FlightItem[] = [
   {
     icao24: '502d33',
     callsign: 'EJU3351',
-    country: 'Austria 🇦🇹',
+    country: 'Austria',
     lat: 45.5030,
     lon: 12.3510,
     altitudeMeters: 3,

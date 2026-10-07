@@ -977,19 +977,18 @@ export default function LayersDocumentationPage() {
               </span>
               {[
                 { key: 'all', label: language === 'it' ? 'Tutti i Gruppi' : 'All Groups' },
-                { key: 'mobility', label: language === 'it' ? '🚢 1. Mobilità' : '🚢 1. Mobility' },
-                { key: 'lagoon', label: language === 'it' ? '🌊 2. Laguna' : '🌊 2. Lagoon' },
-                { key: 'city', label: language === 'it' ? '🏛️ 3. Città' : '🏛️ 3. City' }
+                { key: 'mobility', label: language === 'it' ? '1. Mobilità' : '1. Mobility' },
+                { key: 'lagoon', label: language === 'it' ? '2. Laguna' : '2. Lagoon' },
+                { key: 'city', label: language === 'it' ? '3. Città' : '3. City' }
               ].map((g) => (
                 <button
                   key={g.key}
                   type="button"
                   onClick={() => setSelectedGroup(g.key as LayerGroupKey)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
-                    selectedGroup === g.key
-                      ? 'bg-cyan-500 text-white font-bold shadow-sm'
-                      : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
-                  }`}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${selectedGroup === g.key
+                    ? 'bg-cyan-500 text-white font-bold shadow-sm'
+                    : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+                    }`}
                 >
                   {g.label}
                 </button>
@@ -1003,19 +1002,18 @@ export default function LayersDocumentationPage() {
               </span>
               {[
                 { key: 'all', label: language === 'it' ? 'Tutti' : 'All' },
-                { key: 'realtime', label: language === 'it' ? '🟢 Tempo Reale' : '🟢 Live Sensors' },
-                { key: 'simulated', label: language === 'it' ? '🟡 Digital Twin' : '🟡 Digital Twin' },
-                { key: 'static', label: language === 'it' ? '🔵 Censimento' : '🔵 Open Data' }
+                { key: 'realtime', label: language === 'it' ? 'Tempo Reale' : 'Live Sensors' },
+                { key: 'simulated', label: language === 'it' ? 'Digital Twin' : 'Digital Twin' },
+                { key: 'static', label: language === 'it' ? 'Censimento' : 'Open Data' }
               ].map((r) => (
                 <button
                   key={r.key}
                   type="button"
                   onClick={() => setSelectedRegime(r.key as DataRegimeKey)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
-                    selectedRegime === r.key
-                      ? 'bg-cyan-500 text-white font-bold shadow-sm'
-                      : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
-                  }`}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${selectedRegime === r.key
+                    ? 'bg-cyan-500 text-white font-bold shadow-sm'
+                    : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+                    }`}
                 >
                   {r.label}
                 </button>
@@ -1029,18 +1027,17 @@ export default function LayersDocumentationPage() {
               </span>
               {[
                 { key: 'all', label: language === 'it' ? 'Tutte' : 'All' },
-                { key: 'api', label: '📡 API Live' },
-                { key: 'local', label: '💾 Locale / Cache' }
+                { key: 'api', label: 'API Live' },
+                { key: 'local', label: language === 'it' ? 'Locale / Cache' : 'Local / Cache' }
               ].map((a) => (
                 <button
                   key={a.key}
                   type="button"
                   onClick={() => setSelectedAcquisition(a.key as AcquisitionKey)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
-                    selectedAcquisition === a.key
-                      ? 'bg-cyan-500 text-white font-bold shadow-sm'
-                      : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
-                  }`}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${selectedAcquisition === a.key
+                    ? 'bg-cyan-500 text-white font-bold shadow-sm'
+                    : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+                    }`}
                 >
                   {a.label}
                 </button>
@@ -1079,8 +1076,14 @@ export default function LayersDocumentationPage() {
                 {/* Header row: Name, Group, Regime Pill */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--rule)]/60 pb-2.5">
                   <div className="flex items-center gap-2.5">
-                    <span className="text-base sm:text-lg">
-                      {layer.group === 'mobility' ? '🚢' : layer.group === 'lagoon' ? '🌊' : '🏛️'}
+                    <span className="p-2 rounded-xl bg-[var(--rule)]/40 flex items-center justify-center">
+                      {layer.group === 'mobility' ? (
+                        <Ship className="w-5 h-5 text-sky-400" />
+                      ) : layer.group === 'lagoon' ? (
+                        <Waves className="w-5 h-5 text-blue-400" />
+                      ) : (
+                        <Landmark className="w-5 h-5 text-emerald-400" />
+                      )}
                     </span>
                     <div>
                       <h3 className="text-sm sm:text-base font-bold text-[var(--ink)] group-hover:text-cyan-400 transition-colors">
@@ -1095,29 +1098,37 @@ export default function LayersDocumentationPage() {
                   <div className="flex items-center gap-1.5 self-start sm:self-auto flex-wrap">
                     {/* Regime Badge */}
                     <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold flex items-center gap-1.5 border shadow-sm ${
-                        layer.regime === 'realtime'
-                          ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                          : layer.regime === 'simulated'
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold flex items-center gap-1.5 border shadow-sm ${layer.regime === 'realtime'
+                        ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                        : layer.regime === 'simulated'
                           ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
                           : 'bg-sky-500/15 text-sky-300 border-sky-500/30'
-                      }`}
+                        }`}
                     >
                       <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          layer.regime === 'realtime'
-                            ? 'bg-emerald-400 animate-pulse'
-                            : layer.regime === 'simulated'
+                        className={`w-1.5 h-1.5 rounded-full ${layer.regime === 'realtime'
+                          ? 'bg-emerald-400 animate-pulse'
+                          : layer.regime === 'simulated'
                             ? 'bg-amber-400'
                             : 'bg-sky-400'
-                        }`}
+                          }`}
                       />
                       {getRegimeName(layer.regime, language)}
                     </span>
 
                     {/* Acquisition Badge */}
-                    <span className="px-2 py-1 rounded-full text-[10px] font-mono bg-[var(--rule)]/60 text-[var(--ink-2)] border border-[var(--rule)]">
-                      {layer.acquisition === 'api' ? '📡 API Live' : '💾 Locale / Cache'}
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-[var(--rule)]/60 text-[var(--ink-2)] border border-[var(--rule)] flex items-center gap-1.5">
+                      {layer.acquisition === 'api' ? (
+                        <>
+                          <Radio className="w-3 h-3 text-cyan-400" />
+                          <span>API Live</span>
+                        </>
+                      ) : (
+                        <>
+                          <Database className="w-3 h-3 text-[var(--ink-3)]" />
+                          <span>{language === 'it' ? 'Locale / Cache' : 'Local / Cache'}</span>
+                        </>
+                      )}
                     </span>
                   </div>
                 </div>
@@ -1179,12 +1190,12 @@ export default function LayersDocumentationPage() {
 // Helpers
 function getGroupLabel(group: 'mobility' | 'lagoon' | 'city', lang: string) {
   if (group === 'mobility') {
-    return lang === 'it' ? '1. Mobilità Acquea, Aerea & Ferroviaria' : '1. Water, Air & Rail Mobility';
+    return lang === 'it' ? 'Mobilità Acquea, Aerea & Ferroviaria' : 'Water, Air & Rail Mobility';
   }
   if (group === 'lagoon') {
-    return lang === 'it' ? '2. Laguna, Idrografia & Difesa Mare' : '2. Lagoon, Hydrography & Sea Defense';
+    return lang === 'it' ? 'Laguna, Idrografia & Difesa Mare' : 'Lagoon, Hydrography & Sea Defense';
   }
-  return lang === 'it' ? '3. Città Storica, Patrimonio & Servizi' : '3. Historic City, Heritage & Services';
+  return lang === 'it' ? 'Città Storica, Patrimonio & Servizi' : 'Historic City, Heritage & Services';
 }
 
 function getRegimeName(regime: 'realtime' | 'simulated' | 'static', lang: string) {

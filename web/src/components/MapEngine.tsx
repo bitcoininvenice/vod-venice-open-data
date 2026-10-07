@@ -1979,7 +1979,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           if (camera.s > 0.035) {
             ctx.font = '600 10px "Bricolage Grotesque", sans-serif';
             ctx.fillStyle = isDark ? '#f59e0b' : '#b45309';
-            ctx.fillText(`🚧 ${c.titolo.slice(0, 24)}...`, cx + 9, cy - 2);
+            ctx.fillText(`${c.titolo.slice(0, 24)}...`, cx + 9, cy - 2);
           }
         }
       }
@@ -2118,7 +2118,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
         ctx.save();
         ctx.font = '700 11px "Bricolage Grotesque", sans-serif';
-        const txt = '✈️ Aeroporto Marco Polo (VCE / LIPZ)';
+        const txt = 'Aeroporto Marco Polo (VCE / LIPZ)';
         const txtWidth = ctx.measureText(txt).width;
 
         ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.92)';
@@ -2273,7 +2273,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               const distToVceKm = (Math.hypot(live.lon - 12.3519, live.lat - 45.5053) * 111).toFixed(1);
               ctx.font = '700 10px "DM Mono", monospace';
               ctx.fillStyle = '#fbbf24';
-              ctx.fillText(`📍 ${distToVceKm} km a VCE`, fx + 14, fy - 10);
+              ctx.fillText(`${distToVceKm} km a VCE`, fx + 14, fy - 10);
             }
           }
         }
@@ -2329,7 +2329,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.fillStyle = f.status === 'APPROACH'
               ? (isDark ? '#38bdf8' : '#0284c7')
               : (isDark ? '#7dd3fc' : '#0369a1');
-            ctx.fillText(`✈️ ${f.callsign} · ${Math.round(live.alt)}m`, fx + 13, fy + 3);
+            ctx.fillText(`${f.callsign} · ${Math.round(live.alt)}m`, fx + 13, fy + 3);
           }
         }
       }
@@ -2367,7 +2367,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           // Gate Status Tag
           ctx.font = '700 9px "DM Mono", monospace';
-          const gateTag = `🌊 MOSE ${gate.inletName} (${gate.barriersCount}p)`;
+          const gateTag = `MOSE ${gate.inletName} (${gate.barriersCount}p)`;
           const tagW = ctx.measureText(gateTag).width;
 
           ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.85)';
@@ -2533,7 +2533,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             const distNM = (Math.hypot(live.lon - berthCoord.lon, live.lat - berthCoord.lat) * 60).toFixed(1);
             ctx.font = '700 10px "DM Mono", monospace';
             ctx.fillStyle = '#fbbf24';
-            ctx.fillText(`📍 ${distNM} NM a ${sh.berth.split(',')[0]} (ETA: ${sh.eta})`, shx + 14, shy - 14);
+            ctx.fillText(`${distNM} NM a ${sh.berth.split(',')[0]} (ETA: ${sh.eta})`, shx + 14, shy - 14);
           }
 
           // 4. Ship Hull & Superstructure (Rotated to heading)
@@ -2583,12 +2583,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           // Ship Label Tag
           ctx.font = '600 10px "Bricolage Grotesque", sans-serif';
           const shipLabel = isCruise
-            ? `🚢 ${sh.name} (${sh.speedKnots} kn)`
+            ? `${sh.name} (${sh.speedKnots} kn)`
             : isTug
-            ? `⚓ ${sh.name}`
+            ? `${sh.name} (Rimorchiatore)`
             : isHydrofoil
-            ? `⚡ ${sh.name}`
-            : `🚢 ${sh.name}`;
+            ? `${sh.name} (Aliscafo)`
+            : `${sh.name}`;
 
           ctx.fillStyle = paletteTheme === 'notte' ? '#e2e8f0' : '#1e293b';
           ctx.fillText(shipLabel, shx + 10, shy - 2);
@@ -2606,7 +2606,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
       // 13. Render City Assets (Fontanelle & Ponti Accessibili & Veritas)
       if (showCityAssets) {
-        // Fountains 💧
+        // Fountains
         if (fountains && fountains.length > 0) {
           for (const f of fountains) {
             const fx = sx(mx(f.lon));
@@ -2623,12 +2623,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             if (camera.s > 0.05) {
               ctx.font = '500 8.5px "DM Mono", monospace';
               ctx.fillStyle = isDark ? '#06b6d4' : '#0891b2';
-              ctx.fillText(`💧 ${f.name}`, fx + 6, fy + 3);
+              ctx.fillText(f.name, fx + 6, fy + 3);
             }
           }
         }
 
-        // Accessible Bridges ♿
+        // Accessible Bridges (Rampa)
         if (accessibleBridges && accessibleBridges.length > 0) {
           for (const b of accessibleBridges) {
             const bx = sx(mx(b.lon));
@@ -2645,12 +2645,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             if (camera.s > 0.035) {
               ctx.font = '600 9px "DM Mono", monospace';
               ctx.fillStyle = isDark ? '#10b981' : '#047857';
-              ctx.fillText(`♿ ${b.name} (Rampa)`, bx + 7, by + 3);
+              ctx.fillText(`${b.name} (Rampa)`, bx + 7, by + 3);
             }
           }
         }
 
-        // Veritas Waste Boats ♻️
+        // Veritas Waste Boats
         if (veritasServices && veritasServices.length > 0) {
           for (const v of veritasServices) {
             const vx = sx(mx(v.lon));
@@ -2667,7 +2667,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             if (camera.s > 0.035) {
               ctx.font = '500 8.5px "DM Mono", monospace';
               ctx.fillStyle = isDark ? '#84cc16' : '#4d7c0f';
-              ctx.fillText(`♻️ ${v.name}`, vx + 6, vy + 3);
+              ctx.fillText(v.name, vx + 6, vy + 3);
             }
           }
         }
@@ -2683,7 +2683,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           ctx.save();
           ctx.font = '700 9.5px "DM Mono", monospace';
-          const pTxt = camera.s > 0.02 ? `🅿️ ${p.name} (${p.totalSpots} posti)` : `🅿️ ${p.name}`;
+          const pTxt = camera.s > 0.02 ? `P · ${p.name} (${p.totalSpots} posti)` : `P · ${p.name}`;
           const pW = ctx.measureText(pTxt).width;
 
           ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)';
@@ -2708,7 +2708,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           ctx.save();
           ctx.font = '600 9px "DM Mono", monospace';
-          const aTxt = `🍃 ARPAV ${a.stationName} · AQI ${a.aqi} (PM10: ${a.pm10}µg)`;
+          const aTxt = `ARPAV ${a.stationName} · AQI ${a.aqi} (PM10: ${a.pm10}µg)`;
           const aW = ctx.measureText(aTxt).width;
 
           ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.88)';
@@ -2734,8 +2734,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.save();
           ctx.font = '700 9px "DM Mono", monospace';
           const pfTxt = pf.hourlyFlow != null
-            ? `🚶 ${pf.sensorName}: ${pf.hourlyFlow.toLocaleString()} p/h`
-            : `🚶 Varco SCR: ${pf.sensorName}`;
+            ? `${pf.sensorName}: ${pf.hourlyFlow.toLocaleString()} p/h`
+            : `Varco SCR: ${pf.sensorName}`;
           const pfW = ctx.measureText(pfTxt).width;
 
           ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)';
@@ -2803,7 +2803,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
               // Hub Label Tag
               ctx.font = '700 9.5px "Bricolage Grotesque", sans-serif';
-              const hubTxt = '✈️ Darsena VCE Aeroporto (Alilaguna Hub)';
+              const hubTxt = 'Darsena VCE Aeroporto (Alilaguna Hub)';
               const hubW = ctx.measureText(hubTxt).width;
               ctx.fillStyle = 'rgba(0, 85, 165, 0.92)';
               ctx.beginPath();
@@ -2829,7 +2829,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               if (camera.s > 0.04) {
                 ctx.font = '600 8px "DM Mono", monospace';
                 ctx.fillStyle = isDark ? '#60a5fa' : '#1e40af';
-                ctx.fillText(`⚓ ${st.name}`, stx + 6, sty + 3);
+                ctx.fillText(st.name, stx + 6, sty + 3);
               }
               ctx.restore();
             }
@@ -2885,7 +2885,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             // Boat label badge
             ctx.save();
             ctx.font = '700 8.5px "DM Mono", monospace';
-            const bTxt = `🚤 ALILAGUNA ${b.lineCode} (${b.speedKmh} km/h)`;
+            const bTxt = `ALILAGUNA ${b.lineCode} (${b.speedKmh} km/h)`;
             const bW = ctx.measureText(bTxt).width;
             ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.88)';
             ctx.beginPath();
@@ -3021,7 +3021,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           if (camera.s > 0.012 || isSelected) {
             ctx.save();
             ctx.font = '700 9px "DM Mono", monospace';
-            const satLabel = `🛰️ ${sat.name.split('(')[0].trim()} · ${sat.altitudeKm}km`;
+            const satLabel = `${sat.name.split('(')[0].trim()} · ${sat.altitudeKm}km`;
             const sW = ctx.measureText(satLabel).width;
 
             ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.90)' : 'rgba(255, 255, 255, 0.92)';
@@ -3099,7 +3099,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             // Label tag on zoom
             if (camera.s > 0.035) {
               ctx.font = '700 8.5px "DM Mono", monospace';
-              const label = `🔴 LIVE · ${cam.name}`;
+              const label = `LIVE · ${cam.name}`;
               const lW = ctx.measureText(label).width;
               ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.90)' : 'rgba(255, 255, 255, 0.92)';
               ctx.beginPath();
@@ -3146,7 +3146,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             // Label on high zoom
             if (camera.s > 0.055) {
               ctx.font = '600 7.5px "DM Mono", monospace';
-              const label = `📹 CCTV · ${cam.name}`;
+              const label = `CCTV · ${cam.name}`;
               const lW = ctx.measureText(label).width;
               ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.85)';
               ctx.beginPath();
@@ -3210,7 +3210,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             const lx = sx(mx(midPt[0]));
             const ly = sy(my(midPt[1]));
             ctx.font = '700 8.5px "DM Mono", monospace';
-            const label = `🦺 ${p.name.split('-')[0].trim()} (${p.lengthMeters}m)`;
+            const label = `${p.name.split('-')[0].trim()} (${p.lengthMeters}m)`;
             const lW = ctx.measureText(label).width;
             ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.92)';
             ctx.fillRect(lx - lW / 2 - 3, ly - 14, lW + 6, 12);
@@ -3328,7 +3328,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
             // Telemetry readout
             ctx.font = '700 8.5px "DM Mono", monospace';
-            const tag = `🔬 CNR ISMAR · Hs ${st.waveHeightMeters}m · ${st.waterTempC}°C`;
+            const tag = `CNR ISMAR · Hs ${st.waveHeightMeters}m · ${st.waterTempC}°C`;
             const tW = ctx.measureText(tag).width;
             ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.92)';
             ctx.fillRect(ox - tW / 2 - 4, oy - 22, tW + 8, 13);
@@ -3382,7 +3382,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           if (camera.s > 0.02) {
             ctx.font = '600 8px "DM Mono", monospace';
             ctx.fillStyle = isDark ? '#38bdf8' : '#0284c7';
-            ctx.fillText(`🌊 ${bw.name.split('-')[1]?.trim() || bw.name}`, bx + 9, by + 3);
+            ctx.fillText(bw.name.split('-')[1]?.trim() || bw.name, bx + 9, by + 3);
           }
 
           ctx.restore();
@@ -3415,7 +3415,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           if (camera.s > 0.04) {
             ctx.font = '600 8px "DM Mono", monospace';
             ctx.fillStyle = isDark ? '#4ade80' : '#15803d';
-            ctx.fillText(`🌳 ${tr.commonName}`, tx + canopyR + 3, ty + 3);
+            ctx.fillText(tr.commonName, tx + canopyR + 3, ty + 3);
           }
 
           ctx.restore();
@@ -3437,10 +3437,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.lineWidth = 1.2;
             ctx.stroke();
 
-            // Lightning glyph
+            // EV badge text
             ctx.fillStyle = '#000000';
-            ctx.font = 'bold 7px sans-serif';
-            ctx.fillText('⚡', ex - 3.5, ey + 2.5);
+            ctx.font = 'bold 6.5px "DM Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('EV', ex, ey);
+            ctx.textAlign = 'start';
+            ctx.textBaseline = 'alphabetic';
 
             if (camera.s > 0.035) {
               ctx.font = '600 8px "DM Mono", monospace';
@@ -3467,7 +3471,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             if (camera.s > 0.05) {
               ctx.font = '600 8px "DM Mono", monospace';
               ctx.fillStyle = isDark ? '#818cf8' : '#4338ca';
-              ctx.fillText(`📶 Wi-Fi (${wf.usersConnected})`, wx + 7, wy + 3);
+              ctx.fillText(`Wi-Fi (${wf.usersConnected})`, wx + 7, wy + 3);
             }
             ctx.restore();
           }
@@ -3551,7 +3555,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ctx.fillStyle = isNavigable
               ? (isDark ? '#22d3ee' : '#0891b2')
               : (isDark ? '#f87171' : '#dc2626');
-            ctx.fillText(`🌉 ${b.bridgeName.split(' ')[1] || b.bridgeName} (${liveClearance}cm)`, bx + 7, by + 3);
+            ctx.fillText(`${b.bridgeName.split(' ')[1] || b.bridgeName} (${liveClearance}cm)`, bx + 7, by + 3);
           }
           ctx.restore();
         }
@@ -3589,10 +3593,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.lineWidth = 1.2;
           ctx.stroke();
 
-          // Oar / Ferro da prua symbol
-          ctx.font = 'bold 7px sans-serif';
+          // Gondola letter glyph
+          ctx.font = 'bold 7px "DM Sans", sans-serif';
           ctx.fillStyle = '#ffffff';
-          ctx.fillText('🚣', gx - 4.5, gy + 3);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('G', gx, gy);
+          ctx.textAlign = 'start';
+          ctx.textBaseline = 'alphabetic';
 
           if (camera.s > 0.045) {
             ctx.font = '600 8px "DM Mono", monospace';
@@ -3617,9 +3625,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.lineWidth = 1;
           ctx.stroke();
 
-          ctx.font = 'bold 7px sans-serif';
+          // Riva initial
+          ctx.font = 'bold 7px "DM Sans", sans-serif';
           ctx.fillStyle = '#ffffff';
-          ctx.fillText('⚓', dx - 3.5, dy + 2.5);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('R', dx, dy);
+          ctx.textAlign = 'start';
+          ctx.textBaseline = 'alphabetic';
 
           if (camera.s > 0.04) {
             ctx.font = '600 8px "DM Mono", monospace';
@@ -3691,7 +3704,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           if (camera.s > 0.02) {
             ctx.font = 'bold 8.5px "DM Mono", monospace';
             ctx.fillStyle = isDark ? '#34d399' : '#047857';
-            ctx.fillText(`🌿 ${morph.name} (${morph.areaHectares}ha)`, cx - 30, cy);
+            ctx.fillText(`${morph.name} (${morph.areaHectares}ha)`, cx - 30, cy);
           }
           ctx.restore();
         }
@@ -3865,7 +3878,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           if (camera.s > 0.02) {
             ctx.font = 'bold 8px "DM Mono", monospace';
             ctx.fillStyle = isDark ? '#f87171' : '#b91c1c';
-            ctx.fillText(`🚆 ${tr.trainNumber} (${tr.speedKmh} km/h)`, tx - 14, ty - 8);
+            ctx.fillText(`RFI ${tr.trainNumber} (${tr.speedKmh} km/h)`, tx - 14, ty - 8);
           }
           ctx.restore();
         }
@@ -3886,9 +3899,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.lineWidth = 1;
           ctx.stroke();
 
-          ctx.font = 'bold 7px sans-serif';
+          // Veritas boat initial
+          ctx.font = 'bold 7px "DM Sans", sans-serif';
           ctx.fillStyle = '#000000';
-          ctx.fillText('♻️', bx - 3.5, by + 2.5);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('V', bx, by);
+          ctx.textAlign = 'start';
+          ctx.textBaseline = 'alphabetic';
 
           if (camera.s > 0.04) {
             ctx.font = '600 7.5px "DM Mono", monospace';
@@ -3976,9 +3994,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
-          ctx.font = 'bold 7px sans-serif';
+          // Campanile badge 'C'
+          ctx.font = 'bold 7px "DM Sans", sans-serif';
           ctx.fillStyle = '#ffffff';
-          ctx.fillText('🔔', bx - 3.5, by + 2.5);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('C', bx, by);
+          ctx.textAlign = 'start';
+          ctx.textBaseline = 'alphabetic';
 
           if (camera.s > 0.03) {
             ctx.font = 'bold 8px "DM Mono", monospace';
@@ -4005,14 +4028,19 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
-          ctx.font = 'bold 8px sans-serif';
+          // Fortress badge 'F'
+          ctx.font = 'bold 8px "DM Sans", sans-serif';
           ctx.fillStyle = '#ffffff';
-          ctx.fillText('🏰', fx - 4, fy + 3);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('F', fx, fy);
+          ctx.textAlign = 'start';
+          ctx.textBaseline = 'alphabetic';
 
           if (camera.s > 0.02) {
             ctx.font = 'bold 8.5px "DM Mono", monospace';
             ctx.fillStyle = isDark ? '#d6d3d1' : '#57534e';
-            ctx.fillText(`🏰 ${fort.name}`, fx + 10, fy + 3);
+            ctx.fillText(fort.name, fx + 10, fy + 3);
           }
           ctx.restore();
         }
@@ -4033,9 +4061,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
-          ctx.font = 'bold 7px sans-serif';
+          // SUEM Medical cross
+          ctx.font = 'bold 8px sans-serif';
           ctx.fillStyle = '#ffffff';
-          ctx.fillText('🚑', ex - 3.5, ey + 2.5);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('+', ex, ey);
+          ctx.textAlign = 'start';
+          ctx.textBaseline = 'alphabetic';
 
           if (camera.s > 0.035) {
             ctx.font = 'bold 8px "DM Mono", monospace';
@@ -4060,9 +4093,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.lineWidth = 1;
           ctx.stroke();
 
-          ctx.font = 'bold 6.5px sans-serif';
+          // DAE cross
+          ctx.font = 'bold 7px sans-serif';
           ctx.fillStyle = '#ffffff';
-          ctx.fillText('❤️', dx - 3, dy + 2);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('+', dx, dy);
+          ctx.textAlign = 'start';
+          ctx.textBaseline = 'alphabetic';
 
           if (camera.s > 0.05) {
             ctx.font = '600 7.5px "DM Mono", monospace';
@@ -4087,9 +4125,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.lineWidth = 1;
           ctx.stroke();
 
-          ctx.font = 'bold 6.5px sans-serif';
+          // Pharmacy green cross
+          ctx.font = 'bold 7px sans-serif';
           ctx.fillStyle = '#ffffff';
-          ctx.fillText('💊', px - 3, py + 2);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('+', px, py);
+          ctx.textAlign = 'start';
+          ctx.textBaseline = 'alphabetic';
 
           if (camera.s > 0.05) {
             ctx.font = '600 7.5px "DM Mono", monospace';
@@ -4130,7 +4173,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           if (camera.s > 0.02) {
             ctx.font = 'bold 8px "DM Mono", monospace';
             ctx.fillStyle = isHot ? (isDark ? '#f87171' : '#b91c1c') : (isDark ? '#38bdf8' : '#0284c7');
-            ctx.fillText(`🌡️ ${hi.surfaceTempCelsius}°C (${hi.airTempDelta > 0 ? '+' : ''}${hi.airTempDelta}°C)`, hx - 20, hy);
+            ctx.fillText(`${hi.surfaceTempCelsius}°C (${hi.airTempDelta > 0 ? '+' : ''}${hi.airTempDelta}°C)`, hx - 20, hy);
           }
           ctx.restore();
         }
@@ -4159,10 +4202,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.lineWidth = 1.2;
           ctx.stroke();
 
-          // Droplet / probe icon
-          ctx.font = 'bold 7px sans-serif';
+          // Water quality initial 'W'
+          ctx.font = 'bold 7px "DM Sans", sans-serif';
           ctx.fillStyle = '#ffffff';
-          ctx.fillText('💧', wx - 3.5, wy + 2.5);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('W', wx, wy);
+          ctx.textAlign = 'start';
+          ctx.textBaseline = 'alphabetic';
 
           if (camera.s > 0.02) {
             ctx.font = 'bold 8px "DM Mono", monospace';
@@ -4207,9 +4254,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.lineWidth = 1.2;
           ctx.stroke();
 
-          ctx.font = 'bold 7px sans-serif';
+          // Hotel initial 'H'
+          ctx.font = 'bold 7px "DM Sans", sans-serif';
           ctx.fillStyle = '#ffffff';
-          ctx.fillText('🏨', ax - 3.5, ay + 2.5);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('H', ax, ay);
+          ctx.textAlign = 'start';
+          ctx.textBaseline = 'alphabetic';
 
           if (camera.s > 0.02) {
             ctx.font = 'bold 8px "DM Mono", monospace';
@@ -4262,7 +4314,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           if (camera.s > 0.015) {
             ctx.font = 'bold 8.5px "DM Mono", monospace';
             ctx.fillStyle = isDark ? '#34d399' : '#065f46';
-            ctx.fillText(`🚴 ${br.routeName} (${br.lengthKm} km)`, mxMid + 6, myMid - 4);
+            ctx.fillText(`${br.routeName} (${br.lengthKm} km)`, mxMid + 6, myMid - 4);
           }
           ctx.restore();
         }
@@ -4284,9 +4336,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           ctx.lineWidth = 1.2;
           ctx.stroke();
 
-          ctx.font = 'bold 7px sans-serif';
+          // Pollen initial 'P'
+          ctx.font = 'bold 7px "DM Sans", sans-serif';
           ctx.fillStyle = '#ffffff';
-          ctx.fillText('🌿', px - 3.5, py + 2.5);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('P', px, py);
+          ctx.textAlign = 'start';
+          ctx.textBaseline = 'alphabetic';
 
           if (camera.s > 0.02) {
             ctx.font = 'bold 8px "DM Mono", monospace';
@@ -4328,7 +4385,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           if (camera.s > 0.015) {
             ctx.font = 'bold 8px "DM Mono", monospace';
             ctx.fillStyle = isDark ? '#7dd3fc' : '#0369a1';
-            ctx.fillText(`🌊 ${riv.riverName} (${riv.avgFlowM3s} m³/s)`, mxMouth + 8, myMouth + 3);
+            ctx.fillText(`${riv.riverName} (${riv.avgFlowM3s} m³/s)`, mxMouth + 8, myMouth + 3);
           }
           ctx.restore();
         }
