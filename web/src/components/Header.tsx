@@ -121,11 +121,10 @@ export const Header: React.FC<HeaderProps> = ({
               key={v}
               type="button"
               onClick={() => onSelectView(v)}
-              className={`px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
-                currentView === v
+              className={`px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${currentView === v
                   ? 'bg-cyan-500 text-white shadow-sm font-semibold'
                   : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
-              }`}
+                }`}
             >
               {v === 'lagoon' ? 'Laguna' : v === 'venezia' ? 'Venezia' : v === 'mestre' ? 'Mestre' : v === 'lido' ? 'Lido' : 'Aeroporto VCE'}
             </button>
@@ -201,9 +200,8 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => onSelectPalette('notte')}
-            className={`p-1.5 rounded-md transition-all cursor-pointer ${
-              palette === 'notte' ? 'bg-cyan-500 text-white' : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
-            }`}
+            className={`p-1.5 rounded-md transition-all cursor-pointer ${palette === 'notte' ? 'bg-cyan-500 text-white' : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+              }`}
             title="Palette Notte (Scuro ad alto contrasto)"
           >
             <Moon className="w-3.5 h-3.5" />
@@ -211,9 +209,8 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => onSelectPalette('carta')}
-            className={`p-1.5 rounded-md transition-all cursor-pointer ${
-              palette === 'carta' ? 'bg-amber-600 text-white' : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
-            }`}
+            className={`p-1.5 rounded-md transition-all cursor-pointer ${palette === 'carta' ? 'bg-amber-600 text-white' : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+              }`}
             title="Palette Carta (Mappa storica chiara)"
           >
             <Sun className="w-3.5 h-3.5" />
@@ -221,9 +218,8 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => onSelectPalette('dynamic')}
-            className={`p-1.5 rounded-md transition-all cursor-pointer ${
-              palette === 'dynamic' ? 'bg-purple-600 text-white' : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
-            }`}
+            className={`p-1.5 rounded-md transition-all cursor-pointer ${palette === 'dynamic' ? 'bg-purple-600 text-white' : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+              }`}
             title="Palette Dinamica (Sincronizzata con alba e tramonto di Venezia)"
           >
             <Sparkles className="w-3.5 h-3.5" />

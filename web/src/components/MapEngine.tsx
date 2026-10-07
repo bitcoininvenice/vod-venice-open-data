@@ -357,6 +357,7 @@ interface MapEngineProps {
   showHeatIslands?: boolean;
   heatIslands?: HeatIslandSurfaceTempItem[];
   tideLevel?: number;
+  isDesktopLayerPanelOpen?: boolean;
 }
 
 export const MapEngine: React.FC<MapEngineProps> = ({
@@ -452,7 +453,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   pharmacies = [],
   showHeatIslands = false,
   heatIslands = [],
-  tideLevel = 76
+  tideLevel = 76,
+  isDesktopLayerPanelOpen = true
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -562,17 +564,18 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     const cw = containerWidth || (typeof window !== 'undefined' ? window.innerWidth : 1280);
     const ch = containerHeight || (typeof window !== 'undefined' ? window.innerHeight - 56 : 720);
     const isMobile = cw < 768;
-    const bottomInset = isMobile ? 130 : 0; // Account for floating TimelineControls on mobile
+    const bottomInset = isMobile ? 120 : 0; // Account for floating TimelineControls on mobile
     const chEffective = ch - bottomInset;
 
     let target = { x0: 0, y0: 0, s: 0.02 };
 
     if (preset === 'lagoon') {
-      // Entire Venetian Lagoon (Chioggia to Jesolo, Marghera to Lido)
-      // On mobile portrait: center around 45.4150 (Bacino San Marco / Lido / Giudecca) so Venice and the lagoon channels are centered between Header and TimelineControls
-      const s = isMobile ? Math.min(cw / 19500, chEffective / 22000) : Math.min(cw / 21000, ch / 25000);
-      const centerLon = 12.3380;
-      const centerLat = isMobile ? 45.4150 : 45.4380;
+      // Entire Venetian Lagoon / Central Basin view
+      // Mobile: centered at 45.4265 between compacted header and timeline controls with s = Math.min(cw / 19500, chEffective / 22000)
+      // Desktop: calibrated to desired zoom (Photo 2: s = Math.min(cw / 15000, ch / 18000)), centered at 12.3260 / 45.4400 with space for LayerPanel
+      const s = isMobile ? Math.min(cw / 19500, chEffective / 22000) : Math.min(cw / 15000, ch / 18000);
+      const centerLon = isMobile ? 12.3380 : (isDesktopLayerPanelOpen ? 12.3260 : 12.3380);
+      const centerLat = isMobile ? 45.4265 : 45.4400;
       target = {
         s,
         x0: mx(centerLon) - cw / (2 * s),
@@ -618,7 +621,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
     setTargetCamera(target);
     setCamera(target);
-  }, [mx, my]);
+  }, [mx, my, isDesktopLayerPanelOpen]);
 
   // Handle focused coordinates (e.g. from spatial modal)
   useEffect(() => {

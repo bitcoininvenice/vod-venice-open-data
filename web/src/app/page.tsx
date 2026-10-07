@@ -747,6 +747,7 @@ export default function HomePage() {
           showHeatIslands={showHeatIslands}
           heatIslands={heatIslands}
           tideLevel={tideLevel}
+          isDesktopLayerPanelOpen={isDesktopLayerPanelOpen}
         />
 
         {/* Floating Left: Desktop Layer & Filter Panel or Minimized Toggle */}
