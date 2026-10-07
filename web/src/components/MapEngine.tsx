@@ -571,9 +571,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
     if (preset === 'lagoon') {
       // Entire Venetian Lagoon / Central Basin view
-      // Mobile: centered at 45.4265 between compacted header and timeline controls with s = Math.min(cw / 19500, chEffective / 22000)
+      // Mobile: increased by 1 zoom level (+1 zoom click / 1.35x, s = Math.min(cw / 14400, chEffective / 16300)), centered at 45.4265
       // Desktop: increased by 2 zoom levels (+2 zoom clicks / 2x scale, s = Math.min(cw / 7500, ch / 9000)), centered at 12.3280 / 45.4380 with space for LayerPanel
-      const s = isMobile ? Math.min(cw / 19500, chEffective / 22000) : Math.min(cw / 7500, ch / 9000);
+      const s = isMobile ? Math.min(cw / 14400, chEffective / 16300) : Math.min(cw / 7500, ch / 9000);
       const centerLon = isMobile ? 12.3380 : (isDesktopLayerPanelOpen ? 12.3280 : 12.3380);
       const centerLat = isMobile ? 45.4265 : 45.4380;
       target = {
