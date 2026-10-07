@@ -92,8 +92,8 @@ const LAYER_CATALOG: LayerDocItem[] = [
     portalName: 'dati.venezia.it',
     descriptionIt: 'Censimento dei pontili e approdi di navigazione con dettaglio accessibilità PRM e prossime partenze.',
     descriptionEn: 'Inventory of public boat docks with PRM accessibility details and scheduled departures.',
-    technicalNotesIt: 'Coordinate catastali e identificativi stop_id georeferenziati via API /api/stops; partenze calcolate da orari di turno.',
-    technicalNotesEn: 'Geocoded stop_id coordinates served via /api/stops; upcoming departures computed from official timetable schedules.',
+    technicalNotesIt: 'Rete di 72 approdi e pontili lagunari georeferenziati via API /api/stops (Canal Grande, Giudecca, Cannaregio, Murano, Burano, Torcello, Sant\'Erasmo, Lido, Pellestrina, Chioggia e interscambi); orari ufficiali di linea.',
+    technicalNotesEn: 'Network of 72 georeferenced lagoon docks served via /api/stops (Grand Canal, Giudecca, Cannaregio, Murano, Burano, Torcello, Sant\'Erasmo, Lido, Pellestrina, Chioggia, and hubs); official line timetables.',
     endpointOrFile: '/api/stops'
   },
   {

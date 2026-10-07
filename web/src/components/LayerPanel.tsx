@@ -54,10 +54,12 @@ interface LayerPanelProps {
   onToggleRoutes: () => void;
   showStops: boolean;
   onToggleStops: () => void;
+  stopsCount?: number;
   showVehicles: boolean;
   onToggleVehicles: () => void;
   showCantieri: boolean;
   onToggleCantieri: () => void;
+  cantieriCount?: number;
   showFlights?: boolean;
   onToggleFlights?: () => void;
   flightsCount?: number;
@@ -192,10 +194,12 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   onToggleRoutes,
   showStops,
   onToggleStops,
+  stopsCount = 0,
   showVehicles,
   onToggleVehicles,
   showCantieri,
   onToggleCantieri,
+  cantieriCount = 0,
   showFlights = true,
   onToggleFlights,
   flightsCount = 0,
@@ -571,7 +575,14 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 <Anchor className="w-3.5 h-3.5" />
                 <span>{t('layers.layerStops')}</span>
               </div>
-              {showStops ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              <div className="flex items-center gap-1.5">
+                {stopsCount > 0 && (
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                    {stopsCount}
+                  </span>
+                )}
+                {showStops ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              </div>
             </button>
 
             {/* 4. Ships & Cruise Vessels (Tronchetto / Marittima AIS) */}
@@ -1255,7 +1266,14 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 <Construction className="w-3.5 h-3.5 text-amber-400" />
                 <span>{t('layers.layerCantieri')}</span>
               </div>
-              {showCantieri ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              <div className="flex items-center gap-1.5">
+                {cantieriCount > 0 && (
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold">
+                    {cantieriCount}
+                  </span>
+                )}
+                {showCantieri ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              </div>
             </button>
 
             {/* Fontanelle & Ponti Accessibili */}

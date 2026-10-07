@@ -870,6 +870,7 @@ export default function HomePage() {
               onToggleRoutes={() => setShowRoutes((p) => !p)}
               showStops={showStops}
               onToggleStops={() => setShowStops((p) => !p)}
+              stopsCount={stops.length}
               showVehicles={showVehicles}
               onToggleVehicles={() => setShowVehicles((p) => !p)}
               showAlilaguna={showAlilaguna}
@@ -877,6 +878,7 @@ export default function HomePage() {
               alilagunaBoatsCount={alilagunaBoats.length}
               showCantieri={showCantieri}
               onToggleCantieri={() => setShowCantieri((p) => !p)}
+              cantieriCount={cantieri.length}
               showFlights={showFlights}
               onToggleFlights={() => setShowFlights((p) => !p)}
               flightsCount={flights.length}
@@ -1032,6 +1034,7 @@ export default function HomePage() {
                 onToggleRoutes={() => setShowRoutes((p) => !p)}
                 showStops={showStops}
                 onToggleStops={() => setShowStops((p) => !p)}
+                stopsCount={stops.length}
                 showVehicles={showVehicles}
                 onToggleVehicles={() => setShowVehicles((p) => !p)}
                 showAlilaguna={showAlilaguna}
@@ -1039,6 +1042,7 @@ export default function HomePage() {
                 alilagunaBoatsCount={alilagunaBoats.length}
                 showCantieri={showCantieri}
                 onToggleCantieri={() => setShowCantieri((p) => !p)}
+                cantieriCount={cantieri.length}
                 showFlights={showFlights}
                 onToggleFlights={() => setShowFlights((p) => !p)}
                 flightsCount={flights.length}
