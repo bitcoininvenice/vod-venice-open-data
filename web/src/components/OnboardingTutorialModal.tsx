@@ -10,14 +10,12 @@ import {
   Ship,
   Waves,
   Satellite,
-  MapPin,
   ChevronRight,
   ChevronLeft,
   Sparkles,
-  SlidersHorizontal,
-  Eye,
   EyeOff
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 export type MapPresetType = 'mobility' | 'lagoon' | 'city' | 'satellites' | 'regional' | 'clean' | 'all';
 
@@ -32,6 +30,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
   onClose,
   onSelectPreset
 }) => {
+  const { language, t } = useTranslation();
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [selectedPreset, setSelectedPreset] = useState<MapPresetType>('clean');
 
@@ -50,59 +49,66 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
   const steps = [
     // Step 0: Welcome & Concept
     {
-      badge: 'BENVENUTO',
-      title: 'Benvenuto in Venice Open Data',
-      subtitle: 'Il Digital Twin geospaziale della Laguna di Venezia',
+      badge: t('tutorial.step1Badge'),
+      title: t('tutorial.step1Title'),
+      subtitle: t('tutorial.step1Subtitle'),
       icon: <Compass className="w-6 h-6 text-cyan-400" />,
       content: (
         <div className="flex flex-col gap-3 text-xs leading-relaxed text-[var(--ink-2)]">
           <p>
-            VOD è una piattaforma cartografica ad alte prestazioni che incrocia in tempo reale oltre <strong className="text-[var(--ink)]">40 fonti Open Data certificate</strong> su Venezia centro storico, la Laguna e la Terraferma.
+            {language === 'it' ? (
+              <>VOD è una piattaforma cartografica ad alte prestazioni che incrocia in tempo reale oltre <strong className="text-[var(--ink)]">40 fonti Open Data certificate</strong> su Venezia centro storico, la Laguna e la Terraferma.</>
+            ) : (
+              <>VOD is a high-performance mapping platform that intersects over <strong className="text-[var(--ink)]">40 certified Open Data sources</strong> in real time across Venice historic center, Lagoon, and Mainland.</>
+            )}
           </p>
           <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] font-mono">
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1">
-              <span className="text-cyan-400 font-bold">🌊 Laguna, Maree & Subsidenza</span>
-              <span>CPSM, barriere MOSE, radar InSAR Copernicus EGMS e fondali.</span>
+              <span className="text-cyan-400 font-bold">🌊 {language === 'it' ? 'Laguna, Maree & Subsidenza' : 'Lagoon, Tides & Subsidence'}</span>
+              <span>{language === 'it' ? 'CPSM, barriere MOSE, radar InSAR Copernicus EGMS e fondali.' : 'CPSM, MOSE storm gates, Copernicus EGMS InSAR radar and bathymetry.'}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1">
-              <span className="text-emerald-400 font-bold">🚤 Mobilità, Canali & Treni</span>
-              <span>ACTV, Alilaguna, Barcavelox, franchi ponti, navi AIS e treni RFI.</span>
+              <span className="text-emerald-400 font-bold">🚤 {language === 'it' ? 'Mobilità, Canali & Treni' : 'Mobility, Canals & Rail'}</span>
+              <span>{language === 'it' ? 'ACTV, Alilaguna, Barcavelox, franchi ponti, navi AIS e treni RFI.' : 'ACTV, Alilaguna, Barcavelox, bridge clearance, AIS vessels and trains.'}</span>
             </div>
           </div>
           <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-200">
-            💡 <strong>Mappa pulita di default:</strong> All'inizio troverai la mappa vettoriale pulita: decidi tu quali livelli attivare per un'esplorazione chiara, fluida e senza distrazioni.
+            💡 <strong>{language === 'it' ? 'Mappa pulita di default:' : 'Clean map by default:'}</strong>{' '}
+            {language === 'it'
+              ? "All'inizio troverai la mappa vettoriale pulita: decidi tu quali livelli attivare per un'esplorazione chiara, fluida e senza distrazioni."
+              : 'You will find a clean vector map at start: choose which layers to toggle for a crisp, focused exploration.'}
           </div>
         </div>
       )
     },
     // Step 1: How to use filters & layers
     {
-      badge: 'LIVELLI & FILTRI',
-      title: 'Componi la Mappa a Tuo Piacimento',
-      subtitle: 'Attiva e spegni i dati dal pannello laterale',
+      badge: t('tutorial.step2Badge'),
+      title: t('tutorial.step2Title'),
+      subtitle: t('tutorial.step2Subtitle'),
       icon: <Layers className="w-6 h-6 text-amber-400" />,
       content: (
         <div className="flex flex-col gap-3 text-xs leading-relaxed text-[var(--ink-2)]">
           <p>
-            Usa il pannello <strong className="text-[var(--ink)]">"Livelli & Filtri"</strong> a sinistra per attivare le informazioni d'interesse:
+            {language === 'it' ? 'Usa il pannello laterale per attivare le informazioni d\'interesse:' : 'Use the side panel to toggle the layers of interest:'}
           </p>
           <div className="space-y-2 text-[11px]">
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-start gap-2.5">
               <span className="p-1 rounded-lg bg-sky-500/20 text-sky-400 font-bold">1</span>
               <div>
-                <strong className="text-[var(--ink)]">Mobilità Acquea & Terrestre:</strong> Vaporetti ACTV live, navette Alilaguna, treni RFI su Ponte della Libertà, limiti di velocità canali (Barcavelox), altezze libere ponti vs marea e stazi gondole.
+                {t('tutorial.itemMobility')}
               </div>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-start gap-2.5">
               <span className="p-1 rounded-lg bg-blue-500/20 text-blue-400 font-bold">2</span>
               <div>
-                <strong className="text-[var(--ink)]">Laguna, Meteo & Ambiente:</strong> Barriere MOSE, bollettino METAR Aeronautica Militare (LIPZ), anemometri Scirocco/Bora, passerelle acqua alta, barene Natura 2000 e subsidenza radar InSAR Sentinel-1.
+                {t('tutorial.itemLagoon')}
               </div>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-start gap-2.5">
               <span className="p-1 rounded-lg bg-purple-500/20 text-purple-400 font-bold">3</span>
               <div>
-                <strong className="text-[var(--ink)]">Città, Patrimonio & Salute:</strong> I Nizioleti tradizionali, vere da pozzo storiche, campanili pendenti, idroambulanze SUEM 118, defibrillatori DAE, farmacie e isole di calore satellitari.
+                {t('tutorial.itemCity')}
               </div>
             </div>
           </div>
@@ -111,14 +117,14 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
     },
     // Step 2: Interactive preset selection
     {
-      badge: 'CONFIGURAZIONE RAPIDA',
-      title: 'Scegli la Vista di Partenza',
-      subtitle: 'Puoi partire con la mappa pulita o con un preset tematico',
+      badge: t('tutorial.step3Badge'),
+      title: t('tutorial.step3Title'),
+      subtitle: t('tutorial.step3Subtitle'),
       icon: <Sparkles className="w-6 h-6 text-emerald-400" />,
       content: (
         <div className="flex flex-col gap-2.5 text-xs">
           <p className="text-[var(--ink-2)]">
-            Seleziona una configurazione iniziale con cui iniziare l'esplorazione:
+            {language === 'it' ? 'Seleziona una configurazione iniziale con cui iniziare l\'esplorazione:' : 'Select an initial setup to start exploring:'}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
             {/* Option 1: Clean */}
@@ -133,12 +139,14 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold text-xs text-cyan-400 flex items-center gap-1.5">
-                  <EyeOff className="w-3.5 h-3.5" /> Mappa Pulita (Consigliato)
+                  <EyeOff className="w-3.5 h-3.5" /> {language === 'it' ? 'Mappa Pulita (Consigliato)' : 'Clean Map (Recommended)'}
                 </span>
                 {selectedPreset === 'clean' && <CheckCircle2 className="w-4 h-4 text-cyan-400" />}
               </div>
               <span className="text-[11px] leading-tight text-[var(--ink-2)]">
-                Zero icone. Esplora la geografia della Laguna e accendi manualmente i livelli che preferisci.
+                {language === 'it'
+                  ? 'Zero icone. Esplora la geografia della Laguna e accendi manualmente i livelli che preferisci.'
+                  : 'Zero icons. Explore the lagoon geography and manually toggle the layers you prefer.'}
               </span>
             </button>
 
@@ -154,12 +162,14 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold text-xs text-teal-400 flex items-center gap-1.5">
-                  <Ship className="w-3.5 h-3.5" /> Mobilità & Canali
+                  <Ship className="w-3.5 h-3.5" /> {t('layers.presetMobility')}
                 </span>
                 {selectedPreset === 'mobility' && <CheckCircle2 className="w-4 h-4 text-teal-400" />}
               </div>
               <span className="text-[11px] leading-tight text-[var(--ink-2)]">
-                Vaporetti ACTV in movimento, battelli Alilaguna e navi mercantili/crociere AIS.
+                {language === 'it'
+                  ? 'Vaporetti ACTV in movimento, battelli Alilaguna e navi mercantili/crociere AIS.'
+                  : 'Moving ACTV waterbuses, Alilaguna airport shuttles, and AIS commercial/cruise ships.'}
               </span>
             </button>
 
@@ -175,12 +185,14 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold text-xs text-blue-400 flex items-center gap-1.5">
-                  <Waves className="w-3.5 h-3.5" /> Laguna & Maree
+                  <Waves className="w-3.5 h-3.5" /> {t('layers.presetLagoon')}
                 </span>
                 {selectedPreset === 'lagoon' && <CheckCircle2 className="w-4 h-4 text-blue-400" />}
               </div>
               <span className="text-[11px] leading-tight text-[var(--ink-2)]">
-                Barriere MOSE, passerelle per l'acqua alta, piattaforma CNR e briccole con fanali.
+                {language === 'it'
+                  ? 'Barriere MOSE, passerelle per l\'acqua alta, piattaforma CNR e anemometri.'
+                  : 'MOSE flood barriers, high water walkways, CNR research platform, and wind anemometers.'}
               </span>
             </button>
 
@@ -196,12 +208,14 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold text-xs text-purple-400 flex items-center gap-1.5">
-                  <Satellite className="w-3.5 h-3.5" /> Satelliti & Radar SAR
+                  <Satellite className="w-3.5 h-3.5" /> {t('layers.presetSatellites')}
                 </span>
                 {selectedPreset === 'satellites' && <CheckCircle2 className="w-4 h-4 text-purple-400" />}
               </div>
               <span className="text-[11px] leading-tight text-[var(--ink-2)]">
-                Tracce orbitali Sentinel-1/2, COSMO-SkyMed, scansioni radar e Stazione Spaziale ISS.
+                {language === 'it'
+                  ? 'Tracce orbitali Sentinel-1/2, COSMO-SkyMed, scansioni radar e Stazione Spaziale ISS.'
+                  : 'Orbital ground tracks of Sentinel-1/2, COSMO-SkyMed radar, and International Space Station ISS.'}
               </span>
             </button>
           </div>
@@ -210,31 +224,33 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
     },
     // Step 3: Timeline & Controls
     {
-      badge: 'CONTROLLI TEMPO REALE',
-      title: 'Timeline 24h & Modalità Live',
-      subtitle: 'Viaggia nel tempo o resta sincronizzato al secondo',
+      badge: language === 'it' ? 'CONTROLLI TEMPO REALE' : 'REAL-TIME CONTROLS',
+      title: language === 'it' ? 'Timeline 24h & Modalità Live' : '24h Timeline & Live Mode',
+      subtitle: language === 'it' ? 'Viaggia nel tempo o resta sincronizzato al secondo' : 'Travel in time or stay synchronized to the second',
       icon: <Clock className="w-6 h-6 text-blue-400" />,
       content: (
         <div className="flex flex-col gap-3 text-xs leading-relaxed text-[var(--ink-2)]">
           <p>
-            In basso al centro trovi la barra di controllo temporale:
+            {language === 'it' ? 'In basso al centro trovi la barra di controllo temporale:' : 'At the bottom center you will find the time control bar:'}
           </p>
           <div className="space-y-2 text-[11px]">
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-center justify-between">
-              <span className="text-[var(--ink)]">🔴 <strong>Modalità ORA LIVE:</strong></span>
-              <span className="text-cyan-400 font-mono">1:1 Orario Reale di Venezia</span>
+              <span className="text-[var(--ink)]">🔴 <strong>{language === 'it' ? 'Modalità ORA LIVE:' : 'LIVE NOW Mode:'}</strong></span>
+              <span className="text-cyan-400 font-mono">{language === 'it' ? '1:1 Orario Reale di Venezia' : '1:1 Real Venice Time'}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-center justify-between">
-              <span className="text-[var(--ink)]">⏩ <strong>Scrubber & Velocità:</strong></span>
-              <span className="text-amber-400 font-mono">Fino a 30x orario programmato</span>
+              <span className="text-[var(--ink)]">⏩ <strong>{language === 'it' ? 'Scrubber & Velocità:' : 'Scrubber & Speed:'}</strong></span>
+              <span className="text-amber-400 font-mono">{language === 'it' ? 'Fino a 720x orario programmato' : 'Up to 720x speed'}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-center justify-between">
-              <span className="text-[var(--ink)]">📅 <strong>Calendario Feriale / Festivo:</strong></span>
-              <span className="text-emerald-400 font-mono">Orari GTFS ufficiali ACTV</span>
+              <span className="text-[var(--ink)]">📅 <strong>{language === 'it' ? 'Calendario Feriale / Festivo:' : 'Weekday / Holiday Calendar:'}</strong></span>
+              <span className="text-emerald-400 font-mono">{language === 'it' ? 'Orari GTFS ufficiali ACTV' : 'Official ACTV GTFS schedules'}</span>
             </div>
           </div>
           <p className="text-[11px] text-[var(--ink-3)] pt-1">
-            Puoi riaprire questa guida in qualsiasi momento cliccando sul tasto <strong>❓ Guida</strong> nella barra superiore.
+            {language === 'it'
+              ? 'Puoi riaprire questa guida in qualsiasi momento cliccando sul tasto ❓ Guida nella barra superiore.'
+              : 'You can reopen this guide anytime by clicking the ❓ Guide button in the top navigation bar.'}
           </p>
         </div>
       )
@@ -249,28 +265,26 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
         {/* Top Header */}
         <div className="p-4 sm:p-5 border-b border-[var(--rule)] flex items-center justify-between bg-black/10">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[var(--rule)]/40 border border-[var(--rule)]">
+            <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
               {step.icon}
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[9px] font-mono tracking-wider px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 font-bold uppercase">
-                  {step.badge}
-                </span>
-                <span className="text-[10px] font-mono text-[var(--ink-3)]">
-                  Passo {currentStep + 1} di {steps.length}
-                </span>
-              </div>
-              <h2 className="text-base sm:text-lg font-bold leading-tight mt-0.5">
+              <span className="text-[10px] font-mono tracking-wider font-bold text-cyan-400 uppercase">
+                {step.badge} ({currentStep + 1}/{steps.length})
+              </span>
+              <h3 className="text-base sm:text-lg font-bold text-[var(--ink)] leading-tight">
                 {step.title}
-              </h2>
+              </h3>
+              <p className="text-xs text-[var(--ink-3)] mt-0.5">
+                {step.subtitle}
+              </p>
             </div>
           </div>
           <button
             type="button"
-            onClick={() => handleFinish('clean')}
-            className="p-1.5 rounded-lg hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] cursor-pointer"
-            title="Chiudi tutorial"
+            onClick={onClose}
+            className="p-1 rounded-lg text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--rule)] transition-all cursor-pointer"
+            title={t('common.close')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -293,7 +307,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
                 className={`h-2 rounded-full transition-all cursor-pointer ${
                   currentStep === idx ? 'w-6 bg-cyan-400' : 'w-2 bg-[var(--rule)] hover:bg-[var(--ink-3)]'
                 }`}
-                title={`Vai al passo ${idx + 1}`}
+                title={`${language === 'it' ? 'Vai al passo' : 'Go to step'} ${idx + 1}`}
               />
             ))}
           </div>
@@ -307,7 +321,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
                 className="px-3 py-1.5 rounded-xl border border-[var(--rule)] text-xs font-medium text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--rule)] transition-all cursor-pointer flex items-center gap-1"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
-                <span>Indietro</span>
+                <span>{t('tutorial.back')}</span>
               </button>
             )}
 
@@ -317,7 +331,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
                 onClick={() => setCurrentStep((s) => s + 1)}
                 className="px-4 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-xs shadow-md shadow-cyan-500/20 transition-all cursor-pointer flex items-center gap-1"
               >
-                <span>Avanti</span>
+                <span>{t('tutorial.next')}</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             ) : (
@@ -327,7 +341,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
                 className="px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs shadow-md shadow-emerald-500/20 transition-all cursor-pointer flex items-center gap-1.5"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Inizia Esplorazione</span>
+                <span>{t('tutorial.startExploring')}</span>
               </button>
             )}
           </div>

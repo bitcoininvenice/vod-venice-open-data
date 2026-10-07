@@ -52,6 +52,7 @@ import {
 import { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import { D, LAND, CFG } from '@/lib/simulation-data';
 import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
+import { useTranslation } from '@/lib/i18n';
 
 const MARITIME_CHANNELS = [
   {
@@ -482,6 +483,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   tideLevel = 76,
   isDesktopLayerPanelOpen = true
 }) => {
+  const { t, language } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -4321,7 +4323,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       {/* Floating map hint (desktop only to prevent clutter on mobile) */}
       <div className="hidden md:flex absolute md:top-4 md:left-[21rem] xl:md:left-[22rem] pointer-events-none glass-panel px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-[var(--rule)] text-[11px] sm:text-xs text-[var(--ink-2)] items-center gap-1.5 sm:gap-2 shadow-lg max-w-[calc(100vw-5rem)]">
         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-        <span className="truncate">Tocca o clicca su mezzi, navi, MOSE, aerei, VCE o cantieri per info</span>
+        <span className="truncate">{t('map.clickHint')}</span>
       </div>
 
       {/* On-Map Zoom & Centering Controls (+ / - / Centra): top-3 on mobile to avoid TimelineControls, bottom-28 on desktop */}
@@ -4330,8 +4332,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           type="button"
           onClick={handleZoomIn}
           className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl glass-panel border border-[var(--rule)] hover:border-cyan-400/50 bg-[var(--ground)]/90 text-[var(--ink)] hover:text-cyan-400 flex items-center justify-center transition-all shadow-lg active:scale-95 cursor-pointer"
-          title="Ingrandisci mappa (+)"
-          aria-label="Zoom in"
+          title={t('map.zoomInTitle')}
+          aria-label={t('map.zoomInAria')}
         >
           <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
@@ -4340,8 +4342,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           type="button"
           onClick={handleZoomOut}
           className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl glass-panel border border-[var(--rule)] hover:border-cyan-400/50 bg-[var(--ground)]/90 text-[var(--ink)] hover:text-cyan-400 flex items-center justify-center transition-all shadow-lg active:scale-95 cursor-pointer"
-          title="Riduci mappa (-)"
-          aria-label="Zoom out"
+          title={t('map.zoomOutTitle')}
+          aria-label={t('map.zoomOutAria')}
         >
           <Minus className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
@@ -4350,8 +4352,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           type="button"
           onClick={handleResetCamera}
           className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl glass-panel border border-[var(--rule)] hover:border-cyan-400/50 bg-[var(--ground)]/90 text-[var(--ink-2)] hover:text-cyan-400 flex items-center justify-center transition-all shadow-lg active:scale-95 cursor-pointer mt-0.5"
-          title="Ricentra vista attuale"
-          aria-label="Centra vista"
+          title={t('map.resetViewTitle')}
+          aria-label={t('map.resetViewAria')}
         >
           <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
@@ -4381,7 +4383,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
                 className="px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold text-white shadow-sm"
                 style={{ backgroundColor: selectedVehicle.color }}
               >
-                Linea {selectedVehicle.line}
+                {t('map.vehicleLine')} {selectedVehicle.line}
               </span>
               <span className="text-[11px] font-mono text-cyan-400 font-bold uppercase">
                 {selectedVehicle.category}
@@ -4397,18 +4399,18 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           </div>
 
           <div className="flex flex-col gap-1 text-xs">
-            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Percorso & Direzione</span>
+            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('map.routeDirection')}</span>
             <span className="font-medium text-[var(--ink)] leading-snug">{selectedVehicle.headsign}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[var(--rule)] text-xs">
             <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">Velocità stimata</span>
+              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.estimatedSpeed')}</span>
               <span className="font-mono font-bold text-emerald-400">{selectedVehicle.speedKmh} km/h</span>
             </div>
             <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">Stato Mezzo</span>
-              <span className="font-mono font-bold text-cyan-400">In Navigazione</span>
+              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.vehicleStatus')}</span>
+              <span className="font-mono font-bold text-cyan-400">{t('map.underway')}</span>
             </div>
           </div>
         </div>
@@ -4439,7 +4441,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           </div>
 
           <div className="flex flex-col gap-1 text-xs">
-            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Compagnia & Aeroporto</span>
+            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('map.airlineAirport')}</span>
             <span className="font-medium text-[var(--ink)] leading-snug">
               {selectedFlight.country} · {selectedFlight.airport}
             </span>
@@ -4447,19 +4449,19 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[var(--rule)] text-xs">
             <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">Quota</span>
-              <span className="font-mono font-bold text-sky-400">{selectedFlight.altitudeMeters} metri</span>
+              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.altitude')}</span>
+              <span className="font-mono font-bold text-sky-400">{selectedFlight.altitudeMeters} {t('map.meters')}</span>
             </div>
             <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">Velocità</span>
+              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.speed')}</span>
               <span className="font-mono font-bold text-emerald-400">{selectedFlight.speedKmh} km/h</span>
             </div>
           </div>
 
           <div className="flex items-center justify-between pt-1 border-t border-[var(--rule)] text-[11px] font-mono text-[var(--ink-2)]">
-            <span>Rotta: {selectedFlight.trackDegrees}°</span>
+            <span>{t('map.track')}: {selectedFlight.trackDegrees}°</span>
             <span className="text-amber-400 font-semibold">
-              Dist. VCE: {(Math.hypot(selectedFlight.lon - 12.3519, selectedFlight.lat - 45.5053) * 111).toFixed(1)} km
+              {t('map.vceDist')}: {(Math.hypot(selectedFlight.lon - 12.3519, selectedFlight.lat - 45.5053) * 111).toFixed(1)} km
             </span>
           </div>
 
@@ -4472,7 +4474,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               }}
               className="w-full mt-1 py-1.5 px-3 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 text-xs font-mono font-medium border border-sky-500/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
             >
-              <Plane className="w-3.5 h-3.5" /> Dettagli Aeroporto Marco Polo (VCE)
+              <Plane className="w-3.5 h-3.5" /> {t('map.airportDetailsButton')}
             </button>
           )}
         </div>
@@ -4503,7 +4505,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           </div>
 
           <div className="flex flex-col gap-1 text-xs">
-            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Ormeggio & Canale Navigabile</span>
+            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('map.berthChannel')}</span>
             <span className="font-semibold text-[var(--ink)] leading-snug">{selectedShipOnMap.berth}</span>
             <span className="text-[11px] text-[var(--ink-2)] font-mono">{selectedShipOnMap.destination}</span>
           </div>
@@ -4516,24 +4518,24 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           }`}>
             <span>
               {selectedShipOnMap.isRestrictedLagoonRoute
-                ? '⚠️ Deviazione Marghera (>25.000 GT · D.L. 103/2021)'
-                : '🛡️ Autorizzata al Tronchetto (<25.000 GT)'}
+                ? t('map.restrictedNotice')
+                : t('map.authorizedNotice')}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[var(--rule)] text-xs">
             <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">Velocità</span>
-              <span className="font-mono font-bold text-emerald-400">{selectedShipOnMap.speedKnots} nodi</span>
+              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.speed')}</span>
+              <span className="font-mono font-bold text-emerald-400">{selectedShipOnMap.speedKnots} {t('common.knots')}</span>
             </div>
             <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">Stazza Lorda</span>
+              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.grossTonnage')}</span>
               <span className="font-mono font-bold text-indigo-300">{selectedShipOnMap.grossTonnage.toLocaleString()} GT</span>
             </div>
           </div>
 
           <div className="flex items-center justify-between pt-1 border-t border-[var(--rule)] text-[11px] font-mono text-[var(--ink-2)]">
-            <span>Rotta: {selectedShipOnMap.heading}° · Pesc: {selectedShipOnMap.draughtMeters}m</span>
+            <span>{t('map.track')}: {selectedShipOnMap.heading}° · {t('map.draught')}: {selectedShipOnMap.draughtMeters}m</span>
             <span className="text-amber-400 font-semibold">{selectedShipOnMap.flag}</span>
           </div>
 
@@ -4547,7 +4549,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               }}
               className="w-full mt-1 py-1.5 px-3 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-mono font-medium border border-indigo-500/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
             >
-              <Ship className="w-3.5 h-3.5" /> Dettagli Completi & Telemetria AIS
+              <Ship className="w-3.5 h-3.5" /> {t('map.shipDetailsButton')}
             </button>
           )}
         </div>
@@ -4581,28 +4583,28 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           </div>
 
           <div className="flex flex-col gap-1 text-xs">
-            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Destinazione & Scalo Successivo</span>
+            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('map.destinationNextStop')}</span>
             <span className="font-semibold text-[var(--ink)] leading-snug">
-              Direzione: {selectedAlilagunaBoat.destination}
+              {t('map.directionLabel')}: {selectedAlilagunaBoat.destination}
             </span>
             <span className="text-[11px] text-blue-400 font-mono">
-              Prossima fermata: {selectedAlilagunaBoat.nextStop}
+              {t('map.nextStopLabel')}: {selectedAlilagunaBoat.nextStop}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[var(--rule)] text-xs">
             <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">Velocità</span>
+              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.speed')}</span>
               <span className="font-mono font-bold text-emerald-400">{selectedAlilagunaBoat.speedKmh} km/h</span>
             </div>
             <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">Passeggeri a bordo</span>
+              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.passengersOnBoard')}</span>
               <span className="font-mono font-bold text-cyan-400">{selectedAlilagunaBoat.passengersOnBoard} pax</span>
             </div>
           </div>
 
           <div className="flex items-center justify-between pt-1 border-t border-[var(--rule)] text-[11px] font-mono text-[var(--ink-2)]">
-            <span>Rotta: {selectedAlilagunaBoat.heading}°</span>
+            <span>{t('map.track')}: {selectedAlilagunaBoat.heading}°</span>
             <span className="text-amber-400 font-semibold">Feed: f-u20f-alilagunaspa</span>
           </div>
 
@@ -4615,7 +4617,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               }}
               className="w-full mt-1 py-1.5 px-3 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 text-xs font-mono font-medium border border-blue-500/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
             >
-              <Ship className="w-3.5 h-3.5" /> Dettagli Linee & GTFS Transitland
+              <Ship className="w-3.5 h-3.5" /> {t('map.alilagunaDetailsButton')}
             </button>
           )}
         </div>
@@ -4646,7 +4648,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           </div>
 
           <div className="flex flex-col gap-1 text-xs">
-            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Missione & Telerilevamento</span>
+            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('map.missionRemoteSensing')}</span>
             <span className="font-bold text-[var(--ink)] leading-snug">
               {selectedSatellite.name}
             </span>
@@ -4657,20 +4659,20 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[var(--rule)] text-xs">
             <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">Quota & Velocità</span>
+              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.altitudeSpeed')}</span>
               <span className="font-mono font-bold text-fuchsia-400">{selectedSatellite.altitudeKm} km</span>
               <span className="text-[10px] text-[var(--ink-2)] font-mono">{selectedSatellite.speedKmh.toLocaleString()} km/h</span>
             </div>
             <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">Sensore & Risoluzione</span>
+              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.sensorResolution')}</span>
               <span className="font-mono font-bold text-cyan-400">{selectedSatellite.resolution}</span>
-              <span className="text-[10px] text-[var(--ink-2)] font-mono">Swath {selectedSatellite.swathWidthKm} km</span>
+              <span className="text-[10px] text-[var(--ink-2)] font-mono">{t('map.swath')} {selectedSatellite.swathWidthKm} km</span>
             </div>
           </div>
 
           <div className="flex items-center justify-between pt-1 border-t border-[var(--rule)] text-[11px] font-mono text-[var(--ink-2)]">
-            <span>Passaggio: {selectedSatellite.nextPassVenice.split('(')[0].trim()}</span>
-            <span className="text-emerald-400 font-semibold">Elev. {selectedSatellite.maxElevationDeg}°</span>
+            <span>{t('map.satellitePass')}: {selectedSatellite.nextPassVenice.split('(')[0].trim()}</span>
+            <span className="text-emerald-400 font-semibold">{t('map.satelliteElevation')} {selectedSatellite.maxElevationDeg}°</span>
           </div>
 
           <button
@@ -4682,7 +4684,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             }}
             className="w-full mt-1 py-1.5 px-3 rounded-xl bg-fuchsia-500/20 hover:bg-fuchsia-500/30 text-fuchsia-300 text-xs font-mono font-medium border border-fuchsia-500/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
           >
-            <Satellite className="w-3.5 h-3.5" /> Scheda Completa & Dati ESA/ASI
+            <Satellite className="w-3.5 h-3.5" /> {t('map.satelliteDetailsButton')}
           </button>
         </div>
       )}

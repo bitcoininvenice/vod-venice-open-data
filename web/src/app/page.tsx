@@ -95,8 +95,10 @@ import {
 } from '@/lib/open-data-catalog';
 import { MOCK_CANTIERI, MOCK_STOPS } from '@/lib/db';
 import { NOTTE, CARTA, getDynamicPalette } from '@/lib/solar';
+import { useTranslation } from '@/lib/i18n';
 
 export default function HomePage() {
+  const { t } = useTranslation();
   // Timeline and simulation state - DEFAULT TO "ORA LIVE" (Current wall-clock time in Venice, 1:1 speed)
   const [currentTimeSeconds, setCurrentTimeSeconds] = useState<number>(() => {
     const now = new Date();
@@ -998,10 +1000,10 @@ export default function HomePage() {
               type="button"
               onClick={() => setIsDesktopLayerPanelOpen(true)}
               className="glass-panel px-3.5 py-2 rounded-2xl border border-cyan-500/30 text-xs font-mono text-[var(--ink)] flex items-center gap-2 shadow-2xl hover:border-cyan-400 hover:bg-cyan-500/10 transition-all cursor-pointer group backdrop-blur-md active:scale-95"
-              title="Apri Livelli & Filtri"
+              title={t('layers.openPanelTitle')}
             >
               <Layers className="w-4 h-4 text-cyan-400 group-hover:rotate-12 transition-transform" />
-              <span className="font-semibold">Livelli & Filtri</span>
+              <span className="font-semibold">{t('layers.panelTitle')}</span>
               <span className="px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-mono">45</span>
             </button>
           </div>

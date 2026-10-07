@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Play, Pause, Calendar, Clock, Waves, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
+import { Play, Pause, Calendar, Clock, Waves, ChevronDown, ChevronUp } from 'lucide-react';
 import { DayType } from '@/lib/types';
 import { formatTime } from '@/lib/solar';
+import { useTranslation } from '@/lib/i18n';
 
 interface TimelineControlsProps {
   currentTimeSeconds: number;
@@ -36,8 +37,23 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
   onSyncLiveTime,
   isLiveSynced
 }) => {
+  const { language, t } = useTranslation();
   const [isExpandedMobile, setIsExpandedMobile] = useState<boolean>(false);
   const sliderValue = Math.floor(currentTimeSeconds / 60);
+
+  const dayLabels: Record<DayType, string> = {
+    weekday: t('timeline.weekday'),
+    saturday: t('timeline.saturday'),
+    sunday: t('timeline.sunday')
+  };
+
+  const speedOptions = [
+    { val: 1, label: language === 'it' ? '1× Reale' : '1× Real' },
+    { val: 5, label: language === 'it' ? '5× Naturale' : '5× Natural' },
+    { val: 20, label: language === 'it' ? '20× Fluido' : '20× Smooth' },
+    { val: 180, label: '180×' },
+    { val: 720, label: '720×' },
+  ];
 
   return (
     <div className="w-full glass-panel rounded-2xl p-3 sm:p-4 shadow-2xl flex flex-col gap-2.5 sm:gap-3 transition-all duration-200">
@@ -61,10 +77,10 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
                   ? 'bg-rose-500/20 text-rose-400 border-rose-500/50 shadow-sm'
                   : 'bg-[var(--rule)]/60 text-[var(--ink-2)] border-[var(--rule)] hover:text-[var(--ink)]'
               }`}
-              title="Aggancia all'orario esatto attuale di Venezia"
+              title={language === 'it' ? 'Aggancia all\'orario esatto attuale di Venezia' : 'Lock to exact current Venice time'}
             >
               <span className={`w-2 h-2 rounded-full ${isLiveSynced ? 'bg-rose-500 animate-ping' : 'bg-[var(--ink-3)]'}`} />
-              <span className="text-[11px] sm:text-xs">ORA LIVE</span>
+              <span className="text-[11px] sm:text-xs">{t('timeline.liveNow')}</span>
             </button>
           )}
 
@@ -75,7 +91,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
               <span className="font-mono font-bold text-sm sm:text-base text-[var(--ink)] tabular">
                 {totalActiveVehicles}
               </span>{' '}
-              <span className="text-[var(--ink-2)]">mezzi attivi</span>
+              <span className="text-[var(--ink-2)]">{language === 'it' ? 'mezzi attivi' : 'active vessels'}</span>
             </div>
           </div>
         </div>
@@ -95,12 +111,12 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
             {isPlaying ? (
               <>
                 <Pause className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Pausa</span>
+                <span className="hidden sm:inline">{language === 'it' ? 'Pausa' : 'Pause'}</span>
               </>
             ) : (
               <>
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span className="hidden sm:inline">Avvia</span>
+                <span className="hidden sm:inline">{language === 'it' ? 'Avvia' : 'Play'}</span>
               </>
             )}
           </button>
@@ -110,7 +126,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
             type="button"
             onClick={() => setIsExpandedMobile((p) => !p)}
             className="flex md:hidden items-center gap-1 px-2 py-1.5 rounded-xl bg-[var(--rule)]/70 text-[var(--ink-2)] hover:text-[var(--ink)] border border-[var(--rule)] text-xs font-mono cursor-pointer"
-            title="Mostra opzioni velocità e calendario"
+            title={language === 'it' ? 'Mostra opzioni velocità e calendario' : 'Show speed and calendar options'}
           >
             <span>{speed}×</span>
             {isExpandedMobile ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -130,7 +146,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
                     : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
                 }`}
               >
-                {d === 'weekday' ? 'Feriale' : d === 'saturday' ? 'Pre-festivo' : 'Festivo'}
+                {dayLabels[d]}
               </button>
             ))}
           </div>
@@ -148,7 +164,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
             value={sliderValue}
             onChange={(e) => onTimeChange(Number(e.target.value) * 60)}
             className="w-full h-2 rounded-lg cursor-ew-resize appearance-none"
-            aria-label="Orario del giorno"
+            aria-label={language === 'it' ? 'Orario del giorno' : 'Time of day'}
           />
         </div>
 
@@ -172,7 +188,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
       >
         {/* Mobile Day Selector (when expanded) */}
         <div className="flex md:hidden items-center justify-between w-full gap-2">
-          <span className="text-[11px] text-[var(--ink-3)] font-mono">Giorno:</span>
+          <span className="text-[11px] text-[var(--ink-3)] font-mono">{language === 'it' ? 'Giorno:' : 'Day:'}</span>
           <div className="flex items-center gap-1 bg-[var(--rule)]/60 p-0.5 rounded-lg border border-[var(--rule)] flex-1 justify-end">
             {(['weekday', 'saturday', 'sunday'] as DayType[]).map((d) => (
               <button
@@ -185,7 +201,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
                     : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
                 }`}
               >
-                {d === 'weekday' ? 'Feriale' : d === 'saturday' ? 'Pre-fest.' : 'Festivo'}
+                {dayLabels[d]}
               </button>
             ))}
           </div>
@@ -195,15 +211,9 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
         <div className="flex items-center justify-between w-full md:w-auto gap-2">
           <div className="flex items-center gap-1 bg-[var(--rule)]/60 p-0.5 rounded-lg border border-[var(--rule)] w-full md:w-auto justify-between md:justify-start">
             <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono px-1.5 hidden sm:inline">
-              Velocità
+              {t('timeline.speed')}
             </span>
-            {[
-              { val: 1, label: '1× Reale' },
-              { val: 5, label: '5× Naturale' },
-              { val: 20, label: '20× Fluido' },
-              { val: 180, label: '180×' },
-              { val: 720, label: '720×' },
-            ].map((s) => (
+            {speedOptions.map((s) => (
               <button
                 key={s.val}
                 type="button"
@@ -223,10 +233,13 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
         {/* Fleet & Peak summary */}
         <div className="flex items-center justify-between w-full md:w-auto text-[11px] sm:text-xs text-[var(--ink-2)] font-mono">
           <span className="md:hidden">
-            Mezzi attivi: <strong className="text-emerald-400">{totalActiveVehicles}</strong>
+            {language === 'it' ? 'Mezzi attivi:' : 'Active vessels:'}{' '}
+            <strong className="text-emerald-400">{totalActiveVehicles}</strong>
           </span>
           <span>
-            Picco: <span className="text-cyan-400 font-bold">{peakCount}</span> mezzi alle{' '}
+            {language === 'it' ? 'Picco:' : 'Peak:'}{' '}
+            <span className="text-cyan-400 font-bold">{peakCount}</span>{' '}
+            {language === 'it' ? 'mezzi alle' : 'vessels at'}{' '}
             <span className="text-[var(--ink)] font-bold">{peakTime}</span>
           </span>
         </div>

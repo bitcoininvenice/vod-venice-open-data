@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { X, Waves, ShieldCheck, AlertCircle, Clock, Droplets, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { X, Waves, ShieldCheck, Droplets, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { MoseGateItem } from '@/lib/types';
 import { CpsmStationItem } from '@/app/api/tide/route';
+import { useTranslation } from '@/lib/i18n';
 
 interface MoseDetailModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
   stations,
   tideLevel
 }) => {
+  const { language, t } = useTranslation();
   if (!isOpen) return null;
 
   return (
@@ -37,11 +39,11 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
                   CPSM Centro Maree · MOSE
                 </span>
                 <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE TELEMETRIA
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE TELEMETRY
                 </span>
               </div>
               <h3 className="text-lg font-bold text-[var(--ink)] leading-snug">
-                Sistema di Difesa MOSE & Rete Mareografica Lagunare
+                {t('moseModal.title')}
               </h3>
             </div>
           </div>
@@ -49,6 +51,7 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
             type="button"
             onClick={onClose}
             className="p-1 rounded-lg hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] cursor-pointer"
+            title={t('common.close')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -60,30 +63,36 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
             <span className="text-[10px] text-[var(--ink-3)] font-mono">Punta della Salute (ZMPS)</span>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-bold font-mono text-[var(--ink)]">+{tideLevel} cm</span>
-              <span className="text-xs text-blue-400 font-semibold">(Normale)</span>
+              <span className="text-xs text-blue-400 font-semibold">({language === 'it' ? 'Normale' : 'Normal'})</span>
             </div>
-            <span className="text-[10px] text-emerald-400">Laguna in sicurezza</span>
+            <span className="text-[10px] text-emerald-400">{language === 'it' ? 'Laguna in sicurezza' : 'Lagoon safe'}</span>
           </div>
 
           <div className="bg-[var(--rule)]/40 p-3 rounded-xl border border-[var(--rule)] flex flex-col justify-between">
-            <span className="text-[10px] text-[var(--ink-3)] font-mono">Stato Barriere MOSE</span>
+            <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('moseModal.barrierStatus')}</span>
             <span className="text-base font-bold font-mono text-emerald-400 flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4" /> 78/78 ABBASSATE
+              <ShieldCheck className="w-4 h-4" /> 78/78 {t('moseModal.lowered')}
             </span>
-            <span className="text-[10px] text-[var(--ink-3)]">Attivazione sopra +110 cm</span>
+            <span className="text-[10px] text-[var(--ink-3)]">
+              {language === 'it' ? 'Attivazione sopra +110 cm' : 'Activation above +110 cm'}
+            </span>
           </div>
 
           <div className="bg-[var(--rule)]/40 p-3 rounded-xl border border-[var(--rule)] flex flex-col justify-between">
-            <span className="text-[10px] text-[var(--ink-3)] font-mono">Allagamento Pedonale</span>
+            <span className="text-[10px] text-[var(--ink-3)] font-mono">
+              {language === 'it' ? 'Allagamento Pedonale' : 'Pedestrian Flooding'}
+            </span>
             <span className="text-base font-bold font-mono text-cyan-400">~1.2% (Solo San Marco)</span>
-            <span className="text-[10px] text-[var(--ink-3)]">Passerelle non necessarie</span>
+            <span className="text-[10px] text-[var(--ink-3)]">
+              {language === 'it' ? 'Passerelle non necessarie' : 'Walkways not required'}
+            </span>
           </div>
         </div>
 
         {/* 4 MOSE Gate Inlets */}
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" /> Le 3 Bocche di Porto e i 4 Sbarramenti MOSE
+            <ShieldCheck className="w-4 h-4 text-emerald-400" /> {t('moseModal.boccheProtected')}
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             {moseGates.map((gate) => (
@@ -96,8 +105,12 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)]">{gate.channel}</span>
                 <div className="flex justify-between items-center text-[10px] font-mono pt-1 border-t border-[var(--rule)]">
-                  <span className="text-[var(--ink-3)]">{gate.barriersCount} paratoie a scomparsa</span>
-                  <span className="text-cyan-400">Mare: +{gate.tideSeaCm}cm</span>
+                  <span className="text-[var(--ink-3)]">
+                    {gate.barriersCount} {language === 'it' ? 'paratoie a scomparsa' : 'retractable barrier gates'}
+                  </span>
+                  <span className="text-cyan-400">
+                    {language === 'it' ? 'Mare' : 'Sea'}: +{gate.tideSeaCm}cm
+                  </span>
                 </div>
               </div>
             ))}
@@ -107,7 +120,7 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
         {/* CPSM Tide Monitoring Stations */}
         <div className="flex flex-col gap-2 pt-1 border-t border-[var(--rule)]">
           <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
-            <Droplets className="w-4 h-4 text-blue-400" /> Stazioni Rete Mareografica CPSM
+            <Droplets className="w-4 h-4 text-blue-400" /> {language === 'it' ? 'Stazioni Rete Mareografica CPSM' : 'CPSM Tide Gauge Network Stations'}
           </span>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             {stations.map((s) => (
@@ -116,7 +129,7 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
                 <span className="text-base font-bold font-mono text-[var(--ink)]">+{s.levelCm} cm</span>
                 <span className="text-[10px] font-mono text-cyan-400 flex items-center gap-0.5">
                   {s.trend === 'IN_AUMENTO' ? <ArrowUpRight className="w-3 h-3 text-amber-400" /> : <ArrowDownRight className="w-3 h-3 text-blue-400" />}
-                  {s.trend}
+                  {s.trend === 'IN_AUMENTO' ? (language === 'it' ? 'IN CRESCITA' : 'RISING') : (language === 'it' ? 'IN CALO' : 'FALLING')}
                 </span>
               </div>
             ))}
@@ -125,23 +138,25 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
 
         {/* Flooding Scale Reference */}
         <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20 text-xs flex flex-col gap-1">
-          <span className="font-semibold text-blue-400 text-[11px]">Scala Impatto Marea su Viabilità Pedonale (Centro Storico):</span>
+          <span className="font-semibold text-blue-400 text-[11px]">
+            {language === 'it' ? 'Scala Impatto Marea su Viabilità Pedonale (Centro Storico):' : 'Tide Pedestrian Impact Scale (Historic Center):'}
+          </span>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[10px] text-[var(--ink-2)] pt-1">
-            <div>• <strong>+80 cm</strong>: San Marco comincia a bagnarsi (~2%)</div>
-            <div>• <strong>+100 cm</strong>: Piazza allagata, passerelle montate (~5%)</div>
-            <div>• <strong>+110 cm</strong>: 12% allagata (attivazione MOSE)</div>
+            <div>• <strong>+80 cm</strong>: {language === 'it' ? 'San Marco comincia a bagnarsi (~2%)' : 'St. Mark Square begins flooding (~2%)'}</div>
+            <div>• <strong>+100 cm</strong>: {language === 'it' ? 'Piazza allagata, passerelle montate (~5%)' : 'Square submerged, walkways mounted (~5%)'}</div>
+            <div>• <strong>+110 cm</strong>: {language === 'it' ? '12% allagata (attivazione MOSE)' : '12% submerged (MOSE activation)'}</div>
           </div>
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-2 border-t border-[var(--rule)] text-xs text-[var(--ink-3)]">
-          <span>Fonte: Centro Previsioni e Segnalazioni Maree Comune di Venezia</span>
+          <span>{t('moseModal.officialSource')}</span>
           <button
             type="button"
             onClick={onClose}
             className="px-4 py-1.5 rounded-xl bg-blue-500 text-white font-medium hover:bg-blue-400 transition-all cursor-pointer shadow-lg shadow-blue-500/20"
           >
-            Chiudi Scheda
+            {t('common.close')}
           </button>
         </div>
       </div>

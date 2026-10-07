@@ -61,6 +61,7 @@ import {
   LagoonTributaryRiverItem
 } from '@/lib/types';
 import { Droplet, Building2, Bike, Flower2, GitBranch } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 export type VeniceFeatureSelected =
   | { type: 'passerella'; data: PasserellaItem }
@@ -104,6 +105,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
   onClose,
   currentTideLevelCm = 76
 }) => {
+  const { language, t } = useTranslation();
   if (!feature) return null;
 
   return (
@@ -209,42 +211,42 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'urbanTree' && `${feature.data.commonName} (${feature.data.species})`}
                 {feature.type === 'evCharging' && feature.data.name}
                 {feature.type === 'wifiHotspot' && feature.data.name}
-                {feature.type === 'speedLimit' && `Limite Velocità: ${feature.data.channelName}`}
+                {feature.type === 'speedLimit' && `${language === 'it' ? 'Limite Velocità' : 'Speed Limit'}: ${feature.data.channelName}`}
                 {feature.type === 'bridgeClearance' && `${feature.data.bridgeName} (${feature.data.rioName})`}
                 {feature.type === 'gondolaStation' && feature.data.name}
                 {feature.type === 'publicDock' && feature.data.name}
-                {feature.type === 'subsidence' && `Subsidenza InSAR: ${feature.data.location}`}
+                {feature.type === 'subsidence' && `${language === 'it' ? 'Subsidenza InSAR' : 'InSAR Subsidence'}: ${feature.data.location}`}
                 {feature.type === 'lagoonMorphology' && feature.data.name}
-                {feature.type === 'marineWind' && `Stazione Meteomarina: ${feature.data.stationName}`}
+                {feature.type === 'marineWind' && `${language === 'it' ? 'Stazione Meteomarina' : 'Marine Weather Station'}: ${feature.data.stationName}`}
                 {feature.type === 'trainLive' && feature.data.trainNumber}
-                {feature.type === 'wasteBoat' && `Battello Veritas: ${feature.data.boatCode}`}
+                {feature.type === 'wasteBoat' && `${language === 'it' ? 'Battello Veritas' : 'Veritas Waste Boat'}: ${feature.data.boatCode}`}
                 {feature.type === 'nizioleto' && feature.data.nizioletoText}
                 {feature.type === 'veniceWell' && feature.data.name}
                 {feature.type === 'bellTower' && feature.data.name}
                 {feature.type === 'fortressIsland' && feature.data.name}
                 {feature.type === 'emergencyDock' && feature.data.name}
-                {feature.type === 'publicDae' && `Defibrillatore DAE: ${feature.data.code}`}
+                {feature.type === 'publicDae' && `${language === 'it' ? 'Defibrillatore DAE' : 'AED Defibrillator'}: ${feature.data.code}`}
                 {feature.type === 'pharmacy' && feature.data.name}
-                {feature.type === 'heatIsland' && `Isola di Calore: ${feature.data.zoneName}`}
-                {feature.type === 'lagoonWater' && `Acque ARPAV: ${feature.data.stationName}`}
-                {feature.type === 'accommodation' && `Pressione Ricettiva: ${feature.data.zoneName}`}
+                {feature.type === 'heatIsland' && `${language === 'it' ? 'Isola di Calore' : 'Heat Island'}: ${feature.data.zoneName}`}
+                {feature.type === 'lagoonWater' && `${language === 'it' ? 'Acque ARPAV' : 'ARPAV Water Quality'}: ${feature.data.stationName}`}
+                {feature.type === 'accommodation' && `${language === 'it' ? 'Pressione Ricettiva' : 'Tourism Accommodation Density'}: ${feature.data.zoneName}`}
                 {feature.type === 'bikeRoute' && feature.data.routeName}
                 {feature.type === 'pollenStation' && feature.data.stationName}
-                {feature.type === 'tributaryRiver' && `Fiume Scolante: ${feature.data.riverName}`}
+                {feature.type === 'tributaryRiver' && `${language === 'it' ? 'Fiume Scolante' : 'Tributary River'}: ${feature.data.riverName}`}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
                 {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
-                {feature.type === 'bridgeClearance' && `Franco zero marea: ${feature.data.clearanceCmZeroMarea} cm`}
+                {feature.type === 'bridgeClearance' && `${language === 'it' ? 'Franco zero marea' : 'Air draft at zero tide'}: ${feature.data.clearanceCmZeroMarea} cm`}
                 {feature.type === 'subsidence' && `${feature.data.satellite} · Trend: ${feature.data.trend}`}
                 {feature.type === 'trainLive' && `${feature.data.origin} ➔ ${feature.data.destination}`}
-                {feature.type === 'nizioleto' && `Sestiere ${feature.data.sestiere} · Civico ${feature.data.civicNumber}`}
+                {feature.type === 'nizioleto' && `${language === 'it' ? 'Sestiere' : 'District'} ${feature.data.sestiere} · ${language === 'it' ? 'Civico' : 'Street No.'} ${feature.data.civicNumber}`}
                 {feature.type === 'emergencyDock' && `SUEM 118 · ${feature.data.hospital}`}
-                {feature.type === 'heatIsland' && `Temp. Superficiale: ${feature.data.surfaceTempCelsius}°C`}
-                {feature.type === 'lagoonWater' && `Bacino ${feature.data.subBasin.replace(/_/g, ' ')} · Stato Trofico: ${feature.data.trophicState}`}
-                {feature.type === 'accommodation' && `Densità: ${feature.data.densityCategory} · ${feature.data.bedsPerResidentRatio} posti letto per residente`}
-                {feature.type === 'bikeRoute' && `Lunghezza: ${feature.data.lengthKm} km · ${feature.data.section}`}
-                {feature.type === 'pollenStation' && `Rischio Allergico: ${feature.data.overallAllergyRisk} · ${feature.data.locationName}`}
-                {feature.type === 'tributaryRiver' && `Portata: ${feature.data.avgFlowM3s} m³/s · ${feature.data.mouthZone}`}
+                {feature.type === 'heatIsland' && `${language === 'it' ? 'Temp. Superficiale' : 'Surface Temp'}: ${feature.data.surfaceTempCelsius}°C`}
+                {feature.type === 'lagoonWater' && `${language === 'it' ? 'Bacino' : 'Basin'} ${feature.data.subBasin.replace(/_/g, ' ')} · ${language === 'it' ? 'Stato Trofico' : 'Trophic State'}: ${feature.data.trophicState}`}
+                {feature.type === 'accommodation' && `${language === 'it' ? 'Densità' : 'Density'}: ${feature.data.densityCategory} · ${feature.data.bedsPerResidentRatio} ${language === 'it' ? 'posti letto per residente' : 'beds per resident'}`}
+                {feature.type === 'bikeRoute' && `${language === 'it' ? 'Lunghezza' : 'Length'}: ${feature.data.lengthKm} km · ${feature.data.section}`}
+                {feature.type === 'pollenStation' && `${language === 'it' ? 'Rischio Allergico' : 'Allergy Risk'}: ${feature.data.overallAllergyRisk} · ${feature.data.locationName}`}
+                {feature.type === 'tributaryRiver' && `${language === 'it' ? 'Portata' : 'Flow Rate'}: ${feature.data.avgFlowM3s} m³/s · ${feature.data.mouthZone}`}
               </span>
             </div>
           </div>
@@ -264,19 +266,21 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Velocità Massima</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Velocità Massima' : 'Maximum Speed'}</span>
                   <p className="text-2xl font-bold font-mono text-amber-400">{feature.data.maxSpeedKmh} km/h</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Controllo Elettronico</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Controllo Elettronico' : 'Electronic Enforcement'}</span>
                   <p className="text-base font-bold font-mono text-cyan-400 mt-1">
-                    {feature.data.isBarcavelox ? 'BARCAVELOX ATTIVO' : 'PATTUGLIAMENTO POLIZIA'}
+                    {feature.data.isBarcavelox 
+                      ? (language === 'it' ? 'BARCAVELOX ATTIVO' : 'BARCAVELOX RADAR ACTIVE') 
+                      : (language === 'it' ? 'PATTUGLIAMENTO POLIZIA' : 'POLICE PATROL')}
                   </p>
                 </div>
               </div>
               <p className="text-[var(--ink)]">{feature.data.description}</p>
               <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] text-[11px] text-[var(--ink-2)]">
-                <b>Regolamento:</b> {feature.data.ordinanza}
+                <b>{language === 'it' ? 'Regolamento:' : 'Regulation:'}</b> {feature.data.ordinanza}
               </div>
             </>
           )}
@@ -291,25 +295,31 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                   <>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                        <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Franco Attuale (Marea {currentTideLevelCm}cm)</span>
+                        <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">
+                          {language === 'it' ? `Franco Attuale (Marea ${currentTideLevelCm}cm)` : `Current Clearance (Tide ${currentTideLevelCm}cm)`}
+                        </span>
                         <p className={`text-2xl font-bold font-mono ${isNavigable ? 'text-emerald-400' : 'text-rose-400'}`}>
                           {liveClearance} cm
                         </p>
                       </div>
                       <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                        <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Marea Max Transito</span>
+                        <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Marea Max Transito' : 'Max Navigable Tide'}</span>
                         <p className="text-2xl font-bold font-mono text-cyan-400">+{feature.data.minNavigableTideCm} cm</p>
                       </div>
                     </div>
                     <div className={`p-3 rounded-xl border flex items-center justify-between ${
                       isNavigable ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
                     }`}>
-                      <span className="font-semibold">Transito Imbarcazioni:</span>
-                      <span className="font-mono font-bold">{isNavigable ? 'TRANSITABILE ORA' : 'ATTENZIONE: ALTEZZA CRITICA'}</span>
+                      <span className="font-semibold">{language === 'it' ? 'Transito Imbarcazioni:' : 'Vessel Clearance:'}</span>
+                      <span className="font-mono font-bold">
+                        {isNavigable 
+                          ? (language === 'it' ? 'TRANSITABILE ORA' : 'NAVIGABLE NOW') 
+                          : (language === 'it' ? 'ATTENZIONE: ALTEZZA CRITICA' : 'WARNING: CRITICAL CLEARANCE')}
+                      </span>
                     </div>
                     <p className="text-[var(--ink-2)]">{feature.data.historicalNotes}</p>
                     <div className="text-[11px] text-[var(--ink-3)]">
-                      Gradini ponte: <b>{feature.data.stepsCount}</b> · Rampa accessibile: <b>{feature.data.isAccessibleRamp ? 'Sì' : 'No'}</b>
+                      {language === 'it' ? 'Gradini ponte:' : 'Bridge steps:'} <b>{feature.data.stepsCount}</b> · {language === 'it' ? 'Rampa accessibile:' : 'Accessible ramp:'} <b>{feature.data.isAccessibleRamp ? (language === 'it' ? 'Sì' : 'Yes') : 'No'}</b>
                     </div>
                   </>
                 );
@@ -322,17 +332,17 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Gondole Operative</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Gondole Operative' : 'Active Gondolas'}</span>
                   <p className="text-2xl font-bold font-mono text-purple-400">{feature.data.activeGondolas}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Tariffa Regolata</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Tariffa Regolata' : 'Standard Tariff'}</span>
                   <p className="text-2xl font-bold font-mono text-emerald-400">€ {feature.data.priceEur.toFixed(2)}</p>
                 </div>
               </div>
-              <p className="text-[var(--ink-2)]">Orari di servizio: <b>{feature.data.openingHours}</b></p>
+              <p className="text-[var(--ink-2)]">{language === 'it' ? 'Orari di servizio:' : 'Operating hours:'} <b>{feature.data.openingHours}</b></p>
               <div className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                Gestione: <b>{feature.data.managedBy}</b>
+                {language === 'it' ? 'Gestione:' : 'Operated by:'} <b>{feature.data.managedBy}</b>
               </div>
             </>
           )}
@@ -342,17 +352,18 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Velocità Movimento Suolo</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Velocità Movimento Suolo' : 'Ground Motion Velocity'}</span>
                   <p className="text-2xl font-bold font-mono text-rose-400">{feature.data.velocityMmYear} mm/anno</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Affidabilità Radar (Coerenza)</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Affidabilità Radar (Coerenza)' : 'Radar Reliability (Coherence)'}</span>
                   <p className="text-2xl font-bold font-mono text-cyan-400">{Math.round(feature.data.coherence * 100)}%</p>
                 </div>
               </div>
               <p className="text-[var(--ink-2)]">
-                Dati interferometrici satellitari elaborati dal programma <strong>Copernicus EGMS (European Ground Motion Service)</strong>. 
-                I riflettori permanenti monitorano l'assestamento millimetrico dei carichi lagunari e l'eustatismo adriatico.
+                {language === 'it' 
+                  ? "Dati interferometrici satellitari elaborati dal programma Copernicus EGMS (European Ground Motion Service). I riflettori permanenti monitorano l'assestamento millimetrico dei carichi lagunari e l'eustatismo adriatico."
+                  : "Satellite interferometric radar data processed by Copernicus EGMS (European Ground Motion Service). Persistent scatterers monitor millimeter-level lagoon subsidence and Adriatic eustasy."}
               </p>
             </>
           )}
@@ -362,16 +373,16 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Superficie Protetto</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Superficie Protetta' : 'Protected Area'}</span>
                   <p className="text-2xl font-bold font-mono text-emerald-400">{feature.data.areaHectares} ha</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Quota Media Fondale</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Quota Media Fondale' : 'Average Seabed Depth'}</span>
                   <p className="text-2xl font-bold font-mono text-cyan-400">{feature.data.avgDepthMeters} m</p>
                 </div>
               </div>
               <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-[11px] text-emerald-300">
-                <b>Tutela:</b> {feature.data.protectionDirective}
+                <b>{language === 'it' ? 'Tutela:' : 'Protection Status:'}</b> {feature.data.protectionDirective}
               </div>
               <p className="text-[var(--ink-2)]">{feature.data.floraFauna}</p>
             </>
@@ -383,11 +394,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               {/* Station Type Pill & Position */}
               <div className="flex items-center justify-between text-xs pb-0.5">
                 <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-600 dark:text-teal-300 font-bold border border-teal-500/30 uppercase">
-                  {feature.data.stationType === 'AEROPORTO' && 'Stazione Aeronautica Militare / ENAV (LIPZ)'}
-                  {feature.data.stationType === 'PIATTAFORMA_OFFSHORE' && 'Piattaforma CNR-ISMAR (15 km Offshore)'}
-                  {feature.data.stationType === 'BOCCA_DI_PORTO' && 'Bocca di Porto Lagunare (MOSE)'}
-                  {feature.data.stationType === 'CENTRO_STORICO' && 'Laguna Centro Storico'}
-                  {feature.data.stationType === 'TERRAFERMA' && 'Terraferma Mestre (ARPAV)'}
+                  {feature.data.stationType === 'AEROPORTO' && (language === 'it' ? 'Stazione Aeronautica Militare / ENAV (LIPZ)' : 'Air Force / ENAV Station (LIPZ)')}
+                  {feature.data.stationType === 'PIATTAFORMA_OFFSHORE' && (language === 'it' ? 'Piattaforma CNR-ISMAR (15 km Offshore)' : 'CNR-ISMAR Ocean Platform (15 km Offshore)')}
+                  {feature.data.stationType === 'BOCCA_DI_PORTO' && (language === 'it' ? 'Bocca di Porto Lagunare (MOSE)' : 'Lagoon Inlet (MOSE Barrier)')}
+                  {feature.data.stationType === 'CENTRO_STORICO' && (language === 'it' ? 'Laguna Centro Storico' : 'Historic Center Lagoon')}
+                  {feature.data.stationType === 'TERRAFERMA' && (language === 'it' ? 'Terraferma Mestre (ARPAV)' : 'Mainland Mestre (ARPAV)')}
                 </span>
                 <span className="text-[10px] text-[var(--ink-3)] font-mono">
                   {feature.data.lat.toFixed(4)}°N, {feature.data.lon.toFixed(4)}°E
@@ -398,7 +409,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono flex items-center gap-1">
-                    <Wind className="w-3 h-3 text-teal-400" /> Vento & Direzione
+                    <Wind className="w-3 h-3 text-teal-400" /> {language === 'it' ? 'Vento & Direzione' : 'Wind & Direction'}
                   </span>
                   <p className="text-xl font-bold font-mono text-teal-600 dark:text-teal-400">
                     {feature.data.windDirection} ({feature.data.windDirectionDeg}°)
@@ -407,19 +418,23 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                     {feature.data.windSpeedKmh} km/h · {feature.data.windSpeedKnots} kt
                   </span>
                   <span className="text-[10px] font-mono text-[var(--ink-3)]">
-                    Raffica: {feature.data.gustSpeedKmh} km/h ({feature.data.gustSpeedKnots} kt)
+                    {language === 'it' ? 'Raffica' : 'Gust'}: {feature.data.gustSpeedKmh} km/h ({feature.data.gustSpeedKnots} kt)
                   </span>
                 </div>
 
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono flex items-center gap-1">
-                    <Waves className="w-3 h-3 text-cyan-400" /> Altezza d'Onda Hs
+                    <Waves className="w-3 h-3 text-cyan-400" /> {language === 'it' ? "Altezza d'Onda Hs" : 'Wave Height Hs'}
                   </span>
                   <p className="text-2xl font-bold font-mono text-cyan-600 dark:text-cyan-400">
                     {feature.data.waveHeightMeters} m
                   </p>
                   <span className="text-[10px] text-[var(--ink-3)] block mt-0.5">
-                    {feature.data.waveHeightMeters > 1.5 ? 'Mare molto mosso / agitato' : feature.data.waveHeightMeters > 0.5 ? 'Mare mosso' : 'Laguna calma / poco mosso'}
+                    {feature.data.waveHeightMeters > 1.5 
+                      ? (language === 'it' ? 'Mare molto mosso / agitato' : 'Very rough sea') 
+                      : feature.data.waveHeightMeters > 0.5 
+                      ? (language === 'it' ? 'Mare mosso' : 'Moderate chop') 
+                      : (language === 'it' ? 'Laguna calma / poco mosso' : 'Calm lagoon')}
                   </span>
                 </div>
               </div>
@@ -427,19 +442,19 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               {/* Atmospheric Parameters */}
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] block font-mono">Temperatura</span>
+                  <span className="text-[10px] text-[var(--ink-3)] block font-mono">{language === 'it' ? 'Temperatura' : 'Temperature'}</span>
                   <span className="font-mono font-bold text-[var(--ink)] text-sm">
                     {feature.data.airTempCelsius ?? 18}°C
                   </span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] block font-mono">Pressione</span>
+                  <span className="text-[10px] text-[var(--ink-3)] block font-mono">{language === 'it' ? 'Pressione' : 'Pressure'}</span>
                   <span className="font-mono font-bold text-sky-600 dark:text-sky-400 text-sm">
                     {feature.data.pressureHpa ?? 1015} hPa
                   </span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] block font-mono">Umidità Rel.</span>
+                  <span className="text-[10px] text-[var(--ink-3)] block font-mono">{language === 'it' ? 'Umidità Rel.' : 'Humidity'}</span>
                   <span className="font-mono font-bold text-teal-600 dark:text-teal-400 text-sm">
                     {feature.data.humidityPercent ?? 75}%
                   </span>
@@ -454,10 +469,10 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               }`}>
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-xs flex items-center gap-1.5">
-                    <ShieldAlert className="w-3.5 h-3.5" /> Spinta Idrodinamica verso la Laguna:
+                    <ShieldAlert className="w-3.5 h-3.5" /> {language === 'it' ? 'Spinta Idrodinamica verso la Laguna:' : 'Hydrodynamic Surge Push towards Lagoon:'}
                   </span>
                   <span className="font-mono font-bold text-xs uppercase px-2 py-0.5 rounded bg-black/10 dark:bg-black/30">
-                    RISCHIO {feature.data.tidePushRisk}
+                    {language === 'it' ? 'RISCHIO' : 'RISK'} {feature.data.tidePushRisk}
                   </span>
                 </div>
                 <p className="text-[11px] leading-relaxed opacity-90">
@@ -470,7 +485,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-sky-700 dark:text-sky-300 flex items-center gap-1.5">
-                      <Plane className="w-3.5 h-3.5" /> Bollettino Ufficiale METAR Aeronautica Militare
+                      <Plane className="w-3.5 h-3.5" /> {language === 'it' ? 'Bollettino Ufficiale METAR Aeronautica Militare' : 'Official METAR Aviation Bulletin'}
                     </span>
                     <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-bold">
                       {feature.data.metar.flightCategory}
@@ -480,7 +495,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                     {feature.data.metar.rawMetar}
                   </div>
                   <div className="flex items-center justify-between text-[10px] text-[var(--ink-2)]">
-                    <span>QNH: <b>{feature.data.metar.qnhHpa} hPa</b> · Pista: <b>{feature.data.metar.activeRunway}</b></span>
+                    <span>QNH: <b>{feature.data.metar.qnhHpa} hPa</b> · {language === 'it' ? 'Pista' : 'Runway'}: <b>{feature.data.metar.activeRunway}</b></span>
                     <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{feature.data.metar.runwayCondition}</span>
                   </div>
                 </div>
@@ -493,19 +508,19 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Velocità di Transito</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Velocità di Transito' : 'Transit Speed'}</span>
                   <p className="text-2xl font-bold font-mono text-red-400">{feature.data.speedKmh} km/h</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Scostamento Orario</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Scostamento Orario' : 'Schedule Deviation'}</span>
                   <p className={`text-2xl font-bold font-mono ${feature.data.delayMinutes > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                    {feature.data.delayMinutes > 0 ? `+${feature.data.delayMinutes} min` : 'In Orario'}
+                    {feature.data.delayMinutes > 0 ? `+${feature.data.delayMinutes} min` : (language === 'it' ? 'In Orario' : 'On Time')}
                   </p>
                 </div>
               </div>
-              <p className="text-[var(--ink)]">Posizione: <b>{feature.data.currentLocation}</b></p>
+              <p className="text-[var(--ink)]">{language === 'it' ? 'Posizione' : 'Location'}: <b>{feature.data.currentLocation}</b></p>
               <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] text-[11px] text-[var(--ink-2)]">
-                Binario di arrivo: <b>{feature.data.platform}</b>
+                {language === 'it' ? 'Binario di arrivo:' : 'Arrival platform:'} <b>{feature.data.platform}</b>
               </div>
             </>
           )}
@@ -514,12 +529,12 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {feature.type === 'nizioleto' && (
             <>
               <div className="p-4 rounded-xl bg-neutral-100 text-neutral-900 border-2 border-neutral-900 font-serif text-center shadow-lg">
-                <span className="text-xs uppercase tracking-widest text-neutral-600 block">Toponomastica Tradizionale</span>
+                <span className="text-xs uppercase tracking-widest text-neutral-600 block">{language === 'it' ? 'Toponomastica Tradizionale' : 'Traditional Toponymy'}</span>
                 <p className="text-lg font-bold tracking-wider mt-1">{feature.data.nizioletoText}</p>
               </div>
               <p className="text-[var(--ink-2)]">{feature.data.historicalNotes}</p>
               <div className="text-[11px] text-[var(--ink-3)]">
-                Sestiere: <b>{feature.data.sestiere}</b> · Numero Civico: <b>{feature.data.civicNumber}</b>
+                {language === 'it' ? 'Sestiere' : 'District'}: <b>{feature.data.sestiere}</b> · {language === 'it' ? 'Numero Civico' : 'Street No.'}: <b>{feature.data.civicNumber}</b>
               </div>
             </>
           )}
@@ -529,16 +544,16 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Epoca Storica</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Epoca Storica' : 'Historical Era'}</span>
                   <p className="text-xl font-bold font-mono text-amber-400">{feature.data.century}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Profondità Cisterna</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Profondità Cisterna' : 'Cistern Depth'}</span>
                   <p className="text-2xl font-bold font-mono text-cyan-400">{feature.data.cisternaDepthMeters} m</p>
                 </div>
               </div>
               <p className="text-[var(--ink-2)]">
-                Materiale: <strong>{feature.data.material.replace(/_/g, ' ')}</strong> · Stile: <strong>{feature.data.style}</strong>
+                {language === 'it' ? 'Materiale' : 'Material'}: <strong>{feature.data.material.replace(/_/g, ' ')}</strong> · {language === 'it' ? 'Stile' : 'Style'}: <strong>{feature.data.style}</strong>
               </p>
             </>
           )}
@@ -548,11 +563,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Altezza Torre</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Altezza Torre' : 'Tower Height'}</span>
                   <p className="text-2xl font-bold font-mono text-orange-400">{feature.data.heightMeters} m</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Inclinazione (Pendenza)</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Inclinazione (Pendenza)' : 'Lean / Tilt Angle'}</span>
                   <p className={`text-2xl font-bold font-mono ${feature.data.tiltAngleDeg > 1 ? 'text-rose-400' : 'text-emerald-400'}`}>
                     {feature.data.tiltAngleDeg}°
                   </p>
@@ -566,11 +581,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {feature.type === 'emergencyDock' && (
             <>
               <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300">
-                <span className="font-bold">Accesso Sanitario Riservato SUEM 118</span>
-                <p className="text-xs text-[var(--ink-2)] mt-1">Pontile prioritario per idroambulanze ed emergenze di soccorso medico urgente.</p>
+                <span className="font-bold">{language === 'it' ? 'Accesso Sanitario Riservato SUEM 118' : 'Emergency Medical Dock (SUEM 118)'}</span>
+                <p className="text-xs text-[var(--ink-2)] mt-1">{language === 'it' ? 'Pontile prioritario per idroambulanze ed emergenze di soccorso medico urgente.' : 'Priority dock reserved for water ambulances and urgent medical response.'}</p>
               </div>
-              <p className="text-[var(--ink-2)]">Ospedale di riferimento: <b>{feature.data.hospital}</b></p>
-              <p className="text-[var(--ink-2)]">Rampa diretta ospedale: <b>{feature.data.hasDirectHospitalRamp ? 'Presente' : 'Non presente'}</b></p>
+              <p className="text-[var(--ink-2)]">{language === 'it' ? 'Ospedale di riferimento:' : 'Reference Hospital:'} <b>{feature.data.hospital}</b></p>
+              <p className="text-[var(--ink-2)]">{language === 'it' ? 'Rampa diretta ospedale:' : 'Direct hospital ramp:'} <b>{feature.data.hasDirectHospitalRamp ? (language === 'it' ? 'Presente' : 'Available') : (language === 'it' ? 'Non presente' : 'Not available')}</b></p>
             </>
           )}
 
@@ -579,20 +594,20 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Temp. Superficie LST</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Temp. Superficie LST' : 'LST Surface Temp'}</span>
                   <p className={`text-2xl font-bold font-mono ${feature.data.surfaceTempCelsius > 32 ? 'text-rose-400' : 'text-cyan-400'}`}>
                     {feature.data.surfaceTempCelsius}°C
                   </p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Delta Microclimatico</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Delta Microclimatico' : 'Microclimate Delta'}</span>
                   <p className={`text-2xl font-bold font-mono ${feature.data.airTempDelta > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
                     {feature.data.airTempDelta > 0 ? `+${feature.data.airTempDelta}°C` : `${feature.data.airTempDelta}°C`}
                   </p>
                 </div>
               </div>
               <div className="text-[11px] text-[var(--ink-3)]">
-                Superficie: <b>{feature.data.surfaceType.replace(/_/g, ' ')}</b> · Missione: <b>{feature.data.satelliteMission}</b>
+                {language === 'it' ? 'Superficie' : 'Surface'}: <b>{feature.data.surfaceType.replace(/_/g, ' ')}</b> · {language === 'it' ? 'Missione' : 'Mission'}: <b>{feature.data.satelliteMission}</b>
               </div>
             </>
           )}
@@ -602,11 +617,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Lunghezza</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Lunghezza' : 'Length'}</span>
                   <p className="text-xl font-bold font-mono text-amber-400">{feature.data.lengthMeters} m</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Soglia Attivazione</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Soglia Attivazione' : 'Activation Threshold'}</span>
                   <p className="text-xl font-bold font-mono text-cyan-400">+{feature.data.activationThresholdCm} cm</p>
                 </div>
               </div>
@@ -619,15 +634,15 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="p-2 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Luce</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Luce' : 'Light'}</span>
                   <p className="text-sm font-bold font-mono text-emerald-400">{feature.data.lightColor}</p>
                 </div>
                 <div className="p-2 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Fondale</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Fondale' : 'Depth'}</span>
                   <p className="text-sm font-bold font-mono text-cyan-400">-{feature.data.depthMeters}m</p>
                 </div>
                 <div className="p-2 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Pali</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Pali' : 'Piles'}</span>
                   <p className="text-sm font-bold font-mono text-amber-400">{feature.data.type === 'DAMA_5_PALI' ? 5 : 3}</p>
                 </div>
               </div>
@@ -640,16 +655,16 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Altezza Onda Hs</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? "Altezza Onda Hs" : 'Wave Height Hs'}</span>
                   <p className="text-2xl font-bold font-mono text-cyan-400">{feature.data.waveHeightMeters} m</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Temp. Acqua</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Temp. Acqua' : 'Water Temp'}</span>
                   <p className="text-2xl font-bold font-mono text-emerald-400">{feature.data.waterTempC} °C</p>
                 </div>
               </div>
               <div className="text-[11px] text-[var(--ink-3)]">
-                Operatore: <b>{feature.data.operator}</b> · Salinità: <b>{feature.data.salinityPsu} PSU</b>
+                {language === 'it' ? 'Operatore:' : 'Operator:'} <b>{feature.data.operator}</b> · {language === 'it' ? 'Salinità:' : 'Salinity:'} <b>{feature.data.salinityPsu} PSU</b>
               </div>
             </>
           )}
@@ -659,11 +674,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Altezza</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Altezza' : 'Height'}</span>
                   <p className="text-2xl font-bold font-mono text-green-400">{feature.data.heightMeters} m</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">CO₂ Assorbita/Anno</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'CO₂ Assorbita/Anno' : 'CO₂ Absorbed/Year'}</span>
                   <p className="text-2xl font-bold font-mono text-emerald-400">{feature.data.co2AbsorbedKgYear} kg</p>
                 </div>
               </div>
@@ -673,26 +688,26 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {/* EV & WIFI */}
           {feature.type === 'evCharging' && (
             <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Prese Disponibili</span>
+              <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Prese Disponibili' : 'Available Sockets'}</span>
               <p className="text-2xl font-bold font-mono text-yellow-400">
                 {feature.data.availableSockets} / {feature.data.totalSockets}
               </p>
-              <span className="text-xs text-[var(--ink-2)]">Potenza: {feature.data.powerKw} kW</span>
+              <span className="text-xs text-[var(--ink-2)]">{language === 'it' ? 'Potenza:' : 'Power:'} {feature.data.powerKw} kW</span>
             </div>
           )}
 
           {feature.type === 'wifiHotspot' && (
             <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Utenti Connessi</span>
+              <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Utenti Connessi' : 'Connected Users'}</span>
               <p className="text-2xl font-bold font-mono text-indigo-400">{feature.data.usersConnected}</p>
-              <span className="text-xs text-[var(--ink-2)]">Velocità stimata: {feature.data.speedMbps} Mbps</span>
+              <span className="text-xs text-[var(--ink-2)]">{language === 'it' ? 'Velocità stimata:' : 'Estimated speed:'} {feature.data.speedMbps} Mbps</span>
             </div>
           )}
 
           {/* Generic fallback for remaining types */}
           {feature.type === 'publicDock' && (
             <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Sosta Massima Consentita</span>
+              <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Sosta Massima Consentita' : 'Max Permitted Mooring'}</span>
               <p className="text-2xl font-bold font-mono text-blue-400">{feature.data.maxStayMinutes} min</p>
             </div>
           )}
@@ -701,7 +716,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <div className="flex flex-col gap-2">
               <p className="text-[var(--ink-2)]">{feature.data.description}</p>
               <span className="text-[11px] text-[var(--ink-3)]">
-                Epoca: <b>{feature.data.era.replace(/_/g, ' ')}</b> · Stato: <b>{feature.data.status.replace(/_/g, ' ')}</b>
+                {language === 'it' ? 'Epoca:' : 'Era:'} <b>{feature.data.era.replace(/_/g, ' ')}</b> · {language === 'it' ? 'Stato:' : 'Status:'} <b>{feature.data.status.replace(/_/g, ' ')}</b>
               </span>
             </div>
           )}
@@ -709,11 +724,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {feature.type === 'publicDae' && (
             <div className="flex flex-col gap-2">
               <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
-                <b>Defibrillatore Salvavita Pubblico DAE</b>
-                <p className="text-xs text-[var(--ink-2)] mt-1">Accesso immediato: {feature.data.accessType.replace(/_/g, ' ')}</p>
+                <b>{language === 'it' ? 'Defibrillatore Salvavita Pubblico DAE' : 'Public Lifesaving AED Defibrillator'}</b>
+                <p className="text-xs text-[var(--ink-2)] mt-1">{language === 'it' ? 'Accesso immediato:' : 'Immediate access:'} {feature.data.accessType.replace(/_/g, ' ')}</p>
               </div>
               <span className="text-[11px] text-[var(--ink-3)]">
-                Gestore: <b>{feature.data.operator}</b> · Ultima ispezione: <b>{feature.data.lastInspected}</b>
+                {language === 'it' ? 'Gestore:' : 'Operator:'} <b>{feature.data.operator}</b> · {language === 'it' ? 'Ultima ispezione:' : 'Last inspected:'} <b>{feature.data.lastInspected}</b>
               </span>
             </div>
           )}
@@ -721,20 +736,20 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {feature.type === 'pharmacy' && (
             <div className="flex flex-col gap-2">
               <div className={`p-3 rounded-xl border ${feature.data.isOnDutyNow ? 'bg-green-500/10 border-green-500/30 text-green-300' : 'bg-black/20 border-[var(--rule)]'}`}>
-                <b>{feature.data.isOnDutyNow ? 'APERTA DI TURNO' : 'APERTA ORARI ORDINARI'}</b>
-                {feature.data.isNightShift && <span className="block text-xs text-amber-300 mt-1">Servizio Notturno Attivo</span>}
+                <b>{feature.data.isOnDutyNow ? (language === 'it' ? 'APERTA DI TURNO' : 'OPEN ON DUTY') : (language === 'it' ? 'APERTA ORARI ORDINARI' : 'OPEN REGULAR HOURS')}</b>
+                {feature.data.isNightShift && <span className="block text-xs text-amber-300 mt-1">{language === 'it' ? 'Servizio Notturno Attivo' : 'Night Service Active'}</span>}
               </div>
               <span className="text-[11px] text-[var(--ink-3)]">
-                Indirizzo: <b>{feature.data.address}</b> · Telefono: <b>{feature.data.phone}</b>
+                {language === 'it' ? 'Indirizzo:' : 'Address:'} <b>{feature.data.address}</b> · {language === 'it' ? 'Telefono:' : 'Phone:'} <b>{feature.data.phone}</b>
               </span>
             </div>
           )}
 
           {feature.type === 'wasteBoat' && (
             <div className="flex flex-col gap-2">
-              <p className="text-[var(--ink-2)]">Zona assegnata: <b>{feature.data.assignedZone}</b></p>
+              <p className="text-[var(--ink-2)]">{language === 'it' ? 'Zona assegnata:' : 'Assigned zone:'} <b>{feature.data.assignedZone}</b></p>
               <span className="text-[11px] text-[var(--ink-3)]">
-                Frazione raccolta: <b>{feature.data.collectionType.replace(/_/g, ' ')}</b> · Orario: <b>{feature.data.scheduleHours}</b>
+                {language === 'it' ? 'Frazione raccolta:' : 'Collection waste type:'} <b>{feature.data.collectionType.replace(/_/g, ' ')}</b> · {language === 'it' ? 'Orario:' : 'Schedule:'} <b>{feature.data.scheduleHours}</b>
               </span>
             </div>
           )}
@@ -743,44 +758,44 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <div className="flex flex-col gap-3">
               <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] uppercase font-mono text-cyan-400 font-bold">Stato Trofico Lagunare</span>
+                  <span className="text-[10px] uppercase font-mono text-cyan-400 font-bold">{language === 'it' ? 'Stato Trofico Lagunare' : 'Lagoon Trophic State'}</span>
                   <p className="text-lg font-bold text-[var(--ink)]">{feature.data.trophicState}</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] uppercase font-mono text-[var(--ink-3)]">Profondità Sonda</span>
+                  <span className="text-[10px] uppercase font-mono text-[var(--ink-3)]">{language === 'it' ? 'Profondità Sonda' : 'Probe Depth'}</span>
                   <p className="text-sm font-mono font-bold text-cyan-300">-{feature.data.monitoringDepthMeters} m</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Salinità</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Salinità' : 'Salinity'}</span>
                   <p className="text-base font-bold font-mono text-cyan-400">{feature.data.salinityPsu} <span className="text-xs">PSU</span></p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Temp. Acqua</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Temp. Acqua' : 'Water Temp'}</span>
                   <p className="text-base font-bold font-mono text-amber-400">{feature.data.waterTempCelsius}°C</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">pH Acqueo</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">pH</span>
                   <p className="text-base font-bold font-mono text-emerald-400">{feature.data.ph}</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Ossigeno O₂</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Ossigeno O₂' : 'Oxygen O₂'}</span>
                   <p className="text-base font-bold font-mono text-blue-400">{feature.data.dissolvedOxygenPercent}%</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Torbidità</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Torbidità' : 'Turbidity'}</span>
                   <p className="text-base font-bold font-mono text-slate-300">{feature.data.turbidityNtu} <span className="text-xs">NTU</span></p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Conducibilità</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Conducibilità' : 'Conductivity'}</span>
                   <p className="text-base font-bold font-mono text-purple-400">{feature.data.conductivityMsCm} <span className="text-xs">mS/cm</span></p>
                 </div>
               </div>
 
               <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                Fonte: <b>{feature.data.officialSource}</b>
+                {language === 'it' ? 'Fonte:' : 'Source:'} <b>{feature.data.officialSource}</b>
               </span>
             </div>
           )}
@@ -789,38 +804,38 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <div className="flex flex-col gap-3">
               <div className={`p-3 rounded-xl border ${feature.data.densityCategory === 'CRITICA' ? 'bg-rose-500/10 border-rose-500/40 text-rose-300' : 'bg-fuchsia-500/10 border-fuchsia-500/30 text-fuchsia-300'}`}>
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase font-mono font-bold">Indice Overtourism</span>
+                  <span className="text-[10px] uppercase font-mono font-bold">{language === 'it' ? 'Indice Overtourism' : 'Overtourism Index'}</span>
                   <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-rose-500/20">{feature.data.densityCategory}</span>
                 </div>
                 <p className="text-sm mt-1 text-[var(--ink)]">
-                  Rapporto: <b>{feature.data.bedsPerResidentRatio} posti letto turistici per ciascun residente</b>
+                  {language === 'it' ? 'Rapporto:' : 'Ratio:'} <b>{feature.data.bedsPerResidentRatio} {language === 'it' ? 'posti letto turistici per ciascun residente' : 'tourist beds per resident'}</b>
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Posti Letto Totali</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Posti Letto Totali' : 'Total Beds'}</span>
                   <p className="text-xl font-bold font-mono text-fuchsia-400">{feature.data.totalBeds.toLocaleString()}</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Strutture Censite</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Strutture Censite' : 'Registered Accommodations'}</span>
                   <p className="text-xl font-bold font-mono text-purple-400">{feature.data.totalStructures.toLocaleString()}</p>
                 </div>
               </div>
 
               <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex flex-col gap-1.5 text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-[var(--ink-2)]">Settore Alberghiero (Hotel):</span>
+                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Settore Alberghiero (Hotel):' : 'Hotel Sector:'}</span>
                   <span className="font-bold font-mono text-[var(--ink)]">{feature.data.hotelCount} hotel (5★: {feature.data.starRatingBreakdown.fiveStar}, 4★: {feature.data.starRatingBreakdown.fourStar}, 3★: {feature.data.starRatingBreakdown.threeStar})</span>
                 </div>
                 <div className="flex items-center justify-between border-t border-[var(--rule)] pt-1.5">
-                  <span className="text-[var(--ink-2)]">Extra-Alberghiero (B&B e Locazioni):</span>
-                  <span className="font-bold font-mono text-fuchsia-400">{feature.data.extraHotelCount} (Locazioni: {feature.data.starRatingBreakdown.holidayHomes}, B&B: {feature.data.starRatingBreakdown.bAndB})</span>
+                  <span className="text-[var(--ink-2)]">{language === 'it' ? 'Extra-Alberghiero (B&B e Locazioni):' : 'Non-Hotel Sector (B&B & Rentals):'}</span>
+                  <span className="font-bold font-mono text-fuchsia-400">{feature.data.extraHotelCount} ({language === 'it' ? 'Locazioni' : 'Rentals'}: {feature.data.starRatingBreakdown.holidayHomes}, B&B: {feature.data.starRatingBreakdown.bAndB})</span>
                 </div>
               </div>
 
               <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                Fonte: <b>{feature.data.officialSource}</b>
+                {language === 'it' ? 'Fonte:' : 'Source:'} <b>{feature.data.officialSource}</b>
               </span>
             </div>
           )}
@@ -829,28 +844,28 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <div className="flex flex-col gap-3">
               <div className="grid grid-cols-3 gap-2">
                 <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
-                  <span className="text-[10px] text-emerald-400 uppercase font-mono font-bold">Lunghezza</span>
+                  <span className="text-[10px] text-emerald-400 uppercase font-mono font-bold">{language === 'it' ? 'Lunghezza' : 'Length'}</span>
                   <p className="text-lg font-bold font-mono text-emerald-300">{feature.data.lengthKm} km</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Fondo Stradale</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Fondo Stradale' : 'Road Surface'}</span>
                   <p className="text-xs font-bold text-[var(--ink)] mt-1">{feature.data.surfaceType.replace(/_/g, ' ')}</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Difficoltà</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Difficoltà' : 'Difficulty'}</span>
                   <p className="text-xs font-bold text-cyan-400 mt-1">{feature.data.difficulty.replace(/_/g, ' ')}</p>
                 </div>
               </div>
 
               <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-xs">
-                <span className="text-[10px] font-mono text-cyan-400 uppercase font-bold">Interscambio Lagunare Intermodale:</span>
+                <span className="text-[10px] font-mono text-cyan-400 uppercase font-bold">{language === 'it' ? 'Interscambio Lagunare Intermodale:' : 'Intermodal Lagoon Interchange:'}</span>
                 <p className="text-[var(--ink)] mt-0.5 font-medium">{feature.data.ferryInterchange}</p>
               </div>
 
               <p className="text-xs text-[var(--ink-2)] leading-relaxed">{feature.data.description}</p>
 
               <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                Fonte: <b>{feature.data.officialSource}</b>
+                {language === 'it' ? 'Fonte:' : 'Source:'} <b>{feature.data.officialSource}</b>
               </span>
             </div>
           )}
@@ -859,17 +874,17 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <div className="flex flex-col gap-3">
               <div className="p-3 rounded-xl bg-lime-500/10 border border-lime-500/30 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] uppercase font-mono text-lime-400 font-bold">Rischio Allergico Attuale</span>
+                  <span className="text-[10px] uppercase font-mono text-lime-400 font-bold">{language === 'it' ? 'Rischio Allergico Attuale' : 'Current Allergy Risk'}</span>
                   <p className="text-lg font-bold text-[var(--ink)]">{feature.data.overallAllergyRisk}</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] uppercase font-mono text-[var(--ink-3)]">Campionatore</span>
+                  <span className="text-[10px] uppercase font-mono text-[var(--ink-3)]">{language === 'it' ? 'Campionatore' : 'Air Sampler'}</span>
                   <p className="text-xs font-mono text-[var(--ink-2)]">{feature.data.samplerType.replace(/_/g, ' ')}</p>
                 </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <span className="text-[11px] font-mono text-[var(--ink-3)] uppercase">Famiglie Botaniche Rilevate (grani / m³):</span>
+                <span className="text-[11px] font-mono text-[var(--ink-3)] uppercase">{language === 'it' ? 'Famiglie Botaniche Rilevate (grani / m³):' : 'Detected Plant Families (grains / m³):'}</span>
                 {feature.data.pollens.map((p, idx) => (
                   <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-black/20 border border-[var(--rule)] text-xs">
                     <div>
@@ -887,7 +902,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               </div>
 
               <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                Fonte: <b>{feature.data.officialSource}</b>
+                {language === 'it' ? 'Fonte:' : 'Source:'} <b>{feature.data.officialSource}</b>
               </span>
             </div>
           )}
@@ -896,27 +911,27 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <div className="flex flex-col gap-3">
               <div className="grid grid-cols-3 gap-2">
                 <div className="p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/30">
-                  <span className="text-[10px] text-sky-400 uppercase font-mono font-bold">Portata Media</span>
+                  <span className="text-[10px] text-sky-400 uppercase font-mono font-bold">{language === 'it' ? 'Portata Media' : 'Average Discharge'}</span>
                   <p className="text-lg font-bold font-mono text-sky-300">{feature.data.avgFlowM3s} m³/s</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Bacino Scolante</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Bacino Scolante' : 'Drainage Basin'}</span>
                   <p className="text-base font-bold font-mono text-[var(--ink)]">{feature.data.basinAreaKm2} km²</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">Stato Qualità</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Stato Qualità' : 'Quality Status'}</span>
                   <p className="text-base font-bold font-mono text-emerald-400">{feature.data.waterQualityState}</p>
                 </div>
               </div>
 
               <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex flex-col gap-1 text-xs">
-                <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase">Consorzio di Bonifica Competente:</span>
+                <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase">{language === 'it' ? 'Consorzio di Bonifica Competente:' : 'Drainage Authority:'}</span>
                 <p className="font-bold text-[var(--ink)]">{feature.data.managementConsortium}</p>
                 <p className="text-[var(--ink-2)] mt-1">{feature.data.freshwaterInputNotes}</p>
               </div>
 
               <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                Fonte: <b>{feature.data.officialSource}</b>
+                {language === 'it' ? 'Fonte:' : 'Source:'} <b>{feature.data.officialSource}</b>
               </span>
             </div>
           )}

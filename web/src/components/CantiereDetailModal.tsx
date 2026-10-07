@@ -3,6 +3,7 @@
 import React from 'react';
 import { X, Construction, Calendar, Euro, Building2, AlertTriangle, MapPin } from 'lucide-react';
 import { CantiereItem } from '@/lib/types';
+import { useTranslation } from '@/lib/i18n';
 
 interface CantiereDetailModalProps {
   cantiere: CantiereItem | null;
@@ -13,6 +14,7 @@ export const CantiereDetailModal: React.FC<CantiereDetailModalProps> = ({
   cantiere,
   onClose
 }) => {
+  const { language, t } = useTranslation();
   if (!cantiere) return null;
 
   return (
@@ -27,14 +29,14 @@ export const CantiereDetailModal: React.FC<CantiereDetailModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] uppercase font-mono tracking-wider text-amber-400">
-                  Comune di Venezia · {cantiere.codice}
+                  {language === 'it' ? 'Comune di Venezia' : 'Municipality of Venice'} · {cantiere.codice}
                 </span>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
                   cantiere.impattoMobilita === 'Critico'
                     ? 'bg-red-500/20 text-red-400 border border-red-500/40'
                     : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
                 }`}>
-                  Impatto {cantiere.impattoMobilita}
+                  {language === 'it' ? 'Impatto' : 'Impact'} {cantiere.impattoMobilita === 'Critico' ? (language === 'it' ? 'Critico' : 'Critical') : cantiere.impattoMobilita}
                 </span>
               </div>
               <h3 className="text-base font-bold text-[var(--ink)] leading-snug">
@@ -56,7 +58,7 @@ export const CantiereDetailModal: React.FC<CantiereDetailModalProps> = ({
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)] flex items-start gap-2">
             <MapPin className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
             <div>
-              <span className="text-[10px] text-[var(--ink-3)] block">Localizzazione</span>
+              <span className="text-[10px] text-[var(--ink-3)] block">{language === 'it' ? 'Localizzazione' : 'Location'}</span>
               <span className="text-[var(--ink)] font-medium">{cantiere.localizzazione}</span>
               <span className="text-[10px] text-[var(--ink-2)] block mt-0.5">({cantiere.quartiere})</span>
             </div>
@@ -65,12 +67,12 @@ export const CantiereDetailModal: React.FC<CantiereDetailModalProps> = ({
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)] flex items-start gap-2">
             <Calendar className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
             <div>
-              <span className="text-[10px] text-[var(--ink-3)] block">Periodo Lavori</span>
+              <span className="text-[10px] text-[var(--ink-3)] block">{language === 'it' ? 'Periodo Lavori' : 'Work Period'}</span>
               <span className="text-[var(--ink)] font-mono text-[11px] block">
-                Dal: {cantiere.dataInizio}
+                {language === 'it' ? 'Dal' : 'From'}: {cantiere.dataInizio}
               </span>
               <span className="text-[var(--ink)] font-mono text-[11px] block">
-                Al: {cantiere.dataFinePrevista}
+                {language === 'it' ? 'Al' : 'To'}: {cantiere.dataFinePrevista}
               </span>
             </div>
           </div>
@@ -81,7 +83,7 @@ export const CantiereDetailModal: React.FC<CantiereDetailModalProps> = ({
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)] flex items-center gap-2">
             <Euro className="w-4 h-4 text-emerald-400" />
             <div>
-              <span className="text-[10px] text-[var(--ink-3)] block">Importo Finanziato</span>
+              <span className="text-[10px] text-[var(--ink-3)] block">{language === 'it' ? 'Importo Finanziato' : 'Funded Amount'}</span>
               <span className="font-mono font-bold text-[var(--ink)] text-sm">
                 € {cantiere.importoLavori.toLocaleString('it-IT')}
               </span>
@@ -91,7 +93,7 @@ export const CantiereDetailModal: React.FC<CantiereDetailModalProps> = ({
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)] flex items-center gap-2">
             <Building2 className="w-4 h-4 text-blue-400" />
             <div>
-              <span className="text-[10px] text-[var(--ink-3)] block">Ente Appaltante</span>
+              <span className="text-[10px] text-[var(--ink-3)] block">{t('cantiereModal.contractor')}</span>
               <span className="text-[var(--ink)] text-[11px] leading-tight block">
                 {cantiere.enteResponsabile}
               </span>
@@ -103,7 +105,7 @@ export const CantiereDetailModal: React.FC<CantiereDetailModalProps> = ({
         <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl flex flex-col gap-1 text-xs">
           <div className="flex items-center gap-1.5 text-amber-400 font-bold">
             <AlertTriangle className="w-4 h-4" />
-            <span>Dettagli Tecnici & Impatto sui Trasporti</span>
+            <span>{language === 'it' ? 'Dettagli Tecnici & Impatto sui Trasporti' : 'Technical Details & Transport Impact'}</span>
           </div>
           <p className="text-[var(--ink-2)] leading-relaxed">
             {cantiere.dettagli}

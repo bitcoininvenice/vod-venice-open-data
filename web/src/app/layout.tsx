@@ -146,6 +146,8 @@ export const viewport: Viewport = {
   ]
 };
 
+import { LanguageProvider } from "@/lib/i18n";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -154,7 +156,9 @@ export default function RootLayout({
   return (
     <html lang="it" suppressHydrationWarning>
       <body className="min-h-screen flex flex-col bg-[var(--ground)] text-[var(--ink)] antialiased select-none">
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

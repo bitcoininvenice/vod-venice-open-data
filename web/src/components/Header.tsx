@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { CameraViewPreset, PaletteTheme } from '@/lib/types';
-import { Compass, Moon, Sun, Sparkles, Activity, Layers, BarChart3, ShieldAlert, HelpCircle } from 'lucide-react';
+import { Compass, Moon, Sun, Sparkles, Layers, BarChart3, ShieldAlert, HelpCircle, Globe } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 interface HeaderProps {
   currentView: CameraViewPreset;
@@ -39,6 +40,16 @@ export const Header: React.FC<HeaderProps> = ({
   airAqi = 36,
   activeSatellitesCount = 6
 }) => {
+  const { language, toggleLanguage, t } = useTranslation();
+
+  const viewLabels: Record<CameraViewPreset, string> = {
+    lagoon: t('header.viewLagoon'),
+    venezia: t('header.viewVenice'),
+    mestre: t('header.viewMestre'),
+    lido: t('header.viewLido'),
+    aeroporto: t('header.viewAirport')
+  };
+
   return (
     <header className="w-full border-b border-[var(--rule)] bg-[var(--ground)]/90 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2.5 flex flex-col md:flex-row md:items-center justify-between gap-1.5 sm:gap-3 z-30 shrink-0">
       {/* Top row: Brand & Mobile Action Buttons */}
@@ -49,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
             <h1 className="text-base sm:text-lg font-bold tracking-tight text-[var(--ink)] whitespace-nowrap">
-              Venice Open Data
+              {t('header.title')}
             </h1>
           </div>
         </div>
@@ -67,7 +78,7 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             onClick={onOpenSpatialModal}
             className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30 cursor-pointer active:scale-95 transition-all"
-            title="Incrocio Spaziale"
+            title={t('header.spatialTitle')}
           >
             <ShieldAlert className="w-3.5 h-3.5" />
           </button>
@@ -77,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             onClick={onOpenStatsModal}
             className="p-1.5 rounded-lg bg-[var(--rule)] text-cyan-400 border border-[var(--rule)] cursor-pointer active:scale-95 transition-all"
-            title="Metriche"
+            title={t('header.metrics')}
           >
             <BarChart3 className="w-3.5 h-3.5" />
           </button>
@@ -88,11 +99,21 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={onOpenTutorial}
               className="p-1.5 rounded-lg bg-[var(--rule)] text-amber-400 border border-[var(--rule)] cursor-pointer active:scale-95 transition-all"
-              title="Guida & Tutorial"
+              title={t('header.guide')}
             >
               <HelpCircle className="w-3.5 h-3.5" />
             </button>
           )}
+
+          {/* Language Switcher Mobile */}
+          <button
+            type="button"
+            onClick={toggleLanguage}
+            className="px-2 py-1 rounded-lg bg-[var(--rule)] hover:bg-[var(--rule)]/80 text-[var(--ink)] border border-[var(--rule)] text-xs font-mono font-bold cursor-pointer active:scale-95 transition-all shrink-0"
+            title={t('header.switchLanguageTitle')}
+          >
+            {language.toUpperCase()}
+          </button>
 
           {/* Layers Mobile Trigger */}
           {onOpenLayers && (
@@ -100,10 +121,10 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={onOpenLayers}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 border border-cyan-500/40 text-xs font-mono font-semibold cursor-pointer active:scale-95 transition-all shadow-sm shrink-0"
-              title="Apri Livelli e Filtri"
+              title={t('header.filters')}
             >
               <Layers className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="text-[11px]">Filtri</span>
+              <span className="text-[11px]">{t('header.filters')}</span>
             </button>
           )}
         </div>
@@ -117,12 +138,13 @@ export const Header: React.FC<HeaderProps> = ({
               key={v}
               type="button"
               onClick={() => onSelectView(v)}
-              className={`px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${currentView === v
-                ? 'bg-cyan-500 text-white shadow-sm font-semibold'
-                : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
-                }`}
+              className={`px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
+                currentView === v
+                  ? 'bg-cyan-500 text-white shadow-sm font-semibold'
+                  : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+              }`}
             >
-              {v === 'lagoon' ? 'Laguna' : v === 'venezia' ? 'Venezia' : v === 'mestre' ? 'Mestre' : v === 'lido' ? 'Lido' : 'Aeroporto VCE'}
+              {viewLabels[v]}
             </button>
           ))}
         </div>
@@ -132,25 +154,25 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="hidden md:flex items-center gap-2">
         {/* Tide level badge (Centro Maree) */}
         <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-blue-500/10 text-blue-400 border border-blue-500/30">
-          <span>🌊 Marea:</span>
+          <span>🌊 {t('header.tide')}:</span>
           <span className="font-bold text-[var(--ink)]">+{tideLevel} cm</span>
         </div>
 
         {/* Air Quality badge (ARPAV) */}
         <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-          <span>🍃 Aria:</span>
+          <span>🍃 {t('header.airQuality')}:</span>
           <span className="font-bold text-[var(--ink)]">AQI {airAqi}</span>
         </div>
 
         {/* Ships badge (AIS) */}
         <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
-          <span>🚢 Navi:</span>
+          <span>🚢 {t('header.ships')}:</span>
           <span className="font-bold text-[var(--ink)]">{activeShipsCount} AIS</span>
         </div>
 
         {/* Satellites badge (Copernicus / ASI) */}
         <div className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/30">
-          <span>🛰️ Satelliti:</span>
+          <span>🛰️ {t('header.satellites')}:</span>
           <span className="font-bold text-[var(--ink)]">{activeSatellitesCount} ESA/ASI</span>
         </div>
 
@@ -159,10 +181,10 @@ export const Header: React.FC<HeaderProps> = ({
           type="button"
           onClick={onOpenSpatialModal}
           className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition-all cursor-pointer"
-          title="Incrocio Spaziale: Fermate ACTV entro raggio dai cantieri"
+          title={t('header.spatialTitle')}
         >
-          <span>🚧 Incrocio:</span>
-          <span className="font-bold text-[var(--ink)]">{activeCantieriCount} cantieri</span>
+          <span>🚧 {t('header.spatialIntersection')}:</span>
+          <span className="font-bold text-[var(--ink)]">{activeCantieriCount} {t('header.cantieriCount')}</span>
         </button>
 
         {/* Stats modal trigger */}
@@ -172,7 +194,7 @@ export const Header: React.FC<HeaderProps> = ({
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--rule)] hover:bg-[var(--rule)]/80 text-[var(--ink)] border border-[var(--rule)] transition-all cursor-pointer"
         >
           <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
-          <span className="hidden lg:inline">Metriche</span>
+          <span className="hidden lg:inline">{t('header.metrics')}</span>
         </button>
 
         {/* Tutorial / Guide trigger */}
@@ -181,39 +203,53 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             onClick={onOpenTutorial}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--rule)] hover:bg-[var(--rule)]/80 text-[var(--ink)] border border-[var(--rule)] transition-all cursor-pointer"
-            title="Guida interattiva e scelta preset"
+            title={t('header.guide')}
           >
             <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden lg:inline">Guida</span>
+            <span className="hidden lg:inline">{t('header.guide')}</span>
           </button>
         )}
+
+        {/* Language Switcher Desktop */}
+        <button
+          type="button"
+          onClick={toggleLanguage}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold bg-[var(--rule)]/60 hover:bg-[var(--rule)] text-[var(--ink)] border border-[var(--rule)] transition-all cursor-pointer"
+          title={t('header.switchLanguageTitle')}
+        >
+          <Globe className="w-3.5 h-3.5 text-cyan-400" />
+          <span>{language === 'it' ? 'IT' : 'EN'}</span>
+        </button>
 
         {/* Theme / Palette Switcher */}
         <div className="flex items-center bg-[var(--rule)]/60 p-0.5 rounded-lg border border-[var(--rule)]">
           <button
             type="button"
             onClick={() => onSelectPalette('notte')}
-            className={`p-1.5 rounded-md transition-all cursor-pointer ${palette === 'notte' ? 'bg-cyan-500 text-white' : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
-              }`}
-            title="Palette Notte (Scuro ad alto contrasto)"
+            className={`p-1.5 rounded-md transition-all cursor-pointer ${
+              palette === 'notte' ? 'bg-cyan-500 text-white' : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+            }`}
+            title={t('header.paletteDarkTitle')}
           >
             <Moon className="w-3.5 h-3.5" />
           </button>
           <button
             type="button"
             onClick={() => onSelectPalette('carta')}
-            className={`p-1.5 rounded-md transition-all cursor-pointer ${palette === 'carta' ? 'bg-amber-600 text-white' : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
-              }`}
-            title="Palette Carta (Mappa storica chiara)"
+            className={`p-1.5 rounded-md transition-all cursor-pointer ${
+              palette === 'carta' ? 'bg-amber-600 text-white' : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+            }`}
+            title={t('header.paletteLightTitle')}
           >
             <Sun className="w-3.5 h-3.5" />
           </button>
           <button
             type="button"
             onClick={() => onSelectPalette('dynamic')}
-            className={`p-1.5 rounded-md transition-all cursor-pointer ${palette === 'dynamic' ? 'bg-purple-600 text-white' : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
-              }`}
-            title="Palette Dinamica (Sincronizzata con alba e tramonto di Venezia)"
+            className={`p-1.5 rounded-md transition-all cursor-pointer ${
+              palette === 'dynamic' ? 'bg-purple-600 text-white' : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+            }`}
+            title={t('header.paletteDynamicTitle')}
           >
             <Sparkles className="w-3.5 h-3.5" />
           </button>

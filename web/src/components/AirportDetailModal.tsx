@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Plane, Navigation, Compass, ExternalLink, ShieldCheck, Waves, Bus, Wind, Thermometer, Gauge, Cloud, Check, Copy } from 'lucide-react';
+import { X, Plane, Navigation, Compass, Waves, Bus, Wind, Thermometer, Cloud, Check, Copy } from 'lucide-react';
 import { FlightItem, AirportMetarData } from '@/lib/types';
 import { INITIAL_LIPZ_METAR } from '@/lib/weatherWindData';
+import { useTranslation } from '@/lib/i18n';
 
 interface AirportDetailModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
   flights,
   metar = INITIAL_LIPZ_METAR
 }) => {
+  const { language, t } = useTranslation();
   const [copiedMetar, setCopiedMetar] = useState(false);
   if (!isOpen) return null;
 
@@ -45,14 +47,14 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] uppercase font-mono tracking-wider font-bold px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">
-                  IATA: VCE · ICAO: LIPZ
+                  {t('airportModal.iataIcao')}
                 </span>
                 <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> ATTIVO
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> {t('airportModal.active')}
                 </span>
               </div>
               <h3 className="text-lg font-bold text-[var(--ink)] leading-snug">
-                Aeroporto di Venezia Marco Polo
+                {t('airportModal.title')}
               </h3>
             </div>
           </div>
@@ -60,6 +62,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
             type="button"
             onClick={onClose}
             className="p-1 rounded-lg hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] cursor-pointer"
+            title={t('common.close')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -68,19 +71,19 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
         {/* Airport Stats Grid */}
         <div className="grid grid-cols-3 gap-2.5 text-xs">
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
-            <span className="text-[10px] text-[var(--ink-3)] block font-mono">Passeggeri Annui</span>
-            <span className="font-mono font-bold text-sky-400 text-sm">~11.5 Milioni</span>
-            <span className="text-[9px] text-[var(--ink-3)] block">3° polo in Italia</span>
+            <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('airportModal.passengersYear')}</span>
+            <span className="font-mono font-bold text-sky-400 text-sm">~11.5 M</span>
+            <span className="text-[9px] text-[var(--ink-3)] block">{t('airportModal.passengersRank')}</span>
           </div>
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
-            <span className="text-[10px] text-[var(--ink-3)] block font-mono">Elevazione</span>
+            <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('airportModal.elevation')}</span>
             <span className="font-mono font-bold text-emerald-400 text-sm">2 m (7 ft)</span>
-            <span className="text-[9px] text-[var(--ink-3)] block">Bordo Laguna</span>
+            <span className="text-[9px] text-[var(--ink-3)] block">{t('airportModal.lagoonEdge')}</span>
           </div>
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
-            <span className="text-[10px] text-[var(--ink-3)] block font-mono">Gestore Hub</span>
+            <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('airportModal.hubManager')}</span>
             <span className="font-mono font-bold text-[var(--ink)] text-sm">SAVE S.p.A.</span>
-            <span className="text-[9px] text-[var(--ink-3)] block">Polo Aeroportuale NE</span>
+            <span className="text-[9px] text-[var(--ink-3)] block">{t('airportModal.hubRegion')}</span>
           </div>
         </div>
 
@@ -89,11 +92,11 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
           <div className="flex flex-col gap-2 p-3 rounded-2xl bg-sky-500/5 dark:bg-sky-500/10 border border-sky-500/25">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
-                <Wind className="w-4 h-4 text-sky-400" /> Bollettino Meteo METAR Ufficiale
+                <Wind className="w-4 h-4 text-sky-400" /> {t('airportModal.metarTitle')}
               </span>
               <div className="flex items-center gap-1.5">
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-bold border border-emerald-500/30">
-                  {metar.flightCategory} (Volo a Vista)
+                  {metar.flightCategory} ({language === 'it' ? 'Volo a Vista' : 'VFR'})
                 </span>
                 <span className="text-[10px] font-mono text-[var(--ink-3)]">
                   QNH {metar.qnhHpa} hPa
@@ -107,7 +110,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
               <button
                 type="button"
                 onClick={handleCopyMetar}
-                title="Copia codice METAR"
+                title={language === 'it' ? 'Copia codice METAR' : 'Copy METAR code'}
                 className="ml-2 p-1 rounded-lg hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] shrink-0 transition-colors cursor-pointer"
               >
                 {copiedMetar ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -118,7 +121,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               <div className="bg-[var(--rule)]/30 p-2 rounded-xl border border-[var(--rule)] flex flex-col">
                 <span className="text-[10px] text-[var(--ink-3)] font-mono flex items-center gap-1">
-                  <Wind className="w-3 h-3 text-sky-400" /> Vento al Suolo
+                  <Wind className="w-3 h-3 text-sky-400" /> {t('airportModal.groundWind')}
                 </span>
                 <span className="font-mono font-bold text-[var(--ink)] mt-0.5">
                   {metar.windSpeedKnots} kt ({metar.windSpeedKmh} km/h)
@@ -130,34 +133,34 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
 
               <div className="bg-[var(--rule)]/30 p-2 rounded-xl border border-[var(--rule)] flex flex-col">
                 <span className="text-[10px] text-[var(--ink-3)] font-mono flex items-center gap-1">
-                  <Compass className="w-3 h-3 text-amber-400" /> Crosswind 04R
+                  <Compass className="w-3 h-3 text-amber-400" /> {t('airportModal.crosswind')}
                 </span>
                 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
                   {metar.crosswindKnots} kt
                 </span>
                 <span className="text-[10px] text-[var(--ink-2)] font-mono">
-                  Frontale {metar.headwindKnots} kt
+                  {t('airportModal.headwind')} {metar.headwindKnots} kt
                 </span>
               </div>
 
               <div className="bg-[var(--rule)]/30 p-2 rounded-xl border border-[var(--rule)] flex flex-col">
                 <span className="text-[10px] text-[var(--ink-3)] font-mono flex items-center gap-1">
-                  <Thermometer className="w-3 h-3 text-rose-400" /> Temp / Dewpoint
+                  <Thermometer className="w-3 h-3 text-rose-400" /> {t('airportModal.tempDew')}
                 </span>
                 <span className="font-mono font-bold text-[var(--ink)] mt-0.5">
                   {metar.temperatureCelsius}°C / {metar.dewPointCelsius}°C
                 </span>
                 <span className="text-[10px] text-[var(--ink-2)] font-mono">
-                  Umidità {metar.relativeHumidityPercent}%
+                  {t('airportModal.humidity')} {metar.relativeHumidityPercent}%
                 </span>
               </div>
 
               <div className="bg-[var(--rule)]/30 p-2 rounded-xl border border-[var(--rule)] flex flex-col">
                 <span className="text-[10px] text-[var(--ink-3)] font-mono flex items-center gap-1">
-                  <Cloud className="w-3 h-3 text-cyan-400" /> Visibilità & Nubi
+                  <Cloud className="w-3 h-3 text-cyan-400" /> {t('airportModal.visibilityClouds')}
                 </span>
                 <span className="font-mono font-bold text-[var(--ink)] mt-0.5">
-                  {metar.visibilityMeters >= 10000 ? '> 10 km (CAVOK)' : `${metar.visibilityMeters} m`}
+                  {metar.visibilityMeters >= 10000 ? t('airportModal.cavok') : `${metar.visibilityMeters} m`}
                 </span>
                 <span className="text-[9px] text-[var(--ink-3)] truncate" title={metar.cloudsDescription}>
                   {metar.cloudsDescription}
@@ -166,7 +169,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
             </div>
 
             <div className="flex items-center justify-between text-[10px] text-[var(--ink-3)] pt-1 border-t border-[var(--rule)]">
-              <span>Fonte: Aeronautica Militare / ENAV (Stazione LIPZ)</span>
+              <span>{t('airportModal.sourceAeronautica')}</span>
               <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">{metar.runwayCondition}</span>
             </div>
           </div>
@@ -175,27 +178,31 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
         {/* Runways specifications */}
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
-            <Compass className="w-4 h-4 text-sky-400" /> Specifiche Piste (Runways)
+            <Compass className="w-4 h-4 text-sky-400" /> {t('airportModal.runwaysTitle')}
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-sky-500/20 flex flex-col gap-1">
               <div className="flex justify-between items-center">
-                <span className="font-mono font-bold text-sky-300">RWY 04R / 22L</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">Principale</span>
+                <span className="font-mono font-bold text-sky-300">{t('airportModal.mainRunway')}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">
+                  {language === 'it' ? 'Principale' : 'Main'}
+                </span>
               </div>
-              <span className="text-[11px] text-[var(--ink-2)]">Dimensioni: <strong className="text-[var(--ink)]">3,300 m × 45 m</strong></span>
-              <span className="text-[11px] text-[var(--ink-2)]">Fondo: Asfalto scanalato</span>
-              <span className="text-[10px] text-emerald-400 font-mono font-medium">ILS Cat. IIIb (Atterraggio con nebbia fitta)</span>
+              <span className="text-[11px] text-[var(--ink-2)]">{t('airportModal.dimensions')}</span>
+              <span className="text-[11px] text-[var(--ink-2)]">{t('airportModal.surface')}</span>
+              <span className="text-[10px] text-emerald-400 font-mono font-medium">{t('airportModal.ilsCategory')}</span>
             </div>
 
             <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1">
               <div className="flex justify-between items-center">
-                <span className="font-mono font-bold text-[var(--ink)]">RWY 04L / 22R</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--rule)] text-[var(--ink-3)] font-mono">Secondaria</span>
+                <span className="font-mono font-bold text-[var(--ink)]">{t('airportModal.secondaryRunway')}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--rule)] text-[var(--ink-3)] font-mono">
+                  {language === 'it' ? 'Secondaria' : 'Secondary'}
+                </span>
               </div>
-              <span className="text-[11px] text-[var(--ink-2)]">Dimensioni: <strong className="text-[var(--ink)]">2,780 m × 45 m</strong></span>
-              <span className="text-[11px] text-[var(--ink-2)]">Fondo: Asfalto</span>
-              <span className="text-[10px] text-[var(--ink-3)] font-mono font-medium">Uso parallelo & rullaggio veloce</span>
+              <span className="text-[11px] text-[var(--ink-2)]">Dimensioni: 2,780 m × 45 m</span>
+              <span className="text-[11px] text-[var(--ink-2)]">{t('airportModal.surface')}</span>
+              <span className="text-[10px] text-[var(--ink-3)] font-mono font-medium">{t('airportModal.parallelUse')}</span>
             </div>
           </div>
         </div>
@@ -203,25 +210,24 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
         {/* Intermodal Connections */}
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
-            <Navigation className="w-4 h-4 text-emerald-400" /> Connessioni Intermodali ACTV & Laguna
+            <Navigation className="w-4 h-4 text-emerald-400" /> {t('airportModal.intermodalTitle')}
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 flex flex-col gap-1">
               <div className="flex items-center gap-1.5 font-semibold text-blue-400">
-                <Waves className="w-3.5 h-3.5" /> Darsena Aeroporto (Via Acqua)
+                <Waves className="w-3.5 h-3.5" /> {t('airportModal.waterDockTitle')}
               </div>
               <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">
-                <strong>Alilaguna Linea Blu & Linea Rossa:</strong> collegamento diretto via motoscafo per Murano, Fondamente Nove, Lido e Piazza San Marco.
+                {t('airportModal.waterDockDesc')}
               </p>
             </div>
 
             <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col gap-1">
               <div className="flex items-center gap-1.5 font-semibold text-emerald-400">
-                <Bus className="w-3.5 h-3.5" /> Terminal Bus (Terraferma)
+                <Bus className="w-3.5 h-3.5" /> {t('airportModal.busTerminalTitle')}
               </div>
               <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">
-                <strong>ACTV Linea 5 (Aerobus):</strong> espresso per Venezia Piazzale Roma (20 min).<br />
-                <strong>ACTV Linea 15:</strong> per Stazione Ferroviaria Mestre FS.
+                {t('airportModal.busTerminalDesc')}
               </p>
             </div>
           </div>
@@ -231,7 +237,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
         <div className="flex flex-col gap-2 pt-1 border-t border-[var(--rule)]">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
-              <Plane className="w-4 h-4 text-sky-400" /> Voli Tracciati nello Spazio Aereo VCE ({flights.length})
+              <Plane className="w-4 h-4 text-sky-400" /> {t('airportModal.trackedFlightsTitle')} ({flights.length})
             </span>
             <span className="text-[10px] font-mono text-cyan-400">
               {activeArrivals.length} Arr · {activeDepartures.length} Dep · {activeTaxi.length} Taxi
@@ -270,13 +276,13 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-2 border-t border-[var(--rule)] text-xs text-[var(--ink-3)]">
-          <span>Coordinate: 45°30′19″N 12°21′07″E</span>
+          <span>{t('common.coordinates')}: 45°30′19″N 12°21′07″E</span>
           <button
             type="button"
             onClick={onClose}
             className="px-4 py-1.5 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-400 transition-all cursor-pointer shadow-lg shadow-sky-500/20"
           >
-            Chiudi Scheda
+            {t('airportModal.close')}
           </button>
         </div>
       </div>

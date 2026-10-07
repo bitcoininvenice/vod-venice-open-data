@@ -3,6 +3,7 @@
 import React from 'react';
 import { X, Anchor, Navigation, Accessibility, Clock, MapPin } from 'lucide-react';
 import { StopItem } from '@/lib/types';
+import { useTranslation } from '@/lib/i18n';
 
 interface StopDetailModalProps {
   stop: StopItem | null;
@@ -15,6 +16,7 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
   onClose,
   currentTimeSeconds
 }) => {
+  const { language, t } = useTranslation();
   if (!stop) return null;
 
   // Generate simulated realistic upcoming departures based on current time
@@ -44,7 +46,7 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
             </div>
             <div>
               <span className="text-[10px] uppercase font-mono tracking-wider text-cyan-400">
-                Fermata ACTV · {stop.mode.toUpperCase()}
+                {language === 'it' ? `Fermata ACTV · ${stop.mode.toUpperCase()}` : `ACTV Stop · ${stop.mode.toUpperCase()}`}
               </span>
               <h3 className="text-base font-bold text-[var(--ink)] leading-snug">
                 {stop.name}
@@ -65,7 +67,7 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)] flex items-center gap-2">
             <MapPin className="w-4 h-4 text-[var(--ink-3)]" />
             <div>
-              <span className="text-[10px] text-[var(--ink-3)] block">Coordinate GPS</span>
+              <span className="text-[10px] text-[var(--ink-3)] block">{t('common.coordinates')}</span>
               <span className="font-mono text-[var(--ink)]">{stop.lat.toFixed(4)}, {stop.lon.toFixed(4)}</span>
             </div>
           </div>
@@ -73,22 +75,22 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)] flex items-center gap-2">
             <Accessibility className="w-4 h-4 text-emerald-400" />
             <div>
-              <span className="text-[10px] text-[var(--ink-3)] block">Accessibilità</span>
-              <span className="text-emerald-400 font-medium">Accessibile PRM</span>
+              <span className="text-[10px] text-[var(--ink-3)] block">{t('stopModal.accessibility')}</span>
+              <span className="text-emerald-400 font-medium">{t('stopModal.accessible')}</span>
             </div>
           </div>
         </div>
 
         {/* Passing Lines Badges */}
         <div className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-mono uppercase text-[var(--ink-3)]">Linee in transito</span>
+          <span className="text-[11px] font-mono uppercase text-[var(--ink-3)]">{t('stopModal.linesServed')}</span>
           <div className="flex flex-wrap gap-1.5">
             {sampleLines.map((l) => (
               <span
                 key={l}
                 className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30"
               >
-                Linea {l}
+                {language === 'it' ? 'Linea' : 'Route'} {l}
               </span>
             ))}
           </div>
@@ -98,7 +100,7 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
         <div className="flex flex-col gap-2 pt-2 border-t border-[var(--rule)]">
           <div className="flex items-center gap-1.5 text-xs text-[var(--ink-2)]">
             <Clock className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Prossime corse programmate:</span>
+            <span>{t('stopModal.upcomingDepartures')}</span>
           </div>
 
           <div className="flex flex-col gap-1.5">

@@ -44,6 +44,7 @@ import {
   GitBranch
 } from 'lucide-react';
 import { TransportModeCategory } from '@/lib/types';
+import { useTranslation } from '@/lib/i18n';
 
 interface LayerPanelProps {
   onTurnAllOff?: () => void;
@@ -313,6 +314,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   categoryColors,
   onClose
 }) => {
+  const { language, t } = useTranslation();
   const [sectionOpen, setSectionOpen] = useState({
     mobility: false,
     lagoon: false,
@@ -352,12 +354,12 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
 
   const CATEGORIES: { key: TransportModeCategory; label: string }[] = [
     { key: 'vaporetto', label: 'Vaporetto' },
-    { key: 'motoscafo', label: 'Motoscafo' },
-    { key: 'motonave', label: 'Motonave' },
+    { key: 'motoscafo', label: language === 'it' ? 'Motoscafo' : 'Motorboat' },
+    { key: 'motonave', label: language === 'it' ? 'Motonave' : 'Motorship' },
     { key: 'ferry', label: 'Ferry-boat' },
     { key: 'tram', label: 'Tram T1/T2' },
-    { key: 'bus', label: 'Bus Terraferma' },
-    { key: 'island', label: 'Bus Isole' },
+    { key: 'bus', label: language === 'it' ? 'Bus Terraferma' : 'Mainland Bus' },
+    { key: 'island', label: language === 'it' ? 'Bus Isole' : 'Island Bus' },
   ];
 
   return (
@@ -370,7 +372,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
         <div className="flex items-center gap-2">
           <Layers className="w-4 h-4 text-cyan-400" />
           <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
-            Open Data Layers & Filtri
+            {t('layers.panelTitle')}
           </h2>
         </div>
         {onClose && (
@@ -378,7 +380,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             type="button"
             onClick={onClose}
             className="p-1 rounded-lg hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] cursor-pointer"
-            title="Chiudi pannello filtri"
+            title={t('layers.hidePanel')}
           >
             <X className="w-4 h-4" />
           </button>
@@ -396,10 +398,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 setSectionOpen({ mobility: false, lagoon: false, city: false, regional: false, actv: false });
               }}
               className="flex-1 py-1.5 px-2 rounded-xl bg-[var(--rule)]/40 hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] font-mono text-[11px] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-              title="Disattiva tutti i livelli per una mappa pulita"
+              title={language === 'it' ? 'Disattiva tutti i livelli per una mappa pulita' : 'Turn off all layers for a clean map'}
             >
               <EyeOff className="w-3.5 h-3.5 text-rose-400" />
-              <span>Pulisci Mappa</span>
+              <span>{t('layers.presetClean')}</span>
             </button>
           )}
           {onTurnAllOn && (
@@ -410,10 +412,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 setSectionOpen({ mobility: true, lagoon: true, city: true, regional: true, actv: false });
               }}
               className="flex-1 py-1.5 px-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 font-mono text-[11px] flex items-center justify-center gap-1.5 border border-cyan-500/20 transition-all cursor-pointer"
-              title="Attiva tutti i livelli contemporaneamente"
+              title={language === 'it' ? 'Attiva tutti i livelli contemporaneamente' : 'Turn on all layers simultaneously'}
             >
               <Eye className="w-3.5 h-3.5" />
-              <span>Tutti i Livelli</span>
+              <span>{t('layers.presetAll')}</span>
             </button>
           )}
         </div>
@@ -421,7 +423,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
         {onApplyPreset && (
           <div className="flex items-center gap-1 pt-0.5 w-full relative">
             <span className="text-[10px] text-[var(--ink-3)] font-mono uppercase shrink-0 font-semibold select-none">
-              Preset:
+              {language === 'it' ? 'Preset:' : 'Presets:'}
             </span>
 
             {canScrollLeft && (
@@ -429,7 +431,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 type="button"
                 onClick={() => handleScrollPresets('left')}
                 className="p-1 rounded-md bg-[var(--rule)]/70 hover:bg-cyan-500/20 text-[var(--ink-2)] hover:text-cyan-400 border border-[var(--rule)] transition-all cursor-pointer shrink-0 shadow-sm active:scale-90"
-                title="Scorri preset a sinistra"
+                title={language === 'it' ? 'Scorri preset a sinistra' : 'Scroll presets left'}
               >
                 <ChevronLeft className="w-3 h-3" />
               </button>
@@ -454,7 +456,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 }}
                 className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-sky-500/20 text-sky-400 hover:text-sky-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-sky-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
               >
-                <span>🚤 Mobilità</span>
+                <span>🚤 {t('layers.presetMobility')}</span>
               </button>
               <button
                 type="button"
@@ -464,7 +466,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 }}
                 className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-blue-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
               >
-                <span>🌊 Laguna</span>
+                <span>🌊 {t('layers.presetLagoon')}</span>
               </button>
               <button
                 type="button"
@@ -474,7 +476,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 }}
                 className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-emerald-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
               >
-                <span>🏛️ Città</span>
+                <span>🏛️ {t('layers.presetCity')}</span>
               </button>
               <button
                 type="button"
@@ -484,7 +486,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 }}
                 className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-purple-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
               >
-                <span>🛰️ Satelliti</span>
+                <span>🛰️ {t('layers.presetSatellites')}</span>
               </button>
               <button
                 type="button"
@@ -494,7 +496,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 }}
                 className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-teal-500/20 text-teal-400 hover:text-teal-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-teal-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
               >
-                <span>🏛️ Regione Veneto</span>
+                <span>🌾 {t('layers.presetRegional')}</span>
               </button>
             </div>
 
@@ -503,7 +505,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 type="button"
                 onClick={() => handleScrollPresets('right')}
                 className="p-1 rounded-md bg-[var(--rule)]/70 hover:bg-cyan-500/20 text-[var(--ink-2)] hover:text-cyan-400 border border-[var(--rule)] transition-all cursor-pointer shrink-0 shadow-sm active:scale-90"
-                title="Scorri preset a destra"
+                title={language === 'it' ? 'Scorri preset a destra' : 'Scroll presets right'}
               >
                 <ChevronRight className="w-3 h-3" />
               </button>
@@ -520,7 +522,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-[var(--ink-3)] hover:text-[var(--ink)] cursor-pointer"
         >
           <span className="flex items-center gap-1.5 font-bold">
-            🚢 Mobilità & Trasporti
+            🚢 {t('layers.catMobility')}
           </span>
           {sectionOpen.mobility ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
@@ -539,7 +541,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             >
               <div className="flex items-center gap-2">
                 <Navigation className="w-3.5 h-3.5" />
-                <span>Flotta ACTV Live</span>
+                <span>{t('layers.layerVaporetti')}</span>
               </div>
               {showVehicles ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
@@ -556,7 +558,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             >
               <div className="flex items-center gap-2">
                 <CircleDot className="w-3.5 h-3.5" />
-                <span>Linee & Percorsi (Shapes)</span>
+                <span>{t('layers.layerRoutes')}</span>
               </div>
               {showRoutes ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
@@ -573,7 +575,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             >
               <div className="flex items-center gap-2">
                 <Anchor className="w-3.5 h-3.5" />
-                <span>Fermate e Pontili Imbarco</span>
+                <span>{t('layers.layerStops')}</span>
               </div>
               {showStops ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
@@ -590,7 +592,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             >
               <div className="flex items-center gap-2">
                 <Ship className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Navi AIS & Tronchetto</span>
+                <span>{t('layers.layerShips')}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 {shipsCount > 0 && (
@@ -615,7 +617,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Compass className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Rotte & Canali Marittimi</span>
+                  <span>{language === 'it' ? 'Rotte & Canali Marittimi' : 'Maritime Shipping Routes'}</span>
                 </div>
                 {showShipRoutes ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
               </button>
@@ -635,7 +637,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 <div className="flex items-center gap-2">
                   <Waves className="w-3.5 h-3.5 text-blue-400" />
                   <div className="flex flex-col text-left">
-                    <span className="leading-tight">Alilaguna Aeroporto VCE</span>
+                    <span className="leading-tight">{t('layers.layerAlilaguna')}</span>
                     <span className="text-[9px] font-mono text-cyan-400">GTFS f-u20f-alilagunaspa</span>
                   </div>
                 </div>
@@ -663,7 +665,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Plane className="w-3.5 h-3.5 text-sky-400" />
-                  <span>Voli ADS-B (Marco Polo VCE)</span>
+                  <span>{t('layers.layerFlights')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {flightsCount > 0 && (
@@ -688,7 +690,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             >
               <div className="flex items-center gap-2">
                 <Car className="w-3.5 h-3.5 text-teal-400" />
-                <span>Parcheggi P.le Roma / Tronchetto</span>
+                <span>{t('layers.layerParkings')}</span>
               </div>
               {showParkings ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
@@ -706,7 +708,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Gauge className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Limiti Velocità Canali & Barcavelox</span>
+                  <span>{t('layers.layerCanalLimits')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {canalLimitsCount > 0 && (
@@ -732,7 +734,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Navigation className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Franchi di Tiro Ponti vs Marea</span>
+                  <span>{t('layers.layerBridgeClearance')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {bridgesCount > 0 && (
@@ -758,7 +760,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Waves className="w-3.5 h-3.5 text-purple-400" />
-                  <span>Traghetti da Parada & Gondole</span>
+                  <span>{t('layers.layerGondolas')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {gondolasCount > 0 && (
@@ -784,7 +786,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Anchor className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Rive Merci & Approdi Taxi</span>
+                  <span>{t('layers.layerPublicDocks')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {docksCount > 0 && (
@@ -810,7 +812,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Train className="w-3.5 h-3.5 text-red-400" />
-                  <span>Treni Live Ponte Libertà (RFI)</span>
+                  <span>{t('layers.layerTrains')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {trainsCount > 0 && (
@@ -836,7 +838,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Trash2 className="w-3.5 h-3.5 text-lime-400" />
-                  <span>Battelli Raccolta Rifiuti Veritas</span>
+                  <span>{t('layers.layerWasteBoats')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {wasteBoatsCount > 0 && (
@@ -860,7 +862,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-[var(--ink-3)] hover:text-[var(--ink)] cursor-pointer"
         >
           <span className="flex items-center gap-1.5 font-bold">
-            🌊 Laguna & Maree
+            🌊 {t('layers.catLagoon')}
           </span>
           {sectionOpen.lagoon ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
@@ -879,7 +881,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             >
               <div className="flex items-center gap-2">
                 <Waves className="w-3.5 h-3.5 text-blue-400" />
-                <span>Barriere MOSE & Maree CPSM</span>
+                <span>{t('layers.layerMose')}</span>
               </div>
               {showMose ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
@@ -897,7 +899,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Passerelle Acqua Alta (CPSM)</span>
+                  <span>{t('layers.layerPasserelle')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {passerelleCount > 0 && (
@@ -923,7 +925,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Anchor className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Briccole & Fanali Canale</span>
+                  <span>{t('layers.layerMarineSignals')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {briccoleCount > 0 && (
@@ -949,7 +951,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Compass className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Piattaforma CNR & Boe Onde</span>
+                  <span>{t('layers.layerOceanStations')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {oceanStationsCount > 0 && (
@@ -975,7 +977,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <LifeBuoy className="w-3.5 h-3.5 text-sky-400" />
-                  <span>Balneazione Lido & Pellestrina</span>
+                  <span>{t('layers.layerBathingWaters')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {bathingWatersCount > 0 && (
@@ -1001,7 +1003,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Layers className="w-3.5 h-3.5 text-rose-400" />
-                  <span>Subsidenza InSAR (Copernicus EGMS)</span>
+                  <span>{t('layers.layerSubsidence')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {subsidenceCount > 0 && (
@@ -1027,7 +1029,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Trees className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Barene, Velme & Rete Natura 2000</span>
+                  <span>{t('layers.layerMorphology')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {morphologyCount > 0 && (
@@ -1053,7 +1055,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Wind className="w-3.5 h-3.5 text-teal-400" />
-                  <span>Meteo, Vento & METAR Aeronautica</span>
+                  <span>{t('layers.layerMarineWind')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {marineWindCount > 0 && (
@@ -1079,7 +1081,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <ShieldAlert className="w-3.5 h-3.5 text-stone-400" />
-                  <span>Fortezze, Ottagoni & Lazzaretti</span>
+                  <span>{t('layers.layerFortresses')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {fortressesCount > 0 && (
@@ -1096,7 +1098,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             <div className="flex flex-col gap-1.5 bg-[var(--rule)]/30 p-2.5 rounded-xl border border-[var(--rule)]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-[var(--ink)] flex items-center gap-1.5">
-                  <SlidersHorizontal className="w-3 h-3 text-amber-400" /> Buffer Spaziale Cantieri
+                  <SlidersHorizontal className="w-3 h-3 text-amber-400" /> {language === 'it' ? 'Buffer Spaziale Cantieri' : 'Worksite Spatial Buffer'}
                 </span>
                 <button
                   type="button"
@@ -1107,15 +1109,15 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                       : 'bg-[var(--rule)] text-[var(--ink-2)]'
                   }`}
                 >
-                  {showSpatialBuffer ? 'Attivo' : 'Spento'}
+                  {showSpatialBuffer ? t('common.active') : t('common.inactive')}
                 </button>
               </div>
 
               {showSpatialBuffer && (
                 <div className="flex flex-col gap-1 pt-1">
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-[var(--ink-2)]">Raggio impatto:</span>
-                    <span className="font-mono font-bold text-amber-400">{bufferRadiusMeters} m</span>
+                    <span className="text-[var(--ink-2)]">{language === 'it' ? 'Raggio impatto:' : 'Impact radius:'}</span>
+                    <span className="font-mono font-bold text-amber-400">{bufferRadiusMeters} {t('common.meters')}</span>
                   </div>
                   <input
                     type="range"
@@ -1141,7 +1143,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-[var(--ink-3)] hover:text-[var(--ink)] cursor-pointer"
         >
           <span className="flex items-center gap-1.5 font-bold">
-            🏛️ Città & Ambiente
+            🏛️ {t('layers.catCity')}
           </span>
           {sectionOpen.city ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
@@ -1160,7 +1162,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             >
               <div className="flex items-center gap-2">
                 <Construction className="w-3.5 h-3.5 text-amber-400" />
-                <span>Cantieri & Suolo Pubblico</span>
+                <span>{t('layers.layerCantieri')}</span>
               </div>
               {showCantieri ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
@@ -1177,7 +1179,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             >
               <div className="flex items-center gap-2">
                 <Droplets className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Fontanelle & Ponti Raccordati</span>
+                <span>{t('layers.layerCityAssets')}</span>
               </div>
               {showCityAssets ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
@@ -1195,7 +1197,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Trees className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Verde & Alberi Monumentali</span>
+                  <span>{t('layers.layerTrees')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {treesCount > 0 && (
@@ -1221,7 +1223,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Wifi className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>Ricarica EV & Wi-Fi Pubblico</span>
+                  <span>{t('layers.layerServicesVenice')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {servicesVeniceCount > 0 && (
@@ -1246,7 +1248,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             >
               <div className="flex items-center gap-2">
                 <Wind className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Qualità Aria ARPAV</span>
+                <span>{t('layers.layerAirQuality')}</span>
               </div>
               {showAirQuality ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
@@ -1263,7 +1265,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             >
               <div className="flex items-center gap-2">
                 <Footprints className="w-3.5 h-3.5 text-rose-400" />
-                <span>Flussi Pedonali & Access Fee</span>
+                <span>{t('layers.layerPedestrianFlows')}</span>
               </div>
               {showPedestrianFlows ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
@@ -1280,7 +1282,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             >
               <div className="flex items-center gap-2">
                 <Satellite className="w-3.5 h-3.5 text-fuchsia-400" />
-                <span>Satelliti & Radar SAR (ESA/ASI)</span>
+                <span>{t('layers.layerSatellites')}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 {satellitesCount > 0 && (
@@ -1305,7 +1307,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Landmark className="w-3.5 h-3.5 text-neutral-300" />
-                  <span>I Nizioleti & Toponomastica Civici</span>
+                  <span>{t('layers.layerNizioleti')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {nizioletiCount > 0 && (
@@ -1331,7 +1333,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Landmark className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Vere da Pozzo Storiche (Wells)</span>
+                  <span>{t('layers.layerWells')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {wellsCount > 0 && (
@@ -1357,7 +1359,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Bell className="w-3.5 h-3.5 text-orange-400" />
-                  <span>Campanili & Torri Pendenti</span>
+                  <span>{t('layers.layerBellTowers')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {bellTowersCount > 0 && (
@@ -1383,7 +1385,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <HeartPulse className="w-3.5 h-3.5 text-red-400" />
-                  <span>Pontili Idroambulanze SUEM 118</span>
+                  <span>{t('layers.layerEmergencyDocks')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {emergencyDocksCount > 0 && (
@@ -1409,7 +1411,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <HeartPulse className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Defibrillatori Pubblici DAE</span>
+                  <span>{t('layers.layerDae')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {daeCount > 0 && (
@@ -1435,7 +1437,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Pill className="w-3.5 h-3.5 text-green-400" />
-                  <span>Farmacie di Turno Live</span>
+                  <span>{t('layers.layerPharmacies')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {pharmaciesCount > 0 && (
@@ -1461,7 +1463,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <ThermometerSun className="w-3.5 h-3.5 text-orange-400" />
-                  <span>Isole di Calore & LST Copernicus</span>
+                  <span>{t('layers.layerHeatIslands')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {heatIslandsCount > 0 && (
@@ -1485,7 +1487,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-[var(--ink-3)] hover:text-[var(--ink)] cursor-pointer"
         >
           <span className="flex items-center gap-1.5 font-bold text-teal-400">
-            🏛️ Open Data Veneto (dati.veneto.it)
+            🌾 {t('layers.catRegional')}
           </span>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-mono text-[var(--ink-3)] lowercase">
@@ -1510,7 +1512,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Droplets className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Acque Lagunari ARPAV (Sonde)</span>
+                  <span>{t('layers.layerLagoonWater')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {lagoonWaterCount > 0 && (
@@ -1536,7 +1538,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Building2 className="w-3.5 h-3.5 text-fuchsia-400" />
-                  <span>Strutture Ricettive & Overtourism</span>
+                  <span>{t('layers.layerAccommodations')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {accommodationsCount > 0 && (
@@ -1562,7 +1564,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Bike className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Ciclovia delle Isole (Lido & Pellestrina)</span>
+                  <span>{t('layers.layerBikeRoutes')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {bikeRoutesCount > 0 && (
@@ -1588,7 +1590,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Flower2 className="w-3.5 h-3.5 text-lime-400" />
-                  <span>Monitoraggio Pollini ARPAV (Venezia/Mestre)</span>
+                  <span>{t('layers.layerPollenStations')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {pollenStationsCount > 0 && (
@@ -1614,7 +1616,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <GitBranch className="w-3.5 h-3.5 text-sky-400" />
-                  <span>Bacino Scolante & Fiumi Tributari</span>
+                  <span>{t('layers.layerTributaries')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {tributariesCount > 0 && (
@@ -1639,7 +1641,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-[var(--ink-3)] hover:text-[var(--ink)] cursor-pointer"
           >
             <span className="flex items-center gap-1.5 font-bold">
-              ⚡ Flotta ACTV per Tipo
+              ⚡ {language === 'it' ? 'Flotta ACTV per Tipo' : 'ACTV Fleet by Vessel Type'}
             </span>
             {sectionOpen.actv ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
@@ -1653,7 +1655,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                     onClick={() => onSelectCategory('all')}
                     className="text-[10px] font-mono text-cyan-400 hover:underline cursor-pointer"
                   >
-                    Mostra tutti i tipi
+                    {language === 'it' ? 'Mostra tutti i tipi' : 'Show all types'}
                   </button>
                 </div>
               )}

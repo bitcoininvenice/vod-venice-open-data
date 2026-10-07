@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { X, Anchor, Navigation, ShieldCheck, AlertTriangle, Compass, MapPin } from 'lucide-react';
+import { X, Anchor, ShieldCheck, AlertTriangle, MapPin } from 'lucide-react';
 import { ShipItem } from '@/lib/types';
+import { useTranslation } from '@/lib/i18n';
 
 interface ShipDetailModalProps {
   ship: ShipItem | null;
@@ -13,6 +14,7 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
   ship,
   onClose
 }) => {
+  const { language, t } = useTranslation();
   if (!ship) return null;
 
   return (
@@ -42,6 +44,7 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
             type="button"
             onClick={onClose}
             className="p-1 rounded-lg hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] cursor-pointer"
+            title={t('common.close')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -50,14 +53,18 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
         {/* Berth & Destination Banner */}
         <div className="p-3 rounded-xl bg-[var(--rule)]/40 border border-[var(--rule)] flex flex-col gap-1 text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase font-mono text-[var(--ink-3)]">Ormeggio Assegnato / Banchina</span>
+            <span className="text-[10px] uppercase font-mono text-[var(--ink-3)]">
+              {language === 'it' ? 'Ormeggio Assegnato / Banchina' : 'Assigned Berth / Quay'}
+            </span>
             <span className="font-mono font-bold text-cyan-400">{ship.operator}</span>
           </div>
           <span className="text-sm font-bold text-[var(--ink)] flex items-center gap-1.5">
             <MapPin className="w-4 h-4 text-cyan-400 shrink-0" />
             {ship.berth}
           </span>
-          <span className="text-[11px] text-[var(--ink-2)]">Destinazione: <strong>{ship.destination}</strong></span>
+          <span className="text-[11px] text-[var(--ink-2)]">
+            {language === 'it' ? 'Destinazione:' : 'Destination:'} <strong>{ship.destination}</strong>
+          </span>
         </div>
 
         {/* Cruise Regulation Notice (DL 103/2021) */}
@@ -71,24 +78,28 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
               {ship.isRestrictedLagoonRoute ? (
                 <>
                   <AlertTriangle className="w-4 h-4 text-amber-400" />
-                  <span>Deviazione Obbligatoria (D.L. 103/2021)</span>
+                  <span>{language === 'it' ? 'Deviazione Obbligatoria (D.L. 103/2021)' : 'Mandatory Rerouting (Decree 103/2021)'}</span>
                 </>
               ) : (
                 <>
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <span>Nave Autorizzata al Tronchetto / Marittima</span>
+                  <span>{language === 'it' ? 'Nave Autorizzata al Tronchetto / Marittima' : 'Authorized at Tronchetto / Marittima'}</span>
                 </>
               )}
             </div>
             <p className="text-[11px] leading-relaxed opacity-90 text-[var(--ink)]">
               {ship.isRestrictedLagoonRoute ? (
-                <>
-                  Questa nave ha stazza <strong>{ship.grossTonnage.toLocaleString()} GT (&gt;25.000 GT)</strong>. Dal 2021 è vietato il passaggio nel Bacino di San Marco e nel Canale della Giudecca. La nave è instradata via Canale dei Petroli a <strong>Porto Marghera</strong>.
-                </>
+                language === 'it' ? (
+                  <>Questa nave ha stazza <strong>{ship.grossTonnage.toLocaleString()} GT (&gt;25.000 GT)</strong>. Dal 2021 è vietato il passaggio nel Bacino di San Marco e Canale della Giudecca. La nave è instradata via Canale dei Petroli a <strong>Porto Marghera</strong>.</>
+                ) : (
+                  <>This ship measures <strong>{ship.grossTonnage.toLocaleString()} GT (&gt;25,000 GT)</strong>. Since 2021, passing through San Marco Basin and Giudecca Channel is prohibited. Rerouted via Canale dei Petroli to <strong>Porto Marghera</strong>.</>
+                )
               ) : (
-                <>
-                  Questa nave ha stazza <strong>{ship.grossTonnage.toLocaleString()} GT (&lt;25.000 GT)</strong>. Rientra nei limiti di salvaguardia della Laguna e può attraccare regolarmente alla <strong>Stazione Marittima del Tronchetto</strong> o a San Basilio.
-                </>
+                language === 'it' ? (
+                  <>Questa nave ha stazza <strong>{ship.grossTonnage.toLocaleString()} GT (&lt;25.000 GT)</strong>. Rientra nei limiti di salvaguardia e può attraccare regolarmente alla <strong>Stazione Marittima del Tronchetto</strong> o a San Basilio.</>
+                ) : (
+                  <>This ship measures <strong>{ship.grossTonnage.toLocaleString()} GT (&lt;25,000 GT)</strong>. It complies with safeguarding limits and docks at <strong>Tronchetto Passenger Terminal</strong> or San Basilio.</>
+                )
               )}
             </p>
           </div>
@@ -97,27 +108,37 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
         {/* Specs Grid */}
         <div className="grid grid-cols-3 gap-2 text-xs">
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
-            <span className="text-[10px] text-[var(--ink-3)] block font-mono">Stazza Lorda</span>
+            <span className="text-[10px] text-[var(--ink-3)] block font-mono">
+              {language === 'it' ? 'Stazza Lorda' : 'Gross Tonnage'}
+            </span>
             <span className="font-mono font-bold text-[var(--ink)] text-sm">{ship.grossTonnage.toLocaleString()} GT</span>
           </div>
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
-            <span className="text-[10px] text-[var(--ink-3)] block font-mono">Lunghezza</span>
-            <span className="font-mono font-bold text-cyan-400 text-sm">{ship.lengthMeters} metri</span>
+            <span className="text-[10px] text-[var(--ink-3)] block font-mono">
+              {language === 'it' ? 'Lunghezza' : 'Length'}
+            </span>
+            <span className="font-mono font-bold text-cyan-400 text-sm">{ship.lengthMeters} {t('common.meters')}</span>
           </div>
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
-            <span className="text-[10px] text-[var(--ink-3)] block font-mono">Pescaggio</span>
-            <span className="font-mono font-bold text-emerald-400 text-sm">{ship.draughtMeters} m</span>
+            <span className="text-[10px] text-[var(--ink-3)] block font-mono">
+              {language === 'it' ? 'Pescaggio' : 'Draught'}
+            </span>
+            <span className="font-mono font-bold text-emerald-400 text-sm">{ship.draughtMeters} {t('common.meters')}</span>
           </div>
         </div>
 
         {/* Navigation & Telemetry */}
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
-            <span className="text-[10px] text-[var(--ink-3)] block font-mono">Velocità Navigazione</span>
-            <span className="font-mono font-bold text-cyan-300">{ship.speedKnots} nodi</span>
+            <span className="text-[10px] text-[var(--ink-3)] block font-mono">
+              {language === 'it' ? 'Velocità Navigazione' : 'Speed'}
+            </span>
+            <span className="font-mono font-bold text-cyan-300">{ship.speedKnots} {t('common.knots')}</span>
           </div>
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
-            <span className="text-[10px] text-[var(--ink-3)] block font-mono">Rotta (Heading)</span>
+            <span className="text-[10px] text-[var(--ink-3)] block font-mono">
+              {language === 'it' ? 'Rotta (Heading)' : 'Heading'}
+            </span>
             <span className="font-mono font-bold text-sky-400">{ship.heading}°</span>
           </div>
         </div>
@@ -130,7 +151,7 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
             onClick={onClose}
             className="px-3.5 py-1.5 rounded-xl bg-cyan-500 text-white font-medium hover:bg-cyan-400 transition-all cursor-pointer"
           >
-            Chiudi
+            {t('common.close')}
           </button>
         </div>
       </div>

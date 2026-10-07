@@ -28,6 +28,7 @@ import {
   Wifi
 } from 'lucide-react';
 import { PlatformMetrics } from '@/lib/types';
+import { useTranslation } from '@/lib/i18n';
 
 interface StatsModalProps {
   isOpen: boolean;
@@ -37,6 +38,7 @@ interface StatsModalProps {
 type MetricCategory = 'all' | 'maree_aria' | 'laguna_scienza' | 'marittimo' | 'trasporti' | 'aeroporto' | 'satelliti' | 'pedoni_citta';
 
 export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
+  const { language, t } = useTranslation();
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null);
   const [activeTab, setActiveTab] = useState<MetricCategory>('all');
 
@@ -67,11 +69,11 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                   Venice Open Data Analytics
                 </span>
                 <span className="text-[10px] font-mono text-emerald-400 font-bold">
-                  ● 9 SETTORI URBANI INCROCIATI
+                  ● {language === 'it' ? '9 SETTORI URBANI INCROCIATI' : '9 URBAN SECTORS INTERSECTED'}
                 </span>
               </div>
               <h3 className="text-lg font-bold text-[var(--ink)] leading-snug">
-                Cruscotto Metriche Geospaziali & Dati Aperti di Venezia
+                {language === 'it' ? 'Cruscotto Metriche Geospaziali & Dati Aperti di Venezia' : 'Geospatial Metrics & Venice Open Data Dashboard'}
               </h3>
             </div>
           </div>
@@ -87,14 +89,14 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
         {/* Category Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs">
           {[
-            { id: 'all', label: 'Tutti i Dati', count: 26 },
-            { id: 'maree_aria', label: '🌊 Maree & Aria ARPAV', count: 4 },
-            { id: 'laguna_scienza', label: '🔬 CNR, Onde & Passerelle', count: 4 },
-            { id: 'marittimo', label: '🚢 Porto, AIS & Canali', count: 3 },
-            { id: 'trasporti', label: '🚤 ACTV & Alilaguna', count: 4 },
-            { id: 'aeroporto', label: '✈️ Voli & VCE Hub', count: 2 },
-            { id: 'satelliti', label: '🛰️ Satelliti & Radar SAR', count: 2 },
-            { id: 'pedoni_citta', label: '🚶 Flussi & Servizi Città', count: 7 }
+            { id: 'all', label: language === 'it' ? 'Tutti i Dati' : 'All Data', count: 26 },
+            { id: 'maree_aria', label: language === 'it' ? '🌊 Maree & Aria ARPAV' : '🌊 Tides & ARPAV Air', count: 4 },
+            { id: 'laguna_scienza', label: language === 'it' ? '🔬 CNR, Onde & Passerelle' : '🔬 CNR, Waves & Walkways', count: 4 },
+            { id: 'marittimo', label: language === 'it' ? '🚢 Porto, AIS & Canali' : '🚢 Port, AIS & Channels', count: 3 },
+            { id: 'trasporti', label: language === 'it' ? '🚤 ACTV & Alilaguna' : '🚤 ACTV & Alilaguna', count: 4 },
+            { id: 'aeroporto', label: language === 'it' ? '✈️ Voli & VCE Hub' : '✈️ Flights & VCE Hub', count: 2 },
+            { id: 'satelliti', label: language === 'it' ? '🛰️ Satelliti & Radar SAR' : '🛰️ Satellites & SAR Radar', count: 2 },
+            { id: 'pedoni_citta', label: language === 'it' ? '🚶 Flussi & Servizi Città' : '🚶 Pedestrian Flows & City Services', count: 7 }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -561,7 +563,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
         {/* Source citation */}
         <div className="text-[11px] text-[var(--ink-3)] leading-relaxed pt-2 border-t border-[var(--rule)] flex flex-wrap gap-x-4 gap-y-1 items-center justify-between">
           <span>
-            <b>Fonti Istituzionali:</b> CPSM Centro Maree · ARPAV · CNR-ISMAR · ISPRA RML · Guardia Costiera VTS · ENAV/OpenSky · Smart Control Room Tronchetto · Comune di Venezia (dati.venezia.it) · ACTV / AVM · Alilaguna S.p.A. · Venis S.p.A. · Copernicus Data Space (ESA) · ASI Open Data · CelesTrak NORAD · Veritas.
+            <b>{language === 'it' ? 'Fonti Istituzionali:' : 'Institutional Sources:'}</b> CPSM Centro Maree · ARPAV · CNR-ISMAR · ISPRA RML · Guardia Costiera VTS · ENAV/OpenSky · Smart Control Room Tronchetto · Comune di Venezia (dati.venezia.it) · ACTV / AVM · Alilaguna S.p.A. · Venis S.p.A. · Copernicus Data Space (ESA) · ASI Open Data · CelesTrak NORAD · Veritas.
           </span>
           <span className="font-mono text-[10px] text-cyan-400">
             PostgreSQL / PostGIS Engine

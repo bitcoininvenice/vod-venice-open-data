@@ -3,6 +3,7 @@
 import React from 'react';
 import { X, Plane, Waves, ExternalLink, Ship, Clock, Compass, ShieldCheck } from 'lucide-react';
 import { AlilagunaRoute, AlilagunaStop, AlilagunaBoat } from '@/lib/types';
+import { useTranslation } from '@/lib/i18n';
 
 interface AlilagunaDetailModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
   stops,
   boats
 }) => {
+  const { language, t } = useTranslation();
   if (!isOpen) return null;
 
   return (
@@ -44,11 +46,11 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
                   Transitland: f-u20f-alilagunaspa <ExternalLink className="w-2.5 h-2.5" />
                 </a>
                 <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> GTFS ATTIVO
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> GTFS LIVE
                 </span>
               </div>
               <h3 className="text-lg font-bold text-[var(--ink)] leading-snug">
-                Servizio di Navigazione Aeroportuale Alilaguna
+                {t('alilagunaModal.title')}
               </h3>
             </div>
           </div>
@@ -56,6 +58,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
             type="button"
             onClick={onClose}
             className="p-1 rounded-lg hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] cursor-pointer"
+            title={t('common.close')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -68,25 +71,35 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
               <Plane className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-[10px] uppercase font-mono text-[var(--ink-3)] font-bold">Interscambio Aeroporto VCE</span>
+              <span className="text-[10px] uppercase font-mono text-[var(--ink-3)] font-bold">
+                {language === 'it' ? 'Interscambio Aeroporto VCE' : 'VCE Airport Interchange'}
+              </span>
               <p className="font-semibold text-[var(--ink)]">
-                Darsena Aeroporto Marco Polo (Tessera) ↔ Centro Storico Venezia
+                {language === 'it'
+                  ? 'Darsena Aeroporto Marco Polo (Tessera) ↔ Centro Storico Venezia'
+                  : 'Marco Polo Airport Dock (Tessera) ↔ Venice Historic Center'}
               </p>
               <p className="text-[11px] text-[var(--ink-2)]">
-                Accesso coperto con tapis roulant dal terminal arrivi alla darsena acquea (7 min a piedi).
+                {language === 'it'
+                  ? 'Accesso coperto con tapis roulant dal terminal arrivi alla darsena acquea (7 min a piedi).'
+                  : 'Covered moving walkway connection from arrival terminal to the water dock (7 min walk).'}
               </p>
             </div>
           </div>
           <div className="bg-[var(--ground)]/70 px-3 py-1.5 rounded-lg border border-[var(--rule)] shrink-0 text-right">
-            <span className="text-[10px] text-[var(--ink-3)] block font-mono">Frequenza media</span>
-            <span className="font-mono font-bold text-amber-400">Ogni 15-30 min</span>
+            <span className="text-[10px] text-[var(--ink-3)] block font-mono">
+              {language === 'it' ? 'Frequenza media' : 'Avg. frequency'}
+            </span>
+            <span className="font-mono font-bold text-amber-400">
+              {language === 'it' ? 'Ogni 15-30 min' : 'Every 15-30 min'}
+            </span>
           </div>
         </div>
 
         {/* Lines Grid */}
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
-            <Compass className="w-4 h-4 text-cyan-400" /> Linee di Navigazione Ufficiali
+            <Compass className="w-4 h-4 text-cyan-400" /> {t('alilagunaModal.linesTitle')}
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             {routes.map((r) => (
@@ -104,20 +117,20 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
                     </span>
                   </div>
                   <span className="text-[10px] font-mono text-cyan-400 font-bold flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> Ogni {r.frequencyMinutes}&apos;
+                    <Clock className="w-3 h-3" /> {language === 'it' ? `Ogni ${r.frequencyMinutes}'` : `Every ${r.frequencyMinutes}'`}
                   </span>
                 </div>
 
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[11px] font-medium text-[var(--ink)]">{r.description}</span>
                   <span className="text-[10px] font-mono text-[var(--ink-3)] truncate">
-                    Da: {r.terminalA} ➔ A: {r.terminalB}
+                    {language === 'it' ? 'Da' : 'From'}: {r.terminalA} ➔ {language === 'it' ? 'A' : 'To'}: {r.terminalB}
                   </span>
                 </div>
 
                 <div className="pt-1.5 border-t border-[var(--rule)] flex items-center justify-between text-[10px] font-mono text-[var(--ink-2)]">
-                  <span>{r.stops.length} fermate / pontili</span>
-                  <span className="text-emerald-400 font-semibold">Attiva 365 gg</span>
+                  <span>{r.stops.length} {language === 'it' ? 'fermate / pontili' : 'stops / piers'}</span>
+                  <span className="text-emerald-400 font-semibold">{language === 'it' ? 'Attiva 365 gg' : 'Active 365 days'}</span>
                 </div>
               </div>
             ))}
@@ -127,7 +140,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
         {/* Active Fleet Telemetry */}
         <div className="flex flex-col gap-2 pt-1 border-t border-[var(--rule)]">
           <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
-            <Waves className="w-4 h-4 text-blue-400" /> Battelli Alilaguna in Servizio Live ({boats.length} Mezzi)
+            <Waves className="w-4 h-4 text-blue-400" /> {language === 'it' ? 'Battelli Alilaguna in Servizio Live' : 'Live Alilaguna Vessels in Service'} ({boats.length} {language === 'it' ? 'Mezzi' : 'Vessels'})
           </span>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
             {boats.map((b) => (
@@ -144,7 +157,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
                   />
                 </div>
                 <span className="text-[10px] font-mono text-cyan-400 truncate">
-                  Prossima: {b.nextStop}
+                  {language === 'it' ? 'Prossima:' : 'Next:'} {b.nextStop}
                 </span>
                 <div className="flex justify-between items-center text-[10px] font-mono pt-1 border-t border-[var(--rule)] text-[var(--ink-3)]">
                   <span>{b.speedKmh} km/h</span>
@@ -159,15 +172,18 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
         <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] text-xs flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
             <span className="font-semibold text-cyan-400 flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" /> Specifiche Open Data Transitland
+              <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" /> {language === 'it' ? 'Specifiche Open Data Transitland' : 'Transitland Open Data Specs'}
             </span>
-            <span className="text-[10px] font-mono text-[var(--ink-3)]">59 Versioni Archiviate</span>
+            <span className="text-[10px] font-mono text-[var(--ink-3)]">
+              {language === 'it' ? '59 Versioni Archiviate' : '59 Archived Releases'}
+            </span>
           </div>
           <p className="text-[11px] leading-relaxed text-[var(--ink-2)]">
-            Il feed GTFS di Alilaguna è catalogato internazionalmente su Transitland con Onestop ID{' '}
-            <code className="text-amber-300 font-mono text-[10px] px-1 py-0.5 rounded bg-amber-500/10">f-u20f-alilagunaspa</code>.
-            Fornisce i percorsi polilineari ad alta precisione tra la Laguna Nord, Murano, il Canal Grande e il Canale della Giudecca,
-            integrando la rete del trasporto pubblico comunale di ACTV.
+            {language === 'it' ? (
+              <>Il feed GTFS di Alilaguna è catalogato internazionalmente su Transitland con Onestop ID <code className="text-amber-300 font-mono text-[10px] px-1 py-0.5 rounded bg-amber-500/10">f-u20f-alilagunaspa</code>. Fornisce i percorsi polilineari ad alta precisione tra la Laguna Nord, Murano, il Canal Grande e il Canale della Giudecca, integrando la rete del trasporto pubblico comunale di ACTV.</>
+            ) : (
+              <>The Alilaguna GTFS feed is globally cataloged on Transitland under Onestop ID <code className="text-amber-300 font-mono text-[10px] px-1 py-0.5 rounded bg-amber-500/10">f-u20f-alilagunaspa</code>. It provides high-precision polyline trajectories connecting North Lagoon, Murano, Grand Canal, and Giudecca, complementing ACTV public scheduled transport.</>
+            )}
           </p>
         </div>
 
@@ -179,7 +195,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
             onClick={onClose}
             className="px-4 py-1.5 rounded-xl bg-blue-500 text-white font-medium hover:bg-blue-400 transition-all cursor-pointer shadow-lg shadow-blue-500/20"
           >
-            Chiudi Scheda
+            {t('common.close')}
           </button>
         </div>
       </div>
