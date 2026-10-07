@@ -135,7 +135,7 @@ export const itTranslations: Translations = {
   },
   tutorial: {
     step1Badge: 'BENVENUTO',
-    step1Title: 'Gemello Digitale di Venezia',
+    step1Title: 'Benvenuto in Venice Open Data',
     step1Subtitle: 'Una piattaforma geospaziale unificata per monitorare la mobilità, la laguna e il patrimonio storico di Venezia.',
     itemMobility: 'Mobilità Acquea & Terrestre: Vaporetti ACTV live, navette Alilaguna, treni RFI sul Ponte della Libertà, limiti di velocità canali (Barcavelox) e stazi gondole.',
     itemLagoon: 'Laguna, Meteo & Ambiente: Barriere MOSE, bollettino METAR Aeronautica Militare (LIPZ), anemometri Scirocco/Bora, passerelle acqua alta, barene Natura 2000 e subsidenza radar InSAR.',
