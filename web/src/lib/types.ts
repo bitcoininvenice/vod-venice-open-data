@@ -285,6 +285,12 @@ export interface CityAssetItem {
   sestiere: string;
   details: string;
   accessibilityNote?: string;
+  typology?: string;
+  operator?: string;
+  waterSource?: string;
+  campaign?: string;
+  toponomasticSource?: string;
+  potable?: boolean;
 }
 
 export interface ParkingItem {

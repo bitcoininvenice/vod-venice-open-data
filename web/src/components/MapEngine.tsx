@@ -62,7 +62,7 @@ import type { RenderContext } from './map/renderContext';
 import { drawRoutes, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, drawMarineSignals, drawOceanStations, drawCanalLimits, drawBridges, drawGondolas, drawDocks, drawMarineWind } from './map/lagoonLayers';
-import { drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawServicesVenice, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
+import { drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 
 
@@ -118,7 +118,8 @@ export interface MapEngineProps {
   bathingWaters?: BathingWaterItem[];
   showTrees?: boolean;
   trees?: UrbanTreeItem[];
-  showServicesVenice?: boolean;
+  showEvCharging?: boolean;
+  showWifiHotspots?: boolean;
   evCharging?: EvChargingItem[];
   wifiHotspots?: WifiHotspotItem[];
   onSelectFeature?: (feature: VeniceFeatureSelected) => void;
@@ -232,7 +233,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   bathingWaters = [],
   showTrees = true,
   trees = [],
-  showServicesVenice = true,
+  showEvCharging = true,
+  showWifiHotspots = true,
   evCharging = [],
   wifiHotspots = [],
   onSelectFeature,
@@ -452,7 +454,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     const h = containerRef.current.clientHeight || (window.innerHeight - 56);
     const factor = 1.35;
     setCamera((prev) => {
-      const newS = Math.min(0.25, prev.s * factor);
+      const newS = Math.min(1.25, prev.s * factor);
       const centerMapX = prev.x0 + w / (2 * prev.s);
       const centerMapY = prev.y0 + h / (2 * prev.s);
       return {
@@ -524,7 +526,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     const mouseY = e.clientY - rect.top;
 
     const zoomFactor = e.deltaY < 0 ? 1.15 : 0.87;
-    const newScale = Math.max(containerRef.current.clientWidth / W, Math.min(0.2, camera.s * zoomFactor));
+    const newScale = Math.max(containerRef.current.clientWidth / W, Math.min(1.25, camera.s * zoomFactor));
 
     // Anchor zoom at mouse pointer
     const newX0 = camera.x0 + mouseX / camera.s - mouseX / newScale;
@@ -627,7 +629,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       const newDist = Math.hypot(x2 - x1, y2 - y1);
       const ratio = newDist / (st.dist || 1);
 
-      const newScale = Math.max(containerRef.current.clientWidth / W, Math.min(0.25, st.startScale * ratio));
+      const newScale = Math.max(containerRef.current.clientWidth / W, Math.min(1.25, st.startScale * ratio));
       const midX = (x1 + x2) / 2;
       const midY = (y1 + y2) / 2;
 
@@ -918,39 +920,39 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
     }
 
-    // 1l. Hit test EV Charging & Wi-Fi Hotspots
-    if (showServicesVenice) {
-      if (evCharging && evCharging.length > 0) {
-        for (const ev of evCharging) {
-          const ex = (mx(ev.lon) - camera.x0) * camera.s;
-          const ey = (my(ev.lat) - camera.y0) * camera.s;
-          if (Math.hypot(clickX - ex, clickY - ey) <= 20) {
-            if (onSelectFeature) {
-              onSelectFeature({ type: 'evCharging', data: ev });
-              setSelectedVehicle(null);
-              setSelectedFlight(null);
-              setSelectedShipOnMap(null);
-              setSelectedAlilagunaBoat(null);
-              setSelectedSatellite(null);
-              return;
-            }
+    // 1l. Hit test Colonnine Ricarica EV
+    if (showEvCharging && evCharging && evCharging.length > 0) {
+      for (const ev of evCharging) {
+        const ex = (mx(ev.lon) - camera.x0) * camera.s;
+        const ey = (my(ev.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - ex, clickY - ey) <= 20) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'evCharging', data: ev });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
           }
         }
       }
-      if (wifiHotspots && wifiHotspots.length > 0) {
-        for (const wf of wifiHotspots) {
-          const wx = (mx(wf.lon) - camera.x0) * camera.s;
-          const wy = (my(wf.lat) - camera.y0) * camera.s;
-          if (Math.hypot(clickX - wx, clickY - wy) <= 20) {
-            if (onSelectFeature) {
-              onSelectFeature({ type: 'wifiHotspot', data: wf });
-              setSelectedVehicle(null);
-              setSelectedFlight(null);
-              setSelectedShipOnMap(null);
-              setSelectedAlilagunaBoat(null);
-              setSelectedSatellite(null);
-              return;
-            }
+    }
+
+    // 1m. Hit test Hotspot Wi-Fi VeniceConnected
+    if (showWifiHotspots && wifiHotspots && wifiHotspots.length > 0) {
+      for (const wf of wifiHotspots) {
+        const wx = (mx(wf.lon) - camera.x0) * camera.s;
+        const wy = (my(wf.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - wx, clickY - wy) <= 20) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'wifiHotspot', data: wf });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
           }
         }
       }
@@ -1410,6 +1412,25 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
     }
 
+    // 1ab. Hit test Fontanelle Potabili (City Assets - Fountains)
+    if (showCityAssets && fountains && fountains.length > 0) {
+      for (const f of fountains) {
+        const fx = (mx(f.lon) - camera.x0) * camera.s;
+        const fy = (my(f.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - fx, clickY - fy) <= 16) {
+          if (onSelectFeature) {
+            onSelectFeature({ type: 'fountain', data: f });
+            setSelectedVehicle(null);
+            setSelectedFlight(null);
+            setSelectedShipOnMap(null);
+            setSelectedAlilagunaBoat(null);
+            setSelectedSatellite(null);
+            return;
+          }
+        }
+      }
+    }
+
     // 2. Hit test Cantieri (Worksites)
     if (showCantieri) {
       for (const c of cantieri) {
@@ -1690,7 +1711,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         showRealtimeVehicles,
         showRoutes,
         showSatellites,
-        showServicesVenice,
+        showEvCharging,
+        showWifiHotspots,
         showShipRoutes,
         showShips,
         showSpatialBuffer,
@@ -1757,7 +1779,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
       drawTrees(rc);
 
-      drawServicesVenice(rc);
+      drawEvCharging(rc);
+      drawWifiHotspots(rc);
 
       drawCanalLimits(rc);
 
@@ -1861,7 +1884,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     bathingWaters,
     showTrees,
     trees,
-    showServicesVenice,
+    showEvCharging,
+    showWifiHotspots,
     evCharging,
     wifiHotspots,
     bufferRadiusMeters,
@@ -1986,8 +2010,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               typeof window !== 'undefined' && window.innerWidth < 640
                 ? 64
                 : selectedVehicle.screenY > 210
-                ? selectedVehicle.screenY - 180
-                : selectedVehicle.screenY + 25
+                  ? selectedVehicle.screenY - 180
+                  : selectedVehicle.screenY + 25
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -2138,11 +2162,10 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           </div>
 
           {/* Regulatory compliance pill */}
-          <div className={`p-2 rounded-xl text-[11px] font-mono flex items-center gap-1.5 border ${
-            selectedShipOnMap.isRestrictedLagoonRoute
-              ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
-              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-          }`}>
+          <div className={`p-2 rounded-xl text-[11px] font-mono flex items-center gap-1.5 border ${selectedShipOnMap.isRestrictedLagoonRoute
+            ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+            : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+            }`}>
             <span>
               {selectedShipOnMap.isRestrictedLagoonRoute
                 ? t('map.restrictedNotice')

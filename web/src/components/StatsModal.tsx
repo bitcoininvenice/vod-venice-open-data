@@ -354,7 +354,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                     <Droplets className="w-4 h-4 text-cyan-400" />
                     <span>{t('ui.stats.fountainsTitle')}</span>
                   </div>
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300">dati.venezia.it</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300">Veritas · Venice Tap Water</span>
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-cyan-400">

@@ -356,65 +356,67 @@ export function drawTrees(rc: RenderContext): void {
   }
 }
 
-export function drawServicesVenice(rc: RenderContext): void {
-  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showServicesVenice, evCharging, wifiHotspots } = rc;
-  // 24. Render Colonnine Ricarica EV & Wi-Fi Hotspots
-  if (showServicesVenice) {
-    if (evCharging && evCharging.length > 0) {
-      for (const ev of evCharging) {
-        const ex = sx(mx(ev.lon));
-        const ey = sy(my(ev.lat));
-        ctx.save();
-        ctx.fillStyle = '#eab308';
-        ctx.beginPath();
-        ctx.arc(ex, ey, 5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
+export function drawEvCharging(rc: RenderContext): void {
+  const { ctx, isDark, sx, sy, mx, my, camera, showEvCharging, evCharging } = rc;
+  // 24a. Render Colonnine Ricarica EV (Hub Piazzale Roma & Tronchetto)
+  if (showEvCharging && evCharging && evCharging.length > 0) {
+    for (const ev of evCharging) {
+      const ex = sx(mx(ev.lon));
+      const ey = sy(my(ev.lat));
+      ctx.save();
+      ctx.fillStyle = '#eab308';
+      ctx.beginPath();
+      ctx.arc(ex, ey, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
 
-        // EV badge text
-        ctx.fillStyle = '#000000';
-        ctx.font = 'bold 6.5px "DM Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('EV', ex, ey);
-        ctx.textAlign = 'start';
-        ctx.textBaseline = 'alphabetic';
+      // EV badge text
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 6.5px "DM Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('EV', ex, ey);
+      ctx.textAlign = 'start';
+      ctx.textBaseline = 'alphabetic';
 
-        if (camera.s > 0.035) {
-          ctx.font = '600 8px "DM Mono", monospace';
-          ctx.fillStyle = isDark ? '#fde047' : '#a16207';
-          ctx.fillText(`${ev.availableSockets}/${ev.totalSockets} EV`, ex + 8, ey + 3);
-        }
-        ctx.restore();
+      if (camera.s > 0.035) {
+        ctx.font = '600 8px "DM Mono", monospace';
+        ctx.fillStyle = isDark ? '#fde047' : '#a16207';
+        ctx.fillText(`${ev.availableSockets}/${ev.totalSockets} EV`, ex + 8, ey + 3);
       }
+      ctx.restore();
     }
+  }
+}
 
-    if (wifiHotspots && wifiHotspots.length > 0) {
-      for (const wf of wifiHotspots) {
-        const wx = sx(mx(wf.lon));
-        const wy = sy(my(wf.lat));
-        ctx.save();
-        if (wx < -10 || wx > cw + 10 || wy < -10 || wy > ch + 10) {
-          ctx.restore();
-          continue;
-        }
-        ctx.fillStyle = wf.status === 'ATTIVO' ? '#6366f1' : '#64748b';
-        ctx.beginPath();
-        ctx.arc(wx, wy, 4.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        if (camera.s > 0.05) {
-          ctx.font = '600 8px "DM Mono", monospace';
-          ctx.fillStyle = isDark ? '#818cf8' : '#4338ca';
-          ctx.fillText(`Wi-Fi · ${wf.name.slice(0, 28)}`, wx + 7, wy + 3);
-        }
+export function drawWifiHotspots(rc: RenderContext): void {
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showWifiHotspots, wifiHotspots } = rc;
+  // 24b. Render Hotspot Wi-Fi VeniceConnected (Comune di Venezia / Venis)
+  if (showWifiHotspots && wifiHotspots && wifiHotspots.length > 0) {
+    for (const wf of wifiHotspots) {
+      const wx = sx(mx(wf.lon));
+      const wy = sy(my(wf.lat));
+      ctx.save();
+      if (wx < -10 || wx > cw + 10 || wy < -10 || wy > ch + 10) {
         ctx.restore();
+        continue;
       }
+      ctx.fillStyle = wf.status === 'ATTIVO' ? '#6366f1' : '#64748b';
+      ctx.beginPath();
+      ctx.arc(wx, wy, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      if (camera.s > 0.05) {
+        ctx.font = '600 8px "DM Mono", monospace';
+        ctx.fillStyle = isDark ? '#818cf8' : '#4338ca';
+        ctx.fillText(`Wi-Fi · ${wf.name.slice(0, 28)}`, wx + 7, wy + 3);
+      }
+      ctx.restore();
     }
   }
 }

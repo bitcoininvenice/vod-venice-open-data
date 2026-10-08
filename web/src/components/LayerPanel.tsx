@@ -96,9 +96,12 @@ interface LayerPanelProps {
   showTrees?: boolean;
   onToggleTrees?: () => void;
   treesCount?: number;
-  showServicesVenice?: boolean;
-  onToggleServicesVenice?: () => void;
-  servicesVeniceCount?: number;
+  showWifiHotspots?: boolean;
+  onToggleWifiHotspots?: () => void;
+  wifiHotspotsCount?: number;
+  showEvCharging?: boolean;
+  onToggleEvCharging?: () => void;
+  evChargingCount?: number;
   showCityAssets: boolean;
   onToggleCityAssets: () => void;
   showParkings: boolean;
@@ -195,6 +198,21 @@ interface LayerPanelProps {
   onClose?: () => void;
 }
 
+const SubCategoryHeader: React.FC<{
+  icon: React.ReactNode;
+  label: string;
+  isFirst?: boolean;
+}> = ({ icon, label, isFirst = false }) => (
+  <div
+    className={`flex items-center gap-1.5 px-1 pb-1 text-[10px] font-mono font-semibold uppercase tracking-wider text-[var(--ink-3)] border-b border-[var(--rule)]/40 ${
+      isFirst ? 'pt-0.5' : 'pt-2.5'
+    }`}
+  >
+    {icon}
+    <span>{label}</span>
+  </div>
+);
+
 export const LayerPanel: React.FC<LayerPanelProps> = ({
   onTurnAllOff,
   onTurnAllOn,
@@ -244,9 +262,12 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   showTrees = true,
   onToggleTrees,
   treesCount = 0,
-  showServicesVenice = true,
-  onToggleServicesVenice,
-  servicesVeniceCount = 0,
+  showWifiHotspots = true,
+  onToggleWifiHotspots,
+  wifiHotspotsCount = 0,
+  showEvCharging = true,
+  onToggleEvCharging,
+  evChargingCount = 0,
   showCityAssets,
   onToggleCityAssets,
   showParkings,
@@ -549,6 +570,13 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
 
         {sectionOpen.mobility && (
           <div className="flex flex-col gap-1.5 animate-in fade-in duration-150">
+            {/* Sotto-categoria 1: Trasporto Pubblico ACTV & Alilaguna */}
+            <SubCategoryHeader
+              icon={<Navigation className="w-3 h-3 text-cyan-400" />}
+              label={t('layers.subPublicTransit')}
+              isFirst
+            />
+
             {/* 1. Vehicles */}
             <button
               type="button"
@@ -630,47 +658,6 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </div>
             </button>
 
-            {/* 4. Ships & Cruise Vessels (Tronchetto / Marittima AIS) */}
-            <button
-              type="button"
-              onClick={onToggleShips}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showShips
-                  ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40 shadow-sm'
-                  : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
-            >
-              <div className="flex items-center gap-2">
-                <Ship className="w-3.5 h-3.5 text-indigo-400" />
-                <span>{t('layers.layerShips')}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {shipsCount > 0 && (
-                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-bold">
-                    {shipsCount}
-                  </span>
-                )}
-                {showShips ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-              </div>
-            </button>
-
-            {/* 4b. Maritime Navigational Routes */}
-            {onToggleShipRoutes && (
-              <button
-                type="button"
-                onClick={onToggleShipRoutes}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showShipRoutes
-                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-sm'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Compass className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{t('ui.layerPanel.rotteCanaliMarittimi')}</span>
-                </div>
-                {showShipRoutes ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-              </button>
-            )}
-
             {/* 4c. Alilaguna S.p.A. Transitland Feed */}
             {onToggleAlilaguna && (
               <button
@@ -699,53 +686,11 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </button>
             )}
 
-            {/* 5. Airplanes / ADS-B Flights */}
-            {onToggleFlights && (
-              <button
-                type="button"
-                onClick={onToggleFlights}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showFlights
-                    ? 'bg-sky-500/10 text-sky-400 border-sky-500/30'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Plane className="w-3.5 h-3.5 text-sky-400" />
-                  <span>{t('layers.layerFlights')}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {flightsCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-bold">
-                      {flightsCount}
-                    </span>
-                  )}
-                  {showFlights ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-            )}
-
-            {/* 6. Parkings Live (Piazzale Roma, Tronchetto & Terraferma) */}
-            <button
-              type="button"
-              onClick={onToggleParkings}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showParkings
-                  ? 'bg-teal-500/10 text-teal-300 border-teal-500/30'
-                  : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
-            >
-              <div className="flex items-center gap-2">
-                <Car className="w-3.5 h-3.5 text-teal-400" />
-                <span>{t('layers.layerParkings')}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {parkingsCount > 0 && (
-                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-teal-500/20 text-teal-300 font-bold">
-                    {parkingsCount}
-                  </span>
-                )}
-                {showParkings ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-              </div>
-            </button>
+            {/* Sotto-categoria 2: Viabilità Canali & Navigazione */}
+            <SubCategoryHeader
+              icon={<Gauge className="w-3 h-3 text-amber-400" />}
+              label={t('layers.subCanalTraffic')}
+            />
 
             {/* Limiti Velocità & Barcavelox */}
             {onToggleCanalLimits && (
@@ -847,6 +792,78 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </button>
             )}
 
+            {/* Sotto-categoria 3: Lunga Percorrenza & Logistica */}
+            <SubCategoryHeader
+              icon={<Compass className="w-3 h-3 text-indigo-400" />}
+              label={t('layers.subRegionalLogistics')}
+            />
+
+            {/* 4. Ships & Cruise Vessels (Tronchetto / Marittima AIS) */}
+            <button
+              type="button"
+              onClick={onToggleShips}
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showShips
+                  ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40 shadow-sm'
+                  : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <Ship className="w-3.5 h-3.5 text-indigo-400" />
+                <span>{t('layers.layerShips')}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {shipsCount > 0 && (
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-bold">
+                    {shipsCount}
+                  </span>
+                )}
+                {showShips ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              </div>
+            </button>
+
+            {/* 4b. Maritime Navigational Routes */}
+            {onToggleShipRoutes && (
+              <button
+                type="button"
+                onClick={onToggleShipRoutes}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showShipRoutes
+                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Compass className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{t('ui.layerPanel.rotteCanaliMarittimi')}</span>
+                </div>
+                {showShipRoutes ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              </button>
+            )}
+
+            {/* 5. Airplanes / ADS-B Flights */}
+            {onToggleFlights && (
+              <button
+                type="button"
+                onClick={onToggleFlights}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showFlights
+                    ? 'bg-sky-500/10 text-sky-400 border-sky-500/30'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Plane className="w-3.5 h-3.5 text-sky-400" />
+                  <span>{t('layers.layerFlights')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {flightsCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-bold">
+                      {flightsCount}
+                    </span>
+                  )}
+                  {showFlights ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
             {/* Treni Live Ponte della Libertà (RFI) */}
             {onToggleTrains && (
               <button
@@ -896,6 +913,35 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 </div>
               </button>
             )}
+
+            {/* Sotto-categoria 4: Mobilità Terrestre & Ciclabile */}
+            <SubCategoryHeader
+              icon={<Car className="w-3 h-3 text-teal-400" />}
+              label={t('layers.subRoadBike')}
+            />
+
+            {/* 6. Parkings Live (Piazzale Roma, Tronchetto & Terraferma) */}
+            <button
+              type="button"
+              onClick={onToggleParkings}
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showParkings
+                  ? 'bg-teal-500/10 text-teal-300 border-teal-500/30'
+                  : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <Car className="w-3.5 h-3.5 text-teal-400" />
+                <span>{t('layers.layerParkings')}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {parkingsCount > 0 && (
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-teal-500/20 text-teal-300 font-bold">
+                    {parkingsCount}
+                  </span>
+                )}
+                {showParkings ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              </div>
+            </button>
 
             {/* Ciclovie Isole del Veneto (dati.veneto.it) */}
             {onToggleBikeRoutes && (
@@ -948,7 +994,14 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
         </button>
 
         {sectionOpen.lagoon && (
-          <div className="flex flex-col gap-2 animate-in fade-in duration-150">
+          <div className="flex flex-col gap-1.5 animate-in fade-in duration-150">
+            {/* Sotto-categoria 1: Marea & Difesa Idraulica */}
+            <SubCategoryHeader
+              icon={<Waves className="w-3 h-3 text-blue-400" />}
+              label={t('layers.subTideDefense')}
+              isFirst
+            />
+
             {/* Barriere MOSE & Rete CPSM */}
             <button
               type="button"
@@ -990,6 +1043,49 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </button>
             )}
 
+            {/* Spatial Buffer PostGIS */}
+            <div className="flex flex-col gap-1.5 bg-[var(--rule)]/30 p-2.5 rounded-xl border border-[var(--rule)]">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[var(--ink)] flex items-center gap-1.5">
+                  <SlidersHorizontal className="w-3 h-3 text-amber-400" /> {t('ui.layerPanel.bufferSpazialeCantieri')}
+                </span>
+                <button
+                  type="button"
+                  onClick={onToggleSpatialBuffer}
+                  className={`text-[10px] font-mono px-2 py-0.5 rounded cursor-pointer ${showSpatialBuffer
+                      ? 'bg-amber-500 text-white font-bold'
+                      : 'bg-[var(--rule)] text-[var(--ink-2)]'
+                    }`}
+                >
+                  {showSpatialBuffer ? t('common.active') : t('common.inactive')}
+                </button>
+              </div>
+
+              {showSpatialBuffer && (
+                <div className="flex flex-col gap-1 pt-1">
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-[var(--ink-2)]">{t('ui.layerPanel.raggioImpatto')}</span>
+                    <span className="font-mono font-bold text-amber-400">{bufferRadiusMeters} {t('common.meters')}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={50}
+                    max={500}
+                    step={25}
+                    value={bufferRadiusMeters}
+                    onChange={(e) => onBufferRadiusChange(Number(e.target.value))}
+                    className="w-full h-1.5"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Sotto-categoria 2: Segnalamento & Fortezze Lagunari */}
+            <SubCategoryHeader
+              icon={<Anchor className="w-3 h-3 text-emerald-400" />}
+              label={t('layers.subMarineSignals')}
+            />
+
             {/* Briccole & Fanali Canale */}
             {onToggleMarineSignals && (
               <button
@@ -1015,6 +1111,37 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </button>
             )}
 
+            {/* Fortezze Lagunari & Isole Storiche */}
+            {onToggleFortresses && (
+              <button
+                type="button"
+                onClick={onToggleFortresses}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showFortresses
+                    ? 'bg-stone-500/15 text-stone-300 border-stone-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="w-3.5 h-3.5 text-stone-400" />
+                  <span>{t('layers.layerFortresses')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {fortressesCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-stone-500/20 text-stone-300 font-bold">
+                      {fortressesCount}
+                    </span>
+                  )}
+                  {showFortresses ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Sotto-categoria 3: Mare Aperto & Sensori Marini */}
+            <SubCategoryHeader
+              icon={<Compass className="w-3 h-3 text-cyan-400" />}
+              label={t('layers.subOpenSea')}
+            />
+
             {/* Piattaforma CNR & Boe Ondametriche */}
             {onToggleOceanStations && (
               <button
@@ -1036,81 +1163,6 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                     </span>
                   )}
                   {showOceanStations ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-            )}
-
-            {/* Spiagge & Acque Balneazione ARPAV */}
-            {onToggleBathingWaters && (
-              <button
-                type="button"
-                onClick={onToggleBathingWaters}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showBathingWaters
-                    ? 'bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <LifeBuoy className="w-3.5 h-3.5 text-sky-400" />
-                  <span>{t('layers.layerBathingWaters')}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {bathingWatersCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-bold">
-                      {bathingWatersCount}
-                    </span>
-                  )}
-                  {showBathingWaters ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-            )}
-
-            {/* Subsidenza InSAR (Copernicus EGMS) */}
-            {onToggleSubsidence && (
-              <button
-                type="button"
-                onClick={onToggleSubsidence}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showSubsidence
-                    ? 'bg-rose-500/15 text-rose-300 border-rose-500/40 shadow-sm'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Layers className="w-3.5 h-3.5 text-rose-400" />
-                  <span>{t('layers.layerSubsidence')}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {subsidenceCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-bold">
-                      {subsidenceCount}
-                    </span>
-                  )}
-                  {showSubsidence ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-            )}
-
-            {/* Morfologia Barene & Velme (Natura 2000) */}
-            {onToggleMorphology && (
-              <button
-                type="button"
-                onClick={onToggleMorphology}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showMorphology
-                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Trees className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>{t('layers.layerMorphology')}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {morphologyCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
-                      {morphologyCount}
-                    </span>
-                  )}
-                  {showMorphology ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 </div>
               </button>
             )}
@@ -1140,27 +1192,83 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </button>
             )}
 
-            {/* Fortezze Lagunari & Isole Storiche */}
-            {onToggleFortresses && (
+            {/* Spiagge & Acque Balneazione ARPAV */}
+            {onToggleBathingWaters && (
               <button
                 type="button"
-                onClick={onToggleFortresses}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showFortresses
-                    ? 'bg-stone-500/15 text-stone-300 border-stone-500/40 shadow-sm'
+                onClick={onToggleBathingWaters}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showBathingWaters
+                    ? 'bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
                   }`}
               >
                 <div className="flex items-center gap-2">
-                  <ShieldAlert className="w-3.5 h-3.5 text-stone-400" />
-                  <span>{t('layers.layerFortresses')}</span>
+                  <LifeBuoy className="w-3.5 h-3.5 text-sky-400" />
+                  <span>{t('layers.layerBathingWaters')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  {fortressesCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-stone-500/20 text-stone-300 font-bold">
-                      {fortressesCount}
+                  {bathingWatersCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-bold">
+                      {bathingWatersCount}
                     </span>
                   )}
-                  {showFortresses ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                  {showBathingWaters ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Sotto-categoria 4: Morfologia & Qualità Acque */}
+            <SubCategoryHeader
+              icon={<GitBranch className="w-3 h-3 text-teal-400" />}
+              label={t('layers.subMorphologyWater')}
+            />
+
+            {/* Morfologia Barene & Velme (Natura 2000) */}
+            {onToggleMorphology && (
+              <button
+                type="button"
+                onClick={onToggleMorphology}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showMorphology
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Trees className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{t('layers.layerMorphology')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {morphologyCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                      {morphologyCount}
+                    </span>
+                  )}
+                  {showMorphology ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Subsidenza InSAR (Copernicus EGMS) */}
+            {onToggleSubsidence && (
+              <button
+                type="button"
+                onClick={onToggleSubsidence}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showSubsidence
+                    ? 'bg-rose-500/15 text-rose-300 border-rose-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Layers className="w-3.5 h-3.5 text-rose-400" />
+                  <span>{t('layers.layerSubsidence')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {subsidenceCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-bold">
+                      {subsidenceCount}
+                    </span>
+                  )}
+                  {showSubsidence ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 </div>
               </button>
             )}
@@ -1220,43 +1328,6 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 </div>
               </button>
             )}
-
-            {/* Spatial Buffer PostGIS */}
-            <div className="flex flex-col gap-1.5 bg-[var(--rule)]/30 p-2.5 rounded-xl border border-[var(--rule)]">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-[var(--ink)] flex items-center gap-1.5">
-                  <SlidersHorizontal className="w-3 h-3 text-amber-400" /> {t('ui.layerPanel.bufferSpazialeCantieri')}
-                </span>
-                <button
-                  type="button"
-                  onClick={onToggleSpatialBuffer}
-                  className={`text-[10px] font-mono px-2 py-0.5 rounded cursor-pointer ${showSpatialBuffer
-                      ? 'bg-amber-500 text-white font-bold'
-                      : 'bg-[var(--rule)] text-[var(--ink-2)]'
-                    }`}
-                >
-                  {showSpatialBuffer ? t('common.active') : t('common.inactive')}
-                </button>
-              </div>
-
-              {showSpatialBuffer && (
-                <div className="flex flex-col gap-1 pt-1">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-[var(--ink-2)]">{t('ui.layerPanel.raggioImpatto')}</span>
-                    <span className="font-mono font-bold text-amber-400">{bufferRadiusMeters} {t('common.meters')}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={50}
-                    max={500}
-                    step={25}
-                    value={bufferRadiusMeters}
-                    onChange={(e) => onBufferRadiusChange(Number(e.target.value))}
-                    className="w-full h-1.5"
-                  />
-                </div>
-              )}
-            </div>
           </div>
         )}
       </div>
@@ -1274,7 +1345,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           </span>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-mono text-[var(--ink-3)] lowercase">
-              {[showCantieri, showCameras, showCityAssets, showTrees, showServicesVenice, showAirQuality, showPedestrianFlows, showSatellites, showNizioleti, showWells, showBellTowers, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showAccommodations, showPollenStations].filter(Boolean).length}/17
+              {[showCantieri, showCameras, showCityAssets, showTrees, showWifiHotspots, showEvCharging, showAirQuality, showPedestrianFlows, showSatellites, showNizioleti, showWells, showBellTowers, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showAccommodations, showPollenStations].filter(Boolean).length}/18
             </span>
             {sectionOpen.city ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </div>
@@ -1282,6 +1353,160 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
 
         {sectionOpen.city && (
           <div className="flex flex-col gap-1.5 animate-in fade-in duration-150">
+            {/* Sotto-categoria 1: Salute Pubblica & SUEM 118 */}
+            <SubCategoryHeader
+              icon={<HeartPulse className="w-3 h-3 text-rose-400" />}
+              label={t('layers.subHealth')}
+              isFirst
+            />
+
+            {/* Farmacie di Turno Live */}
+            {onTogglePharmacies && (
+              <button
+                type="button"
+                onClick={onTogglePharmacies}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showPharmacies
+                    ? 'bg-green-500/15 text-green-300 border-green-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Pill className="w-3.5 h-3.5 text-green-400" />
+                  <span>{t('layers.layerPharmacies')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {pharmaciesCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-green-500/20 text-green-300 font-bold">
+                      {pharmaciesCount}
+                    </span>
+                  )}
+                  {showPharmacies ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Defibrillatori Pubblici DAE H24 */}
+            {onToggleDae && (
+              <button
+                type="button"
+                onClick={onToggleDae}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showDae
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <HeartPulse className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{t('layers.layerDae')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {daeCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                      {daeCount}
+                    </span>
+                  )}
+                  {showDae ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Pontili Idroambulanze SUEM 118 */}
+            {onToggleEmergencyDocks && (
+              <button
+                type="button"
+                onClick={onToggleEmergencyDocks}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showEmergencyDocks
+                    ? 'bg-red-500/15 text-red-300 border-red-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <HeartPulse className="w-3.5 h-3.5 text-red-400" />
+                  <span>{t('layers.layerEmergencyDocks')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {emergencyDocksCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-red-500/20 text-red-300 font-bold">
+                      {emergencyDocksCount}
+                    </span>
+                  )}
+                  {showEmergencyDocks ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Sotto-categoria 2: Servizi ai Cittadini & Infrastrutture */}
+            <SubCategoryHeader
+              icon={<Droplets className="w-3 h-3 text-cyan-400" />}
+              label={t('layers.subCityServices')}
+            />
+
+            {/* Fontanelle & Ponti Accessibili */}
+            <button
+              type="button"
+              onClick={onToggleCityAssets}
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showCityAssets
+                  ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
+                  : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <Droplets className="w-3.5 h-3.5 text-cyan-400" />
+                <span>{t('layers.layerCityAssets')}</span>
+              </div>
+              {showCityAssets ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            </button>
+
+            {/* Wi-Fi VeniceConnected */}
+            {onToggleWifiHotspots && (
+              <button
+                type="button"
+                onClick={onToggleWifiHotspots}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showWifiHotspots
+                    ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Wifi className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>{t('layers.layerWifiHotspots')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {wifiHotspotsCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-bold">
+                      {wifiHotspotsCount}
+                    </span>
+                  )}
+                  {showWifiHotspots ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Colonnine Ricarica EV */}
+            {onToggleEvCharging && (
+              <button
+                type="button"
+                onClick={onToggleEvCharging}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showEvCharging
+                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{t('layers.layerEvCharging')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {evChargingCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold">
+                      {evChargingCount}
+                    </span>
+                  )}
+                  {showEvCharging ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
             {/* Cantieri */}
             <button
               type="button"
@@ -1340,88 +1565,6 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </button>
             )}
 
-            {/* Fontanelle & Ponti Accessibili */}
-            <button
-              type="button"
-              onClick={onToggleCityAssets}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showCityAssets
-                  ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
-                  : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
-            >
-              <div className="flex items-center gap-2">
-                <Droplets className="w-3.5 h-3.5 text-cyan-400" />
-                <span>{t('layers.layerCityAssets')}</span>
-              </div>
-              {showCityAssets ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            </button>
-
-            {/* Verde Urbano & Alberi Monumentali */}
-            {onToggleTrees && (
-              <button
-                type="button"
-                onClick={onToggleTrees}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showTrees
-                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Trees className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>{t('layers.layerTrees')}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {treesCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
-                      {treesCount}
-                    </span>
-                  )}
-                  {showTrees ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-            )}
-
-            {/* Ricarica EV & Wi-Fi VeniceConnected */}
-            {onToggleServicesVenice && (
-              <button
-                type="button"
-                onClick={onToggleServicesVenice}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showServicesVenice
-                    ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40 shadow-sm'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Wifi className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>{t('layers.layerServicesVenice')}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {servicesVeniceCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-bold">
-                      {servicesVeniceCount}
-                    </span>
-                  )}
-                  {showServicesVenice ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-            )}
-
-            {/* Qualità Aria ARPAV */}
-            <button
-              type="button"
-              onClick={onToggleAirQuality}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showAirQuality
-                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                  : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
-            >
-              <div className="flex items-center gap-2">
-                <Wind className="w-3.5 h-3.5 text-emerald-400" />
-                <span>{t('layers.layerAirQuality')}</span>
-              </div>
-              {showAirQuality ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            </button>
-
             {/* Flussi Pedonali Smart Control Room */}
             <button
               type="button"
@@ -1438,28 +1581,11 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               {showPedestrianFlows ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
 
-            {/* Satelliti & Radar SAR (Copernicus / ASI) */}
-            <button
-              type="button"
-              onClick={onToggleSatellites}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showSatellites
-                  ? 'bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/30'
-                  : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
-            >
-              <div className="flex items-center gap-2">
-                <Satellite className="w-3.5 h-3.5 text-fuchsia-400" />
-                <span>{t('layers.layerSatellites')}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {satellitesCount > 0 && (
-                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-fuchsia-500/20 text-fuchsia-300">
-                    {satellitesCount}
-                  </span>
-                )}
-                {showSatellites ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-              </div>
-            </button>
+            {/* Sotto-categoria 3: Patrimonio Storico & Identità */}
+            <SubCategoryHeader
+              icon={<Landmark className="w-3 h-3 text-amber-400" />}
+              label={t('layers.subHeritage')}
+            />
 
             {/* I Nizioleti & Civici Tradizionali */}
             {onToggleNizioleti && (
@@ -1536,77 +1662,77 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </button>
             )}
 
-            {/* Pontili Idroambulanze SUEM 118 */}
-            {onToggleEmergencyDocks && (
-              <button
-                type="button"
-                onClick={onToggleEmergencyDocks}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showEmergencyDocks
-                    ? 'bg-red-500/15 text-red-300 border-red-500/40 shadow-sm'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <HeartPulse className="w-3.5 h-3.5 text-red-400" />
-                  <span>{t('layers.layerEmergencyDocks')}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {emergencyDocksCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-red-500/20 text-red-300 font-bold">
-                      {emergencyDocksCount}
-                    </span>
-                  )}
-                  {showEmergencyDocks ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-            )}
+            {/* Sotto-categoria 4: Ambiente, Clima & Territorio */}
+            <SubCategoryHeader
+              icon={<Trees className="w-3 h-3 text-emerald-400" />}
+              label={t('layers.subEnvironmentClimate')}
+            />
 
-            {/* Defibrillatori Pubblici DAE H24 */}
-            {onToggleDae && (
+            {/* Verde Urbano & Alberi Monumentali */}
+            {onToggleTrees && (
               <button
                 type="button"
-                onClick={onToggleDae}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showDae
+                onClick={onToggleTrees}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showTrees
                     ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
                   }`}
               >
                 <div className="flex items-center gap-2">
-                  <HeartPulse className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>{t('layers.layerDae')}</span>
+                  <Trees className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{t('layers.layerTrees')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  {daeCount > 0 && (
+                  {treesCount > 0 && (
                     <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
-                      {daeCount}
+                      {treesCount}
                     </span>
                   )}
-                  {showDae ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                  {showTrees ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 </div>
               </button>
             )}
 
-            {/* Farmacie di Turno Live */}
-            {onTogglePharmacies && (
+            {/* Qualità Aria ARPAV */}
+            <button
+              type="button"
+              onClick={onToggleAirQuality}
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showAirQuality
+                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                  : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <Wind className="w-3.5 h-3.5 text-emerald-400" />
+                <span>{t('layers.layerAirQuality')}</span>
+              </div>
+              {showAirQuality ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            </button>
+
+            {/* Bollettino Pollini ARPAV (dati.veneto.it) */}
+            {onTogglePollenStations && (
               <button
                 type="button"
-                onClick={onTogglePharmacies}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showPharmacies
-                    ? 'bg-green-500/15 text-green-300 border-green-500/40 shadow-sm'
+                onClick={onTogglePollenStations}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showPollenStations
+                    ? 'bg-lime-500/15 text-lime-300 border-lime-500/40 shadow-sm'
                     : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
                   }`}
               >
                 <div className="flex items-center gap-2">
-                  <Pill className="w-3.5 h-3.5 text-green-400" />
-                  <span>{t('layers.layerPharmacies')}</span>
+                  <Flower2 className="w-3.5 h-3.5 text-lime-400" />
+                  <div className="flex flex-col text-left">
+                    <span className="leading-tight">{t('layers.layerPollenStations')}</span>
+                    <span className="text-[9px] font-mono text-teal-400">ARPAV · dati.veneto.it</span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  {pharmaciesCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-green-500/20 text-green-300 font-bold">
-                      {pharmaciesCount}
+                  {pollenStationsCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-lime-500/20 text-lime-300 font-bold">
+                      {pollenStationsCount}
                     </span>
                   )}
-                  {showPharmacies ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                  {showPollenStations ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 </div>
               </button>
             )}
@@ -1636,6 +1762,29 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </button>
             )}
 
+            {/* Satelliti & Radar SAR (Copernicus / ASI) */}
+            <button
+              type="button"
+              onClick={onToggleSatellites}
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showSatellites
+                  ? 'bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/30'
+                  : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <Satellite className="w-3.5 h-3.5 text-fuchsia-400" />
+                <span>{t('layers.layerSatellites')}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {satellitesCount > 0 && (
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-fuchsia-500/20 text-fuchsia-300">
+                    {satellitesCount}
+                  </span>
+                )}
+                {showSatellites ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              </div>
+            </button>
+
             {/* Pressione Turistica & Alloggi (dati.veneto.it) */}
             {onToggleAccommodations && (
               <button
@@ -1660,34 +1809,6 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                     </span>
                   )}
                   {showAccommodations ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-            )}
-
-            {/* Bollettino Pollini ARPAV (dati.veneto.it) */}
-            {onTogglePollenStations && (
-              <button
-                type="button"
-                onClick={onTogglePollenStations}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showPollenStations
-                    ? 'bg-lime-500/15 text-lime-300 border-lime-500/40 shadow-sm'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Flower2 className="w-3.5 h-3.5 text-lime-400" />
-                  <div className="flex flex-col text-left">
-                    <span className="leading-tight">{t('layers.layerPollenStations')}</span>
-                    <span className="text-[9px] font-mono text-teal-400">ARPAV · dati.veneto.it</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {pollenStationsCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-lime-500/20 text-lime-300 font-bold">
-                      {pollenStationsCount}
-                    </span>
-                  )}
-                  {showPollenStations ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 </div>
               </button>
             )}

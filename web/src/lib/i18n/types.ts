@@ -72,6 +72,8 @@ export interface Translations {
     play: string;
     pause: string;
     timeScrubber: string;
+    share: string;
+    shareSuccess: string;
   };
   layers: {
     panelTitle: string;
@@ -93,6 +95,18 @@ export interface Translations {
     catEnvironment: string;
     catHealth: string;
     catHeritage: string;
+    subPublicTransit: string;
+    subCanalTraffic: string;
+    subRegionalLogistics: string;
+    subRoadBike: string;
+    subTideDefense: string;
+    subMarineSignals: string;
+    subOpenSea: string;
+    subMorphologyWater: string;
+    subHealth: string;
+    subCityServices: string;
+    subHeritage: string;
+    subEnvironmentClimate: string;
     layerVaporetti: string;
     layerRealtimeVehicles: string;
     layerStops: string;
@@ -117,7 +131,8 @@ export interface Translations {
     layerFortresses: string;
     layerCityAssets: string;
     layerTrees: string;
-    layerServicesVenice: string;
+    layerWifiHotspots: string;
+    layerEvCharging: string;
     layerParkings: string;
     layerCantieri: string;
     layerAirQuality: string;

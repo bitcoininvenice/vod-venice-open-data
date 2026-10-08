@@ -1,157 +1,14 @@
 import { NextResponse } from 'next/server';
 import { CityAssetItem, ParkingItem } from '@/lib/types';
+import fountainsDataset from '@/data/fountains.json';
 
-// Dataset Comune di Venezia (dati.venezia.it), Veritas S.p.A. e AVM
+// Dataset Comune di Venezia (dati.venezia.it), Veritas S.p.A., Venice Tap Water e AVM
 export const revalidate = 86400;
 
 export async function GET() {
-  const assets: CityAssetItem[] = [
-    // 1. Fontanelle Pubbliche Potabili (Comune di Venezia / Veritas)
-    {
-      id: 'f-1',
-      name: 'Fontanella Campo San Polo',
-      type: 'FOUNTAIN',
-      lat: 45.4371,
-      lon: 12.3304,
-      sestiere: 'San Polo',
-      details: 'Fontana in ghisa ottocentesca, acqua potabile attiva H24'
-    },
-    {
-      id: 'f-2',
-      name: 'Fontanella Campo Santa Margherita',
-      type: 'FOUNTAIN',
-      lat: 45.4338,
-      lon: 12.3235,
-      sestiere: 'Dorsoduro',
-      details: 'Fontana a colonna con vaschetta in pietra d\'Istria'
-    },
-    {
-      id: 'f-3',
-      name: 'Fontanella Campo Santo Stefano',
-      type: 'FOUNTAIN',
-      lat: 45.4328,
-      lon: 12.3312,
-      sestiere: 'San Marco',
-      details: 'Fontana monumentale in pietra d\'Istria, punto ricarica borracce'
-    },
-    {
-      id: 'f-4',
-      name: 'Fontanella Piazzale Roma (Giardini Papadopoli)',
-      type: 'FOUNTAIN',
-      lat: 45.4390,
-      lon: 12.3195,
-      sestiere: 'Santa Croce',
-      details: 'Punto idrico ingresso pedonale Piazzale Roma'
-    },
-    {
-      id: 'f-5',
-      name: 'Fontanella Campo San Geremia',
-      type: 'FOUNTAIN',
-      lat: 45.4428,
-      lon: 12.3248,
-      sestiere: 'Cannaregio',
-      details: 'Presso Palazzo Labia e fermata Riva de Biasio'
-    },
-    {
-      id: 'f-6',
-      name: 'Fontanella Campo dei Gesuiti',
-      type: 'FOUNTAIN',
-      lat: 45.4435,
-      lon: 12.3385,
-      sestiere: 'Cannaregio',
-      details: 'Accesso da Fondamente Nove per imbarco isole'
-    },
-    {
-      id: 'f-7',
-      name: 'Fontanella Riva degli Schiavoni (Pietà)',
-      type: 'FOUNTAIN',
-      lat: 45.4344,
-      lon: 12.3456,
-      sestiere: 'Castello',
-      details: 'Fronte Bacino San Marco'
-    },
-    {
-      id: 'f-8',
-      name: 'Fontanella Giudecca Sant\'Eufemia',
-      type: 'FOUNTAIN',
-      lat: 45.4265,
-      lon: 12.3258,
-      sestiere: 'Giudecca',
-      details: 'Lungo il Canale della Giudecca'
-    },
-    {
-      id: 'f-9',
-      name: 'Fontanella Campo San Giacomo da l\'Orio',
-      type: 'FOUNTAIN',
-      lat: 45.4402,
-      lon: 12.3268,
-      sestiere: 'Santa Croce',
-      details: 'Fontana in ghisa con rubinetto a pulsante nel campo alberato'
-    },
-    {
-      id: 'f-10',
-      name: 'Fontanella Campo Santa Maria Formosa',
-      type: 'FOUNTAIN',
-      lat: 45.4372,
-      lon: 12.3415,
-      sestiere: 'Castello',
-      details: 'Punto idrico pubblico attivo fronte Palazzo Querini Stampalia'
-    },
-    {
-      id: 'f-11',
-      name: 'Fontanella Campo San Barnaba',
-      type: 'FOUNTAIN',
-      lat: 45.4332,
-      lon: 12.3255,
-      sestiere: 'Dorsoduro',
-      details: 'Fontanella in ghisa presso il ponte e la barca di frutta e verdura'
-    },
-    {
-      id: 'f-12',
-      name: 'Fontanella Fondamenta de la Misericordia',
-      type: 'FOUNTAIN',
-      lat: 45.4450,
-      lon: 12.3320,
-      sestiere: 'Cannaregio',
-      details: 'Colonnina pubblica potabile lungo la fondamenta'
-    },
-    {
-      id: 'f-13',
-      name: 'Fontanella Campo San Zaccaria',
-      type: 'FOUNTAIN',
-      lat: 45.4348,
-      lon: 12.3430,
-      sestiere: 'Castello',
-      details: 'Fontana in pietra d\'Istria e ghisa adiacente alla chiesa'
-    },
-    {
-      id: 'f-14',
-      name: 'Fontanella Riva dei Sette Martiri',
-      type: 'FOUNTAIN',
-      lat: 45.4310,
-      lon: 12.3535,
-      sestiere: 'Castello',
-      details: 'Punto ristoro idrico fronte bacino marciano verso la Biennale'
-    },
-    {
-      id: 'f-15',
-      name: 'Fontanella Campo Sant\'Aponal',
-      type: 'FOUNTAIN',
-      lat: 45.4370,
-      lon: 12.3335,
-      sestiere: 'San Polo',
-      details: 'Fontanella storica al crocevia pedonale Rialto - San Polo'
-    },
-    {
-      id: 'f-16',
-      name: 'Fontanella Campo San Vio',
-      type: 'FOUNTAIN',
-      lat: 45.4312,
-      lon: 12.3340,
-      sestiere: 'Dorsoduro',
-      details: 'Fontanella pubblica a colonna affacciata verso il Canal Grande'
-    },
+  const fountains: CityAssetItem[] = fountainsDataset.data as CityAssetItem[];
 
+  const otherAssets: CityAssetItem[] = [
     // 2. Ponti con Rampe e Percorsi Accessibili (Comune di Venezia)
     {
       id: 'p-1',
@@ -426,16 +283,20 @@ export async function GET() {
     }
   ];
 
+  const assets: CityAssetItem[] = [...fountains, ...otherAssets];
+
   return NextResponse.json({
     success: true,
     totalAssets: assets.length,
+    totalFountains: fountains.length,
+    fountainMetadata: fountainsDataset.metadata,
     totalParkings: parkings.length,
     parkingMetadata: {
       capacityDataSource: "AVM S.p.A. / Metropark FS / Comune di Venezia (capienze e tariffe dichiarate dai gestori)",
       kind: "static-reference",
       notes: "Tutte le strutture, le coordinate georeferenziate, le capienze totali e i regolamenti tariffari sono dati ufficiali degli enti gestori (AVM S.p.A., Metropark FS, Garage San Marco). Il Comune di Venezia e AVM non rilasciano API pubbliche per i sensori di spira dei varchi in tempo reale (accessibili solo su PMV stradali fisici). La piattaforma esclude rigorosamente stime o dati sintetici simulati."
     },
-    fountains: assets.filter((a) => a.type === 'FOUNTAIN'),
+    fountains,
     accessibleBridges: assets.filter((a) => a.type === 'ACCESSIBLE_BRIDGE'),
     veritasServices: assets.filter((a) => a.type === 'VERITAS_WASTE' || a.type === 'VERITAS_BOAT'),
     parkings,

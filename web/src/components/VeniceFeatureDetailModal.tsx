@@ -55,7 +55,8 @@ import {
   RegionalBikeRouteItem,
   PollenMonitoringStationItem,
   LagoonTributaryRiverItem,
-  ParkingItem
+  ParkingItem,
+  CityAssetItem
 } from '@/lib/types';
 import { Droplet, Building2, Bike, Flower2, GitBranch, Car } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
@@ -91,7 +92,8 @@ export type VeniceFeatureSelected =
   | { type: 'bikeRoute'; data: RegionalBikeRouteItem }
   | { type: 'pollenStation'; data: PollenMonitoringStationItem }
   | { type: 'tributaryRiver'; data: LagoonTributaryRiverItem }
-  | { type: 'parking'; data: ParkingItem };
+  | { type: 'parking'; data: ParkingItem }
+  | { type: 'fountain'; data: CityAssetItem };
 
 interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
@@ -210,6 +212,9 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             {feature.type === 'parking' && (
               <div className="p-2 rounded-xl bg-teal-500/20 text-teal-400"><Car className="w-5 h-5" /></div>
             )}
+            {feature.type === 'fountain' && (
+              <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400"><Droplet className="w-5 h-5" /></div>
+            )}
 
             <div>
               <h2 id="feature-modal-title" className="text-base font-bold leading-tight">
@@ -243,6 +248,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'pollenStation' && feature.data.stationName}
                 {feature.type === 'tributaryRiver' && `${t('ui.feature.fiumeScolante')}: ${feature.data.riverName}`}
                 {feature.type === 'parking' && feature.data.name}
+                {feature.type === 'fountain' && feature.data.name}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
                 {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
@@ -258,6 +264,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'pollenStation' && `${t('ui.feature.rischioAllergico')}: ${feature.data.overallAllergyRisk} · ${feature.data.locationName}`}
                 {feature.type === 'tributaryRiver' && `${t('ui.feature.portata')}: ${feature.data.avgFlowM3s} m³/s · ${feature.data.mouthZone}`}
                 {feature.type === 'parking' && `${feature.data.location} · ${feature.data.operator}`}
+                {feature.type === 'fountain' && `${feature.data.sestiere} · Acqua Potabile Veritas · Venice Tap Water`}
               </span>
             </div>
           </div>
@@ -1005,6 +1012,51 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
                 {t('ui.feature.fonte')} <b>{feature.data.officialSource}</b>
               </span>
+            </div>
+          )}
+
+          {feature.type === 'fountain' && (
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
+                  <span className="text-[10px] text-cyan-400 uppercase font-mono font-bold">Stato Rete Idrica</span>
+                  <p className="text-sm font-bold text-cyan-300">Potabile H24</p>
+                  <span className="text-[10px] text-[var(--ink-3)] block mt-0.5">Acquedotto Civico Veritas</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                  <span className="text-[10px] text-emerald-400 uppercase font-mono font-bold">Campagna Ecologica</span>
+                  <p className="text-sm font-bold text-emerald-300">Venice Tap Water</p>
+                  <span className="text-[10px] text-[var(--ink-3)] block mt-0.5">Ricarica borracce plastic-free</span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex flex-col gap-1.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase">Tipologia Manufatto</span>
+                  <span className="font-mono text-[var(--ink-2)] text-right">{feature.data.typology || 'Colonnina in ghisa / pietra'}</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-[var(--rule)] pt-1.5">
+                  <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase">Sestiere / Zona</span>
+                  <span className="font-bold text-[var(--ink)]">{feature.data.sestiere}</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-[var(--rule)] pt-1.5">
+                  <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase">Gestore Servizio</span>
+                  <span className="text-[var(--ink-2)]">{feature.data.operator || 'Veritas S.p.A. / Comune di Venezia'}</span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-cyan-950/20 border border-cyan-500/20 text-xs text-[var(--ink-2)] leading-relaxed">
+                {feature.data.details}
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] font-mono text-[var(--ink-3)] bg-black/20 p-2 rounded-lg border border-[var(--rule)]">
+                <span>Coordinate:</span>
+                <span className="text-[var(--ink)]">{feature.data.lat.toFixed(5)}, {feature.data.lon.toFixed(5)}</span>
+              </div>
+
+              <div className="flex flex-col gap-1 text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
+                <span>Fonti Ufficiali: <b>Veritas S.p.A.</b> · <b>Venice Tap Water</b> · <b>Conoscere Venezia</b> · <b>OpenStreetMap</b> (ODbL)</span>
+              </div>
             </div>
           )}
         </div>

@@ -143,7 +143,7 @@ export const CREPUSCOLO: ColorScheme = {
   }
 };
 
-const SUN_HOURS = {
+export const SUN_HOURS = {
   nDawn: 6 * 3600 + 13 * 60, // 06:13
   cDawn: 6 * 3600 + 47 * 60, // 06:47
   rise: 7 * 3600 + 18 * 60,  // 07:18
@@ -217,4 +217,82 @@ export function formatTime(seconds: number): string {
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+}
+
+export type SolarIconType = 'sun' | 'moon' | 'sunrise' | 'sunset';
+
+export interface SolarPhaseInfo {
+  phaseKey: 'notte' | 'alba' | 'giorno' | 'goldenHour' | 'crepuscolo';
+  icon: SolarIconType;
+  labelKey: string;
+  targetTime: string;
+  targetLabelKey: string;
+}
+
+export function getSolarPhase(seconds: number): SolarPhaseInfo {
+  const s = ((seconds % 86400) + 86400) % 86400;
+
+  // Notte fonda prima del primo barlume civile
+  if (s < SUN_HOURS.cDawn) {
+    return {
+      phaseKey: 'notte',
+      icon: 'moon',
+      labelKey: 'ui.timeline.faseNotte',
+      targetTime: formatTime(SUN_HOURS.rise),
+      targetLabelKey: 'ui.timeline.albaAlle'
+    };
+  }
+
+  // Alba / Crepuscolo mattutino (06:47 - 07:48)
+  if (s < SUN_HOURS.rise + 1800) {
+    return {
+      phaseKey: 'alba',
+      icon: 'sunrise',
+      labelKey: 'ui.timeline.faseAlba',
+      targetTime: formatTime(SUN_HOURS.rise),
+      targetLabelKey: 'ui.timeline.albaAlle'
+    };
+  }
+
+  // Giorno pieno (07:48 - 17:38)
+  if (s < SUN_HOURS.set - 3600) {
+    return {
+      phaseKey: 'giorno',
+      icon: 'sun',
+      labelKey: 'ui.timeline.faseGiorno',
+      targetTime: formatTime(SUN_HOURS.set),
+      targetLabelKey: 'ui.timeline.tramontoAlle'
+    };
+  }
+
+  // Golden hour / Tramonto (17:38 - 18:38)
+  if (s < SUN_HOURS.set) {
+    return {
+      phaseKey: 'goldenHour',
+      icon: 'sunset',
+      labelKey: 'ui.timeline.faseGoldenHour',
+      targetTime: formatTime(SUN_HOURS.set),
+      targetLabelKey: 'ui.timeline.tramontoAlle'
+    };
+  }
+
+  // Crepuscolo serale / Ora blu (18:38 - 19:42)
+  if (s < SUN_HOURS.nDusk) {
+    return {
+      phaseKey: 'crepuscolo',
+      icon: 'sunset',
+      labelKey: 'ui.timeline.faseCrepuscolo',
+      targetTime: formatTime(SUN_HOURS.nDusk),
+      targetLabelKey: 'ui.timeline.notteAlle'
+    };
+  }
+
+  // Notte dopo il crepuscolo nautico (19:42 - 24:00)
+  return {
+    phaseKey: 'notte',
+    icon: 'moon',
+    labelKey: 'ui.timeline.faseNotte',
+    targetTime: formatTime(SUN_HOURS.rise),
+    targetLabelKey: 'ui.timeline.albaAlle'
+  };
 }

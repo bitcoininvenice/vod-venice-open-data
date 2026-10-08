@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { MapEngine } from '@/components/MapEngine';
 import { TimelineControls } from '@/components/TimelineControls';
 import { LayerPanel } from '@/components/LayerPanel';
+import { parseLayerParams, buildLayersParam, buildShareUrl, LayerKey, ALL_LAYER_KEYS } from '@/lib/urlLayers';
 import { StopDetailModal } from '@/components/StopDetailModal';
 import { CantiereDetailModal } from '@/components/CantiereDetailModal';
 import { SpatialAnalysisModal } from '@/components/SpatialAnalysisModal';
@@ -156,7 +157,8 @@ export default function HomePage() {
   const [showOceanStations, setShowOceanStations] = useState<boolean>(false);
   const [showBathingWaters, setShowBathingWaters] = useState<boolean>(false);
   const [showTrees, setShowTrees] = useState<boolean>(false);
-  const [showServicesVenice, setShowServicesVenice] = useState<boolean>(false);
+  const [showWifiHotspots, setShowWifiHotspots] = useState<boolean>(false);
+  const [showEvCharging, setShowEvCharging] = useState<boolean>(false);
   const [showCameras, setShowCameras] = useState<boolean>(false);
   const [showRealtimeVehicles, setShowRealtimeVehicles] = useState<boolean>(false);
   const [realtimeVehicles, setRealtimeVehicles] = useState<RealtimeVehicleDto[]>([]);
@@ -304,7 +306,7 @@ export default function HomePage() {
     };
   }, [showRealtimeVehicles]);
 
-  const turnAllLayers = (active: boolean) => {
+  const turnAllLayers = useCallback((active: boolean) => {
     setShowRoutes(active);
     setShowStops(active);
     setShowVehicles(active);
@@ -326,7 +328,8 @@ export default function HomePage() {
     setShowOceanStations(active);
     setShowBathingWaters(active);
     setShowTrees(active);
-    setShowServicesVenice(active);
+    setShowWifiHotspots(active);
+    setShowEvCharging(active);
     setShowCameras(active);
     // 1. Viabilità Acquea & Canali
     setShowCanalLimits(active);
@@ -357,9 +360,9 @@ export default function HomePage() {
     setShowBikeRoutes(active);
     setShowPollenStations(active);
     setShowTributaries(active);
-  };
+  }, []);
 
-  const applyPreset = (preset: MapPresetType) => {
+  const applyPreset = useCallback((preset: MapPresetType) => {
     // Reset all layers first to ensure a crisp, dedicated preset
     turnAllLayers(false);
 
@@ -385,6 +388,7 @@ export default function HomePage() {
       setShowTrains(true);
       setShowWasteBoats(true);
       setShowBikeRoutes(true);
+      setShowEvCharging(true);
       setShowCameras(true);
     } else if (preset === 'lagoon') {
       setShowMose(true);
@@ -401,7 +405,8 @@ export default function HomePage() {
     } else if (preset === 'city') {
       setShowCityAssets(true);
       setShowTrees(true);
-      setShowServicesVenice(true);
+      setShowWifiHotspots(true);
+      setShowEvCharging(true);
       setShowCameras(true);
       setShowParkings(true);
       setShowCantieri(true);
@@ -428,7 +433,249 @@ export default function HomePage() {
       setShowTributaries(true);
       setCurrentView('lagoon');
     }
-  };
+  }, [turnAllLayers]);
+
+  // Activate specific layers mapped from query params
+  const applyLayerKeyMap = useCallback((activeLayers: Partial<Record<LayerKey, boolean>>) => {
+    if (ALL_LAYER_KEYS.every((k) => activeLayers[k])) {
+      turnAllLayers(true);
+      return;
+    }
+    turnAllLayers(false);
+    if (activeLayers.showRoutes) setShowRoutes(true);
+    if (activeLayers.showStops) setShowStops(true);
+    if (activeLayers.showVehicles) setShowVehicles(true);
+    if (activeLayers.showRealtimeVehicles) setShowRealtimeVehicles(true);
+    if (activeLayers.showCantieri) setShowCantieri(true);
+    if (activeLayers.showSpatialBuffer) setShowSpatialBuffer(true);
+    if (activeLayers.showFlights) setShowFlights(true);
+    if (activeLayers.showShips) setShowShips(true);
+    if (activeLayers.showShipRoutes) setShowShipRoutes(true);
+    if (activeLayers.showMose) setShowMose(true);
+    if (activeLayers.showCityAssets) setShowCityAssets(true);
+    if (activeLayers.showParkings) setShowParkings(true);
+    if (activeLayers.showAirQuality) setShowAirQuality(true);
+    if (activeLayers.showPedestrianFlows) setShowPedestrianFlows(true);
+    if (activeLayers.showAlilaguna) setShowAlilaguna(true);
+    if (activeLayers.showSatellites) setShowSatellites(true);
+    if (activeLayers.showPasserelle) setShowPasserelle(true);
+    if (activeLayers.showMarineSignals) setShowMarineSignals(true);
+    if (activeLayers.showOceanStations) setShowOceanStations(true);
+    if (activeLayers.showBathingWaters) setShowBathingWaters(true);
+    if (activeLayers.showTrees) setShowTrees(true);
+    if (activeLayers.showWifiHotspots) setShowWifiHotspots(true);
+    if (activeLayers.showEvCharging) setShowEvCharging(true);
+    if (activeLayers.showCameras) setShowCameras(true);
+    if (activeLayers.showCanalLimits) setShowCanalLimits(true);
+    if (activeLayers.showBridges) setShowBridges(true);
+    if (activeLayers.showGondolas) setShowGondolas(true);
+    if (activeLayers.showDocks) setShowDocks(true);
+    if (activeLayers.showSubsidence) setShowSubsidence(true);
+    if (activeLayers.showMorphology) setShowMorphology(true);
+    if (activeLayers.showMarineWind) setShowMarineWind(true);
+    if (activeLayers.showTrains) setShowTrains(true);
+    if (activeLayers.showWasteBoats) setShowWasteBoats(true);
+    if (activeLayers.showNizioleti) setShowNizioleti(true);
+    if (activeLayers.showWells) setShowWells(true);
+    if (activeLayers.showBellTowers) setShowBellTowers(true);
+    if (activeLayers.showFortresses) setShowFortresses(true);
+    if (activeLayers.showEmergencyDocks) setShowEmergencyDocks(true);
+    if (activeLayers.showDae) setShowDae(true);
+    if (activeLayers.showPharmacies) setShowPharmacies(true);
+    if (activeLayers.showHeatIslands) setShowHeatIslands(true);
+    if (activeLayers.showLagoonWater) setShowLagoonWater(true);
+    if (activeLayers.showAccommodations) setShowAccommodations(true);
+    if (activeLayers.showBikeRoutes) setShowBikeRoutes(true);
+    if (activeLayers.showPollenStations) setShowPollenStations(true);
+    if (activeLayers.showTributaries) setShowTributaries(true);
+  }, [turnAllLayers]);
+
+  // Track initial mount load from URL
+  const hasLoadedUrlParamsRef = useRef(false);
+
+  // Load initial layer state or preset from URL query params
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const search = window.location.search;
+    if (search) {
+      const parsed = parseLayerParams(search);
+      if (parsed.preset) {
+        applyPreset(parsed.preset as MapPresetType);
+      } else if (parsed.hasLayerParams) {
+        applyLayerKeyMap(parsed.activeLayers);
+      }
+    }
+    hasLoadedUrlParamsRef.current = true;
+  }, [applyPreset, applyLayerKeyMap]);
+
+  // Synchronize active layers to URL search params in address bar (clean GIS history replaceState)
+  useEffect(() => {
+    if (!hasLoadedUrlParamsRef.current || typeof window === 'undefined') return;
+    const currentMap: Partial<Record<LayerKey, boolean>> = {
+      showRoutes,
+      showStops,
+      showVehicles,
+      showRealtimeVehicles,
+      showCantieri,
+      showSpatialBuffer,
+      showFlights,
+      showShips,
+      showShipRoutes,
+      showMose,
+      showCityAssets,
+      showParkings,
+      showAirQuality,
+      showPedestrianFlows,
+      showAlilaguna,
+      showSatellites,
+      showPasserelle,
+      showMarineSignals,
+      showOceanStations,
+      showBathingWaters,
+      showTrees,
+      showWifiHotspots,
+      showEvCharging,
+      showCameras,
+      showCanalLimits,
+      showBridges,
+      showGondolas,
+      showDocks,
+      showSubsidence,
+      showMorphology,
+      showMarineWind,
+      showTrains,
+      showWasteBoats,
+      showNizioleti,
+      showWells,
+      showBellTowers,
+      showFortresses,
+      showEmergencyDocks,
+      showDae,
+      showPharmacies,
+      showHeatIslands,
+      showLagoonWater,
+      showAccommodations,
+      showBikeRoutes,
+      showPollenStations,
+      showTributaries,
+    };
+    const slugs = buildLayersParam(currentMap);
+    const url = new URL(window.location.href);
+    if (slugs) {
+      url.searchParams.set('layers', slugs);
+    } else {
+      url.searchParams.delete('layers');
+    }
+    url.searchParams.delete('layer');
+    window.history.replaceState(null, '', url.pathname + url.search);
+  }, [
+    showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri,
+    showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose,
+    showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna,
+    showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters,
+    showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits,
+    showBridges, showGondolas, showDocks, showSubsidence, showMorphology,
+    showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells,
+    showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies,
+    showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations,
+    showTributaries
+  ]);
+
+  // Share active layers URL (copia ESCLUSIVAMENTE l'URL negli appunti)
+  const handleShare = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+    const currentMap: Partial<Record<LayerKey, boolean>> = {
+      showRoutes,
+      showStops,
+      showVehicles,
+      showRealtimeVehicles,
+      showCantieri,
+      showSpatialBuffer,
+      showFlights,
+      showShips,
+      showShipRoutes,
+      showMose,
+      showCityAssets,
+      showParkings,
+      showAirQuality,
+      showPedestrianFlows,
+      showAlilaguna,
+      showSatellites,
+      showPasserelle,
+      showMarineSignals,
+      showOceanStations,
+      showBathingWaters,
+      showTrees,
+      showWifiHotspots,
+      showEvCharging,
+      showCameras,
+      showCanalLimits,
+      showBridges,
+      showGondolas,
+      showDocks,
+      showSubsidence,
+      showMorphology,
+      showMarineWind,
+      showTrains,
+      showWasteBoats,
+      showNizioleti,
+      showWells,
+      showBellTowers,
+      showFortresses,
+      showEmergencyDocks,
+      showDae,
+      showPharmacies,
+      showHeatIslands,
+      showLagoonWater,
+      showAccommodations,
+      showBikeRoutes,
+      showPollenStations,
+      showTributaries,
+    };
+    const shareUrl = buildShareUrl(currentMap);
+
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(shareUrl);
+    }
+  }, [
+    showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri,
+    showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose,
+    showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna,
+    showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters,
+    showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits,
+    showBridges, showGondolas, showDocks, showSubsidence, showMorphology,
+    showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells,
+    showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies,
+    showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations,
+    showTributaries
+  ]);
+
+  // Conteggio dei layer attualmente attivi per abilitare il bottone di condivisione
+  const activeLayersCount = useMemo(() => {
+    return [
+      showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri,
+      showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose,
+      showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna,
+      showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters,
+      showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits,
+      showBridges, showGondolas, showDocks, showSubsidence, showMorphology,
+      showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells,
+      showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies,
+      showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations,
+      showTributaries
+    ].filter(Boolean).length;
+  }, [
+    showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri,
+    showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose,
+    showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna,
+    showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters,
+    showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits,
+    showBridges, showGondolas, showDocks, showSubsidence, showMorphology,
+    showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells,
+    showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies,
+    showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations,
+    showTributaries
+  ]);
 
   // Fetch initial data from APIs (including Flights, Ships, City Assets, Tide, Environment, Flows)
   useEffect(() => {
@@ -854,7 +1101,8 @@ export default function HomePage() {
           bathingWaters={bathingWaters}
           showTrees={showTrees}
           trees={trees}
-          showServicesVenice={showServicesVenice}
+          showWifiHotspots={showWifiHotspots}
+          showEvCharging={showEvCharging}
           evCharging={evCharging}
           wifiHotspots={wifiHotspots}
           onSelectFeature={setSelectedFeature}
@@ -972,9 +1220,12 @@ export default function HomePage() {
               showTrees={showTrees}
               onToggleTrees={() => setShowTrees((p) => !p)}
               treesCount={trees.length}
-              showServicesVenice={showServicesVenice}
-              onToggleServicesVenice={() => setShowServicesVenice((p) => !p)}
-              servicesVeniceCount={evCharging.length + wifiHotspots.length}
+              showWifiHotspots={showWifiHotspots}
+              onToggleWifiHotspots={() => setShowWifiHotspots((p) => !p)}
+              wifiHotspotsCount={wifiHotspots.length}
+              showEvCharging={showEvCharging}
+              onToggleEvCharging={() => setShowEvCharging((p) => !p)}
+              evChargingCount={evCharging.length}
               showCityAssets={showCityAssets}
               onToggleCityAssets={() => setShowCityAssets((p) => !p)}
               showParkings={showParkings}
@@ -1144,9 +1395,12 @@ export default function HomePage() {
                 showTrees={showTrees}
                 onToggleTrees={() => setShowTrees((p) => !p)}
                 treesCount={trees.length}
-                showServicesVenice={showServicesVenice}
-                onToggleServicesVenice={() => setShowServicesVenice((p) => !p)}
-                servicesVeniceCount={evCharging.length + wifiHotspots.length}
+                showWifiHotspots={showWifiHotspots}
+                onToggleWifiHotspots={() => setShowWifiHotspots((p) => !p)}
+                wifiHotspotsCount={wifiHotspots.length}
+                showEvCharging={showEvCharging}
+                onToggleEvCharging={() => setShowEvCharging((p) => !p)}
+                evChargingCount={evCharging.length}
                 showCityAssets={showCityAssets}
                 onToggleCityAssets={() => setShowCityAssets((p) => !p)}
                 showParkings={showParkings}
@@ -1270,11 +1524,19 @@ export default function HomePage() {
             }}
             selectedDay={selectedDay}
             onDayChange={setSelectedDay}
-            totalActiveVehicles={activeTripsAt(selectedDay, currentTimeSeconds)}
+            showVehicles={showVehicles}
+            showAlilaguna={showAlilaguna}
+            actvTripsCount={activeTripsAt(selectedDay, currentTimeSeconds)}
+            alilagunaBoatsCount={alilagunaBoats.length}
             peakCount={dayActivity(selectedDay).peakCount}
             peakTime={dayActivity(selectedDay).peakTime}
+            totalActiveVehicles={activeTripsAt(selectedDay, currentTimeSeconds)}
+            showTide={showMose || showPasserelle}
+            tideLevel={tideLevel}
             onSyncLiveTime={handleSyncLiveTime}
             isLiveSynced={isLiveSynced}
+            onShare={handleShare}
+            hasActiveLayers={activeLayersCount > 0}
           />
         </div>
       </div>

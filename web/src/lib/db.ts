@@ -8,6 +8,7 @@
 
 import { CantiereItem, StopItem, StopNearCantiere, PlatformMetrics, isLocated } from './types';
 import operePubbliche from '@/data/opere-pubbliche.json';
+import fountainsDataset from '@/data/fountains.json';
 import { WIFI_HOTSPOTS_DATA } from './urbanAssetsVeniceData';
 import { ARPAV_AIR_STATIONS } from './airQuality';
 
@@ -265,7 +266,7 @@ export async function fetchPlatformMetrics(inputs: PlatformMetricsInputs): Promi
     totalInvestmentCantieri: totalInv,
     occupazioniAttive: 14,
     stopsNearWorksites200m: near.length,
-    drinkingFountainsCount: 142,
+    drinkingFountainsCount: fountainsDataset.data.length,
     accessibleBridgesCount: 48,
     veritasServicePointsCount: 18,
 
