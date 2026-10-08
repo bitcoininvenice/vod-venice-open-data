@@ -6,6 +6,8 @@ import {
   WIFI_HOTSPOTS_DATA
 } from '@/lib/urbanAssetsVeniceData';
 
+export const revalidate = 86400;
+
 export async function GET() {
   return NextResponse.json({
     success: true,

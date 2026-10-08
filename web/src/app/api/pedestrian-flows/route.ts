@@ -13,7 +13,9 @@ export interface PedestrianGateItem {
 }
 
 // Smart Control Room del Comune di Venezia (Isola del Tronchetto)
-// Mappatura certificata dei varchi fisici di monitoraggio e regolamento ufficiale Contributo di Accesso (CDA)
+// Anagrafica dei varchi di monitoraggio e regolamento del Contributo di Accesso (CDA)
+export const revalidate = 86400;
+
 export async function GET() {
   const gates: PedestrianGateItem[] = [
     {
@@ -118,14 +120,13 @@ export async function GET() {
 
   return NextResponse.json({
     success: true,
-    metadata: {
+    meta: {
+      kind: 'static-reference',
       source: 'Comune di Venezia - Smart Control Room Tronchetto & Portale CDA',
-      regime: 'DATI_ISTITUZIONALI_CERTIFICATI',
-      notes: "Censimento ufficiale dei varchi di monitoraggio ottico/termico e quadro normativo del Contributo di Accesso (CDA). La Smart Control Room non espone conteggi numerici orari aperti in tempo reale per tutela della privacy e segreto statistico. La piattaforma esclude rigorosamente stime e dati sintetici simulati."
+      note: 'Anagrafica dei varchi e quadro normativo del CDA. La Smart Control Room non pubblica conteggi orari aperti in tempo reale: nessun valore di flusso viene mostrato.'
     },
     data: {
       sensors: gates,
-      gates,
       accessFeeData
     }
   });

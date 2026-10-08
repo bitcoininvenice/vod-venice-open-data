@@ -7,7 +7,6 @@ import {
   Navigation,
   Anchor,
   Construction,
-  Euro,
   Compass,
   ShieldAlert,
   Waves,
@@ -18,17 +17,19 @@ import {
   Car,
   Droplets,
   Accessibility,
-  Trash2,
-  ExternalLink,
   Satellite,
   Orbit,
   Trees,
   LifeBuoy,
   Zap,
-  Wifi
 } from 'lucide-react';
 import { PlatformMetrics } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
+import { formatSignedCm } from '@/lib/time';
+import { useDialogA11y } from '@/components/ui/useDialogA11y';
+
+/** Valore numerico o segnaposto: in caricamento "…", senza fonte collegata "n.d.". */
+const show = (loaded: boolean, v: number | string | null | undefined) => (!loaded ? '…' : v === null || v === undefined ? 'n.d.' : v);
 
 interface StatsModalProps {
   isOpen: boolean;
@@ -41,6 +42,8 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
   const { language, t } = useTranslation();
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null);
   const [activeTab, setActiveTab] = useState<MetricCategory>('all');
+  const panelRef = useDialogA11y(isOpen, onClose);
+  const loaded = metrics !== null;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -56,7 +59,14 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4">
-      <div className="glass-panel w-full max-w-4xl rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 border border-cyan-500/30 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Statistiche piattaforma"
+        tabIndex={-1}
+        className="glass-panel w-full max-w-4xl rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 border border-cyan-500/30 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto outline-none"
+      >
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
           <div className="flex items-center gap-3">
@@ -133,12 +143,12 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-[var(--ink)]">
-                    +{metrics?.tideLevelCm ?? 76}
+                    {loaded ? formatSignedCm(metrics.tideLevelCm, '') : '…'}
                   </span>
                   <span className="text-xs font-mono text-blue-400">cm (Punta Salute)</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  Marea astronomica normale · 0% viabilità pedonale allagata (San Marco +80cm)
+                  Misura CPSM da dati.venezia.it · San Marco inizia ad allagarsi da +80 cm
                 </span>
               </div>
 
@@ -152,12 +162,12 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-emerald-400">
-                    {metrics?.moseGatesCount ?? 78}
+                    {show(loaded, metrics?.moseGatesCount)}
                   </span>
                   <span className="text-xs font-mono text-indigo-300">paratoie a scomparsa</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  Stato: a riposo · Lido Treporti, S. Nicolò, Malamocco, Chioggia (soglia +110cm)
+                  Stato operativo non pubblicato in tempo reale · soglia indicativa +110 cm
                 </span>
               </div>
             </>
@@ -170,18 +180,18 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 <div className="flex items-center justify-between text-xs text-emerald-300">
                   <div className="flex items-center gap-1.5 font-semibold">
                     <Wind className="w-4 h-4 text-emerald-400" />
-                    <span>Qualità dell'Aria AQI</span>
+                    <span>Qualità dell&apos;Aria AQI</span>
                   </div>
                   <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">ARPAV</span>
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-emerald-400">
-                    {metrics?.averageAqi ?? 36}
+                    {show(loaded, metrics?.averageAqi)}
                   </span>
-                  <span className="text-xs font-mono text-emerald-300">AQI medio (Buona)</span>
+                  <span className="text-xs font-mono text-emerald-300">AQI medio</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  PM10: {metrics?.averagePm10 ?? 20.3} µg/m³ · NO2: {metrics?.averageNo2 ?? 27.5} µg/m³ (3 stazioni)
+                  Feed orario ARPAV non ancora collegato: nessun valore in tempo reale
                 </span>
               </div>
             </>
@@ -196,16 +206,16 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                     <Ship className="w-4 h-4 text-indigo-400" />
                     <span>Flotta Navale & Crociere</span>
                   </div>
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">AIS LIVE</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">Anagrafica</span>
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-[var(--ink)]">
-                    {metrics?.activeShipsCount ?? 8}
+                    {show(loaded, metrics?.activeShipsCount)}
                   </span>
-                  <span className="text-xs font-mono text-indigo-300">navi monitorate</span>
+                  <span className="text-xs font-mono text-indigo-300">navi in anagrafica banchine</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  Stazza totale: {((metrics?.totalGrossTonnage ?? 145200) / 1000).toFixed(1)}k GT · 1 nave &gt;25k GT a Marghera
+                  Stazza totale: {loaded ? `${(metrics.totalGrossTonnage / 1000).toFixed(1)}k GT` : '…'} · elenco di riferimento, non AIS live
                 </span>
               </div>
 
@@ -219,7 +229,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-amber-400">
-                    {metrics?.maritimeChannelsCount ?? 4}
+                    {show(loaded, metrics?.maritimeChannelsCount)}
                   </span>
                   <span className="text-xs font-mono text-amber-300">rotte commerciali</span>
                 </div>
@@ -243,12 +253,12 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-sky-400">
-                    {metrics?.activeFlightsCount ?? 7}
+                    {show(loaded, metrics?.activeFlightsCount)}
                   </span>
-                  <span className="text-xs font-mono text-sky-300">voli in avvicinamento</span>
+                  <span className="text-xs font-mono text-sky-300">aerei rilevati ora</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  Hub Aeroporto Marco Polo (VCE/LIPZ) · ~{metrics?.vceDailyMovements ?? 284} movimenti/giorno
+                  Transponder ADS-B nell&apos;area TMA di Venezia (OpenSky Network)
                 </span>
               </div>
             </>
@@ -267,12 +277,12 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-[var(--ink)]">
-                    {metrics?.totalRoutes ?? 104}
+                    {show(loaded, metrics?.totalRoutes)}
                   </span>
-                  <span className="text-xs font-mono text-[var(--ink-2)]">linee attive</span>
+                  <span className="text-xs font-mono text-[var(--ink-2)]">linee nel GTFS</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  32 linee navigazione · 72 linee gomma & tram ({metrics?.totalTrips?.toLocaleString('it-IT') ?? '5.480'} corse/giorno)
+                  {show(loaded, metrics?.routesNavigazione)} navigazione · {show(loaded, metrics?.routesAutomobilistico)} gomma &amp; tram ({loaded ? metrics.totalTrips.toLocaleString('it-IT') : '…'} corse feriali)
                 </span>
               </div>
 
@@ -286,12 +296,12 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-[var(--ink)]">
-                    {metrics?.alilagunaRoutesCount ?? 4}
+                    {show(loaded, metrics?.alilagunaRoutesCount)}
                   </span>
                   <span className="text-xs font-mono text-blue-300">linee dedicate</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  21 darsene · {metrics?.alilagunaBoatsCount ?? 4} motoscafi attivi · Feed f-u20f-alilagunaspa
+                  21 darsene · {show(loaded, metrics?.alilagunaBoatsCount)} barche in servizio ora (simulate da orario)
                 </span>
               </div>
 
@@ -305,12 +315,12 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-emerald-400">
-                    {metrics?.freeParkingSpots?.toLocaleString('it-IT') ?? '1.250'}
+                    {show(loaded, metrics?.freeParkingSpots?.toLocaleString('it-IT'))}
                   </span>
-                  <span className="text-xs font-mono text-teal-300">posti liberi su 4.100</span>
+                  <span className="text-xs font-mono text-teal-300">posti liberi</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  Occupazione 69.5% · Autorimessa Comunale, Garage S. Marco, Tronchetto
+                  AVM non pubblica un&apos;API di disponibilità posti · capienza totale {loaded ? metrics.totalParkingSpaces.toLocaleString('it-IT') : '…'}
                 </span>
               </div>
             </>
@@ -329,12 +339,12 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-rose-400">
-                    {metrics?.totalHourlyPedestrians?.toLocaleString('it-IT') ?? '9.340'}
+                    {show(loaded, metrics?.totalHourlyPedestrians?.toLocaleString('it-IT'))}
                   </span>
                   <span className="text-xs font-mono text-rose-300">passaggi/ora</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  Varchi stereoscopici · Picco: {metrics?.peakPedestrianSensor ?? 'Ponte di Rialto (4.210 p/h)'}
+                  La Smart Control Room non pubblica conteggi aperti in tempo reale
                 </span>
               </div>
 
@@ -348,7 +358,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-cyan-400">
-                    {metrics?.drinkingFountainsCount ?? 142}
+                    {show(loaded, metrics?.drinkingFountainsCount)}
                   </span>
                   <span className="text-xs font-mono text-cyan-300">fontane pubbliche</span>
                 </div>
@@ -367,7 +377,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-emerald-400">
-                    {metrics?.accessibleBridgesCount ?? 48}
+                    {show(loaded, metrics?.accessibleBridgesCount)}
                   </span>
                   <span className="text-xs font-mono text-emerald-300">ponti con rampe</span>
                 </div>
@@ -386,12 +396,12 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-amber-400">
-                    {metrics?.activeCantieri ?? 8}
+                    {show(loaded, metrics?.activeCantieri)}
                   </span>
                   <span className="text-xs font-mono text-amber-300">cantieri attivi</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  Investimento: € {((metrics?.totalInvestmentCantieri ?? 3460000) / 1000000).toFixed(2)}M · {metrics?.stopsNearWorksites200m ?? 8} fermate nel buffer 200m
+                  Investimento: € {loaded ? `${(metrics.totalInvestmentCantieri / 1000000).toFixed(2)}M` : '…'} · {show(loaded, metrics?.stopsNearWorksites200m)} fermate nel buffer 200m
                 </span>
               </div>
 
@@ -405,12 +415,12 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-green-400">
-                    {metrics?.monumentalTreesCount ?? 6}
+                    {show(loaded, metrics?.monumentalTreesCount)}
                   </span>
                   <span className="text-xs font-mono text-green-300">alberi monumentali</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  Giardini Reali, Biennale, Sant'Elena, Papadopoli · Assorbimento CO₂: ~220 kg/anno
+                  Giardini Reali, Biennale, Sant&apos;Elena, Papadopoli · Assorbimento CO₂: ~220 kg/anno
                 </span>
               </div>
 
@@ -424,12 +434,12 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-indigo-400">
-                    {(metrics?.evChargingStationsCount ?? 4) + (metrics?.wifiHotspotsCount ?? 8)}
+                    {loaded ? metrics.evChargingStationsCount + metrics.wifiHotspotsCount : '…'}
                   </span>
                   <span className="text-xs font-mono text-indigo-300">presidi digitali & green</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  {metrics?.evChargingStationsCount ?? 4} hub EV Ultra-Fast (P.le Roma, Tronchetto) · {metrics?.wifiHotspotsCount ?? 8} hotspot VeniceConnected
+                  {show(loaded, metrics?.evChargingStationsCount)} hub EV Ultra-Fast (P.le Roma, Tronchetto) · {show(loaded, metrics?.wifiHotspotsCount)} hotspot VeniceConnected
                 </span>
               </div>
             </>
@@ -448,12 +458,12 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-indigo-400">
-                    {metrics?.activeSatellitesCount ?? 6}
+                    {show(loaded, metrics?.activeSatellitesCount)}
                   </span>
                   <span className="text-xs font-mono text-indigo-300">satelliti censiti</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  {metrics?.copernicusSentinelsCount ?? 2} Sentinel ESA · COSMO-SkyMed CSG-2 ASI · ISS · Landsat 9 · Galileo GNSS
+                  {show(loaded, metrics?.copernicusSentinelsCount)} Sentinel ESA · COSMO-SkyMed CSG-2 ASI · ISS · Landsat 9 · Galileo GNSS
                 </span>
               </div>
 
@@ -467,7 +477,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-purple-400">
-                    {metrics?.radarEarthObservationSwathKm ?? 250}
+                    {show(loaded, metrics?.radarEarthObservationSwathKm)}
                   </span>
                   <span className="text-xs font-mono text-purple-300">km ampiezza scansione SAR</span>
                 </div>
@@ -491,12 +501,12 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-amber-400">
-                    {metrics?.passerelleTotalMeters?.toLocaleString('it-IT') ?? '3.100'}
+                    {show(loaded, metrics?.passerelleTotalMeters?.toLocaleString('it-IT'))}
                   </span>
                   <span className="text-xs font-mono text-amber-300">metri di passerelle censite</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  {metrics?.passerelleMountedCount ?? 4} percorsi montati in opera · Piazza San Marco, Rialto, Ferrovia, Formosa
+                  {show(loaded, metrics?.passerelleMountedCount)} percorsi montati in opera · Piazza San Marco, Rialto, Ferrovia, Formosa
                 </span>
               </div>
 
@@ -504,18 +514,18 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 <div className="flex items-center justify-between text-xs text-cyan-300">
                   <div className="flex items-center gap-1.5 font-semibold">
                     <Compass className="w-4 h-4 text-cyan-400" />
-                    <span>Piattaforma CNR-ISMAR "Acqua Alta"</span>
+                    <span>Piattaforma CNR-ISMAR &quot;Acqua Alta&quot;</span>
                   </div>
                   <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">Ricerca Marina</span>
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-cyan-400">
-                    {metrics?.cnrWaveHeightMeters ?? 0.85} m
+                    {show(loaded, metrics?.cnrWaveHeightMeters)}
                   </span>
-                  <span className="text-xs font-mono text-cyan-300">onda significativa (Hs)</span>
+                  <span className="text-xs font-mono text-cyan-300">onda significativa (Hs, m)</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  Temp acqua: {metrics?.cnrWaterTempC ?? 17.6}°C · Corrente lagunare: 0.42 m/s · Salinità: 36.8 PSU al largo del Lido
+                  Feed della piattaforma non ancora collegato · livello marea disponibile nel layer MOSE
                 </span>
               </div>
 
@@ -529,7 +539,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-emerald-400">
-                    {metrics?.briccoleCount ?? 8}
+                    {show(loaded, metrics?.briccoleCount)}
                   </span>
                   <span className="text-xs font-mono text-emerald-300">segnalamenti nautici censiti</span>
                 </div>
@@ -548,7 +558,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-sky-400">
-                    {metrics?.bathingWaterStationsCount ?? 5}
+                    {show(loaded, metrics?.bathingWaterStationsCount)}
                   </span>
                   <span className="text-xs font-mono text-sky-300">spiagge Bandiera Blu</span>
                 </div>

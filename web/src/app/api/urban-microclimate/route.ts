@@ -3,7 +3,7 @@ import {
   OPEN_HEAT_ISLAND_LST
 } from '@/lib/open-data-catalog';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
 export async function GET() {
   return NextResponse.json({
@@ -14,7 +14,6 @@ export async function GET() {
     meta: {
       source: 'Copernicus Land Monitoring Service (LST), Sentinel-3 SLSTR, Landsat-9 TIRS',
       countHeatZones: OPEN_HEAT_ISLAND_LST.length,
-      updatedAt: new Date().toISOString()
     }
   });
 }

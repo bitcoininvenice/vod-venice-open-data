@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { OCEAN_STATIONS_DATA, BRICCOLE_SIGNALS_DATA } from '@/lib/marineSensorsData';
 
+export const revalidate = 86400;
+
 export async function GET() {
   return NextResponse.json({
     success: true,

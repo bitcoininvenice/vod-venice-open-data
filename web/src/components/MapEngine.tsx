@@ -458,7 +458,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   pollenMonitoringStations = [],
   showTributaries = false,
   lagoonTributaryRivers = [],
-  tideLevel = 76,
+  tideLevel = 0,
   isDesktopLayerPanelOpen = true
 }) => {
   const { t, language } = useTranslation();
@@ -2344,7 +2344,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           const barWidth = Math.max(28, 48 * (camera.s / 0.02));
           const isActivated = gate.status === 'ATTIVATO';
           const isRaising = gate.status === 'IN_SOLLEVAMENTO';
-          const barrierCol = isActivated ? '#ef4444' : isRaising ? '#f59e0b' : '#10b981';
+          const isUnknown = gate.status === 'NON_DISPONIBILE';
+          const barrierCol = isActivated ? '#ef4444' : isRaising ? '#f59e0b' : isUnknown ? '#94a3b8' : '#10b981';
 
           ctx.save();
           // Barrier line with end anchors

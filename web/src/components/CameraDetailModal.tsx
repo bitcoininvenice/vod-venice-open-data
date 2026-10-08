@@ -1,27 +1,23 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   X,
   Video,
   Eye,
-  EyeOff,
-  Shield,
   ShieldAlert,
   ExternalLink,
   Play,
-  RotateCcw,
   Compass,
   Building2,
-  Info,
-  Radio,
   CheckCircle2,
   AlertTriangle,
   Lock,
-  Loader2
 } from 'lucide-react';
 import { VeniceCameraItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
+import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge';
+import { useDialogA11y } from '@/components/ui/useDialogA11y';
 
 interface CameraDetailModalProps {
   camera: VeniceCameraItem | null;
@@ -30,27 +26,20 @@ interface CameraDetailModalProps {
 
 export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, onClose }) => {
   const { language, t } = useTranslation();
-  const [isStreamActive, setIsStreamActive] = useState<boolean>(false);
-  const [snapshotTimestamp, setSnapshotTimestamp] = useState<number>(Date.now());
-  const [imageState, setImageState] = useState<'loading' | 'loaded' | 'error'>('loading');
-  const [useFallbackUrl, setUseFallbackUrl] = useState<boolean>(false);
-
-  useEffect(() => {
-    setIsStreamActive(false);
-    setSnapshotTimestamp(Date.now());
-    setImageState('loading');
-    setUseFallbackUrl(false);
-  }, [camera?.id]);
+  const panelRef = useDialogA11y(camera !== null, onClose);
 
   if (!camera) return null;
 
-  const currentSrc = useFallbackUrl && camera.snapshotUrl
-    ? `${camera.snapshotUrl}?t=${snapshotTimestamp}`
-    : `/api/cameras/snapshot?id=${camera.id}&t=${snapshotTimestamp}`;
-
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4">
-      <div className="glass-panel w-full max-w-2xl rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 border border-cyan-500/40 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="camera-modal-title"
+        tabIndex={-1}
+        className="glass-panel w-full max-w-2xl rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 border border-cyan-500/40 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto outline-none"
+      >
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
           <div className="flex items-center gap-3">
@@ -68,18 +57,19 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                 {camera.hasLiveFeed ? (
                   <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                    Live WebCam HD
+                    Webcam
                   </span>
                 ) : (
                   <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded-full bg-slate-500/20 text-slate-300 border border-slate-500/30 flex items-center gap-1">
                     <Lock className="w-2.5 h-2.5" /> CCTV Video Monitoraggio Urbano
                   </span>
                 )}
+                {camera.source === 'ANOPTICON_CIVIC' && <ProvenanceBadge kind="community" />}
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[var(--rule)]/60 text-[var(--ink-2)] border border-[var(--rule)]">
                   {camera.typeLabel}
                 </span>
               </div>
-              <h3 className="text-lg font-bold text-[var(--ink)] leading-snug mt-1">
+              <h3 id="camera-modal-title" className="text-lg font-bold text-[var(--ink)] leading-snug mt-1">
                 {camera.name}
               </h3>
             </div>
@@ -119,194 +109,33 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
           </div>
         </div>
 
-        {/* ON-DEMAND STREAM BOX (CLICK-TO-LOAD) */}
+        {/* LIVE WEBCAM: solo collegamento alla pagina ufficiale del fornitore (nessun proxy o hotlink delle immagini) */}
         {camera.hasLiveFeed ? (
-          <div className="rounded-xl border border-cyan-500/40 bg-gradient-to-b from-cyan-950/20 to-[var(--ground)]/70 p-3 sm:p-4 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-cyan-400 flex items-center gap-1.5">
-                <Radio className="w-4 h-4 text-cyan-400 animate-pulse" />
-                {language === 'it' ? 'Flusso Video & Immagine in Tempo Reale' : 'Real-time Video & Imagery Stream'}
-              </span>
-              <span className="text-[10px] font-mono text-[var(--ink-3)]">
-                {camera.operator}
-              </span>
+          <div className="rounded-xl border border-cyan-500/40 bg-gradient-to-b from-cyan-950/20 to-[var(--ground)]/70 p-4 flex flex-col items-center gap-3 text-center">
+            <div className="w-12 h-12 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/40">
+              <Video className="w-6 h-6" />
             </div>
-
-            {!isStreamActive ? (
-              <div className="p-5 rounded-xl border border-[var(--rule)] bg-[var(--rule)]/20 flex flex-col items-center justify-center gap-3 text-center">
-                <div className="w-12 h-12 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/40 shadow-inner">
-                  <Play className="w-6 h-6 ml-0.5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[var(--ink)]">
-                    {language === 'it'
-                      ? 'Webcam live disponibile per questa postazione'
-                      : 'Live webcam stream available for this camera'}
-                  </p>
-                  <p className="text-xs text-[var(--ink-2)] max-w-md mt-1 leading-relaxed">
-                    {language === 'it'
-                      ? 'Puoi caricare il fotogramma in tempo reale direttamente in mappa oppure aprire la diretta video HD continua sul sito ufficiale del fornitore.'
-                      : 'You can load the live frame directly on the map or open the continuous HD video stream on the official provider website.'}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2.5 flex-wrap justify-center mt-1">
-                  {camera.snapshotUrl && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsStreamActive(true);
-                        setImageState('loading');
-                        setSnapshotTimestamp(Date.now());
-                      }}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-medium flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-cyan-600/20 hover:scale-[1.02]"
-                    >
-                      <Play className="w-3.5 h-3.5" />
-                      {language === 'it' ? 'Mostra Fotogramma Live' : 'Show Live Snapshot'}
-                    </button>
-                  )}
-
-                  {camera.streamPageUrl && (
-                    <a
-                      href={camera.streamPageUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 text-xs font-medium border border-cyan-500/40 flex items-center gap-1.5 transition-all"
-                    >
-                      {language === 'it' ? 'Apri Streaming Ufficiale' : 'Open Official Stream'}{' '}
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {camera.snapshotUrl ? (
-                  <div className="relative w-full aspect-video min-h-[220px] sm:min-h-[280px] rounded-xl overflow-hidden border border-cyan-500/40 bg-zinc-950 flex items-center justify-center shadow-inner">
-                    {imageState === 'loading' && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-zinc-950/90 z-0">
-                        <Loader2 className="w-7 h-7 text-cyan-400 animate-spin" />
-                        <span className="text-xs font-mono text-cyan-300">
-                          {language === 'it' ? 'Caricamento fotogramma in tempo reale...' : 'Loading live snapshot...'}
-                        </span>
-                      </div>
-                    )}
-
-                    {imageState === 'error' && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-zinc-950 p-4 text-center z-0">
-                        <AlertTriangle className="w-8 h-8 text-amber-400 mb-1" />
-                        <p className="text-xs text-[var(--ink)] font-semibold">
-                          {language === 'it' ? 'Fotogramma temporaneamente non disponibile' : 'Snapshot temporarily unavailable'}
-                        </p>
-                        <p className="text-[11px] text-[var(--ink-2)] max-w-sm">
-                          {language === 'it'
-                            ? 'Puoi comunque aprire la diretta streaming HD continua sul portale ufficiale.'
-                            : 'You can still open the continuous live HD stream on the official provider website.'}
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setImageState('loading');
-                            setSnapshotTimestamp(Date.now());
-                          }}
-                          className="mt-2 px-3.5 py-1.5 rounded-lg bg-[var(--rule)] hover:bg-[var(--rule)]/80 text-xs font-mono text-[var(--ink)] flex items-center gap-1.5 cursor-pointer border border-[var(--rule)]"
-                        >
-                          <RotateCcw className="w-3.5 h-3.5 text-cyan-400" />
-                          {language === 'it' ? 'Riprova' : 'Retry'}
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Image */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={currentSrc}
-                      alt={camera.name}
-                      referrerPolicy="no-referrer"
-                      onLoad={() => setImageState('loaded')}
-                      onError={() => {
-                        if (!useFallbackUrl && camera.snapshotUrl) {
-                          setUseFallbackUrl(true);
-                        } else {
-                          setImageState('error');
-                        }
-                      }}
-                      className={`w-full h-full object-cover transition-opacity duration-300 ${
-                        imageState === 'loaded' ? 'opacity-100' : 'opacity-0'
-                      }`}
-                    />
-
-                    {/* Overlays on image */}
-                    {imageState === 'loaded' && (
-                      <>
-                        <div className="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-md bg-black/85 backdrop-blur border border-cyan-500/40 text-[10px] font-mono text-cyan-300 flex items-center gap-1.5 shadow">
-                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                          LIVE SNAPSHOT &bull; {camera.operator}
-                        </div>
-                        <div className="absolute top-2.5 right-2.5 z-10 px-2 py-1 rounded-md bg-black/80 backdrop-blur border border-white/10 text-[10px] font-mono text-slate-300 shadow">
-                          {new Date(snapshotTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  <div className="p-4 rounded-xl border border-cyan-500/30 bg-cyan-950/30 text-center flex flex-col gap-2">
-                    <p className="text-xs text-[var(--ink)]">
-                      {language === 'it'
-                        ? 'Flusso live scientifico erogato su portale dedicato:'
-                        : 'Scientific live stream available on provider portal:'}
-                    </p>
-                    {camera.streamPageUrl && (
-                      <a
-                        href={camera.streamPageUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-mono font-medium mx-auto"
-                      >
-                        {camera.operator} <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    )}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between gap-2 flex-wrap pt-1 text-xs">
-                  <div className="flex items-center gap-2">
-                    {camera.snapshotUrl && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setImageState('loading');
-                          setSnapshotTimestamp(Date.now());
-                        }}
-                        className="px-3.5 py-2 rounded-xl bg-[var(--rule)] hover:bg-[var(--rule)]/80 text-[var(--ink)] text-xs font-mono flex items-center gap-1.5 cursor-pointer border border-[var(--rule)] transition-all"
-                      >
-                        <RotateCcw className={`w-3.5 h-3.5 text-cyan-400 ${imageState === 'loading' ? 'animate-spin' : ''}`} />
-                        {language === 'it' ? 'Aggiorna Fotogramma' : 'Refresh Snapshot'}
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setIsStreamActive(false)}
-                      className="px-3 py-2 rounded-xl bg-[var(--rule)]/50 hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] text-xs font-mono flex items-center gap-1.5 cursor-pointer border border-[var(--rule)]/60 transition-all"
-                    >
-                      <EyeOff className="w-3.5 h-3.5 text-amber-400" />
-                      {language === 'it' ? 'Nascondi' : 'Hide'}
-                    </button>
-                  </div>
-
-                  {camera.streamPageUrl && (
-                    <a
-                      href={camera.streamPageUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-medium flex items-center gap-1.5 shadow-md shadow-cyan-600/20 transition-all hover:scale-[1.02]"
-                    >
-                      <Play className="w-3.5 h-3.5" />
-                      {language === 'it' ? 'Guarda Video Live 24/7' : 'Watch Live Video 24/7'}
-                      <ExternalLink className="w-3.5 h-3.5 ml-0.5" />
-                    </a>
-                  )}
-                </div>
-              </div>
+            <div>
+              <p className="text-sm font-semibold text-[var(--ink)]">
+                {language === 'it' ? 'Diretta disponibile sul sito del fornitore' : 'Live stream available on the provider website'}
+              </p>
+              <p className="text-xs text-[var(--ink-2)] max-w-md mt-1 leading-relaxed">
+                {language === 'it'
+                  ? `Le immagini sono di proprietà di ${camera.operator} e vengono visualizzate esclusivamente sulla pagina ufficiale, nel rispetto dei termini d'uso del fornitore.`
+                  : `Images are owned by ${camera.operator} and are shown only on the official page, in compliance with the provider's terms of use.`}
+              </p>
+            </div>
+            {camera.streamPageUrl && (
+              <a
+                href={camera.streamPageUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-medium flex items-center gap-1.5 shadow-md shadow-cyan-600/20 transition-all"
+              >
+                <Play className="w-3.5 h-3.5" />
+                {language === 'it' ? 'Apri la diretta ufficiale' : 'Open the official stream'}
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
             )}
           </div>
         ) : (
@@ -321,8 +150,8 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
               </strong>
               <p className="text-[11px] leading-relaxed text-[var(--ink-2)]">
                 {language === 'it'
-                  ? 'Il flusso video di questa telecamera è per legge riservato alla centrale operativa delle Forze dell’Ordine e della Polizia Locale (ex Provv. Garante Privacy e Regolamento UE 2016/679 - GDPR). Le immagini non sono accessibili al pubblico per proteggere la riservatezza e i dati personali dei passanti.'
-                  : 'Under EU GDPR and Italian Privacy Authority regulations, raw CCTV footage is restricted to law enforcement and municipal control rooms. Live video is not publicly accessible to protect citizen and pedestrian privacy.'}
+                  ? 'Le telecamere di videosorveglianza non hanno un flusso video pubblico (Regolamento UE 2016/679 - GDPR). Posizione, tipologia e cartello informativo provengono dalla mappatura collaborativa Anopticon e non sono verificati da un ente: il titolare effettivo dell’impianto non è noto.'
+                  : 'Surveillance cameras have no public video feed (EU GDPR). Position, type and privacy sign come from the Anopticon community mapping and are not verified by any authority: the actual owner of the system is unknown.'}
               </p>
             </div>
           </div>

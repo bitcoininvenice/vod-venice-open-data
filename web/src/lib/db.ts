@@ -1,12 +1,16 @@
 /**
  * VOD - Venice Open Data
- * Database Access Layer & Spatial Geometry Queries
+ * Dataset di riferimento (statici) e calcoli spaziali in memoria.
+ *
+ * Nota: l'applicazione web non è collegata a PostgreSQL/PostGIS; questi array sono anagrafiche
+ * incluse nel codice. I cantieri non provengono da dati.venezia.it e vanno sostituiti con
+ * l'importazione del dataset ufficiale del Comune.
  */
 
-import { CantiereItem, StopItem, StopNearCantiere, PlatformMetrics, SatelliteItem } from './types';
+import { CantiereItem, StopItem, StopNearCantiere, PlatformMetrics } from './types';
 
-// Fallback verified datasets for client rendering and offline operations
-export const MOCK_CANTIERI: CantiereItem[] = [
+/** Elenco cantieri di riferimento (statico, non sincronizzato con il portale del Comune). */
+export const CANTIERI_REFERENCE: CantiereItem[] = [
   {
     id: 1,
     codice: "VE-CANT-2026-01",
@@ -213,9 +217,11 @@ export const MOCK_CANTIERI: CantiereItem[] = [
   }
 ];
 
-export const VERIFIED_CANTIERI_DATA = MOCK_CANTIERI;
-
-export const ACTV_OFFICIAL_STOPS: StopItem[] = [
+/**
+ * Selezione dei principali approdi e fermate ACTV (sottoinsieme del GTFS ufficiale,
+ * che conta circa 150 fermate di navigazione e oltre 2.000 automobilistiche).
+ */
+export const ACTV_STOPS_REFERENCE: StopItem[] = [
   // 1. Canal Grande (da Piazzale Roma a San Marco)
   { id: "P_ROMA_PARISI", name: "P.le Roma (Parisi) 'C/D'", lat: 45.4385, lon: 12.3175, mode: "navigazione", lines: ["1", "2", "3", "4.1", "4.2", "5.1", "5.2", "N"], wheelchair: true },
   { id: "P_ROMA_S_CHIARA", name: "P.le Roma (S. Chiara) 'E/F'", lat: 45.4380, lon: 12.3180, mode: "navigazione", lines: ["1", "2"], wheelchair: true },
@@ -317,14 +323,12 @@ export const ACTV_OFFICIAL_STOPS: StopItem[] = [
   { id: "MESTRE_FS", name: "Mestre Stazione F.S.", lat: 45.4820, lon: 12.2315, mode: "bus", lines: ["2", "9", "15", "31H"], wheelchair: true }
 ];
 
-export const MOCK_STOPS = ACTV_OFFICIAL_STOPS;
-
 export async function fetchCantieri(): Promise<CantiereItem[]> {
-  return MOCK_CANTIERI;
+  return CANTIERI_REFERENCE;
 }
 
 export async function fetchStops(): Promise<StopItem[]> {
-  return ACTV_OFFICIAL_STOPS;
+  return ACTV_STOPS_REFERENCE;
 }
 
 export function calculateDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -343,8 +347,8 @@ export function calculateDistanceMeters(lat1: number, lon1: number, lat2: number
 
 export async function findStopsNearCantieri(radiusMeters = 200): Promise<StopNearCantiere[]> {
   const results: StopNearCantiere[] = [];
-  for (const stop of MOCK_STOPS) {
-    for (const cantiere of MOCK_CANTIERI) {
+  for (const stop of ACTV_STOPS_REFERENCE) {
+    for (const cantiere of CANTIERI_REFERENCE) {
       if (cantiere.stato !== 'In corso') continue;
       const dist = calculateDistanceMeters(stop.lat, stop.lon, cantiere.lat, cantiere.lon);
       if (dist <= radiusMeters) {
@@ -368,70 +372,90 @@ export async function findStopsNearCantieri(radiusMeters = 200): Promise<StopNea
   return results;
 }
 
-export async function fetchPlatformMetrics(): Promise<PlatformMetrics> {
+export interface PlatformMetricsInputs {
+  /** Linee e corse dal GTFS ACTV pre-elaborato */
+  routesNavigazione: number;
+  routesAutomobilistico: number;
+  weekdayTrips: number;
+  alilagunaBoatsNow: number;
+  shipsCount: number;
+  shipsGrossTonnage: number;
+  /** Marea reale a Punta Salute (null se la fonte non risponde) */
+  tideLevelCm: number | null;
+  /** Aerei rilevati da OpenSky (null se la fonte non risponde) */
+  activeFlightsCount: number | null;
+  satellitesCount: number;
+  passerelleTotalMeters: number;
+  passerelleMountedCount: number;
+}
+
+/**
+ * Indicatori aggregati della piattaforma.
+ * I conteggi derivano dai dataset inclusi nel progetto; le misure senza fonte in tempo reale sono null.
+ */
+export async function fetchPlatformMetrics(inputs: PlatformMetricsInputs): Promise<PlatformMetrics> {
   const cantieri = await fetchCantieri();
   const stops = await fetchStops();
   const near = await findStopsNearCantieri(200);
-
   const totalInv = cantieri.reduce((acc, c) => acc + (c.importoLavori || 0), 0);
 
   return {
-    // Trasporto Pubblico ACTV
-    totalRoutes: 104,
-    routesNavigazione: 32,
-    routesAutomobilistico: 72,
+    // Trasporto pubblico ACTV (GTFS ufficiale)
+    totalRoutes: inputs.routesNavigazione + inputs.routesAutomobilistico,
+    routesNavigazione: inputs.routesNavigazione,
+    routesAutomobilistico: inputs.routesAutomobilistico,
     totalStops: stops.length,
-    totalTrips: 5480, // Feriale programmato
-    activeVehiclesInService: 302,
+    totalTrips: inputs.weekdayTrips,
+    activeVehiclesInService: null,
 
-    // Alilaguna S.p.A. (Transitland f-u20f-alilagunaspa)
+    // Alilaguna (simulazione da orario)
     alilagunaRoutesCount: 4,
     alilagunaStopsCount: 21,
-    alilagunaBoatsCount: 10,
+    alilagunaBoatsCount: inputs.alilagunaBoatsNow,
 
     // Maree & MOSE (CPSM)
-    tideLevelCm: 76,
-    moseStatus: 'Barriere a riposo (Attivazione a +110 cm)',
+    tideLevelCm: inputs.tideLevelCm,
+    moseStatus: null,
     moseGatesCount: 78,
-    cpsmStationsCount: 6,
-    floodingPercentage: 0.0,
+    cpsmStationsCount: 14,
+    floodingPercentage: null,
 
-    // Qualità dell'Aria (ARPAV)
+    // Qualità dell'aria: nessun feed ARPAV collegato
     airStationsCount: 6,
-    averageAqi: 36,
-    averagePm10: 20.3,
-    averageNo2: 27.5,
-    airQualityStatus: 'Buona',
+    averageAqi: null,
+    averagePm10: null,
+    averageNo2: null,
+    airQualityStatus: null,
 
-    // Traffico Marittimo AIS & Canali (VTS / Crociere)
-    activeShipsCount: 14,
-    totalGrossTonnage: 185400,
+    // Traffico marittimo (anagrafica banchine)
+    activeShipsCount: inputs.shipsCount,
+    totalGrossTonnage: inputs.shipsGrossTonnage,
     maritimeChannelsCount: 4,
-    restrictedLagoonVesselsCount: 4, // Deviazioni Marghera via Canale Petroli (DL 103/2021)
+    restrictedLagoonVesselsCount: 4,
 
-    // Voli & Aeroporto VCE (ENAV / OpenSky)
-    activeFlightsCount: 24,
-    vceDailyMovements: 284,
-    averageFlightAltitudeMeters: 1850,
+    // Voli (OpenSky)
+    activeFlightsCount: inputs.activeFlightsCount,
+    vceDailyMovements: null,
+    averageFlightAltitudeMeters: 0,
 
-    // Flussi Pedonali (Smart Control Room)
+    // Flussi pedonali: la Smart Control Room non pubblica conteggi aperti
     pedestrianSensorsCount: 8,
-    totalHourlyPedestrians: 18450,
-    peakPedestrianSensor: 'Piazza San Marco / Rialto',
+    totalHourlyPedestrians: null,
+    peakPedestrianSensor: null,
 
-    // Mobilità Terraferma & Parcheggi AVM
+    // Parcheggi: nessuna API pubblica di disponibilità posti
     totalParkingSpaces: 10149,
-    freeParkingSpots: 2167,
-    parkingOccupancyRate: 78.6,
+    freeParkingSpots: null,
+    parkingOccupancyRate: null,
 
-    // Satelliti & Osservazione Spaziale (Copernicus ESA / ASI / NASA)
-    activeSatellitesCount: 6,
+    // Satelliti
+    activeSatellitesCount: inputs.satellitesCount,
     copernicusSentinelsCount: 2,
     radarEarthObservationSwathKm: 250,
-    nextOrbitalPassMinutes: 14,
+    nextOrbitalPassMinutes: null,
 
-    // Patrimonio & Opere Pubbliche
-    activeCantieri: cantieri.filter(c => c.stato === 'In corso').length,
+    // Patrimonio & opere pubbliche
+    activeCantieri: cantieri.filter((c) => c.stato === 'In corso').length,
     totalInvestmentCantieri: totalInv,
     occupazioniAttive: 14,
     stopsNearWorksites200m: near.length,
@@ -439,80 +463,17 @@ export async function fetchPlatformMetrics(): Promise<PlatformMetrics> {
     accessibleBridgesCount: 48,
     veritasServicePointsCount: 18,
 
-    // Nuovi Open Data Venezia: Emergenza, Laguna, Ambiente & Servizi
-    passerelleTotalMeters: 3100,
-    passerelleMountedCount: 4,
+    // Laguna, ambiente & servizi
+    passerelleTotalMeters: inputs.passerelleTotalMeters,
+    passerelleMountedCount: inputs.passerelleMountedCount,
     briccoleCount: 8,
     marineLightsCount: 5,
     oceanStationsCount: 4,
-    cnrWaveHeightMeters: 0.85,
-    cnrWaterTempC: 17.6,
+    cnrWaveHeightMeters: null,
+    cnrWaterTempC: null,
     bathingWaterStationsCount: 5,
     monumentalTreesCount: 6,
     evChargingStationsCount: 4,
     wifiHotspotsCount: 8
   };
 }
-
-export async function fetchSatellites(): Promise<SatelliteItem[]> {
-  try {
-    const res = await fetch('/api/satellites');
-    if (res.ok) {
-      const json = await res.json();
-      if (json.data) return json.data;
-    }
-  } catch (err) {
-    // fallback below
-  }
-  const { SATELLITES_DATA } = await import('@/lib/satellitesData');
-  return SATELLITES_DATA;
-}
-
-export async function fetchPasserelle() {
-  try {
-    const res = await fetch('/api/passerelle');
-    if (res.ok) {
-      const json = await res.json();
-      if (json.data) return json.data;
-    }
-  } catch (err) {
-    // fallback below
-  }
-  const { PASSERELLE_DATA } = await import('@/lib/passerelleData');
-  return PASSERELLE_DATA;
-}
-
-export async function fetchMarineSensors() {
-  try {
-    const res = await fetch('/api/marine-sensors');
-    if (res.ok) {
-      const json = await res.json();
-      if (json.data) return json.data;
-    }
-  } catch (err) {
-    // fallback below
-  }
-  const { OCEAN_STATIONS_DATA, BRICCOLE_SIGNALS_DATA } = await import('@/lib/marineSensorsData');
-  return { oceanStations: OCEAN_STATIONS_DATA, briccole: BRICCOLE_SIGNALS_DATA };
-}
-
-export async function fetchVeniceAssets() {
-  try {
-    const res = await fetch('/api/venice-assets');
-    if (res.ok) {
-      const json = await res.json();
-      if (json.data) return json.data;
-    }
-  } catch (err) {
-    // fallback below
-  }
-  const { BATHING_WATERS_DATA, URBAN_TREES_DATA, EV_CHARGING_DATA, WIFI_HOTSPOTS_DATA } = await import('@/lib/urbanAssetsVeniceData');
-  return {
-    bathingWaters: BATHING_WATERS_DATA,
-    urbanTrees: URBAN_TREES_DATA,
-    evCharging: EV_CHARGING_DATA,
-    wifiHotspots: WIFI_HOTSPOTS_DATA
-  };
-}
-
-

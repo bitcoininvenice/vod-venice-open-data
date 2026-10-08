@@ -10,8 +10,6 @@ import {
   Trees,
   Zap,
   Wifi,
-  ExternalLink,
-  MapPin,
   Waves,
   Wind,
   Gauge,
@@ -24,10 +22,7 @@ import {
   Pill,
   ThermometerSun,
   Layers,
-  ArrowRight,
   Plane,
-  Thermometer,
-  Cloud,
   Info
 } from 'lucide-react';
 import {
@@ -106,7 +101,7 @@ interface VeniceFeatureDetailModalProps {
 export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> = ({
   feature,
   onClose,
-  currentTideLevelCm = 76
+  currentTideLevelCm
 }) => {
   const { language, t } = useTranslation();
   if (!feature) return null;
@@ -297,14 +292,17 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {feature.type === 'bridgeClearance' && (
             <>
               {(() => {
-                const liveClearance = feature.data.clearanceCmZeroMarea - currentTideLevelCm;
+                const tideKnown = currentTideLevelCm !== undefined;
+                const liveClearance = feature.data.clearanceCmZeroMarea - (currentTideLevelCm ?? 0);
                 const isNavigable = liveClearance >= 160;
                 return (
                   <>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                         <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">
-                          {language === 'it' ? `Franco Attuale (Marea ${currentTideLevelCm}cm)` : `Current Clearance (Tide ${currentTideLevelCm}cm)`}
+                          {tideKnown
+                            ? (language === 'it' ? `Franco attuale (marea CPSM ${currentTideLevelCm} cm)` : `Current clearance (CPSM tide ${currentTideLevelCm} cm)`)
+                            : (language === 'it' ? 'Franco a zero mareografico (marea n.d.)' : 'Clearance at tide datum (tide n/a)')}
                         </span>
                         <p className={`text-2xl font-bold font-mono ${isNavigable ? 'text-emerald-400' : 'text-rose-400'}`}>
                           {liveClearance} cm
@@ -537,8 +535,8 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                 <span>
                   {language === 'it'
-                    ? "Dato istituzionale certificato RFI (Prospetto Informativo della Rete PIR / FS Italiane). Riporta le caratteristiche fisiche e infrastrutturali del nodo ferroviario lagunare. Non include posizioni simulate."
-                    : "Certified institutional data from RFI (Network Statement / FS Italiane). Reports physical and infrastructural features of the lagoon rail network without synthetic simulations."}
+                    ? "Anagrafica infrastrutturale del nodo ferroviario (fonte: Prospetto Informativo della Rete RFI). Non riporta la circolazione dei treni in tempo reale."
+                    : "Infrastructure reference data for the rail node (source: RFI Network Statement). Does not show real-time train circulation."}
                 </span>
               </div>
             </>

@@ -5,7 +5,7 @@ import {
   OPEN_PHARMACY_DUTY
 } from '@/lib/open-data-catalog';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
 export async function GET() {
   return NextResponse.json({
@@ -20,7 +20,6 @@ export async function GET() {
       countEmergencyDocks: OPEN_EMERGENCY_WATER_DOCKS.length,
       countDae: OPEN_PUBLIC_DAE.length,
       countPharmacies: OPEN_PHARMACY_DUTY.length,
-      updatedAt: new Date().toISOString()
     }
   });
 }

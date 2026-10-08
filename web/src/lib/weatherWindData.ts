@@ -1,62 +1,9 @@
-import { AirportMetarData, MeteoMarineWindItem } from './types';
+import { MeteoMarineWindItem } from './types';
 
 /**
- * Genera un bollettino METAR realistico e coerente per LIPZ (Venezia Tessera)
- * conforme agli standard ICAO / WMO / Aeronautica Militare.
- */
-export function generateCurrentLIPZMetar(): AirportMetarData {
-  const now = new Date();
-  const day = String(now.getUTCDate()).padStart(2, '0');
-  const hour = String(now.getUTCHours()).padStart(2, '0');
-  const minute = String(Math.floor(now.getUTCMinutes() / 30) * 30).padStart(2, '0');
-
-  const windDeg = 60; // Grecale / Bora debole
-  const windKt = 12;
-  const gustKt = 17;
-  const tempC = 18;
-  const dewC = 12;
-  const qnh = 1016;
-
-  // Runway 04R orientata a 042° magnetici
-  const runwayHeadingDeg = 42;
-  const angleDiffRad = ((windDeg - runwayHeadingDeg) * Math.PI) / 180;
-  const crosswindKnots = Math.abs(Math.round(windKt * Math.sin(angleDiffRad) * 10) / 10);
-  const headwindKnots = Math.round(windKt * Math.cos(angleDiffRad) * 10) / 10;
-
-  const rawMetar = `LIPZ ${day}${hour}${minute}Z ${String(windDeg).padStart(3, '0')}${String(windKt).padStart(2, '0')}G${gustKt}KT 9999 FEW025 BKN080 ${tempC}/${dewC} Q${qnh} NOSIG`;
-
-  return {
-    icao: 'LIPZ',
-    iata: 'VCE',
-    stationName: 'Aeroporto di Venezia Marco Polo - Stazione Aeronautica Militare / ENAV',
-    rawMetar,
-    observationTime: now.toISOString(),
-    windDirectionDeg: windDeg,
-    windCompass: 'ENE (Bora moderata / Grecale)',
-    windSpeedKnots: windKt,
-    windSpeedKmh: Math.round(windKt * 1.852 * 10) / 10,
-    gustSpeedKnots: gustKt,
-    visibilityMeters: 10000,
-    temperatureCelsius: tempC,
-    dewPointCelsius: dewC,
-    relativeHumidityPercent: 68,
-    qnhHpa: qnh,
-    flightCategory: 'VFR',
-    cloudsDescription: 'Poche nubi sparse a 2.500 ft (FEW025), nuvolosità a 8.000 ft (BKN080)',
-    activeRunway: 'RWY 04R (Pista Principale 3.300 m)',
-    crosswindKnots,
-    headwindKnots,
-    runwayCondition: 'Asciutta (Dry) - Atterraggi/Decolli Regolari',
-    officialSource: 'Servizio Meteorologico Aeronautica Militare / ENAV / ICAO LIPZ'
-  };
-}
-
-export const INITIAL_LIPZ_METAR: AirportMetarData = generateCurrentLIPZMetar();
-
-/**
- * Catalogo delle 7 Stazioni Meteomarine e Anemometriche di Venezia e Laguna
- * che coprono Aeroporto LIPZ, Mare aperto (Piattaforma CNR), Bocche di Porto (MOSE)
- * Bacino San Marco e Terraferma (ARPAV).
+ * Anagrafica delle 7 stazioni meteo-marine di Venezia e Laguna.
+ * I valori di vento/onda/temperatura sono di riferimento (non live): per LIPZ vengono
+ * sostituiti a runtime dal METAR reale in /api/weather.
  */
 export const METEO_MARINE_WIND_STATIONS: MeteoMarineWindItem[] = [
   {
@@ -77,7 +24,6 @@ export const METEO_MARINE_WIND_STATIONS: MeteoMarineWindItem[] = [
     tidePushRisk: 'BASSO',
     windTypeDescription: 'Vento al suolo rilevato dai sensori anemometrici aeroportuali ENAV / Aeronautica Militare lungo la pista 04R/22L.',
     stationType: 'AEROPORTO',
-    metar: INITIAL_LIPZ_METAR,
     officialSource: 'Aeronautica Militare / ENAV Servizio Meteorologico'
   },
   {

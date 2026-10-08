@@ -91,7 +91,9 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
               <span className="font-mono font-bold text-sm sm:text-base text-[var(--ink)] tabular">
                 {totalActiveVehicles}
               </span>{' '}
-              <span className="text-[var(--ink-2)]">{language === 'it' ? 'mezzi attivi' : 'active vessels'}</span>
+              <span className="text-[var(--ink-2)]" title={language === 'it' ? 'Corse in servizio secondo l\'orario GTFS ACTV (simulazione, non posizioni GPS)' : 'Trips in service according to the ACTV GTFS timetable (simulation, not GPS positions)'}>
+                {language === 'it' ? 'corse da orario' : 'scheduled trips'}
+              </span>
             </div>
           </div>
         </div>

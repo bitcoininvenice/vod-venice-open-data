@@ -2,8 +2,9 @@
 
 import React from 'react';
 import { CameraViewPreset, PaletteTheme } from '@/lib/types';
-import { Compass, Moon, Sun, Sparkles, Layers, BarChart3, ShieldAlert, HelpCircle, Globe, Waves, Wind, Ship, Satellite, Construction } from 'lucide-react';
+import { Compass, Moon, Sun, Sparkles, Layers, BarChart3, ShieldAlert, HelpCircle, Globe, Waves, Ship, Satellite, Construction } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { formatSignedCm, formatLocalStamp } from '@/lib/time';
 
 interface HeaderProps {
   currentView: CameraViewPreset;
@@ -14,13 +15,12 @@ interface HeaderProps {
   onOpenStatsModal: () => void;
   onOpenLayers?: () => void;
   onOpenTutorial?: () => void;
-  activeVehiclesCount: number;
   activeCantieriCount: number;
-  tideLevel?: number;
-  activeShipsCount?: number;
-  activeFlightsCount?: number;
-  airAqi?: number;
-  activeSatellitesCount?: number;
+  /** Marea reale a Punta Salute; null se la fonte CPSM non è disponibile */
+  tideLevel: number | null;
+  tideObservedAt?: string | null;
+  activeShipsCount: number;
+  activeSatellitesCount: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -32,13 +32,11 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenStatsModal,
   onOpenLayers,
   onOpenTutorial,
-  activeVehiclesCount,
   activeCantieriCount,
-  tideLevel = 76,
-  activeShipsCount = 8,
-  activeFlightsCount = 7,
-  airAqi = 36,
-  activeSatellitesCount = 6
+  tideLevel,
+  tideObservedAt,
+  activeShipsCount,
+  activeSatellitesCount
 }) => {
   const { language, toggleLanguage, t } = useTranslation();
 
@@ -70,7 +68,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Tide Pill Mobile */}
           <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/30 shrink-0">
             <Waves className="w-3.5 h-3.5" />
-            <span className="font-bold text-[var(--ink)]">+{tideLevel}</span>
+            <span className="font-bold text-[var(--ink)]">{formatSignedCm(tideLevel, '')}</span>
           </div>
 
           {/* Spatial Mobile Trigger */}
@@ -153,24 +151,20 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Desktop Action Badges & Tools (hidden on mobile, shown on md:) */}
       <div className="hidden md:flex items-center gap-2">
         {/* Tide level badge (Centro Maree) */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-blue-500/10 text-blue-400 border border-blue-500/30">
+        <div
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-blue-500/10 text-blue-400 border border-blue-500/30"
+          title={`CPSM Punta Salute · ${formatLocalStamp(tideObservedAt)}`}
+        >
           <Waves className="w-3.5 h-3.5" />
           <span>{t('header.tide')}:</span>
-          <span className="font-bold text-[var(--ink)]">+{tideLevel} cm</span>
+          <span className="font-bold text-[var(--ink)]">{formatSignedCm(tideLevel)}</span>
         </div>
 
-        {/* Air Quality badge (ARPAV) */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-          <Wind className="w-3.5 h-3.5" />
-          <span>{t('header.airQuality')}:</span>
-          <span className="font-bold text-[var(--ink)]">AQI {airAqi}</span>
-        </div>
-
-        {/* Ships badge (AIS) */}
+        {/* Ships badge (anagrafica banchine, non AIS live) */}
         <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
           <Ship className="w-3.5 h-3.5" />
           <span>{t('header.ships')}:</span>
-          <span className="font-bold text-[var(--ink)]">{activeShipsCount} AIS</span>
+          <span className="font-bold text-[var(--ink)]">{activeShipsCount}</span>
         </div>
 
         {/* Satellites badge (Copernicus / ASI) */}

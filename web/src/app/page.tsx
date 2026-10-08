@@ -34,7 +34,6 @@ import {
   PedestrianFlowItem,
   AlilagunaRoute,
   AlilagunaStop,
-  AlilagunaBoat,
   SatelliteItem,
   PasserellaItem,
   BriccolaSignalItem,
@@ -68,7 +67,6 @@ import {
   AirportMetarData,
   VeniceCameraItem
 } from '@/lib/types';
-import { INITIAL_LIPZ_METAR } from '@/lib/weatherWindData';
 import {
   REGIONAL_LAGOON_WATER_QUALITY,
   REGIONAL_TOURIST_ACCOMMODATIONS,
@@ -95,36 +93,28 @@ import {
   OPEN_PHARMACY_DUTY,
   OPEN_HEAT_ISLAND_LST
 } from '@/lib/open-data-catalog';
-import { MOCK_CANTIERI, MOCK_STOPS } from '@/lib/db';
+import { CANTIERI_REFERENCE, ACTV_STOPS_REFERENCE } from '@/lib/db';
 import { VENICE_CAMERAS } from '@/lib/cameras-data';
-import { SCHEDULED_VCE_FLIGHTS } from '@/lib/flights-data';
 import { NOTTE, CARTA, getDynamicPalette } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { useTranslation } from '@/lib/i18n';
+import { romeDayType, romeSecondsOfDay } from '@/lib/time';
+import { activeTripsAt, dayActivity } from '@/lib/gtfsActivity';
+import type { TideResponse, TideStation, TideForecast, TideTrend, TideCategory } from '@/lib/contracts/tide';
 
 export default function HomePage() {
   const { t } = useTranslation();
   // Timeline and simulation state - DEFAULT TO "ORA LIVE" (Current wall-clock time in Venice, 1:1 speed)
-  const [currentTimeSeconds, setCurrentTimeSeconds] = useState<number>(() => {
-    const now = new Date();
-    return now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-  });
+  const [currentTimeSeconds, setCurrentTimeSeconds] = useState<number>(() => Math.floor(romeSecondsOfDay()));
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [speed, setSpeed] = useState<number>(1); // Default 1x Reale for live mode
-  const [selectedDay, setSelectedDay] = useState<DayType>(() => {
-    const day = new Date().getDay();
-    if (day === 0) return 'sunday';
-    if (day === 6) return 'saturday';
-    return 'weekday';
-  });
+  const [selectedDay, setSelectedDay] = useState<DayType>(() => romeDayType());
   const [isLiveSynced, setIsLiveSynced] = useState<boolean>(true); // Default ORA LIVE active on initial load
   const [isLayerPanelOpenMobile, setIsLayerPanelOpenMobile] = useState<boolean>(false);
   const [isDesktopLayerPanelOpen, setIsDesktopLayerPanelOpen] = useState<boolean>(true);
 
   const handleSyncLiveTime = () => {
-    const now = new Date();
-    const currentLiveSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-    setCurrentTimeSeconds(currentLiveSeconds);
+    setCurrentTimeSeconds(Math.floor(romeSecondsOfDay()));
     setSpeed(1); // Set to 1x real time
     setIsPlaying(true);
     setIsLiveSynced(true);
@@ -192,12 +182,12 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<TransportModeCategory | 'all'>('all');
 
   // Data collections
-  const [cantieri, setCantieri] = useState<CantiereItem[]>(MOCK_CANTIERI);
-  const [stops, setStops] = useState<StopItem[]>(MOCK_STOPS);
-  const [flights, setFlights] = useState<FlightItem[]>(SCHEDULED_VCE_FLIGHTS);
+  const [cantieri, setCantieri] = useState<CantiereItem[]>(CANTIERI_REFERENCE);
+  const [stops, setStops] = useState<StopItem[]>(ACTV_STOPS_REFERENCE);
+  const [flights, setFlights] = useState<FlightItem[]>([]);
   const [ships, setShips] = useState<ShipItem[]>([]);
   const [moseGates, setMoseGates] = useState<MoseGateItem[]>([]);
-  const [cpsmStations, setCpsmStations] = useState<any[]>([]);
+  const [cpsmStations, setCpsmStations] = useState<TideStation[]>([]);
   const [fountains, setFountains] = useState<CityAssetItem[]>([]);
   const [accessibleBridges, setAccessibleBridges] = useState<CityAssetItem[]>([]);
   const [veritasServices, setVeritasServices] = useState<CityAssetItem[]>([]);
@@ -228,7 +218,7 @@ export default function HomePage() {
   const [subsidencePoints, setSubsidencePoints] = useState<SubsidenceInSARItem[]>(OPEN_SUBSIDENCE_INSAR);
   const [lagoonMorphology, setLagoonMorphology] = useState<LagoonMorphologyItem[]>(OPEN_LAGOON_MORPHOLOGY);
   const [marineWindStations, setMarineWindStations] = useState<MeteoMarineWindItem[]>(OPEN_METEO_MARINE_WIND);
-  const [metarData, setMetarData] = useState<AirportMetarData>(INITIAL_LIPZ_METAR);
+  const [metarData, setMetarData] = useState<AirportMetarData | null>(null);
   const [liveTrains, setLiveTrains] = useState<TrainLiveItem[]>(OPEN_LIVE_TRAINS);
   const [wasteBoats, setWasteBoats] = useState<VeritasWasteBoatItem[]>(OPEN_VERITAS_WASTE_BOATS);
   const [nizioleti, setNizioleti] = useState<NizioletoCivicoItem[]>(OPEN_NIZIOLETI_CIVICI);
@@ -247,7 +237,14 @@ export default function HomePage() {
   const [pollenMonitoringStations, setPollenMonitoringStations] = useState<PollenMonitoringStationItem[]>(REGIONAL_POLLEN_STATIONS);
   const [lagoonTributaryRivers, setLagoonTributaryRivers] = useState<LagoonTributaryRiverItem[]>(REGIONAL_TRIBUTARY_RIVERS);
 
-  const [tideLevel, setTideLevel] = useState<number>(76);
+  // Marea reale CPSM (Punta Salute): null finché la fonte non risponde
+  const [tideLevel, setTideLevel] = useState<number | null>(null);
+  const [tideInfo, setTideInfo] = useState<{
+    observedAt: string | null;
+    trend: TideTrend | null;
+    category: TideCategory | null;
+    forecast: TideForecast | null;
+  }>({ observedAt: null, trend: null, category: null, forecast: null });
 
   // Active selections & Modals
   const [selectedStop, setSelectedStop] = useState<StopItem | null>(null);
@@ -417,17 +414,25 @@ export default function HomePage() {
       })
       .catch((err) => console.warn('Using fallback stops:', err));
 
-    // Fetch Tide and MOSE data
-    fetch('/api/tide')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          if (data.data?.livelloCm !== undefined) setTideLevel(data.data.livelloCm);
-          if (data.moseGates) setMoseGates(data.moseGates);
-          if (data.stations) setCpsmStations(data.stations);
-        }
-      })
-      .catch((err) => console.warn('Using fallback tide:', err));
+    // Marea reale (CPSM) + anagrafica MOSE con livelli delle stazioni più vicine
+    const loadTide = () => {
+      fetch('/api/tide')
+        .then((res) => res.json() as Promise<TideResponse>)
+        .then(({ data }) => {
+          setTideLevel(data.reference?.levelCm ?? null);
+          setTideInfo({
+            observedAt: data.reference?.observedAt ?? null,
+            trend: data.trend,
+            category: data.category,
+            forecast: data.forecast,
+          });
+          setCpsmStations(data.stations);
+          setMoseGates(data.moseGates);
+        })
+        .catch((err) => console.warn('Tide source unavailable:', err));
+    };
+    loadTide();
+    const tideInterval = setInterval(loadTide, 5 * 60 * 1000);
 
     // Fetch Ships (AIS Maritime Traffic & Cruise Ships)
     fetch('/api/ships')
@@ -454,7 +459,7 @@ export default function HomePage() {
     fetch('/api/environment')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && data.airStations) setAirStations(data.airStations);
+        if (data.success && data.data?.airStations) setAirStations(data.data.airStations);
       })
       .catch((err) => console.warn('Using fallback environment:', err));
 
@@ -462,7 +467,7 @@ export default function HomePage() {
     fetch('/api/pedestrian-flows')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && data.pedestrianFlows) setPedestrianFlows(data.pedestrianFlows);
+        if (data.success && data.data?.sensors) setPedestrianFlows(data.data.sensors);
       })
       .catch((err) => console.warn('Using fallback pedestrian flows:', err));
 
@@ -471,31 +476,24 @@ export default function HomePage() {
       fetch('/api/flights')
         .then((res) => res.json())
         .then((data) => {
-          if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-            setFlights(data.data);
-          }
+          if (Array.isArray(data.data)) setFlights(data.data);
         })
         .catch((err) => console.warn('Using fallback flights:', err));
     };
 
     loadFlights();
-    const flightInterval = setInterval(loadFlights, 12000);
+    const flightInterval = setInterval(loadFlights, 15000);
 
-    // Fetch Alilaguna (Transitland feed f-u20f-alilagunaspa)
-    const loadAlilaguna = () => {
-      fetch('/api/alilaguna')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            if (data.routes) setAlilagunaRoutes(data.routes);
-            if (data.stops) setAlilagunaStops(data.stops);
-          }
-        })
-        .catch((err) => console.warn('Using fallback alilaguna:', err));
-    };
-
-    loadAlilaguna();
-    const alilagunaInterval = setInterval(loadAlilaguna, 8000);
+    // Alilaguna: rotte e fermate sono anagrafica statica (le barche sono simulate da orario lato client)
+    fetch('/api/alilaguna')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          if (data.routes) setAlilagunaRoutes(data.routes);
+          if (data.stops) setAlilagunaStops(data.stops);
+        }
+      })
+      .catch((err) => console.warn('Alilaguna data unavailable:', err));
 
     // Fetch Earth Observation Satellites over Venice (Copernicus / ASI / NASA)
     fetch('/api/satellites')
@@ -541,7 +539,7 @@ export default function HomePage() {
     fetch('/api/cameras')
       .then((res) => res.json())
       .then((data) => {
-        const list = data.data || data.cameras;
+        const list = data.data;
         if (data.success && Array.isArray(list) && list.length > 0) setCameras(list);
       })
       .catch((err) => console.warn('Using fallback cameras:', err));
@@ -551,7 +549,7 @@ export default function HomePage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          if (data.data.canalSpeedLimits) setCanalSpeedLimits(data.data.canalSpeedLimits);
+          if (data.data.speedLimits) setCanalSpeedLimits(data.data.speedLimits);
           if (data.data.bridges) setBridges(data.data.bridges);
           if (data.data.gondolas) setGondolas(data.data.gondolas);
           if (data.data.docks) setDocks(data.data.docks);
@@ -576,7 +574,7 @@ export default function HomePage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          if (data.data.metar) setMetarData(data.data.metar);
+          setMetarData(data.data.metar ?? null);
           if (data.data.windStations) setMarineWindStations(data.data.windStations);
         }
       })
@@ -587,7 +585,7 @@ export default function HomePage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          if (data.data.liveTrains) setLiveTrains(data.data.liveTrains);
+          if (data.data.trains) setLiveTrains(data.data.trains);
           if (data.data.wasteBoats) setWasteBoats(data.data.wasteBoats);
         }
       })
@@ -612,7 +610,7 @@ export default function HomePage() {
       .then((data) => {
         if (data.success && data.data) {
           if (data.data.emergencyDocks) setEmergencyDocks(data.data.emergencyDocks);
-          if (data.data.daeList) setDaeList(data.data.daeList);
+          if (data.data.dae) setDaeList(data.data.dae);
           if (data.data.pharmacies) setPharmacies(data.data.pharmacies);
         }
       })
@@ -644,7 +642,7 @@ export default function HomePage() {
 
     return () => {
       clearInterval(flightInterval);
-      clearInterval(alilagunaInterval);
+      clearInterval(tideInterval);
     };
   }, []);
 
@@ -691,9 +689,10 @@ export default function HomePage() {
   }, [paletteTheme, currentTimeSeconds]);
 
   // Simulation loop ticker: synced to exact real-time wall-clock when isLiveSynced is true
-  const lastTimeRef = useRef<number>(performance.now());
+  const lastTimeRef = useRef<number>(0);
   useEffect(() => {
     let frameId: number;
+    lastTimeRef.current = performance.now();
 
     const tick = (now: number) => {
       const dt = Math.min(0.1, (now - lastTimeRef.current) / 1000);
@@ -701,9 +700,7 @@ export default function HomePage() {
 
       if (isPlaying) {
         if (isLiveSynced && speed === 1) {
-          const d = new Date();
-          const exactSec = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000;
-          setCurrentTimeSeconds(exactSec);
+          setCurrentTimeSeconds(romeSecondsOfDay());
         } else {
           setCurrentTimeSeconds((prev) => (prev + dt * speed) % 86400);
         }
@@ -758,11 +755,10 @@ export default function HomePage() {
           setIsDesktopLayerPanelOpen(true);
         }}
         onOpenTutorial={() => setIsTutorialOpen(true)}
-        activeVehiclesCount={302}
         activeCantieriCount={cantieri.filter((c) => c.stato === 'In corso').length}
         tideLevel={tideLevel}
+        tideObservedAt={tideInfo.observedAt}
         activeShipsCount={ships.length}
-        activeFlightsCount={flights.length}
         activeSatellitesCount={satellites.length}
       />
 
@@ -881,7 +877,7 @@ export default function HomePage() {
           pollenMonitoringStations={pollenMonitoringStations}
           showTributaries={showTributaries}
           lagoonTributaryRivers={lagoonTributaryRivers}
-          tideLevel={tideLevel}
+          tideLevel={tideLevel ?? 0}
           isDesktopLayerPanelOpen={isDesktopLayerPanelOpen}
         />
 
@@ -1229,9 +1225,9 @@ export default function HomePage() {
             }}
             selectedDay={selectedDay}
             onDayChange={setSelectedDay}
-            totalActiveVehicles={302}
-            peakCount={348}
-            peakTime="07:45"
+            totalActiveVehicles={activeTripsAt(selectedDay, currentTimeSeconds)}
+            peakCount={dayActivity(selectedDay).peakCount}
+            peakTime={dayActivity(selectedDay).peakTime}
             onSyncLiveTime={handleSyncLiveTime}
             isLiveSynced={isLiveSynced}
           />
@@ -1268,6 +1264,7 @@ export default function HomePage() {
         moseGates={moseGates}
         stations={cpsmStations}
         tideLevel={tideLevel}
+        tideInfo={tideInfo}
       />
 
       <AlilagunaDetailModal
@@ -1291,7 +1288,7 @@ export default function HomePage() {
       <VeniceFeatureDetailModal
         feature={selectedFeature}
         onClose={() => setSelectedFeature(null)}
-        currentTideLevelCm={tideLevel}
+        currentTideLevelCm={tideLevel ?? undefined}
       />
 
       <SpatialAnalysisModal

@@ -3,24 +3,34 @@
 import React, { useState } from 'react';
 import { X, Plane, Navigation, Compass, Waves, Bus, Wind, Thermometer, Cloud, Check, Copy } from 'lucide-react';
 import { FlightItem, AirportMetarData } from '@/lib/types';
-import { INITIAL_LIPZ_METAR } from '@/lib/weatherWindData';
 import { useTranslation } from '@/lib/i18n';
+import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge';
+import { useDialogA11y } from '@/components/ui/useDialogA11y';
+
+const FLIGHT_CATEGORY_LABEL: Record<AirportMetarData['flightCategory'], { it: string; en: string }> = {
+  VFR: { it: 'Volo a vista', en: 'Visual flight rules' },
+  MVFR: { it: 'Volo a vista marginale', en: 'Marginal VFR' },
+  IFR: { it: 'Volo strumentale', en: 'Instrument flight rules' },
+  LIFR: { it: 'Strumentale, condizioni basse', en: 'Low IFR' },
+};
 
 interface AirportDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   flights: FlightItem[];
-  metar?: AirportMetarData;
+  /** METAR reale (NOAA AWC); null se non disponibile */
+  metar: AirportMetarData | null;
 }
 
 export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
   isOpen,
   onClose,
   flights,
-  metar = INITIAL_LIPZ_METAR
+  metar
 }) => {
   const { language, t } = useTranslation();
   const [copiedMetar, setCopiedMetar] = useState(false);
+  const panelRef = useDialogA11y(isOpen, onClose);
   if (!isOpen) return null;
 
   const handleCopyMetar = () => {
@@ -37,7 +47,14 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
-      <div className="glass-panel w-full max-w-lg rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-3.5 sm:gap-4 border border-sky-500/40 animate-in fade-in zoom-in-95 duration-200 max-h-[88vh] overflow-y-auto">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="airport-modal-title"
+        tabIndex={-1}
+        className="glass-panel w-full max-w-lg rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-3.5 sm:gap-4 border border-sky-500/40 animate-in fade-in zoom-in-95 duration-200 max-h-[88vh] overflow-y-auto outline-none"
+      >
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
           <div className="flex items-center gap-3">
@@ -53,7 +70,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> {t('airportModal.active')}
                 </span>
               </div>
-              <h3 className="text-lg font-bold text-[var(--ink)] leading-snug">
+              <h3 id="airport-modal-title" className="text-lg font-bold text-[var(--ink)] leading-snug">
                 {t('airportModal.title')}
               </h3>
             </div>
@@ -87,7 +104,14 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
           </div>
         </div>
 
-        {/* Aviation Weather & METAR Bulletin (Aeronautica Militare / ENAV) */}
+        {/* METAR LIPZ reale (NOAA Aviation Weather Center) */}
+        {!metar && (
+          <div className="p-3 rounded-2xl bg-[var(--rule)]/30 border border-[var(--rule)] text-xs text-[var(--ink-2)]">
+            {language === 'it'
+              ? 'METAR LIPZ temporaneamente non disponibile.'
+              : 'LIPZ METAR temporarily unavailable.'}
+          </div>
+        )}
         {metar && (
           <div className="flex flex-col gap-2 p-3 rounded-2xl bg-sky-500/5 dark:bg-sky-500/10 border border-sky-500/25">
             <div className="flex items-center justify-between">
@@ -96,7 +120,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
               </span>
               <div className="flex items-center gap-1.5">
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-bold border border-emerald-500/30">
-                  {metar.flightCategory} ({language === 'it' ? 'Volo a Vista' : 'VFR'})
+                  {metar.flightCategory} ({FLIGHT_CATEGORY_LABEL[metar.flightCategory][language === 'it' ? 'it' : 'en']})
                 </span>
                 <span className="text-[10px] font-mono text-[var(--ink-3)]">
                   QNH {metar.qnhHpa} hPa
@@ -169,8 +193,13 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
             </div>
 
             <div className="flex items-center justify-between text-[10px] text-[var(--ink-3)] pt-1 border-t border-[var(--rule)]">
-              <span>{t('airportModal.sourceAeronautica')}</span>
-              <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">{metar.runwayCondition}</span>
+              <span>
+                METAR ICAO · NOAA Aviation Weather Center ·{' '}
+                {new Date(metar.observationTime).toLocaleString(language === 'it' ? 'it-IT' : 'en-GB', {
+                  timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+                })}
+              </span>
+              <span className="font-mono">{metar.activeRunway}</span>
             </div>
           </div>
         )}
@@ -238,6 +267,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
               <Plane className="w-4 h-4 text-sky-400" /> {t('airportModal.trackedFlightsTitle')} ({flights.length})
+              <ProvenanceBadge kind="live" detail="OpenSky" />
             </span>
             <span className="text-[10px] font-mono text-cyan-400">
               {activeArrivals.length} Arr · {activeDepartures.length} Dep · {activeTaxi.length} Taxi
@@ -245,6 +275,13 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
           </div>
 
           <div className="flex flex-col gap-1.5 max-h-36 overflow-y-auto pr-1">
+            {flights.length === 0 && (
+              <p className="text-[11px] text-[var(--ink-3)] p-2">
+                {language === 'it'
+                  ? 'Nessun aereo rilevato da OpenSky nell\'area in questo momento (o servizio non raggiungibile).'
+                  : 'No aircraft currently detected by OpenSky in the area (or service unreachable).'}
+              </p>
+            )}
             {flights.map((f) => (
               <div
                 key={f.icao24}

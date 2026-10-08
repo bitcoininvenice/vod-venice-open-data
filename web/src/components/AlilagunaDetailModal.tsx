@@ -144,7 +144,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
               <Waves className="w-4 h-4 text-blue-400" /> {language === 'it' ? 'Flotta Alilaguna in Navigazione' : 'Alilaguna Fleet in Navigation'} ({boats.length} {language === 'it' ? 'Battelli Attivi' : 'Active Vessels'})
             </span>
             <span className="text-[10px] font-mono text-cyan-400 font-bold">
-              168 {language === 'it' ? 'corse/giorno certificate' : 'certified trips/day'}
+              168 {language === 'it' ? 'corse/giorno da orario' : 'scheduled trips/day'}
             </span>
           </div>
 
@@ -206,9 +206,9 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
           </div>
           <p className="text-[11px] leading-relaxed text-[var(--ink-2)]">
             {language === 'it' ? (
-              <>La navigazione della flotta Alilaguna S.p.A. è calcolata istante per istante tramite motore cinematico deterministico alimentato da <strong>168 corse giornaliere certificate</strong> (Linea Blu, Linea Arancio, Linea Rossa, Linea Verde). Non vengono utilizzate formule sintetiche o oscillazioni fittizie: ogni battello segue rigorosamente i canali navigabili lagunari autorizzati e gli orari di partenza ufficiali.</>
+              <>Le posizioni della flotta Alilaguna sono <strong>simulate dall&apos;orario</strong>: per ognuna delle 168 corse giornaliere (Linee Blu, Arancio, Rossa, Verde) la barca viene collocata lungo il percorso in base all&apos;orario di partenza. Non si tratta di un tracciamento GPS: ritardi e variazioni di servizio non sono rappresentati.</>
             ) : (
-              <>The navigation of the Alilaguna S.p.A. fleet is computed moment-by-moment through a deterministic kinematic simulation engine powered by <strong>168 certified daily trips</strong> (Blu, Arancio, Rossa, and Verde lines). No synthetic mock motion is used: every vessel strictly follows authorized lagoon canal polylines and official scheduled departure times.</>
+              <>Alilaguna fleet positions are <strong>simulated from the timetable</strong>: for each of the 168 daily trips (Blu, Arancio, Rossa, Verde lines) the boat is placed along its route based on the scheduled departure. This is not GPS tracking: delays and service changes are not shown.</>
             )}
           </p>
         </div>

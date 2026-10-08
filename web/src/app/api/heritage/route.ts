@@ -6,7 +6,7 @@ import {
   OPEN_LAGOON_FORTRESS_ISLANDS
 } from '@/lib/open-data-catalog';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
 export async function GET() {
   return NextResponse.json({
@@ -23,7 +23,6 @@ export async function GET() {
       countWells: OPEN_VENICE_WELLS.length,
       countBellTowers: OPEN_BELL_TOWERS.length,
       countFortressIslands: OPEN_LAGOON_FORTRESS_ISLANDS.length,
-      updatedAt: new Date().toISOString()
     }
   });
 }

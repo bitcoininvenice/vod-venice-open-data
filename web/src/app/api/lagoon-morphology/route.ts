@@ -5,17 +5,14 @@ import {
   OPEN_METEO_MARINE_WIND
 } from '@/lib/open-data-catalog';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
 export async function GET() {
   return NextResponse.json({
     success: true,
     data: {
-      subsidence: OPEN_SUBSIDENCE_INSAR,
       subsidencePoints: OPEN_SUBSIDENCE_INSAR,
-      morphology: OPEN_LAGOON_MORPHOLOGY,
       lagoonMorphology: OPEN_LAGOON_MORPHOLOGY,
-      marineWind: OPEN_METEO_MARINE_WIND,
       marineWindStations: OPEN_METEO_MARINE_WIND
     },
     meta: {
@@ -23,7 +20,6 @@ export async function GET() {
       countSubsidence: OPEN_SUBSIDENCE_INSAR.length,
       countMorphology: OPEN_LAGOON_MORPHOLOGY.length,
       countWindStations: OPEN_METEO_MARINE_WIND.length,
-      updatedAt: new Date().toISOString()
     }
   });
 }

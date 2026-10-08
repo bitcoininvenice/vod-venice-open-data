@@ -7,12 +7,13 @@ import {
   REGIONAL_TRIBUTARY_RIVERS
 } from '@/lib/regionalVenetoData';
 
+export const revalidate = 86400;
+
 export async function GET() {
   return NextResponse.json({
     success: true,
     portal: 'Open Data Regione del Veneto (dati.veneto.it)',
     license: 'Creative Commons Attribuzione 4.0 Internazionale (CC BY 4.0)',
-    timestamp: new Date().toISOString(),
     summary: {
       waterQualityCount: REGIONAL_LAGOON_WATER_QUALITY.length,
       accommodationsCount: REGIONAL_TOURIST_ACCOMMODATIONS.length,

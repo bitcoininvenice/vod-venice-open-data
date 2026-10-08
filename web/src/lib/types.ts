@@ -132,6 +132,7 @@ export interface TideData {
   percentualeAllagamentoVenezia: number;
 }
 
+/** I campi null indicano misure per cui non è collegata una fonte in tempo reale. */
 export interface PlatformMetrics {
   // Trasporto Pubblico ACTV
   totalRoutes: number;
@@ -139,7 +140,7 @@ export interface PlatformMetrics {
   routesAutomobilistico: number;
   totalStops: number;
   totalTrips: number;
-  activeVehiclesInService: number;
+  activeVehiclesInService: number | null;
 
   // Alilaguna S.p.A. (Transitland f-u20f-alilagunaspa)
   alilagunaRoutesCount: number;
@@ -147,18 +148,18 @@ export interface PlatformMetrics {
   alilagunaBoatsCount: number;
 
   // Maree & MOSE (CPSM Centro Maree)
-  tideLevelCm: number;
-  moseStatus: string;
+  tideLevelCm: number | null;
+  moseStatus: string | null;
   moseGatesCount: number;
   cpsmStationsCount: number;
-  floodingPercentage: number;
+  floodingPercentage: number | null;
 
   // Qualità dell'Aria & Ambiente (ARPAV)
   airStationsCount: number;
-  averageAqi: number;
-  averagePm10: number;
-  averageNo2: number;
-  airQualityStatus: string;
+  averageAqi: number | null;
+  averagePm10: number | null;
+  averageNo2: number | null;
+  airQualityStatus: string | null;
 
   // Traffico Marittimo AIS & Canali (VTS / Crociere)
   activeShipsCount: number;
@@ -167,25 +168,25 @@ export interface PlatformMetrics {
   restrictedLagoonVesselsCount: number;
 
   // Voli & Aeroporto VCE (ENAV / OpenSky)
-  activeFlightsCount: number;
-  vceDailyMovements: number;
+  activeFlightsCount: number | null;
+  vceDailyMovements: number | null;
   averageFlightAltitudeMeters: number;
 
   // Flussi Pedonali (Smart Control Room)
   pedestrianSensorsCount: number;
-  totalHourlyPedestrians: number;
-  peakPedestrianSensor: string;
+  totalHourlyPedestrians: number | null;
+  peakPedestrianSensor: string | null;
 
   // Mobilità Terraferma & Parcheggi AVM
   totalParkingSpaces: number;
-  freeParkingSpots: number;
-  parkingOccupancyRate: number;
+  freeParkingSpots: number | null;
+  parkingOccupancyRate: number | null;
 
   // Satelliti & Osservazione Spaziale (Copernicus ESA / ASI / NASA)
   activeSatellitesCount: number;
   copernicusSentinelsCount: number;
   radarEarthObservationSwathKm: number;
-  nextOrbitalPassMinutes: number;
+  nextOrbitalPassMinutes: number | null;
 
   // Patrimonio & Opere Pubbliche
   activeCantieri: number;
@@ -202,8 +203,8 @@ export interface PlatformMetrics {
   briccoleCount: number;
   marineLightsCount: number;
   oceanStationsCount: number;
-  cnrWaveHeightMeters: number;
-  cnrWaterTempC: number;
+  cnrWaveHeightMeters: number | null;
+  cnrWaterTempC: number | null;
   bathingWaterStationsCount: number;
   monumentalTreesCount: number;
   evChargingStationsCount: number;
@@ -255,10 +256,13 @@ export interface MoseGateItem {
   lat: number;
   lon: number;
   barriersCount: number;
-  status: 'ABBASSATO' | 'IN_SOLLEVAMENTO' | 'ATTIVATO';
-  elevationCm: number;
-  tideSeaCm: number;
-  tideLagoonCm: number;
+  /** Lo stato operativo del MOSE non è pubblicato come open data in tempo reale. */
+  status: 'ABBASSATO' | 'IN_SOLLEVAMENTO' | 'ATTIVATO' | 'NON_DISPONIBILE';
+  elevationCm: number | null;
+  /** Livello misurato dalla stazione mareografica lato mare più vicina (null se non disponibile). */
+  tideSeaCm: number | null;
+  /** Livello misurato dalla stazione mareografica lato laguna più vicina (null se non disponibile). */
+  tideLagoonCm: number | null;
 }
 
 export interface CityAssetItem {
@@ -406,7 +410,6 @@ export interface VeniceCameraItem {
   feedType?: 'YOUTUBE_LIVE' | 'GARR_TV_STREAM' | 'IMAGE_SNAPSHOT_15M' | 'DIRECT_STREAM_LINK';
   streamEmbedUrl?: string;
   streamPageUrl?: string;
-  snapshotUrl?: string;
   privacyNoticeStatus?: 'PRESENTE' | 'ASSENTE' | 'INCOMPLETA' | 'NON_APPLICABILE_PANORAMICA';
   bearingDeg?: number;
   fovDeg?: number;

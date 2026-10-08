@@ -4,7 +4,7 @@ import {
   OPEN_VERITAS_WASTE_BOATS
 } from '@/lib/open-data-catalog';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
 export async function GET() {
   return NextResponse.json({
@@ -17,7 +17,6 @@ export async function GET() {
       source: 'Viaggiatreno / Rete Ferroviaria Italiana (RFI), Gruppo Veritas SpA',
       countTrains: OPEN_LIVE_TRAINS.length,
       countWasteBoats: OPEN_VERITAS_WASTE_BOATS.length,
-      updatedAt: new Date().toISOString()
     }
   });
 }

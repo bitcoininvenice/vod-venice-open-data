@@ -1,0 +1,155 @@
+[
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-21 20:35:00",
+        "TIPO_ESTREMALE": "max",
+        "VALORE": "50.0",
+        "TITOLO": "Marea percepita per l'estremale del 21/09 alle 20:35",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-22 03:25:00",
+        "TIPO_ESTREMALE": "min",
+        "VALORE": "-5.0",
+        "TITOLO": "Marea percepita per l'estremale del 22/09 alle 03:25",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-22 10:25:00",
+        "TIPO_ESTREMALE": "max",
+        "VALORE": "65.0",
+        "TITOLO": "Marea percepita per l'estremale del 22/09 alle 10:25",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "1"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-22 16:10:00",
+        "TIPO_ESTREMALE": "min",
+        "VALORE": "15.0",
+        "TITOLO": "Marea percepita per l'estremale del 22/09 alle 16:10",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-22 21:20:00",
+        "TIPO_ESTREMALE": "max",
+        "VALORE": "50.0",
+        "TITOLO": "Marea percepita per l'estremale del 22/09 alle 21:20",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-23 03:50:00",
+        "TIPO_ESTREMALE": "min",
+        "VALORE": "-15.0",
+        "TITOLO": "Marea percepita per l'estremale del 23/09 alle 03:50",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-23 10:35:00",
+        "TIPO_ESTREMALE": "max",
+        "VALORE": "65.0",
+        "TITOLO": "Marea percepita per l'estremale del 23/09 alle 10:35",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-23 16:25:00",
+        "TIPO_ESTREMALE": "min",
+        "VALORE": "5.0",
+        "TITOLO": "Marea percepita per l'estremale del 23/09 alle 16:25",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-23 22:00:00",
+        "TIPO_ESTREMALE": "max",
+        "VALORE": "60.0",
+        "TITOLO": "Marea percepita per l'estremale del 23/09 alle 22:00",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-24 04:15:00",
+        "TIPO_ESTREMALE": "min",
+        "VALORE": "-20.0",
+        "TITOLO": "Marea percepita per l'estremale del 24/09 alle 04:15",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-24 10:50:00",
+        "TIPO_ESTREMALE": "max",
+        "VALORE": "70.0",
+        "TITOLO": "Marea percepita per l'estremale del 24/09 alle 10:50",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-24 16:50:00",
+        "TIPO_ESTREMALE": "min",
+        "VALORE": "0.0",
+        "TITOLO": "Marea percepita per l'estremale del 24/09 alle 16:50",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-24 22:30:00",
+        "TIPO_ESTREMALE": "max",
+        "VALORE": "65.0",
+        "TITOLO": "Marea percepita per l'estremale del 24/09 alle 22:30",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-25 04:40:00",
+        "TIPO_ESTREMALE": "min",
+        "VALORE": "-10.0",
+        "TITOLO": "Marea percepita per l'estremale del 25/09 alle 04:40",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-25 11:05:00",
+        "TIPO_ESTREMALE": "max",
+        "VALORE": "75.0",
+        "TITOLO": "Marea percepita per l'estremale del 25/09 alle 11:05",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-25 17:15:00",
+        "TIPO_ESTREMALE": "min",
+        "VALORE": "-10.0",
+        "TITOLO": "Marea percepita per l'estremale del 25/09 alle 17:15",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    },
+    {
+        "DATA_PREVISIONE": "2026-09-21 17:00:00",
+        "DATA_ESTREMALE": "2026-09-25 23:05:00",
+        "TIPO_ESTREMALE": "max",
+        "VALORE": "65.0",
+        "TITOLO": "Marea percepita per l'estremale del 25/09 alle 23:05",
+        "VIGNETTA": "080.gif",
+        "DEFAULT_VIGNETTA": "0"
+    }
+]

@@ -1,4 +1,12 @@
 import type { Metadata, Viewport } from "next";
+// Font self-hosted (nessuna richiesta a server terzi): i nomi restano "DM Mono" e
+// "Bricolage Grotesque" perché il canvas della mappa li richiama per nome.
+import "@fontsource/bricolage-grotesque/latin-400.css";
+import "@fontsource/bricolage-grotesque/latin-500.css";
+import "@fontsource/bricolage-grotesque/latin-600.css";
+import "@fontsource/bricolage-grotesque/latin-700.css";
+import "@fontsource/dm-mono/latin-400.css";
+import "@fontsource/dm-mono/latin-500.css";
 import "./globals.css";
 
 export const metadata: Metadata = {

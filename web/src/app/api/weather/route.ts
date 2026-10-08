@@ -1,55 +1,53 @@
 import { NextResponse } from 'next/server';
-import { generateCurrentLIPZMetar, METEO_MARINE_WIND_STATIONS } from '@/lib/weatherWindData';
+import { METEO_MARINE_WIND_STATIONS } from '@/lib/weatherWindData';
+import { fetchUpstream } from '@/server/upstream';
+import { LIPZ_METAR_URL, parseLipzMetar } from '@/server/sources/metar';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 export async function GET() {
-  const currentMetar = generateCurrentLIPZMetar();
+  const metar = await fetchUpstream(LIPZ_METAR_URL, parseLipzMetar, { revalidate: 300 });
 
-  // Aggiorna la stazione aeroportuale con il METAR appena calcolato
-  const stations = METEO_MARINE_WIND_STATIONS.map((st) => {
-    if (st.id === 'WIND_LIPZ_AERONAUTICA') {
-      return {
-        ...st,
-        metar: currentMetar,
-        windSpeedKmh: currentMetar.windSpeedKmh,
-        windSpeedKnots: currentMetar.windSpeedKnots,
-        gustSpeedKnots: currentMetar.gustSpeedKnots || 17,
-        windDirectionDeg: currentMetar.windDirectionDeg,
-        airTempCelsius: currentMetar.temperatureCelsius,
-        pressureHpa: currentMetar.qnhHpa,
-        humidityPercent: currentMetar.relativeHumidityPercent
-      };
-    }
-    return st;
+  // Solo la stazione aeroportuale viene aggiornata con il METAR reale; le altre restano valori di riferimento.
+  const windStations = METEO_MARINE_WIND_STATIONS.map((st) => {
+    if (st.id !== 'WIND_LIPZ_AERONAUTICA') return st;
+    if (!metar.ok) return { ...st, metar: undefined };
+    const m = metar.data;
+    return {
+      ...st,
+      metar: m,
+      windSpeedKmh: m.windSpeedKmh,
+      windSpeedKnots: m.windSpeedKnots,
+      gustSpeedKnots: m.gustSpeedKnots ?? m.windSpeedKnots,
+      windDirectionDeg: m.windDirectionDeg,
+      airTempCelsius: m.temperatureCelsius,
+      pressureHpa: m.qnhHpa,
+      humidityPercent: m.relativeHumidityPercent,
+    };
   });
 
   return NextResponse.json({
+    ok: metar.ok,
     success: true,
     data: {
-      metar: currentMetar,
-      windStations: stations,
-      summary: {
-        prevailingWindAdriatic: 'Scirocco (135°-145°) con raffiche fino a 61 km/h al largo',
-        prevailingWindLagoonNorth: 'Bora debole/moderata (55°-60°) su Tessera e Terraferma Mestre',
-        maxWaveHeightMeters: 2.45,
-        maxWaveLocation: 'Piattaforma Oceanografica Acqua Alta CNR-ISMAR (15 km offshore)',
-        tideHydrodynamicPush: 'CRITICO - Scirocco attivo su Golfo di Venezia con potenziale sovralzo',
-        runwayCrosswindLIPZ: `${currentMetar.crosswindKnots} kt (favorevole per atterraggio RWY 04R)`,
-        flightConditionLIPZ: currentMetar.flightCategory
-      }
+      metar: metar.ok ? metar.data : null,
+      windStations,
     },
     meta: {
-      sources: [
-        'Aeronautica Militare - Servizio Meteorologico Nazionale (METAR LIPZ / Tessera)',
-        'ENAV S.p.A. - Dati Navigazione Aerea e Bollettini Aeroportuali',
-        'CNR-ISMAR - Piattaforma Oceanografica Acqua Alta',
-        'Comune di Venezia - CPSM Centro Previsioni e Segnalazioni Maree',
-        'ISPRA - RMN Rete Mareografica Nazionale & RON Rete Ondametrica',
-        'ARPAV - Servizio Meteorologico Regionale del Veneto'
-      ],
-      stationCount: stations.length,
-      updatedAt: currentMetar.observationTime
-    }
+      metar: {
+        kind: 'live',
+        source: 'METAR ICAO LIPZ – NOAA Aviation Weather Center',
+        sourceUrl: 'https://aviationweather.gov/data/metar/?ids=LIPZ',
+        license: 'Pubblico dominio (US Government)',
+        fetchedAt: metar.ok ? metar.fetchedAt : undefined,
+        observedAt: metar.ok ? metar.data.observationTime : undefined,
+        note: metar.ok ? undefined : 'METAR temporaneamente non disponibile',
+      },
+      windStations: {
+        kind: 'static-reference',
+        source: 'Anagrafica stazioni meteo-marine (CNR-ISMAR, CPSM, ISPRA, ARPAV)',
+        note: 'Ad eccezione di LIPZ, i valori di vento e onda sono di riferimento e non aggiornati in tempo reale.',
+      },
+    },
   });
 }

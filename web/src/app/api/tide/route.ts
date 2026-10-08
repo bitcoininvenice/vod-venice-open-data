@@ -1,137 +1,116 @@
 import { NextResponse } from 'next/server';
-import { MoseGateItem } from '@/lib/types';
+import type { MoseGateItem } from '@/lib/types';
+import type { TideResponse, TideStation } from '@/lib/contracts/tide';
+import { fetchUpstream } from '@/server/upstream';
+import {
+  REFERENCE_STATION_ID,
+  TIDE_FORECAST_URL,
+  TIDE_LEVELS_URL,
+  parseTideForecast,
+  parseTideLevels,
+  tideCategory,
+  trendFromForecast,
+} from '@/server/sources/tide';
 
-export interface CpsmStationItem {
-  id: string;
-  name: string;
-  code: string;
-  lat: number;
-  lon: number;
-  levelCm: number;
-  trend: 'IN_AUMENTO' | 'STAZIONARIA' | 'IN_CALO';
-}
+export const revalidate = 120;
+
+/**
+ * Anagrafica delle quattro schiere MOSE (dato strutturale statico).
+ * I livelli lato mare/laguna vengono associati alle stazioni mareografiche reali più vicine.
+ */
+const MOSE_GATES: (Omit<MoseGateItem, 'tideSeaCm' | 'tideLagoonCm'> & { seaStationId: string; lagoonStationId: string })[] = [
+  {
+    id: 'mose-lido-treporti',
+    inletName: 'Lido San Nicolò - Canale Treporti',
+    channel: 'Bocca di Porto di Lido Nord',
+    lat: 45.4330, lon: 12.4280,
+    barriersCount: 21,
+    status: 'NON_DISPONIBILE', elevationCm: null,
+    seaStationId: '1022', lagoonStationId: '1025',
+  },
+  {
+    id: 'mose-lido-sannicolo',
+    inletName: 'Lido - Canale San Nicolò',
+    channel: 'Bocca di Porto di Lido Sud',
+    lat: 45.4225, lon: 12.4330,
+    barriersCount: 20,
+    status: 'NON_DISPONIBILE', elevationCm: null,
+    seaStationId: '1022', lagoonStationId: '1025',
+  },
+  {
+    id: 'mose-malamocco',
+    inletName: 'Bocca di Malamocco',
+    channel: 'Canale di Grande Navigazione / Petroli',
+    lat: 45.3340, lon: 12.2980,
+    barriersCount: 19,
+    status: 'NON_DISPONIBILE', elevationCm: null,
+    seaStationId: '1023', lagoonStationId: '1032',
+  },
+  {
+    id: 'mose-chioggia',
+    inletName: 'Bocca di Chioggia',
+    channel: 'Bocca di Porto Sud',
+    lat: 45.2310, lon: 12.2980,
+    barriersCount: 18,
+    status: 'NON_DISPONIBILE', elevationCm: null,
+    seaStationId: '1024', lagoonStationId: '1033',
+  },
+];
+
+const SOURCE_NAME = 'Comune di Venezia – Centro Previsioni e Segnalazioni Maree (dati.venezia.it)';
 
 export async function GET() {
   const now = new Date();
-  
-  // 1. Stazioni Idrometriche Rete CPSM (Centro Previsioni e Segnalazioni Maree)
-  const stations: CpsmStationItem[] = [
-    {
-      id: 'cpsm-salute',
-      name: 'Punta della Salute (ZMPS)',
-      code: 'SALUTE',
-      lat: 45.4310,
-      lon: 12.3365,
-      levelCm: 76,
-      trend: 'IN_AUMENTO'
-    },
-    {
-      id: 'cpsm-lido',
-      name: 'Diga Sud Lido',
-      code: 'LIDO_DIGA',
-      lat: 45.4190,
-      lon: 12.4350,
-      levelCm: 79,
-      trend: 'IN_AUMENTO'
-    },
-    {
-      id: 'cpsm-malamocco',
-      name: 'Diga Nord Malamocco',
-      code: 'MALAMOCCO_DIGA',
-      lat: 45.3360,
-      lon: 12.3020,
-      levelCm: 80,
-      trend: 'IN_AUMENTO'
-    },
-    {
-      id: 'cpsm-chioggia',
-      name: 'Chioggia Vigo',
-      code: 'CHIOGGIA',
-      lat: 45.2210,
-      lon: 12.2820,
-      levelCm: 75,
-      trend: 'STAZIONARIA'
-    }
-  ];
+  const [levels, forecast] = await Promise.all([
+    fetchUpstream(TIDE_LEVELS_URL, parseTideLevels, { revalidate: 120 }),
+    fetchUpstream(TIDE_FORECAST_URL, (raw) => parseTideForecast(raw, now), { revalidate: 600 }),
+  ]);
 
-  // 2. Barriere MOSE (Modulo Sperimentale Elettromeccanico) alle 3 Bocche di Porto
-  const moseGates: MoseGateItem[] = [
-    {
-      id: 'mose-lido-treporti',
-      inletName: 'Lido San Nicolò - Canale Treporti',
-      channel: 'Bocca di Porto di Lido Nord',
-      lat: 45.4330,
-      lon: 12.4280,
-      barriersCount: 21,
-      status: 'ABBASSATO', // Abbassato sul fondale marino
-      elevationCm: 0,
-      tideSeaCm: 79,
-      tideLagoonCm: 76
-    },
-    {
-      id: 'mose-lido-sannicolo',
-      inletName: 'Lido - Canale San Nicolò',
-      channel: 'Bocca di Porto di Lido Sud',
-      lat: 45.4225,
-      lon: 12.4330,
-      barriersCount: 20,
-      status: 'ABBASSATO',
-      elevationCm: 0,
-      tideSeaCm: 79,
-      tideLagoonCm: 76
-    },
-    {
-      id: 'mose-malamocco',
-      inletName: 'Bocca di Malamocco',
-      channel: 'Canale di Grande Navigazione / Petroli',
-      lat: 45.3340,
-      lon: 12.2980,
-      barriersCount: 19,
-      status: 'ABBASSATO',
-      elevationCm: 0,
-      tideSeaCm: 80,
-      tideLagoonCm: 76
-    },
-    {
-      id: 'mose-chioggia',
-      inletName: 'Bocca di Chioggia',
-      channel: 'Bocca di Porto Sud',
-      lat: 45.2310,
-      lon: 12.2980,
-      barriersCount: 18,
-      status: 'ABBASSATO',
-      elevationCm: 0,
-      tideSeaCm: 78,
-      tideLagoonCm: 75
-    }
-  ];
+  const stations: TideStation[] = levels.ok ? levels.data : [];
+  const byId = new Map(stations.map((s) => [s.id, s]));
+  const reference = byId.get(REFERENCE_STATION_ID) ?? null;
+  const forecastData = forecast.ok ? forecast.data : null;
 
-  const floodingCurves = [
-    { levelCm: 80, percent: 1.5, notes: "Allagamento parziale della sola Piazza San Marco antistante la Basilica" },
-    { levelCm: 100, percent: 5.1, notes: "Piazza San Marco allagata, passerelle pedonali montate" },
-    { levelCm: 110, percent: 12.2, notes: "Soglia di avviso acustico sirene CPSM; attivazione barriere MOSE" },
-    { levelCm: 120, percent: 35.4, notes: "Marea molto sostenuta, viabilità pedonale critica senza MOSE" },
-    { levelCm: 140, percent: 59.0, notes: "Marea eccezionale (acqua alta storica)" }
-  ];
+  const moseGates: MoseGateItem[] = MOSE_GATES.map(({ seaStationId, lagoonStationId, ...gate }) => ({
+    ...gate,
+    tideSeaCm: byId.get(seaStationId)?.levelCm ?? null,
+    tideLagoonCm: byId.get(lagoonStationId)?.levelCm ?? null,
+  }));
 
-  return NextResponse.json({
-    success: true,
-    fonte: "Centro Previsioni e Segnalazioni Maree (CPSM) - Comune di Venezia",
-    timestamp: now.toISOString(),
+  const body: TideResponse = {
+    ok: levels.ok,
     data: {
-      livelloCm: 76,
-      stazione: "Punta della Salute (ZMPS)",
-      dataOra: now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }),
-      tendenza: "IN_AUMENTO",
-      categoria: "NORMALE",
-      prossimoPicco: {
-        ora: "11:20",
-        livelloPrevistoCm: 85
-      },
-      percentualeAllagamentoVenezia: 1.2,
+      reference,
+      category: reference ? tideCategory(reference.levelCm) : null,
+      trend: trendFromForecast(forecastData, now),
       stations,
+      forecast: forecastData,
       moseGates,
-      floodingCurves
-    }
-  });
+    },
+    meta: {
+      levels: {
+        kind: 'live',
+        source: SOURCE_NAME,
+        sourceUrl: TIDE_LEVELS_URL,
+        fetchedAt: levels.ok ? levels.fetchedAt : undefined,
+        observedAt: reference?.observedAt,
+        note: levels.ok ? undefined : 'Fonte temporaneamente non raggiungibile',
+      },
+      forecast: {
+        kind: 'live',
+        source: SOURCE_NAME,
+        sourceUrl: TIDE_FORECAST_URL,
+        fetchedAt: forecast.ok ? forecast.fetchedAt : undefined,
+        observedAt: forecastData?.issuedAt,
+        note: forecastData?.stale ? 'La previsione pubblicata non risulta aggiornata nelle ultime 24 ore' : undefined,
+      },
+      mose: {
+        kind: 'static-reference',
+        source: 'Anagrafica schiere MOSE (MIT / Consorzio Venezia Nuova)',
+        note: 'Lo stato operativo delle paratoie non è pubblicato come open data in tempo reale. Soglia di attivazione indicativa: previsione oltre +110 cm.',
+      },
+    },
+  };
+
+  return NextResponse.json(body, { status: levels.ok ? 200 : 503 });
 }

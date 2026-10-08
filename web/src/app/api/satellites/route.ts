@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { SATELLITES_DATA } from '@/lib/satellitesData';
 
+export const revalidate = 86400;
+
 export async function GET() {
   return NextResponse.json({
     success: true,

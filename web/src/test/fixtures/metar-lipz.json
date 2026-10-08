@@ -1,0 +1,34 @@
+[
+    {
+        "icaoId": "LIPZ",
+        "receiptTime": "2026-10-08T00:55:22.372Z",
+        "obsTime": 1791420600,
+        "reportTime": "2026-10-08T01:00:00.000Z",
+        "temp": 17,
+        "dewp": 17,
+        "wdir": 40,
+        "wspd": 7,
+        "visib": 4.35,
+        "altim": 1012,
+        "qcField": 16,
+        "wxString": "-RA",
+        "metarType": "METAR",
+        "rawOb": "METAR LIPZ 080050Z 04007KT 7000 -RA FEW030 BKN050 17/17 Q1012 NOSIG",
+        "lat": 45.505,
+        "lon": 12.352,
+        "elev": 3,
+        "name": "Venice/Polo Arpt, VE, IT",
+        "cover": "BKN",
+        "clouds": [
+            {
+                "cover": "FEW",
+                "base": 3000
+            },
+            {
+                "cover": "BKN",
+                "base": 5000
+            }
+        ],
+        "fltCat": "MVFR"
+    }
+]

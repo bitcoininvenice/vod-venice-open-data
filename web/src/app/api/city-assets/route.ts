@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { CityAssetItem, ParkingItem } from '@/lib/types';
 
 // Dataset Comune di Venezia (dati.venezia.it), Veritas S.p.A. e AVM
+export const revalidate = 86400;
+
 export async function GET() {
   const assets: CityAssetItem[] = [
     // 1. Fontanelle Pubbliche Potabili (Comune di Venezia / Veritas)
@@ -261,7 +263,7 @@ export async function GET() {
 
   // Parcheggi con Capienza Ufficiale AVM S.p.A., Comune di Venezia & Metropark FS
   // NOTA DI INTEGRITÀ: AVM e il Comune di Venezia non espongono API REST aperte per le spire dei varchi in tempo reale
-  // (esposte unicamente sui pannelli stradali PMV). I dati seguenti riportano al 100% capienze e tariffe ufficiali certificate.
+  // (esposte unicamente sui pannelli stradali PMV). I dati seguenti riportano capienze e tariffe dichiarate dai gestori (anagrafica statica).
   const parkings: ParkingItem[] = [
     // 1. Centro Storico Insulare (Piazzale Roma & Tronchetto)
     {
@@ -429,8 +431,8 @@ export async function GET() {
     totalAssets: assets.length,
     totalParkings: parkings.length,
     parkingMetadata: {
-      capacityDataSource: "AVM S.p.A. / Metropark FS / Comune di Venezia (Capienze & tariffe ufficiali certificate)",
-      regime: "DATI_ISTITUZIONALI_CERTIFICATI",
+      capacityDataSource: "AVM S.p.A. / Metropark FS / Comune di Venezia (capienze e tariffe dichiarate dai gestori)",
+      kind: "static-reference",
       notes: "Tutte le strutture, le coordinate georeferenziate, le capienze totali e i regolamenti tariffari sono dati ufficiali degli enti gestori (AVM S.p.A., Metropark FS, Garage San Marco). Il Comune di Venezia e AVM non rilasciano API pubbliche per i sensori di spira dei varchi in tempo reale (accessibili solo su PMV stradali fisici). La piattaforma esclude rigorosamente stime o dati sintetici simulati."
     },
     fountains: assets.filter((a) => a.type === 'FOUNTAIN'),

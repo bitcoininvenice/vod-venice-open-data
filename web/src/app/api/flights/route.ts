@@ -1,84 +1,70 @@
 import { NextResponse } from 'next/server';
-import { FlightItem } from '@/lib/types';
-import { SCHEDULED_VCE_FLIGHTS } from '@/lib/flights-data';
+import { fetchUpstream } from '@/server/upstream';
+import { OPENSKY_STATES_URL, OPENSKY_TOKEN_URL, parseOpenSkyStates } from '@/server/sources/opensky';
 
-// Bounding box for Venice TMA (Terminal Manoeuvring Area: Tessera VCE, Treviso TSF, Chioggia and Adriatic routes)
-const LAMIN = 45.10;
-const LAMAX = 45.72;
-const LOMIN = 12.05;
-const LOMAX = 12.65;
+// Cache condivisa: tutte le richieste dei client nello stesso intervallo consumano una sola chiamata OpenSky.
+export const revalidate = 15;
 
-export const dynamic = 'force-dynamic';
+let cachedToken: { value: string; expiresAt: number } | null = null;
+
+/** Token OAuth2 (client credentials) se configurato: alza la quota rispetto all'accesso anonimo. */
+async function getOpenSkyToken(): Promise<string | null> {
+  const clientId = process.env.OPENSKY_CLIENT_ID;
+  const clientSecret = process.env.OPENSKY_CLIENT_SECRET;
+  if (!clientId || !clientSecret) return null;
+  if (cachedToken && cachedToken.expiresAt > Date.now() + 30_000) return cachedToken.value;
+
+  try {
+    const res = await fetch(OPENSKY_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ grant_type: 'client_credentials', client_id: clientId, client_secret: clientSecret }),
+      signal: AbortSignal.timeout(4000),
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { access_token?: string; expires_in?: number };
+    if (!json.access_token) return null;
+    cachedToken = { value: json.access_token, expiresAt: Date.now() + (json.expires_in ?? 1800) * 1000 };
+    return cachedToken.value;
+  } catch {
+    return null;
+  }
+}
 
 export async function GET() {
-  try {
-    // Interrogazione telemetrica diretta all'API pubblica OpenSky Network (ADS-B live)
-    const openSkyUrl = `https://opensky-network.org/api/states/all?lamin=${LAMIN}&lomin=${LOMIN}&lamax=${LAMAX}&lomax=${LOMAX}`;
-    
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
+  const token = await getOpenSkyToken();
+  const result = await fetchUpstream(OPENSKY_STATES_URL, parseOpenSkyStates, {
+    revalidate: 15,
+    timeoutMs: 5000,
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
 
-    const res = await fetch(openSkyUrl, {
-      signal: controller.signal,
-      headers: { 'User-Agent': 'VOD-VeniceOpenData/1.0' },
-      next: { revalidate: 10 }
-    }).catch(() => null);
+  const meta = {
+    kind: 'live' as const,
+    source: 'OpenSky Network (ADS-B)',
+    sourceUrl: 'https://opensky-network.org',
+    license: 'Uso non commerciale / ricerca – termini OpenSky Network',
+    fetchedAt: result.ok ? result.fetchedAt : undefined,
+  };
 
-    clearTimeout(timeout);
-
-    if (res && res.ok) {
-      const data = await res.json();
-      if (data.states && Array.isArray(data.states)) {
-        const liveFlights: FlightItem[] = data.states
-          .filter((s: any[]) => s[5] != null && s[6] != null)
-          .map((s: any[]) => {
-            const alt = s[7] || 0;
-            const onG = s[8] || false;
-            let status: FlightItem['status'] = 'CRUISE';
-            if (onG) status = 'TAXI';
-            else if (alt < 1500) status = s[11] < 0 ? 'APPROACH' : 'DEPARTURE';
-
-            return {
-              icao24: s[0],
-              callsign: (s[1] || 'UNKNOWN').trim(),
-              country: s[2] || '',
-              lon: s[5],
-              lat: s[6],
-              altitudeMeters: Math.round(alt),
-              speedKmh: Math.round((s[9] || 0) * 3.6),
-              trackDegrees: Math.round(s[10] || 0),
-              verticalRate: Math.round((s[11] || 0) * 10) / 10,
-              onGround: onG,
-              airport: alt < 3000 ? "VCE (Venezia Marco Polo)" : "En-route",
-              status
-            };
-          });
-
-        if (liveFlights.length > 0) {
-          return NextResponse.json({
-            success: true,
-            isLiveAdsb: true,
-            source: "OpenSky Network (Live ADS-B)",
-            count: liveFlights.length,
-            data: liveFlights,
-            timestamp: new Date().toISOString()
-          });
-        }
-      }
-    }
-  } catch (err) {
-    // Errore di rete o timeout
+  if (!result.ok) {
+    return NextResponse.json({
+      ok: false,
+      success: true,
+      count: 0,
+      data: [],
+      meta: { ...meta, note: 'OpenSky non raggiungibile o quota esaurita: nessun volo mostrato.' },
+    });
   }
 
-  // Fallback ad alta fedeltà: durante il coprifuoco notturno di Tessera (23:30 - 06:00) o in caso di rate-limit OpenSky (HTTP 429),
-  // forniamo i voli schedulati realistici sulle rotte autorizzate VCE TMA (Runway 04R/22L)
   return NextResponse.json({
+    ok: true,
     success: true,
-    isLiveAdsb: false,
-    source: "Orario Schedulato VCE TMA (ENAV / Marco Polo)",
-    count: SCHEDULED_VCE_FLIGHTS.length,
-    data: SCHEDULED_VCE_FLIGHTS,
-    statusNotice: "OpenSky Network non rileva transponder attivi in questo istante (coprifuoco notturno aeroportuale 23:30-06:00 o rate-limit API). Attivato orario schedulato ENAV.",
-    timestamp: new Date().toISOString()
+    count: result.data.length,
+    data: result.data,
+    meta: result.data.length === 0
+      ? { ...meta, note: 'Nessun transponder rilevato nell\'area in questo momento (es. chiusura notturna dell\'aeroporto).' }
+      : meta,
   });
 }

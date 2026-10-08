@@ -1,20 +1,26 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { findStopsNearCantieri } from '@/lib/db';
 
-export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const radiusParam = searchParams.get('radius');
-    const radius = radiusParam ? parseFloat(radiusParam) : 200;
+const Query = z.object({
+  radius: z.coerce.number().int().min(10).max(2000).default(200),
+});
 
-    const results = await findStopsNearCantieri(radius);
-    return NextResponse.json({
-      success: true,
-      radiusMeters: radius,
-      count: results.length,
-      data: results
-    });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const parsed = Query.safeParse({ radius: searchParams.get('radius') ?? undefined });
+  if (!parsed.success) {
+    return NextResponse.json(
+      { success: false, error: 'invalid_query', detail: 'radius deve essere un intero tra 10 e 2000 metri' },
+      { status: 400 },
+    );
   }
+
+  const results = await findStopsNearCantieri(parsed.data.radius);
+  return NextResponse.json({
+    success: true,
+    radiusMeters: parsed.data.radius,
+    count: results.length,
+    data: results,
+  });
 }

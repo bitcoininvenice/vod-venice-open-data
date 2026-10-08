@@ -6,7 +6,7 @@ import {
   OPEN_PUBLIC_DOCKS
 } from '@/lib/open-data-catalog';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
 export async function GET() {
   return NextResponse.json({
@@ -23,7 +23,6 @@ export async function GET() {
       countBridges: OPEN_BRIDGE_CLEARANCES.length,
       countGondolas: OPEN_GONDOLA_STATIONS.length,
       countDocks: OPEN_PUBLIC_DOCKS.length,
-      updatedAt: new Date().toISOString()
     }
   });
 }

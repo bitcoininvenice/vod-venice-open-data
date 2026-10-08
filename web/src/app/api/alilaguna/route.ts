@@ -6,7 +6,7 @@ import {
   formatTimeSeconds
 } from '@/lib/alilaguna-schedule';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export async function GET() {
   // Current time in Venice (Europe/Rome)
@@ -29,13 +29,13 @@ export async function GET() {
       type: 'GTFS Static Open Data'
     },
     metadata: {
-      regime: 'ORARIO_UFFICIALE_DETERMINISTICO',
+      kind: 'schedule-simulation',
       source: 'Transitland Registry (Feed f-u20f-alilagunaspa) / Orari Ufficiali Alilaguna S.p.A.',
       totalDailyTrips: 168,
       lines: ['BLU (76 corse/gg)', 'ARANCIO (66 corse/gg)', 'ROSSA (20 corse/gg)', 'VERDE (6 corse/gg)'],
       currentTimeRome: formatTimeSeconds(nowSeconds),
       currentTimeSeconds: nowSeconds,
-      notes: 'Gemello digitale deterministico del servizio di trasporto pubblico aeroportuale lagunare Alilaguna. La flotta in navigazione è calcolata istante per istante in base alle 168 corse giornaliere certificate, orari di partenza dai pontili e interpolazione cinematica lungo le polilinee dei canali navigabili autorizzati.'
+      notes: 'Simulazione da orario: le barche in navigazione sono calcolate dagli orari di partenza delle 168 corse giornaliere e interpolate lungo i percorsi dei canali. Non è un tracciamento GPS dei mezzi.'
     },
     routesCount: ALILAGUNA_ROUTES.length,
     stopsCount: ALILAGUNA_STOPS.length,

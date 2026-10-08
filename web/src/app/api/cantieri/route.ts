@@ -1,15 +1,18 @@
 import { NextResponse } from 'next/server';
 import { fetchCantieri } from '@/lib/db';
 
+export const revalidate = 86400;
+
 export async function GET() {
-  try {
-    const cantieri = await fetchCantieri();
-    return NextResponse.json({
-      success: true,
-      count: cantieri.length,
-      data: cantieri
-    });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-  }
+  const cantieri = await fetchCantieri();
+  return NextResponse.json({
+    success: true,
+    count: cantieri.length,
+    data: cantieri,
+    meta: {
+      kind: 'static-reference',
+      source: 'Elenco cantieri incluso nel codice',
+      note: 'Dataset statico non collegato al portale dati.venezia.it: va sostituito con l\'importazione dei cantieri pubblicati dal Comune.',
+    },
+  });
 }

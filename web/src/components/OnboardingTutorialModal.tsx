@@ -62,9 +62,9 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
         <div className="flex flex-col gap-3 text-xs leading-relaxed text-[var(--ink-2)]">
           <p>
             {language === 'it' ? (
-              <>VOD è una piattaforma cartografica ad alte prestazioni che incrocia in tempo reale oltre <strong className="text-[var(--ink)]">40 fonti Open Data certificate</strong> su Venezia centro storico, la Laguna e la Terraferma.</>
+              <>VOD è una piattaforma cartografica che incrocia oltre <strong className="text-[var(--ink)]">40 livelli di dati</strong> su Venezia centro storico, la Laguna e la Terraferma: misure in tempo reale (maree, METAR, voli), mezzi pubblici simulati dagli orari ufficiali e censimenti statici. Ogni livello indica la propria fonte.</>
             ) : (
-              <>VOD is a high-performance mapping platform that intersects over <strong className="text-[var(--ink)]">40 certified Open Data sources</strong> in real time across Venice historic center, Lagoon, and Mainland.</>
+              <>VOD is a mapping platform that combines over <strong className="text-[var(--ink)]">40 data layers</strong> across Venice historic center, Lagoon, and Mainland: real-time measurements (tides, METAR, flights), public transport simulated from official timetables, and static reference data. Each layer states its source.</>
             )}
           </p>
           <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] font-mono">
