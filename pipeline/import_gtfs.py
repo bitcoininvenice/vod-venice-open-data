@@ -9,25 +9,15 @@ import sys
 import csv
 import logging
 import psycopg2
+
+from vod_common import connect
 from psycopg2.extras import execute_batch, execute_values
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
-DATABASE_URL = os.environ.get(
-    "DATABASE_URL", 
-    "postgresql://vod_user:vod_password@localhost:5432/venice_opendata"
-)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
-
-def get_connection():
-    try:
-        conn = psycopg2.connect(DATABASE_URL)
-        return conn
-    except Exception as e:
-        logging.error(f"Cannot connect to database at {DATABASE_URL}: {e}")
-        return None
 
 def determine_mode_category(route_short_name: str, route_type: int) -> str:
     r_type = int(route_type)
@@ -296,9 +286,7 @@ def import_folder(conn, folder_path: str, mode_label: str):
     logging.info(f"Completed ingestion for {mode_label}.")
 
 def main():
-    conn = get_connection()
-    if not conn:
-        sys.exit(1)
+    conn = connect()
 
     import_folder(conn, os.path.join(DATA_DIR, "navigazione"), "navigazione")
     import_folder(conn, os.path.join(DATA_DIR, "automobilistico"), "automobilistico")

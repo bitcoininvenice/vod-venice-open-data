@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
 """
 VOD - Venice Open Data
-Pipeline: Ingest Comune di Venezia Open Data (Cantieri, Occupazione Suolo, POI)
+Pipeline: carica nel database i dataset di riferimento (cantieri, occupazioni suolo, POI).
+
+ATTENZIONE: i dati sono definiti in questo file e NON vengono scaricati da dati.venezia.it.
+Vanno sostituiti con l'importazione dei dataset ufficiali del Comune prima di essere
+presentati come open data comunali.
 """
 
 import os
 import sys
 import logging
 import psycopg2
+
+from vod_common import connect
 from psycopg2.extras import execute_values
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
-DATABASE_URL = os.environ.get(
-    "DATABASE_URL", 
-    "postgresql://vod_user:vod_password@localhost:5432/venice_opendata"
-)
 
 # Dataset verificato di cantieri e opere pubbliche georeferenziate a Venezia e Terraferma
 CANTIERI_DATA = [
@@ -183,13 +185,8 @@ POI_DATA = [
 ]
 
 def main():
-    try:
-        conn = psycopg2.connect(DATABASE_URL)
-        cur = conn.cursor()
-        logging.info("Connected to database for Comune di Venezia ingestion.")
-    except Exception as e:
-        logging.error(f"Cannot connect to database: {e}")
-        sys.exit(1)
+    conn = connect()
+    cur = conn.cursor()
 
     # 1. Cantieri
     cantieri_vals = []

@@ -185,6 +185,11 @@ CREATE INDEX IF NOT EXISTS idx_occupazione_geom ON comune_occupazione_suolo USIN
 CREATE INDEX IF NOT EXISTS idx_rt_vehicles_geom ON gtfs_rt_vehicle_positions USING GIST(geom);
 CREATE INDEX IF NOT EXISTS idx_poi_geom ON comune_punti_interesse USING GIST(geom);
 
+-- Indici funzionali su geography: le query di prossimità usano ST_DWithin(geom::geography, ...)
+-- e senza questi indici il cast impedirebbe l'uso degli indici GiST su geometry.
+CREATE INDEX IF NOT EXISTS idx_stops_geog ON stops USING GIST ((geom::geography));
+CREATE INDEX IF NOT EXISTS idx_cantieri_geog ON comune_cantieri USING GIST ((geom::geography));
+
 -- Indici Relazionali GTFS
 CREATE INDEX IF NOT EXISTS idx_stop_times_trip ON stop_times(trip_id);
 CREATE INDEX IF NOT EXISTS idx_stop_times_stop ON stop_times(stop_id);
