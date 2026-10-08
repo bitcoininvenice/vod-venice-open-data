@@ -36,5 +36,12 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^5.0.3"
+  },
+  "optionalDependencies": {
+    "@tailwindcss/oxide-darwin-arm64": "4.1.18",
+    "@tailwindcss/oxide-darwin-x64": "4.1.18",
+    "@tailwindcss/oxide-linux-arm64-gnu": "4.1.18",
+    "@tailwindcss/oxide-linux-x64-gnu": "4.1.18",
+    "@tailwindcss/oxide-linux-x64-musl": "4.1.18"
   }
 }

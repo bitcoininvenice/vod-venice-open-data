@@ -12,5 +12,12 @@
     "lint": "npm run lint --workspace=web",
     "typecheck": "npm run typecheck --workspace=web",
     "test": "npm run test --workspace=web"
+  },
+  "optionalDependencies": {
+    "@tailwindcss/oxide-darwin-arm64": "4.1.18",
+    "@tailwindcss/oxide-darwin-x64": "4.1.18",
+    "@tailwindcss/oxide-linux-arm64-gnu": "4.1.18",
+    "@tailwindcss/oxide-linux-x64-gnu": "4.1.18",
+    "@tailwindcss/oxide-linux-x64-musl": "4.1.18"
   }
 }
