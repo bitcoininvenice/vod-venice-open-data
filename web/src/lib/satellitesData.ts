@@ -1,7 +1,8 @@
 import { SatelliteItem } from './types';
 
-// Bounding parameters for Venice Lagoon
-// Lat ~ 45.438, Lon ~ 12.335
+// Anagrafica dei satelliti (missione, sensore, ruolo per Venezia). Posizione, quota, velocità e
+// passaggi vengono calcolati in /api/satellites dai TLE CelesTrak; i valori qui sotto sono solo
+// un riferimento usato se CelesTrak non è raggiungibile.
 
 export const SATELLITES_DATA: SatelliteItem[] = [
   {
@@ -162,8 +163,8 @@ export const SATELLITES_DATA: SatelliteItem[] = [
     apiLink: 'https://earthexplorer.usgs.gov/'
   },
   {
-    id: 'GALILEO-GSAT0223',
-    name: 'Galileo FOC GSAT0223 (Posizionamento GNSS)',
+    id: 'GALILEO-GSAT0219',
+    name: 'Galileo FOC GSAT0219 "Galileo 23" (Posizionamento GNSS)',
     noradId: 43566,
     operator: 'ESA / EUSPA (Unione Europea)',
     type: 'NAVIGATION',

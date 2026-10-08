@@ -380,6 +380,12 @@ export interface SatelliteItem {
   isPassingNow: boolean;
   openDataSource: string; // "Copernicus Data Space (ESA)", "ASI Open Data", "CelesTrak NORAD", etc.
   apiLink: string;
+  /** Elementi orbitali TLE (CelesTrak): se presenti la posizione è calcolata con SGP4 */
+  tle?: [string, string];
+  /** Data di riferimento del TLE (ISO) */
+  tleEpoch?: string;
+  /** Inizio del prossimo passaggio sopra Venezia (ISO), calcolato dal TLE */
+  nextPassStart?: string;
 }
 
 export type CameraType =

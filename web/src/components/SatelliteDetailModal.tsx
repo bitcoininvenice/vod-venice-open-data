@@ -4,6 +4,8 @@ import React from 'react';
 import { X, Satellite, Orbit, Radio, ExternalLink, Zap, Eye, Compass, ShieldCheck } from 'lucide-react';
 import { SatelliteItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
+import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge';
+import { useDialogA11y } from '@/components/ui/useDialogA11y';
 
 interface SatelliteDetailModalProps {
   satellite: SatelliteItem | null;
@@ -15,7 +17,11 @@ export const SatelliteDetailModal: React.FC<SatelliteDetailModalProps> = ({
   onClose
 }) => {
   const { language, t } = useTranslation();
+  const panelRef = useDialogA11y(satellite !== null, onClose);
   if (!satellite) return null;
+  const it = language === 'it';
+  // Traccia a terra verso sud = discendente, verso nord = ascendente
+  const descending = satellite.heading > 90 && satellite.heading < 270;
 
   const isSar = satellite.type === 'SAR_RADAR';
   const isOptical = satellite.type === 'OPTICAL';
@@ -34,7 +40,14 @@ export const SatelliteDetailModal: React.FC<SatelliteDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
-      <div className="glass-panel w-full max-w-lg rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-3.5 sm:gap-4 border border-fuchsia-500/40 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="satellite-modal-title"
+        tabIndex={-1}
+        className="glass-panel w-full max-w-lg rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-3.5 sm:gap-4 border border-fuchsia-500/40 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto outline-none"
+      >
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
           <div className="flex items-center gap-3">
@@ -46,12 +59,13 @@ export const SatelliteDetailModal: React.FC<SatelliteDetailModalProps> = ({
                 <span className={`text-[10px] uppercase font-mono tracking-wider font-bold px-2 py-0.5 rounded-full border ${typeColor}`}>
                   {satellite.type.replace('_', ' ')} · {satellite.operator.split('/')[0].trim()}
                 </span>
-                <span className="text-[10px] font-mono text-fuchsia-400 font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-ping" />
-                  {language === 'it' ? 'ORBITA ATTIVA' : 'ACTIVE ORBIT'}
-                </span>
+                {satellite.tle ? (
+                  <ProvenanceBadge kind="live" detail="TLE CelesTrak · SGP4" />
+                ) : (
+                  <ProvenanceBadge kind="static-reference" detail={it ? 'orbita non disponibile' : 'orbit unavailable'} />
+                )}
               </div>
-              <h3 className="text-lg font-bold text-[var(--ink)] leading-snug">
+              <h3 id="satellite-modal-title" className="text-lg font-bold text-[var(--ink)] leading-snug">
                 {satellite.name}
               </h3>
             </div>
@@ -126,7 +140,9 @@ export const SatelliteDetailModal: React.FC<SatelliteDetailModalProps> = ({
             <span className="text-sm font-mono font-bold text-[var(--ink)]">
               {satellite.inclinationDeg}° · {satellite.heading}°
             </span>
-            <span className="text-[10px] text-[var(--ink-2)]">{language === 'it' ? 'Traccia discendente' : 'Descending track'}</span>
+            <span className="text-[10px] text-[var(--ink-2)]">
+              {descending ? (it ? 'Traccia discendente (verso sud)' : 'Descending track (southbound)') : (it ? 'Traccia ascendente (verso nord)' : 'Ascending track (northbound)')}
+            </span>
           </div>
 
           <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-0.5 col-span-2">
@@ -134,6 +150,7 @@ export const SatelliteDetailModal: React.FC<SatelliteDetailModalProps> = ({
               {language === 'it' ? 'Passaggio sopra Venezia (Lat 45.438°, Lon 12.335°)' : 'Pass over Venice (Lat 45.438°, Lon 12.335°)'}
             </span>
             <span className="text-xs font-semibold text-fuchsia-300">
+              {satellite.isPassingNow ? (it ? 'In transito ora · ' : 'Passing now · ') : ''}
               {satellite.nextPassVenice}
             </span>
             <span className="text-[10px] text-[var(--ink-2)]">
@@ -141,6 +158,15 @@ export const SatelliteDetailModal: React.FC<SatelliteDetailModalProps> = ({
             </span>
           </div>
         </div>
+
+        {satellite.tleEpoch && (
+          <p className="text-[10px] font-mono text-[var(--ink-3)] -mt-1">
+            {it ? 'Elementi orbitali (TLE) del' : 'Orbital elements (TLE) epoch'}{' '}
+            {new Date(satellite.tleEpoch).toLocaleString('it-IT', { timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            {' · '}
+            {it ? 'elevazione minima 10°' : 'minimum elevation 10°'}
+          </p>
+        )}
 
         {/* Open Data Sources & Verification Link */}
         <div className="p-3 rounded-xl bg-[var(--rule)]/20 border border-[var(--rule)] flex flex-col gap-2">

@@ -56,6 +56,8 @@ import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { useTranslation } from '@/lib/i18n';
 import { simClock } from '@/lib/simClock';
+import { groundTrack, headingAt, satrecFor, stateAt } from '@/lib/orbits';
+import { dateAtRomeSeconds } from '@/lib/time';
 import { distAt, getSimulation, pointAt } from '@/lib/simulationModel';
 import type { RealtimeVehicleDto } from '@/lib/contracts/realtime';
 
@@ -226,21 +228,34 @@ function getLiveShip(
   }
 }
 
-// Live kinematics for Earth Observation Satellites (continuous orbital pass across Venetian sky)
+// Tracce a terra in cache per satellite e minuto: il ricalcolo SGP4 avviene al massimo una volta al minuto
+const groundTrackCache = new Map<string, [number, number][]>();
+
+/**
+ * Posizione del satellite all'ora simulata (propagazione SGP4 dal TLE CelesTrak).
+ * Senza TLE resta ferma alla posizione di riferimento: nessun movimento inventato.
+ */
 function getLiveSatellite(
   sat: SatelliteItem,
   t: number
-): { lon: number; lat: number; heading: number } {
-  if (!sat.groundTrack || sat.groundTrack.length < 2) {
-    return { lon: sat.currentLon, lat: sat.currentLat, heading: sat.heading };
+): { lon: number; lat: number; heading: number; track: [number, number][] } {
+  if (!sat.tle) {
+    return { lon: sat.currentLon, lat: sat.currentLat, heading: sat.heading, track: [] };
   }
-
-  const wps = sat.groundTrack.map((pt) => ({ lon: pt[0], lat: pt[1] }));
-  const cycleSeconds = 180; // 3 min orbital pass interval across radar screen
-  const hash = sat.noradId * 17;
-  const progress = ((t + hash) % cycleSeconds) / cycleSeconds;
-
-  return interpolateAlongWaypoints(wps, progress);
+  const rec = satrecFor(sat.tle[0], sat.tle[1]);
+  const date = dateAtRomeSeconds(t);
+  const state = stateAt(rec, date);
+  if (!state) {
+    return { lon: sat.currentLon, lat: sat.currentLat, heading: sat.heading, track: [] };
+  }
+  const key = `${sat.id}|${Math.floor(date.getTime() / 60000)}`;
+  let track = groundTrackCache.get(key);
+  if (!track) {
+    if (groundTrackCache.size > 200) groundTrackCache.clear();
+    track = groundTrack(rec, date, -12, 12, 20);
+    groundTrackCache.set(key, track);
+  }
+  return { lon: state.lon, lat: state.lat, heading: headingAt(rec, date), track };
 }
 
 interface MapEngineProps {
@@ -2863,10 +2878,10 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             : (isDark ? '#a78bfa' : '#6d28d9');
 
           // 1. Draw Orbital Ground Track across the Lagoon & Adriatic
-          if (sat.groundTrack && sat.groundTrack.length > 1) {
+          if (live.track.length > 1) {
             ctx.save();
             ctx.beginPath();
-            sat.groundTrack.forEach((pt, idx) => {
+            live.track.forEach((pt, idx) => {
               const px = sx(mx(pt[0]));
               const py = sy(my(pt[1]));
               if (idx === 0) ctx.moveTo(px, py);

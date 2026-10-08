@@ -602,15 +602,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Satelliti Radar SAR (Copernicus / ASI)',
     nameEn: 'Copernicus & ASI Radar Satellites',
     group: 'city',
-    regime: 'simulated',
+    regime: 'realtime',
     acquisition: 'api',
     institution: 'ESA (Copernicus Space Component) & ASI (COSMO-SkyMed)',
     portalUrl: 'https://dataspace.copernicus.eu',
     portalName: 'dataspace.copernicus.eu & asi.it',
     descriptionIt: 'Tracciamento orbitale al secondo e fasce di scansione radar/ottiche dei satelliti di osservazione terrestre (Sentinel-1/2, COSMO-SkyMed, ISS).',
     descriptionEn: 'Live satellite orbital propagation and ground swaths for Earth Observation missions over Venice.',
-    technicalNotesIt: 'Animazione illustrativa: le tracce a terra sono percorse con un ciclo fisso di 3 minuti e non corrispondono alla posizione orbitale reale. Una propagazione SGP4 da TLE CelesTrak è prevista come evoluzione.',
-    technicalNotesEn: 'Illustrative animation: ground tracks are traversed on a fixed 3-minute loop and do not reflect actual orbital position. SGP4 propagation from CelesTrak TLEs is planned.',
+    technicalNotesIt: 'Posizioni calcolate con propagatore SGP4 (satellite.js) dagli elementi orbitali TLE di CelesTrak, aggiornati ogni 6 ore; prossimo passaggio sopra Venezia con elevazione minima 10°. Sulla mappa i satelliti compaiono solo durante i passaggi reali sopra l\'area.',
+    technicalNotesEn: 'Positions propagated with SGP4 (satellite.js) from CelesTrak TLE orbital elements, refreshed every 6 hours; next pass over Venice with minimum 10° elevation. Satellites appear on the map only during real passes over the area.',
     endpointOrFile: '/api/satellites'
   },
   {

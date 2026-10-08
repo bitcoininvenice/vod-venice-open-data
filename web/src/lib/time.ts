@@ -27,6 +27,14 @@ export function romeSecondsOfDay(date: Date = new Date()): number {
   return p.hour * 3600 + p.minute * 60 + p.second + date.getMilliseconds() / 1000;
 }
 
+/**
+ * Istante reale corrispondente a `secondsOfDay` (ora di Venezia) nella giornata di `now`.
+ * Serve a convertire l'ora della timeline in una data per calcoli astronomici e orbitali.
+ */
+export function dateAtRomeSeconds(secondsOfDay: number, now: Date = new Date()): Date {
+  return new Date(now.getTime() + (secondsOfDay - romeSecondsOfDay(now)) * 1000);
+}
+
 /** Tipo di giorno di servizio GTFS a Venezia. */
 export function romeDayType(date: Date = new Date()): DayType {
   const { weekday } = romeParts(date);
