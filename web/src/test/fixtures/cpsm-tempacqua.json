@@ -1,0 +1,25 @@
+[
+    {
+        "ID_stazione": "1025",
+        "stazione": "Punta Salute Canal Grande",
+        "latDDN": "45.4311",
+        "lonDDE": "12.3364",
+        "nome_abbr": "PSalute",
+        "data": "2026-10-08 10:15:00",
+        "valore": "21 \u00b0C"
+    },
+    {
+        "ID_stazione": "1046",
+        "stazione": "Meda Abate",
+        "latDDN": "45.25",
+        "lonDDE": "12.7727",
+        "nome_abbr": "M_Abate"
+    },
+    {
+        "ID_stazione": "1021",
+        "stazione": "Piattaforma Acqua Alta Siap",
+        "latDDN": "45.3231",
+        "lonDDE": "12.5147",
+        "nome_abbr": "Piattaforma"
+    }
+]

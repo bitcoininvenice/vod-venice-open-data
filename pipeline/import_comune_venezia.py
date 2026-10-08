@@ -3,11 +3,11 @@
 VOD - Venice Open Data
 Pipeline: carica nel database i dataset di riferimento (cantieri, occupazioni suolo, POI).
 
-ATTENZIONE: i dati sono definiti in questo file e NON vengono scaricati da dati.venezia.it.
-Vanno sostituiti con l'importazione dei dataset ufficiali del Comune prima di essere
-presentati come open data comunali.
+Le opere pubbliche provengono dal dataset ufficiale (import_opere_pubbliche.py, eseguito prima).
+Occupazioni di suolo pubblico e POI sono ancora esempi statici, non dati del Comune.
 """
 
+import json
 import os
 import sys
 import logging
@@ -19,130 +19,16 @@ from psycopg2.extras import execute_values
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 
-# Dataset verificato di cantieri e opere pubbliche georeferenziate a Venezia e Terraferma
-CANTIERI_DATA = [
-    {
-        "codice": "VE-CANT-2026-01",
-        "titolo": "Manutenzione straordinaria pontile e passerelle San Zaccaria",
-        "localizzazione": "Riva degli Schiavoni, San Zaccaria",
-        "quartiere": "Castello",
-        "tipologia": "Manutenzione Pontili",
-        "stato": "In corso",
-        "data_inizio": "2026-09-15",
-        "data_fine_prevista": "2026-11-30",
-        "importo_lavori": 420000.00,
-        "ente_responsabile": "Comune di Venezia - Direzione Lavori Pubblici",
-        "impatto_mobilita": "Critico",
-        "dettagli": "Sostituzione briccole, ripavimentazione pontile galleggiante e consolidamento ormeggi linee 1, 2, 4.1 e 5.1.",
-        "lon": 12.3435, "lat": 45.4338
-    },
-    {
-        "codice": "VE-CANT-2026-02",
-        "titolo": "Dragaggio sedimenti e scavo fondali Rio di Cannaregio",
-        "localizzazione": "Rio di Cannaregio (tratto Ponte delle Guglie - Canale di Cannaregio)",
-        "quartiere": "Cannaregio",
-        "tipologia": "Scavo Canali/Fango",
-        "stato": "In corso",
-        "data_inizio": "2026-08-01",
-        "data_fine_prevista": "2026-12-15",
-        "importo_lavori": 890000.00,
-        "ente_responsabile": "Insula S.p.A. / Provveditorato OO.PP.",
-        "impatto_mobilita": "Medio",
-        "dettagli": "Restringimento del canale navigabile a senso unico alternato regolato da semaforo acqueo. Rallentamenti per linea 3.",
-        "lon": 12.3255, "lat": 45.4435
-    },
-    {
-        "codice": "VE-CANT-2026-03",
-        "titolo": "Consolidamento statico riva e banchina San Tomà",
-        "localizzazione": "Canal Grande, San Polo / San Tomà",
-        "quartiere": "San Polo",
-        "tipologia": "Manutenzione Rive",
-        "stato": "In corso",
-        "data_inizio": "2026-09-01",
-        "data_fine_prevista": "2026-11-10",
-        "importo_lavori": 310000.00,
-        "ente_responsabile": "Comune di Venezia",
-        "impatto_mobilita": "Medio",
-        "dettagli": "Risanamento muratura subacquea in pietra d'Istria e consolidamento sponda per pontile linea 1 e 2.",
-        "lon": 12.3284, "lat": 45.4357
-    },
-    {
-        "codice": "VE-CANT-2026-04",
-        "titolo": "Riqualificazione corsie TPL e banchine interscambio Piazzale Roma",
-        "localizzazione": "Piazzale Roma, corsia bus Santa Chiara",
-        "quartiere": "Santa Croce",
-        "tipologia": "Opere Stradali",
-        "stato": "In corso",
-        "data_inizio": "2026-07-10",
-        "data_fine_prevista": "2026-10-31",
-        "importo_lavori": 650000.00,
-        "ente_responsabile": "AVM S.p.A. / Comune di Venezia",
-        "impatto_mobilita": "Critico",
-        "dettagli": "Nuovo manto fonoassorbente per autobus articolati e aggiornamento banchine accessibilità PRM.",
-        "lon": 12.3185, "lat": 45.4382
-    },
-    {
-        "codice": "VE-CANT-2026-05",
-        "titolo": "Rinnovo marginamento lagunare Fondamente Nove",
-        "localizzazione": "Fondamente Nove, fronte Laguna Nord",
-        "quartiere": "Cannaregio",
-        "tipologia": "Manutenzione Rive",
-        "stato": "In corso",
-        "data_inizio": "2026-08-20",
-        "data_fine_prevista": "2026-12-20",
-        "importo_lavori": 520000.00,
-        "ente_responsabile": "Comune di Venezia",
-        "impatto_mobilita": "Medio",
-        "dettagli": "Messa in sicurezza banchina di imbarco per le motonavi dirette a Murano, Burano e aeroporto.",
-        "lon": 12.3418, "lat": 45.4452
-    },
-    {
-        "codice": "VE-CANT-2026-06",
-        "titolo": "Rifacimento sede binario tramviario e asfalti Corso del Popolo",
-        "localizzazione": "Corso del Popolo / Via Torino, Mestre",
-        "quartiere": "Mestre Centro",
-        "tipologia": "Opere Stradali",
-        "stato": "In corso",
-        "data_inizio": "2026-09-05",
-        "data_fine_prevista": "2026-10-25",
-        "importo_lavori": 380000.00,
-        "ente_responsabile": "PMV / Comune di Venezia",
-        "impatto_mobilita": "Critico",
-        "dettagli": "Lavori notturni e deviazioni parziali per le linee T1 e bus 4L verso Venezia.",
-        "lon": 12.2410, "lat": 45.4875
-    },
-    {
-        "codice": "VE-CANT-2026-07",
-        "titolo": "Messa a norma accessibilità e pontile Murano Colonna",
-        "localizzazione": "Murano Colonna, canale dei Marani",
-        "quartiere": "Murano",
-        "tipologia": "Manutenzione Pontili",
-        "stato": "In corso",
-        "data_inizio": "2026-09-18",
-        "data_fine_prevista": "2026-11-15",
-        "importo_lavori": 210000.00,
-        "ente_responsabile": "AVM S.p.A.",
-        "impatto_mobilita": "Basso",
-        "dettagli": "Installazione elevatore idraulico e allargamento corsia di sbarco passeggeri.",
-        "lon": 12.3522, "lat": 45.4518
-    },
-    {
-        "codice": "VE-CANT-2026-08",
-        "titolo": "Restauro pensilina liberty e interscambio Lido Santa Maria Elisabetta",
-        "localizzazione": "Piazzale S.M.E., Lido di Venezia",
-        "quartiere": "Lido",
-        "tipologia": "Opere Stradali",
-        "stato": "In corso",
-        "data_inizio": "2026-08-15",
-        "data_fine_prevista": "2026-11-05",
-        "importo_lavori": 290000.00,
-        "ente_responsabile": "Comune di Venezia - Direzione Mobilità",
-        "impatto_mobilita": "Medio",
-        "dettagli": "Riorganizzazione delle corsie di attestamento per i bus urbani dell'isola (linee A, B, C, 11).",
-        "lon": 12.3685, "lat": 45.4172
-    }
-]
+# Opere pubbliche reali: prodotte da import_opere_pubbliche.py (Elenco Annuale dei Lavori, CC BY)
+OPERE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "web", "src", "data", "opere-pubbliche.json")
 
+
+def load_opere() -> list[dict]:
+    with open(OPERE_FILE, encoding="utf-8") as f:
+        return [w for w in json.load(f)["works"] if w["lat"] is not None and w["lon"] is not None]
+
+
+# ATTENZIONE: occupazioni di suolo pubblico e POI qui sotto sono esempi statici, non dati del Comune.
 OCCUPAZIONI_DATA = [
     {
         "protocollo": "OCC-2026-8812",
@@ -190,29 +76,24 @@ def main():
 
     # 1. Cantieri
     cantieri_vals = []
-    for c in CANTIERI_DATA:
-        geom_wkt = f"SRID=4326;POINT({c['lon']} {c['lat']})"
+    for c in load_opere():
         cantieri_vals.append((
-            c["codice"], c["titolo"], c["localizzazione"], c["quartiere"],
-            c["tipologia"], c["stato"], c["data_inizio"], c["data_fine_prevista"],
-            c["importo_lavori"], c["ente_responsabile"], c["impatto_mobilita"],
-            c["dettagli"], geom_wkt
+            c["codice"], c["titolo"][:255], c["localizzazione"][:255], c["quartiere"][:100],
+            c["tipologia"][:100] or "n.d.", c["stato"][:50], c["importoLavori"], c["enteResponsabile"][:150],
+            c["categoria"][:100], c["cup"], (c["provvedimento"] or "")[:100] or None,
+            f"SRID=4326;POINT({float(c['lon'])} {float(c['lat'])})",
         ))
-    
+
     execute_values(
         cur,
-        """INSERT INTO comune_cantieri (codice, titolo, localizzazione, quartiere, tipologia, stato, 
-                                       data_inizio, data_fine_prevista, importo_lavori, ente_responsabile, 
-                                       impatto_mobilita, dettagli, geom)
+        """INSERT INTO comune_cantieri (codice, titolo, localizzazione, quartiere, tipologia, stato,
+                                       importo_lavori, ente_responsabile, categoria, cup, provvedimento, geom)
            VALUES %s
            ON CONFLICT (codice) DO UPDATE SET
-             stato = EXCLUDED.stato,
-             data_fine_prevista = EXCLUDED.data_fine_prevista,
-             importo_lavori = EXCLUDED.importo_lavori,
-             impatto_mobilita = EXCLUDED.impatto_mobilita,
-             geom = EXCLUDED.geom""",
+             titolo = EXCLUDED.titolo, stato = EXCLUDED.stato, importo_lavori = EXCLUDED.importo_lavori,
+             categoria = EXCLUDED.categoria, provvedimento = EXCLUDED.provvedimento, geom = EXCLUDED.geom""",
         cantieri_vals,
-        template="(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ST_GeomFromEWKT(%s))"
+        template="(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ST_GeomFromEWKT(%s))",
     )
     logging.info(f"Ingested {len(cantieri_vals)} cantieri e opere pubbliche.")
 

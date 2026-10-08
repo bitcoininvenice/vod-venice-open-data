@@ -1,3 +1,4 @@
+import wifiHotspots from '@/data/wifi-hotspots.json';
 import { BathingWaterItem, UrbanTreeItem, EvChargingItem, WifiHotspotItem } from './types';
 
 // Dati Ufficiali ARPAV / Ministero della Salute sulle Acque di Balneazione dei litorali veneziani
@@ -172,7 +173,7 @@ export const EV_CHARGING_DATA: EvChargingItem[] = [
     lat: 45.4375,
     lon: 12.3180,
     totalSockets: 12,
-    availableSockets: 7,
+    availableSockets: null,
     powerKw: 50,
     socketTypes: ['Type 2 (22kW)', 'CCS Combo 2 (50kW Fast)'],
     isOperational: true
@@ -185,7 +186,7 @@ export const EV_CHARGING_DATA: EvChargingItem[] = [
     lat: 45.4425,
     lon: 12.3070,
     totalSockets: 16,
-    availableSockets: 11,
+    availableSockets: null,
     powerKw: 150,
     socketTypes: ['CCS Combo 2 (150kW Ultra-Fast)', 'CHAdeMO (50kW)', 'Type 2 (22kW)'],
     isOperational: true
@@ -198,7 +199,7 @@ export const EV_CHARGING_DATA: EvChargingItem[] = [
     lat: 45.4330,
     lon: 12.3150,
     totalSockets: 4,
-    availableSockets: 2,
+    availableSockets: null,
     powerKw: 22,
     socketTypes: ['Type 2 (22kW)'],
     isOperational: true
@@ -211,7 +212,7 @@ export const EV_CHARGING_DATA: EvChargingItem[] = [
     lat: 45.4660,
     lon: 12.2780,
     totalSockets: 8,
-    availableSockets: 5,
+    availableSockets: null,
     powerKw: 50,
     socketTypes: ['Type 2 (22kW)', 'CCS 50kW'],
     isOperational: true
@@ -219,101 +220,11 @@ export const EV_CHARGING_DATA: EvChargingItem[] = [
 ];
 
 // Punti di Accesso Wi-Fi Pubblico Gratuito "VeniceConnected" (Venis S.p.A. / dati.venezia.it)
-export const WIFI_HOTSPOTS_DATA: WifiHotspotItem[] = [
-  {
-    id: 'WIFI-SM-01',
-    name: 'VeniceConnected - Piazza San Marco & Torre Orologio',
-    networkName: 'VeniceConnected',
-    location: 'Piazza San Marco',
-    lat: 45.4344,
-    lon: 12.3385,
-    indoorOutdoor: 'OUTDOOR',
-    usersConnected: 248,
-    speedMbps: 100,
-    isFreePublic: true
-  },
-  {
-    id: 'WIFI-RI-01',
-    name: 'VeniceConnected - Campo San Bartolomeo & Rialto',
-    networkName: 'VeniceConnected',
-    location: 'Campo San Bartolomeo',
-    lat: 45.4378,
-    lon: 12.3368,
-    indoorOutdoor: 'OUTDOOR',
-    usersConnected: 182,
-    speedMbps: 100,
-    isFreePublic: true
-  },
-  {
-    id: 'WIFI-ST-01',
-    name: 'VeniceConnected - Piazzale Stazione Santa Lucia',
-    networkName: 'VeniceConnected',
-    location: 'Fondamenta Santa Lucia',
-    lat: 45.4415,
-    lon: 12.3215,
-    indoorOutdoor: 'OUTDOOR',
-    usersConnected: 215,
-    speedMbps: 100,
-    isFreePublic: true
-  },
-  {
-    id: 'WIFI-MARG-01',
-    name: 'VeniceConnected - Campo Santa Margherita',
-    networkName: 'VeniceConnected',
-    location: 'Campo Santa Margherita',
-    lat: 45.4338,
-    lon: 12.3242,
-    indoorOutdoor: 'OUTDOOR',
-    usersConnected: 114,
-    speedMbps: 80,
-    isFreePublic: true
-  },
-  {
-    id: 'WIFI-STEF-01',
-    name: 'VeniceConnected - Campo Santo Stefano',
-    networkName: 'VeniceConnected',
-    location: 'Campo Santo Stefano',
-    lat: 45.4330,
-    lon: 12.3305,
-    indoorOutdoor: 'OUTDOOR',
-    usersConnected: 76,
-    speedMbps: 80,
-    isFreePublic: true
-  },
-  {
-    id: 'WIFI-F9-01',
-    name: 'VeniceConnected - Fondamente Nove Terminal Laguna Nord',
-    networkName: 'VeniceConnected',
-    location: 'Fondamente Nove',
-    lat: 45.4445,
-    lon: 12.3410,
-    indoorOutdoor: 'OUTDOOR',
-    usersConnected: 89,
-    speedMbps: 100,
-    isFreePublic: true
-  },
-  {
-    id: 'WIFI-LIDO-01',
-    name: 'VeniceConnected - Gran Viale Santa Maria Elisabetta',
-    networkName: 'VeniceConnected',
-    location: 'Lido Piazzale SME',
-    lat: 45.4185,
-    lon: 12.3695,
-    indoorOutdoor: 'OUTDOOR',
-    usersConnected: 64,
-    speedMbps: 80,
-    isFreePublic: true
-  },
-  {
-    id: 'WIFI-MUR-01',
-    name: 'VeniceConnected - Murano Faro Imbarcadero',
-    networkName: 'VeniceConnected',
-    location: 'Murano Faro',
-    lat: 45.4530,
-    lon: 12.3530,
-    indoorOutdoor: 'OUTDOOR',
-    usersConnected: 52,
-    speedMbps: 80,
-    isFreePublic: true
-  }
-];
+/** Hotspot WiFi del Comune di Venezia, generati da pipeline/import_wifi_hotspots.py (dati.venezia.it, CC BY). */
+export const WIFI_HOTSPOTS_META = {
+  generatedAt: wifiHotspots.generatedAt,
+  source: wifiHotspots.source,
+  sourceUrl: wifiHotspots.sourceUrl,
+  license: wifiHotspots.license,
+};
+export const WIFI_HOTSPOTS_DATA: WifiHotspotItem[] = wifiHotspots.hotspots as WifiHotspotItem[];

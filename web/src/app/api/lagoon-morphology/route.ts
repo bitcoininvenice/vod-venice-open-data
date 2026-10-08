@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import {
   OPEN_SUBSIDENCE_INSAR,
-  OPEN_LAGOON_MORPHOLOGY,
-  OPEN_METEO_MARINE_WIND
+  OPEN_LAGOON_MORPHOLOGY
 } from '@/lib/open-data-catalog';
 
 export const revalidate = 86400;
@@ -12,14 +11,12 @@ export async function GET() {
     success: true,
     data: {
       subsidencePoints: OPEN_SUBSIDENCE_INSAR,
-      lagoonMorphology: OPEN_LAGOON_MORPHOLOGY,
-      marineWindStations: OPEN_METEO_MARINE_WIND
+      lagoonMorphology: OPEN_LAGOON_MORPHOLOGY
     },
     meta: {
-      source: 'Copernicus EGMS (European Ground Motion Service), CNR-ISMAR, CPSM, ISPRA RMN',
+      source: 'Copernicus EGMS (European Ground Motion Service), CNR-ISMAR',
       countSubsidence: OPEN_SUBSIDENCE_INSAR.length,
       countMorphology: OPEN_LAGOON_MORPHOLOGY.length,
-      countWindStations: OPEN_METEO_MARINE_WIND.length,
     }
   });
 }

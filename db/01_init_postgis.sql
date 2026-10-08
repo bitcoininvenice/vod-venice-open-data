@@ -114,12 +114,16 @@ CREATE TABLE IF NOT EXISTS comune_cantieri (
     localizzazione VARCHAR(255) NOT NULL,
     quartiere VARCHAR(100), -- San Marco, Cannaregio, Castello, Dorsoduro, Mestre Centro, Marghera, Lido, ecc.
     tipologia VARCHAR(100) NOT NULL, -- 'Manutenzione Pontili', 'Scavo Canali/Fango', 'Manutenzione Rive', 'Opere Stradali', 'Sottoservizi'
-    stato VARCHAR(50) NOT NULL DEFAULT 'In corso', -- 'Programmato', 'In corso', 'Concluso'
-    data_inizio DATE NOT NULL,
-    data_fine_prevista DATE NOT NULL,
-    importo_lavori NUMERIC(12, 2) DEFAULT 0,
+    stato VARCHAR(50) NOT NULL DEFAULT 'Programmato', -- stato di avanzamento pubblicato (es. 'Progetto Esecutivo')
+    data_inizio DATE,          -- non presente nell'Elenco Annuale dei Lavori
+    data_fine_prevista DATE,   -- non presente nell'Elenco Annuale dei Lavori
+    importo_lavori NUMERIC(14, 2) DEFAULT 0,
     ente_responsabile VARCHAR(150) DEFAULT 'Comune di Venezia - LL.PP.',
-    impatto_mobilita VARCHAR(50) DEFAULT 'Medio', -- 'Basso', 'Medio', 'Critico'
+    impatto_mobilita VARCHAR(50), -- non pubblicato dal Comune
+    categoria VARCHAR(100),
+    cup VARCHAR(20),
+    provvedimento VARCHAR(100),
+    posizione_approssimata BOOLEAN DEFAULT TRUE, -- geocodifica OSM del luogo citato nel titolo
     dettagli TEXT,
     geom GEOMETRY(Geometry, 4326) NOT NULL
 );

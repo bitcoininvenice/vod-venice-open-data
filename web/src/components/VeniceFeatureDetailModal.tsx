@@ -433,11 +433,13 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                     <Waves className="w-3 h-3 text-cyan-400" /> {language === 'it' ? "Altezza d'Onda Hs" : 'Wave Height Hs'}
                   </span>
                   <p className="text-2xl font-bold font-mono text-cyan-600 dark:text-cyan-400">
-                    {feature.data.waveHeightMeters} m
+                    {feature.data.waveHeightMeters === null ? 'n.d.' : `${feature.data.waveHeightMeters} m`}
                   </p>
                   <span className="text-[10px] text-[var(--ink-3)] block mt-0.5">
-                    {feature.data.waveHeightMeters > 1.5 
-                      ? (language === 'it' ? 'Mare molto mosso / agitato' : 'Very rough sea') 
+                    {feature.data.waveHeightMeters === null
+                      ? (language === 'it' ? 'La stazione non misura le onde' : 'Station does not measure waves')
+                      : feature.data.waveHeightMeters > 1.5
+                      ? (language === 'it' ? 'Mare molto mosso / agitato' : 'Very rough sea')
                       : feature.data.waveHeightMeters > 0.5 
                       ? (language === 'it' ? 'Mare mosso' : 'Moderate chop') 
                       : (language === 'it' ? 'Laguna calma / poco mosso' : 'Calm lagoon')}
@@ -717,15 +719,15 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? "Altezza Onda Hs" : 'Wave Height Hs'}</span>
-                  <p className="text-2xl font-bold font-mono text-cyan-400">{feature.data.waveHeightMeters} m</p>
+                  <p className="text-2xl font-bold font-mono text-cyan-400">{feature.data.waveHeightMeters === null ? 'n.d.' : `${feature.data.waveHeightMeters} m`}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Temp. Acqua' : 'Water Temp'}</span>
-                  <p className="text-2xl font-bold font-mono text-emerald-400">{feature.data.waterTempC} °C</p>
+                  <p className="text-2xl font-bold font-mono text-emerald-400">{feature.data.waterTempC === null ? 'n.d.' : `${feature.data.waterTempC} °C`}</p>
                 </div>
               </div>
               <div className="text-[11px] text-[var(--ink-3)]">
-                {language === 'it' ? 'Operatore:' : 'Operator:'} <b>{feature.data.operator}</b> · {language === 'it' ? 'Salinità:' : 'Salinity:'} <b>{feature.data.salinityPsu} PSU</b>
+                {language === 'it' ? 'Operatore:' : 'Operator:'} <b>{feature.data.operator}</b> · {feature.data.lastUpdate}
               </div>
             </>
           )}
@@ -749,19 +751,24 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {/* EV & WIFI */}
           {feature.type === 'evCharging' && (
             <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Prese Disponibili' : 'Available Sockets'}</span>
-              <p className="text-2xl font-bold font-mono text-yellow-400">
-                {feature.data.availableSockets} / {feature.data.totalSockets}
-              </p>
+              <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Prese' : 'Sockets'}</span>
+              <p className="text-2xl font-bold font-mono text-yellow-400">{feature.data.totalSockets}</p>
+              <span className="text-[11px] text-[var(--ink-3)] block">
+                {language === 'it' ? 'Disponibilità in tempo reale non pubblicata dal gestore.' : 'Real-time availability not published by the operator.'}
+              </span>
               <span className="text-xs text-[var(--ink-2)]">{language === 'it' ? 'Potenza:' : 'Power:'} {feature.data.powerKw} kW</span>
             </div>
           )}
 
           {feature.type === 'wifiHotspot' && (
             <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Utenti Connessi' : 'Connected Users'}</span>
-              <p className="text-2xl font-bold font-mono text-indigo-400">{feature.data.usersConnected}</p>
-              <span className="text-xs text-[var(--ink-2)]">{language === 'it' ? 'Velocità stimata:' : 'Estimated speed:'} {feature.data.speedMbps} Mbps</span>
+              <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{language === 'it' ? 'Stato (dataset del Comune)' : 'Status (City dataset)'}</span>
+              <p className={`text-xl font-bold font-mono ${feature.data.status === 'ATTIVO' ? 'text-emerald-400' : 'text-[var(--ink-3)]'}`}>
+                {feature.data.status === 'ATTIVO' ? (language === 'it' ? 'Attivo' : 'Active') : feature.data.status === 'NON_ATTIVO' ? (language === 'it' ? 'Non attivo' : 'Inactive') : 'n.d.'}
+              </p>
+              <span className="text-xs text-[var(--ink-2)]">
+                {feature.data.networkName} · {feature.data.indoorOutdoor === 'INDOOR' ? (language === 'it' ? 'interno' : 'indoor') : (language === 'it' ? 'esterno' : 'outdoor')} · {language === 'it' ? 'fonte dati.venezia.it (CC BY)' : 'source dati.venezia.it (CC BY)'}
+              </span>
             </div>
           )}
 

@@ -67,6 +67,7 @@ import {
   AirportMetarData,
   VeniceCameraItem
 } from '@/lib/types';
+import { isLocated } from '@/lib/types';
 import {
   REGIONAL_LAGOON_WATER_QUALITY,
   REGIONAL_TOURIST_ACCOMMODATIONS,
@@ -81,7 +82,6 @@ import {
   OPEN_PUBLIC_DOCKS,
   OPEN_SUBSIDENCE_INSAR,
   OPEN_LAGOON_MORPHOLOGY,
-  OPEN_METEO_MARINE_WIND,
   OPEN_LIVE_TRAINS,
   OPEN_VERITAS_WASTE_BOATS,
   OPEN_NIZIOLETI_CIVICI,
@@ -196,6 +196,7 @@ export default function HomePage() {
 
   // Data collections
   const [cantieri, setCantieri] = useState<CantiereItem[]>(CANTIERI_REFERENCE);
+  const locatedCantieri = useMemo(() => cantieri.filter(isLocated), [cantieri]);
   const [stops, setStops] = useState<StopItem[]>(ACTV_STOPS_REFERENCE);
   const [flights, setFlights] = useState<FlightItem[]>([]);
   const [ships, setShips] = useState<ShipItem[]>([]);
@@ -230,7 +231,8 @@ export default function HomePage() {
   const [docks, setDocks] = useState<PublicDockItem[]>(OPEN_PUBLIC_DOCKS);
   const [subsidencePoints, setSubsidencePoints] = useState<SubsidenceInSARItem[]>(OPEN_SUBSIDENCE_INSAR);
   const [lagoonMorphology, setLagoonMorphology] = useState<LagoonMorphologyItem[]>(OPEN_LAGOON_MORPHOLOGY);
-  const [marineWindStations, setMarineWindStations] = useState<MeteoMarineWindItem[]>(OPEN_METEO_MARINE_WIND);
+  // Stazioni meteo-marine reali (METAR LIPZ + rete CPSM) da /api/weather
+  const [marineWindStations, setMarineWindStations] = useState<MeteoMarineWindItem[]>([]);
   const [metarData, setMetarData] = useState<AirportMetarData | null>(null);
   const [liveTrains, setLiveTrains] = useState<TrainLiveItem[]>(OPEN_LIVE_TRAINS);
   const [wasteBoats, setWasteBoats] = useState<VeritasWasteBoatItem[]>(OPEN_VERITAS_WASTE_BOATS);
@@ -594,7 +596,6 @@ export default function HomePage() {
         if (data.success && data.data) {
           if (data.data.subsidencePoints) setSubsidencePoints(data.data.subsidencePoints);
           if (data.data.lagoonMorphology) setLagoonMorphology(data.data.lagoonMorphology);
-          if (data.data.marineWindStations) setMarineWindStations(data.data.marineWindStations);
         }
       })
       .catch((err) => console.warn('Using fallback lagoon morphology:', err));
@@ -791,7 +792,7 @@ export default function HomePage() {
           setIsDesktopLayerPanelOpen(true);
         }}
         onOpenTutorial={() => setIsTutorialOpen(true)}
-        activeCantieriCount={cantieri.filter((c) => c.stato === 'In corso').length}
+        activeCantieriCount={locatedCantieri.length}
         tideLevel={tideLevel}
         tideObservedAt={tideInfo.observedAt}
         activeShipsCount={ships.length}
@@ -828,7 +829,7 @@ export default function HomePage() {
           pedestrianFlows={pedestrianFlows}
           bufferRadiusMeters={bufferRadiusMeters}
           selectedCategory={selectedCategory}
-          cantieri={cantieri}
+          cantieri={locatedCantieri}
           stops={stops}
           showAlilaguna={showAlilaguna}
           alilagunaRoutes={alilagunaRoutes}

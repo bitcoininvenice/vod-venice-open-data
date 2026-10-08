@@ -1,0 +1,11 @@
+[
+    {
+        "ID_stazione": "1021",
+        "stazione": "Piattaforma Acqua Alta Siap",
+        "latDDN": "45.3231",
+        "lonDDE": "12.5147",
+        "nome_abbr": "Piattaforma",
+        "data": "2026-10-08 10:10:00",
+        "valore": "1.26 m, 2.01 m"
+    }
+]

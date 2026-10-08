@@ -1,0 +1,108 @@
+[
+    {
+        "ID_stazione": "1021",
+        "stazione": "Piattaforma Acqua Alta Siap",
+        "data": "2026-10-08 10:15:00",
+        "valore": "172 gradi, 1.4 m/s, 1.8 m/s"
+    },
+    {
+        "ID_stazione": "1024",
+        "stazione": "Diga sud Chioggia",
+        "data": "2026-10-08 10:15:00",
+        "valore": "155 gradi, 3.7 m/s, 4.5 m/s"
+    },
+    {
+        "ID_stazione": "1028",
+        "stazione": "Laguna nord Saline",
+        "data": "2026-10-08 10:15:00",
+        "valore": "225 gradi, 1.2 m/s, 2.3 m/s"
+    },
+    {
+        "ID_stazione": "1029",
+        "stazione": "Venezia Misericordia",
+        "data": "2026-10-08 10:15:00",
+        "valore": "11 gradi, 1.5 m/s, 2.4 m/s"
+    },
+    {
+        "ID_stazione": "1032",
+        "stazione": "Malamocco Porto",
+        "data": "2026-10-08 10:15:00",
+        "valore": "79 gradi, 0.7 m/s, 1.4 m/s"
+    },
+    {
+        "ID_stazione": "1033",
+        "stazione": "Chioggia porto",
+        "data": "2026-10-08 10:10:00",
+        "valore": "203 gradi, 0.6 m/s, 1.1 m/s"
+    },
+    {
+        "ID_stazione": "1037",
+        "stazione": "Fusina",
+        "data": "2026-10-08 10:15:00",
+        "valore": "51 gradi, 1.6 m/s, 2.3 m/s"
+    },
+    {
+        "ID_stazione": "1038",
+        "stazione": "Diga Sud Lido Faro",
+        "data": "2026-10-08 10:15:00",
+        "valore": "37 gradi, 0.6 m/s, 1.1 m/s"
+    },
+    {
+        "ID_stazione": "1039",
+        "stazione": "San Giorgio Isola",
+        "data": "2026-10-08 10:15:00",
+        "valore": "68 gradi, 0 m/s, 0 m/s"
+    },
+    {
+        "ID_stazione": "1046",
+        "stazione": "Meda Abate"
+    },
+    {
+        "ID_stazione": "1047",
+        "stazione": "Portuale_Marittima",
+        "data": "2026-10-08 10:15:00",
+        "valore": "29 gradi, 0.6 m/s, 2.2 m/s"
+    },
+    {
+        "ID_stazione": "1048",
+        "stazione": "Portuale_SanServolo",
+        "data": "2026-10-08 10:15:00",
+        "valore": "4 gradi, 0.3 m/s, 1.3 m/s"
+    },
+    {
+        "ID_stazione": "1049",
+        "stazione": "Portuale_SantAndrea",
+        "data": "2026-10-08 10:15:00",
+        "valore": "40 gradi, 1 m/s, 1.7 m/s"
+    },
+    {
+        "ID_stazione": "1051",
+        "stazione": "Portuale_SanLeonardo",
+        "data": "2026-10-08 10:15:00",
+        "valore": "58 gradi, 1.8 m/s, 2 m/s"
+    },
+    {
+        "ID_stazione": "1052",
+        "stazione": "Val_Da_Rio",
+        "data": "2026-10-08 10:15:00",
+        "valore": "133 gradi, 2.3 m/s, 2.6 m/s"
+    },
+    {
+        "ID_stazione": "1053",
+        "stazione": "Malamocco_M16",
+        "data": "2026-10-08 10:15:00",
+        "valore": "17 gradi, 1.1 m/s, 2.2 m/s"
+    },
+    {
+        "ID_stazione": "1054",
+        "stazione": "Meda M18",
+        "data": "2026-10-08 10:15:00",
+        "valore": "54 gradi, 1.2 m/s, 2.1 m/s"
+    },
+    {
+        "ID_stazione": "1055",
+        "stazione": "Meda M24",
+        "data": "2026-10-08 10:15:00",
+        "valore": "91 gradi, 1.4 m/s, 2.4 m/s"
+    }
+]

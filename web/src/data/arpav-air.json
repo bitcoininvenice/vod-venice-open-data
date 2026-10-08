@@ -1,0 +1,99 @@
+{
+ "generatedAt": "2026-10-08T11:19:43+02:00",
+ "source": "ARPAV – Open Data qualità dell'aria (medie annue validate)",
+ "sourceUrl": "https://www.arpa.veneto.it/dati-ambientali/open-data/atmosfera",
+ "license": "CC BY 4.0 – ARPAV",
+ "stations": [
+  {
+   "id": "IT1936A",
+   "stationName": "Malcontenta",
+   "stationType": "Industriale suburbana",
+   "year": 2025,
+   "pm10": 26.0,
+   "pm25": 16.0,
+   "no2": 24.0,
+   "pm10Exceedances": 29,
+   "lat": 45.436495,
+   "lon": 12.205124,
+   "location": "Malcontenta, Venezia"
+  },
+  {
+   "id": "IT0963A",
+   "stationName": "Parco Bissuola",
+   "stationType": "Fondo urbano",
+   "year": 2025,
+   "pm10": 24.0,
+   "pm25": 18.0,
+   "no2": 19.0,
+   "pm10Exceedances": 25,
+   "lat": 45.499178,
+   "lon": 12.260799,
+   "location": "Parco Albanese, Mestre"
+  },
+  {
+   "id": "99914",
+   "stationName": "Punta Fusina",
+   "stationType": "Industriale suburbana",
+   "year": 2025,
+   "pm10": 24.0,
+   "pm25": 15.0,
+   "no2": 26.0,
+   "pm10Exceedances": 28,
+   "lat": 45.419077,
+   "lon": 12.257771,
+   "location": "Fusina, Venezia"
+  },
+  {
+   "id": "IT2319A",
+   "stationName": "Rio Novo",
+   "stationType": "Traffico urbano",
+   "year": 2025,
+   "pm10": 24.0,
+   "pm25": null,
+   "no2": 34.0,
+   "pm10Exceedances": 24,
+   "lat": 45.436926,
+   "lon": 12.320241,
+   "location": "Fondamenta del Rio Novo, Venezia"
+  },
+  {
+   "id": "IT0448A",
+   "stationName": "Sacca Fisola",
+   "stationType": "Fondo urbano",
+   "year": 2025,
+   "pm10": 26.0,
+   "pm25": null,
+   "no2": 28.0,
+   "pm10Exceedances": 21,
+   "lat": 45.426977,
+   "lon": 12.314775,
+   "location": "Sacca Fisola, Venezia"
+  },
+  {
+   "id": "IT1934A",
+   "stationName": "Via Beccaria",
+   "stationType": "Traffico urbano",
+   "year": 2025,
+   "pm10": 27.0,
+   "pm25": null,
+   "no2": 25.0,
+   "pm10Exceedances": 33,
+   "lat": 45.472887,
+   "lon": 12.219863,
+   "location": "Via Cesare Beccaria, Marghera"
+  },
+  {
+   "id": "IT1862A",
+   "stationName": "Via Tagliamento",
+   "stationType": "Traffico urbano",
+   "year": 2025,
+   "pm10": 28.0,
+   "pm25": null,
+   "no2": 25.0,
+   "pm10Exceedances": 36,
+   "lat": 45.488377,
+   "lon": 12.217149,
+   "location": "Via Tagliamento, Mestre"
+  }
+ ]
+}

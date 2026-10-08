@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fetchCantieri } from '@/lib/db';
+import { fetchCantieri, OPERE_PUBBLICHE_META } from '@/lib/db';
 
 export const revalidate = 86400;
 
@@ -11,8 +11,11 @@ export async function GET() {
     data: cantieri,
     meta: {
       kind: 'static-reference',
-      source: 'Elenco cantieri incluso nel codice',
-      note: 'Dataset statico non collegato al portale dati.venezia.it: va sostituito con l\'importazione dei cantieri pubblicati dal Comune.',
+      source: OPERE_PUBBLICHE_META.source,
+      sourceUrl: OPERE_PUBBLICHE_META.sourceUrl,
+      license: OPERE_PUBBLICHE_META.license,
+      observedAt: OPERE_PUBBLICHE_META.generatedAt,
+      note: `${OPERE_PUBBLICHE_META.located}/${OPERE_PUBBLICHE_META.count} opere con posizione approssimata (${OPERE_PUBBLICHE_META.geocoding}). Aggiornamento con pipeline/import_opere_pubbliche.py.`,
     },
   });
 }

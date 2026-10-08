@@ -180,18 +180,18 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                 <div className="flex items-center justify-between text-xs text-emerald-300">
                   <div className="flex items-center gap-1.5 font-semibold">
                     <Wind className="w-4 h-4 text-emerald-400" />
-                    <span>Qualità dell&apos;Aria AQI</span>
+                    <span>Qualità dell&apos;aria · PM10</span>
                   </div>
                   <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">ARPAV</span>
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold font-mono text-emerald-400">
-                    {show(loaded, metrics?.averageAqi)}
+                    {show(loaded, metrics?.averagePm10)}
                   </span>
-                  <span className="text-xs font-mono text-emerald-300">AQI medio</span>
+                  <span className="text-xs font-mono text-emerald-300">µg/m³ media annua</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  Feed orario ARPAV non ancora collegato: nessun valore in tempo reale
+                  Dati validati 2025 su {show(loaded, metrics?.airStationsCount)} stazioni · NO2 {show(loaded, metrics?.averageNo2)} µg/m³ · limite UE vigente 40
                 </span>
               </div>
             </>
@@ -398,10 +398,10 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                   <span className="text-3xl font-extrabold font-mono text-amber-400">
                     {show(loaded, metrics?.activeCantieri)}
                   </span>
-                  <span className="text-xs font-mono text-amber-300">cantieri attivi</span>
+                  <span className="text-xs font-mono text-amber-300">opere localizzate su mappa</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  Investimento: € {loaded ? `${(metrics.totalInvestmentCantieri / 1000000).toFixed(2)}M` : '…'} · {show(loaded, metrics?.stopsNearWorksites200m)} fermate nel buffer 200m
+                  Elenco Annuale Lavori 2026: € {loaded ? `${(metrics.totalInvestmentCantieri / 1000000).toFixed(1)}M` : '…'} · {show(loaded, metrics?.stopsNearWorksites200m)} fermate entro 200 m
                 </span>
               </div>
 
@@ -525,7 +525,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
                   <span className="text-xs font-mono text-cyan-300">onda significativa (Hs, m)</span>
                 </div>
                 <span className="text-[11px] text-[var(--ink-2)] font-mono leading-tight">
-                  Feed della piattaforma non ancora collegato · livello marea disponibile nel layer MOSE
+                  Temp. acqua {show(loaded, metrics?.cnrWaterTempC)} °C · misura CPSM in tempo reale
                 </span>
               </div>
 

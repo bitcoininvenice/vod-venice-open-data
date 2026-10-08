@@ -1,0 +1,47 @@
+[
+    {
+        "ID_stazione": "1025",
+        "stazione": "Punta Salute Canal Grande",
+        "latDDN": "45.4311",
+        "lonDDE": "12.3364",
+        "nome_abbr": "PSalute",
+        "data": "2026-10-08 10:10:00",
+        "valore": "0.18 m, 0.31 m"
+    },
+    {
+        "ID_stazione": "1026",
+        "stazione": "Palazzo Cavalli",
+        "latDDN": "45.4364",
+        "lonDDE": "12.3336",
+        "nome_abbr": "P_Cavalli",
+        "data": "2026-10-08 10:10:00",
+        "valore": "0.05 m, 0.09 m"
+    },
+    {
+        "ID_stazione": "1029",
+        "stazione": "Venezia Misericordia",
+        "latDDN": "45.4453",
+        "lonDDE": "12.3361",
+        "nome_abbr": "Misericordia",
+        "data": "2026-10-08 10:10:00",
+        "valore": "0.25 m, 0.46 m"
+    },
+    {
+        "ID_stazione": "1037",
+        "stazione": "Fusina",
+        "latDDN": "45.412",
+        "lonDDE": "12.2615",
+        "nome_abbr": "Fusina",
+        "data": "2026-10-08 10:10:00",
+        "valore": "0.03 m, 0.04 m"
+    },
+    {
+        "ID_stazione": "1045",
+        "stazione": "Punta Salute Canale Giudecca",
+        "latDDN": "45.4306",
+        "lonDDE": "12.3364",
+        "nome_abbr": "PS_Giud",
+        "data": "2026-10-08 10:10:00",
+        "valore": "0.34 m, 0.57 m"
+    }
+]

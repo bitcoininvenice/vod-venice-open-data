@@ -152,10 +152,8 @@ export const SpatialAnalysisModal: React.FC<SpatialAnalysisModalProps> = ({
                     <span className="font-mono font-bold text-amber-400 text-sm block">
                       {r.distanzaMetri} m
                     </span>
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${
-                      r.impattoMobilita === 'Critico' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
-                    }`}>
-                      {r.impattoMobilita === 'Critico' ? (language === 'it' ? 'Critico' : 'Critical') : r.impattoMobilita}
+                    <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-500/20 text-amber-400">
+                      {r.cantiereCategoria}
                     </span>
                   </div>
 

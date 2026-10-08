@@ -7,6 +7,7 @@ import {
   TransportModeCategory,
   StopItem,
   CantiereItem,
+  LocatedCantiere,
   PaletteTheme,
   FlightItem,
   ShipItem,
@@ -313,7 +314,8 @@ interface MapEngineProps {
   onSelectFeature?: (feature: VeniceFeatureSelected) => void;
   bufferRadiusMeters: number;
   selectedCategory: TransportModeCategory | 'all';
-  cantieri: CantiereItem[];
+  /** Solo opere pubbliche con posizione */
+  cantieri: LocatedCantiere[];
   stops: StopItem[];
   onSelectStop: (stop: StopItem) => void;
   onSelectCantiere: (cantiere: CantiereItem) => void;
@@ -1790,7 +1792,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         const metersToVirtual = (bufferRadiusMeters / 111139) * KY * camera.s;
 
         for (const c of cantieri) {
-          if (c.stato !== 'In corso') continue;
           const cx = sx(mx(c.lon));
           const cy = sy(my(c.lat));
 
@@ -1911,7 +1912,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         }
       }
 
-      // 7. Render Comune di Venezia Cantieri (Worksites)
+      // 7. Opere pubbliche del Comune di Venezia (posizione approssimata da geocodifica)
       if (showCantieri) {
         for (const c of cantieri) {
           const cx = sx(mx(c.lon));
@@ -1920,13 +1921,13 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           // Pulsing warning halo
           ctx.beginPath();
           ctx.arc(cx, cy, 9, 0, Math.PI * 2);
-          ctx.fillStyle = c.impattoMobilita === 'Critico' ? 'rgba(239, 68, 68, 0.35)' : 'rgba(245, 158, 11, 0.35)';
+          ctx.fillStyle = 'rgba(245, 158, 11, 0.35)';
           ctx.fill();
 
           // Worksite pin
           ctx.beginPath();
           ctx.arc(cx, cy, 5.5, 0, Math.PI * 2);
-          ctx.fillStyle = c.impattoMobilita === 'Critico' ? '#ef4444' : (isDark ? '#f59e0b' : '#d97706');
+          ctx.fillStyle = isDark ? '#f59e0b' : '#d97706';
           ctx.fill();
           ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
           ctx.lineWidth = 1.5;
@@ -2666,7 +2667,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           ctx.save();
           ctx.font = '600 9px "DM Mono", monospace';
-          const aTxt = `ARPAV ${a.stationName} · AQI ${a.aqi} (PM10: ${a.pm10}µg)`;
+          const aTxt = `ARPAV ${a.stationName} · PM10 ${a.pm10 ?? 'n.d.'} µg/m³ (media ${a.year})`;
           const aW = ctx.measureText(aTxt).width;
 
           ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.88)';
@@ -3287,7 +3288,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
             // Telemetry readout
             ctx.font = '700 8.5px "DM Mono", monospace';
-            const tag = `CNR ISMAR · Hs ${st.waveHeightMeters}m · ${st.waterTempC}°C`;
+            const tag = `CNR ISMAR · Hs ${st.waveHeightMeters ?? 'n.d.'} m · ${st.waterTempC ?? 'n.d.'} °C`;
             const tW = ctx.measureText(tag).width;
             ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.92)';
             ctx.fillRect(ox - tW / 2 - 4, oy - 22, tW + 8, 13);
@@ -3307,7 +3308,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
             ctx.font = '600 8px "DM Mono", monospace';
             ctx.fillStyle = isDark ? '#fbbf24' : '#b45309';
-            ctx.fillText(`Hs ${st.waveHeightMeters}m`, ox + 8, oy + 3);
+            ctx.fillText(st.waveHeightMeters === null ? st.name.slice(0, 26) : `Hs ${st.waveHeightMeters} m`, ox + 8, oy + 3);
           }
 
           ctx.restore();
@@ -3419,7 +3420,11 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             const wx = sx(mx(wf.lon));
             const wy = sy(my(wf.lat));
             ctx.save();
-            ctx.fillStyle = '#6366f1';
+            if (wx < -10 || wx > cw + 10 || wy < -10 || wy > ch + 10) {
+              ctx.restore();
+              continue;
+            }
+            ctx.fillStyle = wf.status === 'ATTIVO' ? '#6366f1' : '#64748b';
             ctx.beginPath();
             ctx.arc(wx, wy, 4.5, 0, Math.PI * 2);
             ctx.fill();
@@ -3430,7 +3435,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             if (camera.s > 0.05) {
               ctx.font = '600 8px "DM Mono", monospace';
               ctx.fillStyle = isDark ? '#818cf8' : '#4338ca';
-              ctx.fillText(`Wi-Fi (${wf.usersConnected})`, wx + 7, wy + 3);
+              ctx.fillText(`Wi-Fi · ${wf.name.slice(0, 28)}`, wx + 7, wy + 3);
             }
             ctx.restore();
           }

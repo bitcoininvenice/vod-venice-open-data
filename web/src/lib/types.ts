@@ -55,23 +55,34 @@ export interface StopItem {
   wheelchair?: boolean;
 }
 
+/** Opera pubblica dall'Elenco Annuale dei Lavori del Comune di Venezia (dati.venezia.it, CC BY). */
 export interface CantiereItem {
   id: number;
   codice: string;
   titolo: string;
+  /** Luogo usato per la geocodifica, oppure "Non localizzata" */
   localizzazione: string;
+  /** Municipalità */
   quartiere: string;
   tipologia: string;
-  stato: 'In corso' | 'Programmato' | 'Concluso';
-  dataInizio: string;
-  dataFinePrevista: string;
+  categoria: string;
+  /** Stato di avanzamento del progetto come pubblicato (es. "Progetto Esecutivo"), altrimenti "Programmato" */
+  stato: string;
   importoLavori: number;
   enteResponsabile: string;
-  impattoMobilita: 'Basso' | 'Medio' | 'Critico';
-  dettagli: string;
-  lat: number;
-  lon: number;
+  cup: string | null;
+  provvedimento: string | null;
+  finalita: string | null;
+  lat: number | null;
+  lon: number | null;
+  /** true se la posizione è stimata con geocodifica OpenStreetMap del luogo citato nel titolo */
+  posizioneApprossimata: boolean;
 }
+
+/** Opera pubblica con posizione sulla mappa. */
+export type LocatedCantiere = CantiereItem & { lat: number; lon: number };
+
+export const isLocated = (c: CantiereItem): c is LocatedCantiere => c.lat !== null && c.lon !== null;
 
 export interface OccupazioneItem {
   id: number;
@@ -95,7 +106,7 @@ export interface StopNearCantiere {
   cantiereId: number;
   cantiereTitolo: string;
   cantiereTipologia: string;
-  impattoMobilita: string;
+  cantiereCategoria: string;
   distanzaMetri: number;
 }
 
@@ -288,16 +299,21 @@ export interface ParkingItem {
   operator: string;
 }
 
+/** Stazione ARPAV con le medie annue validate (µg/m³) dell'anno più recente pubblicato. */
 export interface AirQualityItem {
   id: string;
   stationName: string;
   location: string;
+  stationType: string;
   lat: number;
   lon: number;
+  /** Classificazione rispetto ai limiti UE: BUONA = entro i limiti 2030, ACCETTABILE = entro i limiti vigenti */
   aqi: 'BUONA' | 'ACCETTABILE' | 'SCADENTE';
-  pm10: number; // µg/m³
-  pm25: number; // µg/m³
-  no2: number; // µg/m³
+  year: number;
+  pm10: number | null;
+  pm25: number | null;
+  no2: number | null;
+  pm10Exceedances: number | null;
   lastUpdate: string;
 }
 
@@ -458,14 +474,15 @@ export interface OceanStationItem {
   lat: number;
   lon: number;
   operator: 'CNR-ISMAR' | 'ISPRA RML' | 'CPSM Centro Maree';
-  waveHeightMeters: number; // Altezza significativa onda Hs
-  wavePeriodSeconds: number; // Periodo d'onda Tp
-  waterTempC: number;
-  salinityPsu: number;
-  currentSpeedMs: number;
-  currentDirectionDeg: number;
-  windSpeedKnots: number;
-  windDirectionDeg: number;
+  // Misure: null quando la fonte non le pubblica come open data
+  waveHeightMeters: number | null; // Altezza significativa onda Hs
+  wavePeriodSeconds: number | null; // Periodo d'onda Tp
+  waterTempC: number | null;
+  salinityPsu: number | null;
+  currentSpeedMs: number | null;
+  currentDirectionDeg: number | null;
+  windSpeedKnots: number | null;
+  windDirectionDeg: number | null;
   depthMeters: number;
   lastUpdate: string;
   officialSource: string;
@@ -510,12 +527,14 @@ export interface EvChargingItem {
   lat: number;
   lon: number;
   totalSockets: number;
-  availableSockets: number;
+  /** Disponibilità in tempo reale: non pubblicata dai gestori, quindi null */
+  availableSockets: number | null;
   powerKw: number; // es. 22kW, 50kW, 150kW Ultra-Fast
   socketTypes: string[]; // ['Type 2', 'CCS Combo 2']
   isOperational: boolean;
 }
 
+/** Hotspot WiFi pubblico del Comune di Venezia (dati.venezia.it, CC BY). */
 export interface WifiHotspotItem {
   id: string;
   name: string;
@@ -524,8 +543,8 @@ export interface WifiHotspotItem {
   lat: number;
   lon: number;
   indoorOutdoor: 'OUTDOOR' | 'INDOOR';
-  usersConnected: number;
-  speedMbps: number;
+  /** Stato pubblicato nel dataset (ok / ko) */
+  status: 'ATTIVO' | 'NON_ATTIVO' | 'NON_INDICATO';
   isFreePublic: boolean;
 }
 
@@ -639,13 +658,14 @@ export interface MeteoMarineWindItem {
   stationName: string;
   lat: number;
   lon: number;
-  windDirection: 'SCIROCCO' | 'BORA' | 'LIBECCIO' | 'MAESTRALE' | 'TRAMONTANA' | 'GRECALE' | 'PONENTE' | 'LEVANTE';
+  windDirection: 'SCIROCCO' | 'BORA' | 'LIBECCIO' | 'MAESTRALE' | 'TRAMONTANA' | 'GRECALE' | 'PONENTE' | 'LEVANTE' | 'OSTRO';
   windDirectionDeg: number;
   windSpeedKmh: number;
   windSpeedKnots: number;
   gustSpeedKmh: number;
   gustSpeedKnots: number;
-  waveHeightMeters: number;
+  /** Altezza d'onda significativa misurata; null se la stazione non misura le onde */
+  waveHeightMeters: number | null;
   airTempCelsius?: number;
   pressureHpa?: number;
   humidityPercent?: number;
@@ -654,6 +674,8 @@ export interface MeteoMarineWindItem {
   stationType: 'AEROPORTO' | 'PIATTAFORMA_OFFSHORE' | 'BOCCA_DI_PORTO' | 'CENTRO_STORICO' | 'TERRAFERMA';
   metar?: AirportMetarData;
   officialSource: string;
+  /** Ora della misura come pubblicata dalla fonte (ora locale) */
+  observedAt?: string;
 }
 
 // ==========================================

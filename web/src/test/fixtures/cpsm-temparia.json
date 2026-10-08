@@ -1,0 +1,34 @@
+[
+    {
+        "ID_stazione": "1046",
+        "stazione": "Meda Abate",
+        "latDDN": "45.25",
+        "lonDDE": "12.7727",
+        "nome_abbr": "M_Abate"
+    },
+    {
+        "ID_stazione": "1026",
+        "stazione": "Palazzo Cavalli",
+        "latDDN": "45.4364",
+        "lonDDE": "12.3336",
+        "nome_abbr": "P_Cavalli",
+        "data": "2026-10-08 10:15:00",
+        "valore": "19.7 \u00b0C"
+    },
+    {
+        "ID_stazione": "1021",
+        "stazione": "Piattaforma Acqua Alta Siap",
+        "latDDN": "45.3231",
+        "lonDDE": "12.5147",
+        "nome_abbr": "Piattaforma",
+        "data": "2026-10-08 10:15:00",
+        "valore": "19.6 \u00b0C"
+    },
+    {
+        "ID_stazione": "1039",
+        "stazione": "San Giorgio Isola",
+        "latDDN": "45.4283",
+        "lonDDE": "12.3461",
+        "nome_abbr": "S_Giorgio"
+    }
+]

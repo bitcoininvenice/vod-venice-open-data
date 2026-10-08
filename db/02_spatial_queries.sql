@@ -3,7 +3,7 @@
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
--- 1. Query Spaziale: Incrocio Fermate ACTV & Cantieri Attivi entro Raggio (buffer)
+-- 1. Query Spaziale: fermate ACTV entro un raggio dalle opere pubbliche localizzate
 -- ----------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION get_stops_near_cantieri(buffer_meters DOUBLE PRECISION DEFAULT 200.0)
@@ -16,8 +16,8 @@ RETURNS TABLE (
     cantiere_id INT,
     cantiere_titolo VARCHAR(255),
     cantiere_tipologia VARCHAR(100),
-    impatto_mobilita VARCHAR(50),
-    data_fine_prevista DATE,
+    cantiere_categoria VARCHAR(100),
+    cantiere_stato VARCHAR(50),
     distanza_metri DOUBLE PRECISION,
     stop_geom_geojson TEXT,
     cantiere_geom_geojson TEXT
@@ -33,15 +33,14 @@ BEGIN
         c.id AS cantiere_id,
         c.titolo AS cantiere_titolo,
         c.tipologia AS cantiere_tipologia,
-        c.impatto_mobilita,
-        c.data_fine_prevista,
+        c.categoria AS cantiere_categoria,
+        c.stato AS cantiere_stato,
         ROUND(ST_Distance(s.geom::geography, c.geom::geography)::numeric, 1)::double precision AS distanza_metri,
         ST_AsGeoJSON(s.geom) AS stop_geom_geojson,
         ST_AsGeoJSON(c.geom) AS cantiere_geom_geojson
     FROM stops s
     JOIN comune_cantieri c 
       ON ST_DWithin(s.geom::geography, c.geom::geography, buffer_meters)
-    WHERE c.stato = 'In corso'
     ORDER BY distanza_metri ASC;
 END;
 $$ LANGUAGE plpgsql;
@@ -100,11 +99,12 @@ SELECT
     quartiere,
     tipologia,
     stato,
-    data_inizio,
-    data_fine_prevista,
     importo_lavori,
     ente_responsabile,
-    impatto_mobilita,
+    categoria,
+    cup,
+    provvedimento,
+    posizione_approssimata,
     dettagli,
     ST_AsGeoJSON(geom)::json AS geometry
 FROM comune_cantieri;
@@ -124,14 +124,13 @@ BEGIN
         'routes_automobilistico', (SELECT COUNT(*) FROM routes WHERE route_type IN (0, 3)),
         'total_stops', (SELECT COUNT(*) FROM stops),
         'total_trips', (SELECT COUNT(*) FROM trips),
-        'active_cantieri', (SELECT COUNT(*) FROM comune_cantieri WHERE stato = 'In corso'),
-        'total_investment_cantieri', (SELECT COALESCE(SUM(importo_lavori), 0) FROM comune_cantieri WHERE stato = 'In corso'),
+        'active_cantieri', (SELECT COUNT(*) FROM comune_cantieri),
+        'total_investment_cantieri', (SELECT COALESCE(SUM(importo_lavori), 0) FROM comune_cantieri),
         'occupazioni_attive', (SELECT COUNT(*) FROM comune_occupazione_suolo WHERE data_fine >= CURRENT_DATE),
         'stops_near_worksites_200m', (
             SELECT COUNT(DISTINCT s.stop_id) 
             FROM stops s 
-            JOIN comune_cantieri c ON ST_DWithin(s.geom::geography, c.geom::geography, 200) 
-            WHERE c.stato = 'In corso'
+            JOIN comune_cantieri c ON ST_DWithin(s.geom::geography, c.geom::geography, 200)
         )
     ) INTO result;
     RETURN result;

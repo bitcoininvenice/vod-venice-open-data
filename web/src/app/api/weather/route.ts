@@ -1,37 +1,55 @@
 import { NextResponse } from 'next/server';
 import { METEO_MARINE_WIND_STATIONS } from '@/lib/weatherWindData';
+import type { MeteoMarineWindItem } from '@/lib/types';
 import { fetchUpstream } from '@/server/upstream';
 import { LIPZ_METAR_URL, parseLipzMetar } from '@/server/sources/metar';
+import { buildWindStations, CPSM_METEO_URLS, parseCpsmFeed, type CpsmFeedName } from '@/server/sources/cpsmMeteo';
 
 export const revalidate = 300;
 
-export async function GET() {
-  const metar = await fetchUpstream(LIPZ_METAR_URL, parseLipzMetar, { revalidate: 300 });
+const CPSM_FEEDS: CpsmFeedName[] = ['vento', 'ondeMare', 'ondeLaguna', 'tempAria', 'pressione', 'umidita', 'livello'];
 
-  // Solo la stazione aeroportuale viene aggiornata con il METAR reale; le altre restano valori di riferimento.
-  const windStations = METEO_MARINE_WIND_STATIONS.map((st) => {
-    if (st.id !== 'WIND_LIPZ_AERONAUTICA') return st;
-    if (!metar.ok) return { ...st, metar: undefined };
-    const m = metar.data;
-    return {
-      ...st,
-      metar: m,
-      windSpeedKmh: m.windSpeedKmh,
-      windSpeedKnots: m.windSpeedKnots,
-      gustSpeedKnots: m.gustSpeedKnots ?? m.windSpeedKnots,
-      windDirectionDeg: m.windDirectionDeg,
-      airTempCelsius: m.temperatureCelsius,
-      pressureHpa: m.qnhHpa,
-      humidityPercent: m.relativeHumidityPercent,
-    };
-  });
+export async function GET() {
+  const [metar, ...cpsm] = await Promise.all([
+    fetchUpstream(LIPZ_METAR_URL, parseLipzMetar, { revalidate: 300 }),
+    ...CPSM_FEEDS.map((name) => fetchUpstream(CPSM_METEO_URLS[name], parseCpsmFeed, { revalidate: 300 })),
+  ]);
+
+  const feeds = Object.fromEntries(
+    CPSM_FEEDS.flatMap((name, i) => {
+      const r = cpsm[i];
+      return r.ok ? [[name, r.data]] : [];
+    }),
+  );
+  const cpsmStations = buildWindStations(feeds);
+
+  // Stazione aeroportuale: anagrafica + METAR reale (se disponibile)
+  const lipzBase = METEO_MARINE_WIND_STATIONS.find((s) => s.id === 'WIND_LIPZ_AERONAUTICA');
+  const lipz: MeteoMarineWindItem[] =
+    lipzBase && metar.ok
+      ? [{
+          ...lipzBase,
+          metar: metar.data,
+          windDirectionDeg: metar.data.windDirectionDeg,
+          windSpeedKmh: metar.data.windSpeedKmh,
+          windSpeedKnots: metar.data.windSpeedKnots,
+          gustSpeedKnots: metar.data.gustSpeedKnots ?? metar.data.windSpeedKnots,
+          gustSpeedKmh: Math.round((metar.data.gustSpeedKnots ?? metar.data.windSpeedKnots) * 1.852 * 10) / 10,
+          waveHeightMeters: null,
+          airTempCelsius: metar.data.temperatureCelsius,
+          pressureHpa: metar.data.qnhHpa,
+          humidityPercent: metar.data.relativeHumidityPercent,
+          windTypeDescription: `METAR LIPZ: ${metar.data.rawMetar}`,
+          observedAt: metar.data.observationTime,
+        }]
+      : [];
 
   return NextResponse.json({
-    ok: metar.ok,
+    ok: metar.ok || cpsmStations.length > 0,
     success: true,
     data: {
       metar: metar.ok ? metar.data : null,
-      windStations,
+      windStations: [...lipz, ...cpsmStations],
     },
     meta: {
       metar: {
@@ -44,9 +62,12 @@ export async function GET() {
         note: metar.ok ? undefined : 'METAR temporaneamente non disponibile',
       },
       windStations: {
-        kind: 'static-reference',
-        source: 'Anagrafica stazioni meteo-marine (CNR-ISMAR, CPSM, ISPRA, ARPAV)',
-        note: 'Ad eccezione di LIPZ, i valori di vento e onda sono di riferimento e non aggiornati in tempo reale.',
+        kind: 'live',
+        source: 'Comune di Venezia – CPSM, rete meteo-marina (dati.venezia.it)',
+        sourceUrl: 'https://dati.venezia.it/?q=content/cpsm-dati-meteomarini-laguna-e-litorale-veneziano',
+        license: 'CC BY – Comune di Venezia',
+        fetchedAt: new Date().toISOString(),
+        note: `${cpsmStations.length} stazioni CPSM con coordinate pubblicate; misure aggiornate ogni 5 minuti.`,
       },
     },
   });

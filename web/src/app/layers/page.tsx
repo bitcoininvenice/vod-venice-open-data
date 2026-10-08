@@ -342,15 +342,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Piattaforma CNR & Boe Ondametriche',
     nameEn: 'CNR Ocean Platform & Wave Buoys',
     group: 'lagoon',
-    regime: 'static',
+    regime: 'realtime',
     acquisition: 'api',
     institution: 'CNR-ISMAR (Istituto di Scienze Marine)',
     portalUrl: 'https://www.ismar.cnr.it',
     portalName: 'ismar.cnr.it',
     descriptionIt: 'Piattaforma oceanografica "Acqua Alta" al largo di Venezia e boe lagunari per il monitoraggio marino profondo.',
     descriptionEn: 'Oceanographic research platform "Acqua Alta" 8 miles offshore and coastal wave sensor buoys.',
-    technicalNotesIt: 'Telemetria in tempo reale: altezza significativa d\'onda (Hs), periodo di picco, temperatura superficiale del mare (SST) e salinità.',
-    technicalNotesEn: 'Live ocean telemetry: significant wave height (Hs), peak period, sea surface temperature, and offshore wind.',
+    technicalNotesIt: 'Onde (Hs), vento e temperatura dell\'acqua della piattaforma "Acqua Alta" dai feed CPSM in tempo reale; le altre stazioni oceanografiche sono in anagrafica senza misure aperte collegate.',
+    technicalNotesEn: 'Waves (Hs), wind and water temperature at the "Acqua Alta" platform from real-time CPSM feeds; other oceanographic stations are listed without connected open measurements.',
     endpointOrFile: '/api/marine-sensors'
   },
   {
@@ -411,10 +411,10 @@ const LAYER_CATALOG: LayerDocItem[] = [
     institution: 'Aeronautica Militare (LIPZ) & Centro Maree CPSM',
     portalUrl: 'https://www.meteoam.it',
     portalName: 'meteoam.it & comune.venezia.it/maree',
-    descriptionIt: 'Stazioni anemometriche di riferimento su laguna e bocche di porto, con il METAR ufficiale dell\'aeroporto di Tessera (LIPZ).',
-    descriptionEn: 'Reference wind stations across the lagoon and port inlets, with the official METAR of Tessera airport (LIPZ).',
-    technicalNotesIt: 'Solo la stazione LIPZ è live (METAR ICAO via NOAA Aviation Weather Center, aggiornato ogni 5 minuti). Le altre stazioni riportano valori di riferimento non aggiornati in tempo reale.',
-    technicalNotesEn: 'Only the LIPZ station is live (ICAO METAR via NOAA Aviation Weather Center, refreshed every 5 minutes). Other stations show reference values, not real-time data.',
+    descriptionIt: 'Rete meteo-marina del Centro Maree (vento, raffiche, onde, temperatura, pressione) più il METAR dell\'aeroporto di Tessera.',
+    descriptionEn: 'Tide Centre meteo-marine network (wind, gusts, waves, temperature, pressure) plus the Tessera airport METAR.',
+    technicalNotesIt: 'Misure reali ogni 5 minuti dai feed CPSM su dati.venezia.it (vento, onde, temperatura aria, pressione, umidità) e METAR LIPZ da NOAA. Sono mostrate solo le stazioni con coordinate pubblicate. L\'indicatore di spinta sulla marea è una semplificazione basata su direzione e intensità del vento.',
+    technicalNotesEn: 'Real measurements every 5 minutes from CPSM feeds on dati.venezia.it (wind, waves, air temperature, pressure, humidity) and the LIPZ METAR from NOAA. Only stations with published coordinates are shown. The tide-push indicator is a simplification based on wind direction and speed.',
     endpointOrFile: '/api/weather & /api/marine-sensors'
   },
   {
@@ -487,18 +487,18 @@ const LAYER_CATALOG: LayerDocItem[] = [
   // ==========================================
   {
     id: 'cantieri',
-    nameIt: 'Cantieri Comunali & Lavori Pubblici',
-    nameEn: 'Municipal Worksites & Public Works',
+    nameIt: 'Opere pubbliche 2026',
+    nameEn: 'Public works 2026',
     group: 'city',
     regime: 'static',
     acquisition: 'api',
     institution: 'Comune di Venezia - Direzione Lavori Pubblici',
-    portalUrl: 'https://dati.venezia.it',
+    portalUrl: 'https://dati.venezia.it/?q=area-tematica/opere-pubbliche',
     portalName: 'dati.venezia.it',
-    descriptionIt: 'Opere pubbliche attive, ripristino rive, manutenzione manti stradali e ponti nel territorio comunale.',
-    descriptionEn: 'Active public works, quay wall restorations, paving maintenance, and bridge renovations.',
-    technicalNotesIt: 'Elenco statico incluso nel codice, non sincronizzato con il portale del Comune: da sostituire con l\'importazione del dataset ufficiale dei cantieri.',
-    technicalNotesEn: 'Static list bundled in the code, not synchronized with the City portal: to be replaced by importing the official worksites dataset.',
+    descriptionIt: 'Elenco Annuale dei Lavori 2026 del Comune di Venezia: 133 opere con importo, stato del progetto, RUP e CUP.',
+    descriptionEn: 'City of Venice Annual Works List 2026: 133 works with amount, project stage, project manager and CUP code.',
+    technicalNotesIt: 'Dataset CSV di dati.venezia.it (CC BY) importato con pipeline/import_opere_pubbliche.py. Il file non contiene coordinate: le opere che nominano un luogo sono geocodificate con OpenStreetMap Nominatim (posizione approssimata), le altre restano solo in elenco.',
+    technicalNotesEn: 'CSV dataset from dati.venezia.it (CC BY) imported with pipeline/import_opere_pubbliche.py. The file has no coordinates: works naming a place are geocoded with OpenStreetMap Nominatim (approximate position), the others are listed only.',
     endpointOrFile: '/api/cantieri'
   },
   {
@@ -561,8 +561,8 @@ const LAYER_CATALOG: LayerDocItem[] = [
     portalName: 'comune.venezia.it / venis.it',
     descriptionIt: 'Punti di accesso alla rete pubblica Wi-Fi metropolitana in fibra ottica e stazioni di ricarica per veicoli elettrici.',
     descriptionEn: 'Public fiber-optic metropolitan Wi-Fi hotspots and municipal electric vehicle charging hubs.',
-    technicalNotesIt: 'Infrastruttura tecnologica gestita da Venis S.p.A. per la connettività di cittadini e turisti.',
-    technicalNotesEn: 'Technological network infrastructure managed by municipal telecommunications in-house company.',
+    technicalNotesIt: 'Hotspot WiFi: 283 punti del dataset ufficiale del Comune (dati.venezia.it, CC BY) con stato attivo/non attivo. Colonnine EV: anagrafica statica, disponibilità in tempo reale non pubblicata dai gestori.',
+    technicalNotesEn: 'WiFi hotspots: 283 points from the official City dataset (dati.venezia.it, CC BY) with active/inactive status. EV chargers: static list, real-time availability not published by operators.',
     endpointOrFile: 'urbanAssetsVeniceData.ts'
   },
   {
@@ -577,8 +577,8 @@ const LAYER_CATALOG: LayerDocItem[] = [
     portalName: 'arpa.veneto.it',
     descriptionIt: '6 stazioni fisse di campionamento atmosferico (Rio Novo, Sacca Fisola, Parco Bissuola, Via Beccaria, Malcontenta, Parco San Giuliano) con calcolo dell\'AQI.',
     descriptionEn: '6 fixed air quality sampling stations (Rio Novo, Sacca Fisola, Bissuola, Beccaria, Malcontenta, San Giuliano) measuring AQI in real time.',
-    technicalNotesIt: 'Telemetria oraria ufficiale con concentrazioni di PM10, PM2.5, Biossido di Azoto (NO2) e Ozono (O3) tra centro insulare e terraferma.',
-    technicalNotesEn: 'Official hourly sensor telemetry reporting PM10, PM2.5, Nitrogen Dioxide (NO2), and Ozone (O3) across island and mainland.',
+    technicalNotesIt: 'Medie annue validate ARPAV (PM10, PM2.5, NO2 e superamenti giornalieri PM10) dell\'anno più recente, licenza CC BY 4.0, importate con pipeline/import_arpav_air.py. Classificazione rispetto ai limiti UE vigenti e 2030. ARPAV non pubblica un\'API aperta con i dati orari.',
+    technicalNotesEn: 'ARPAV validated annual means (PM10, PM2.5, NO2 and PM10 daily exceedances) for the latest year, CC BY 4.0, imported with pipeline/import_arpav_air.py. Classified against current and 2030 EU limits. ARPAV does not publish an open hourly API.',
     endpointOrFile: '/api/environment'
   },
   {
