@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useCallback, useMemo } from 'react';
+import { usePreference, writePreference } from '@/lib/localPreference';
 import { Language, Translations } from './types';
 import { itTranslations } from './it';
 import { enTranslations } from './en';
@@ -26,37 +27,28 @@ const LanguageContext = createContext<LanguageContextType>({
   t: (path: string) => path
 });
 
+const LANGUAGE_KEY = 'vod_language';
+
+/** Lingua salvata dall'utente, altrimenti quella del browser (italiano come predefinito). */
+function initialLanguage(stored: string | null): Language {
+  if (stored === 'it' || stored === 'en') return stored;
+  if (typeof navigator !== 'undefined' && navigator.language && !navigator.language.toLowerCase().startsWith('it')) {
+    return 'en';
+  }
+  return 'it';
+}
+
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>('it');
+  // Lato server non c'è preferenza: si rende in italiano e il client si allinea dopo l'idratazione
+  const stored = usePreference(LANGUAGE_KEY, 'it');
+  const language = initialLanguage(stored);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('vod_language');
-      if (saved === 'it' || saved === 'en') {
-        setLanguageState(saved);
-        document.documentElement.lang = saved;
-      } else if (typeof navigator !== 'undefined') {
-        const browserLang = navigator.language?.toLowerCase();
-        if (browserLang && !browserLang.startsWith('it')) {
-          setLanguageState('en');
-          document.documentElement.lang = 'en';
-        } else {
-          document.documentElement.lang = 'it';
-        }
-      }
-    } catch {
-      // Storage access blocked or SSR
-    }
-  }, []);
+    document.documentElement.lang = language;
+  }, [language]);
 
   const setLanguage = useCallback((lang: Language) => {
-    setLanguageState(lang);
-    try {
-      localStorage.setItem('vod_language', lang);
-      document.documentElement.lang = lang;
-    } catch {
-      // Storage access blocked
-    }
+    writePreference(LANGUAGE_KEY, lang);
   }, []);
 
   const toggleLanguage = useCallback(() => {
@@ -67,38 +59,25 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const t = useCallback((path: string, params?: Record<string, string | number>): string => {
     const keys = path.split('.');
-    let current: any = dict;
-
-    for (const key of keys) {
-      if (current && typeof current === 'object' && key in current) {
-        current = current[key];
-      } else {
-        // Fallback to Italian
-        let fallback: any = itTranslations;
-        for (const fbKey of keys) {
-          if (fallback && typeof fallback === 'object' && fbKey in fallback) {
-            fallback = fallback[fbKey];
-          } else {
-            fallback = path;
-            break;
-          }
+    const resolve = (root: unknown): string | undefined => {
+      let current: unknown = root;
+      for (const key of keys) {
+        if (current && typeof current === 'object' && key in current) {
+          current = (current as Record<string, unknown>)[key];
+        } else {
+          return undefined;
         }
-        current = fallback;
-        break;
       }
-    }
+      return typeof current === 'string' ? current : undefined;
+    };
 
-    if (typeof current !== 'string') {
-      return path;
-    }
-
-    let result = current;
+    // Chiave mancante nella lingua corrente: si usa l'italiano, poi il percorso stesso
+    let result = resolve(dict) ?? resolve(itTranslations) ?? path;
     if (params) {
       for (const [pKey, pVal] of Object.entries(params)) {
         result = result.replace(new RegExp(`{${pKey}}`, 'g'), String(pVal));
       }
     }
-
     return result;
   }, [dict]);
 

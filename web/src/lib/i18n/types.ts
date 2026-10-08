@@ -92,6 +92,7 @@ export interface Translations {
     catHealth: string;
     catHeritage: string;
     layerVaporetti: string;
+    layerRealtimeVehicles: string;
     layerStops: string;
     layerRoutes: string;
     layerAlilaguna: string;

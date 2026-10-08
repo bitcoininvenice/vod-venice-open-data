@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { X, Navigation, Plane, Anchor, Waves, Ship, Droplets, Car, Wind, Footprints, Satellite, Plus, Minus, Maximize2 } from 'lucide-react';
+import { X, Plane, Ship, Satellite, Plus, Minus, Maximize2 } from 'lucide-react';
 import {
   CameraViewPreset,
   TransportModeCategory,
@@ -51,10 +51,13 @@ import {
   VeniceCameraItem
 } from '@/lib/types';
 import { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
-import { D, LAND, CFG } from '@/lib/simulation-data';
+import { D, LAND } from '@/lib/simulation-data';
 import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { useTranslation } from '@/lib/i18n';
+import { simClock } from '@/lib/simClock';
+import { distAt, getSimulation, pointAt } from '@/lib/simulationModel';
+import type { RealtimeVehicleDto } from '@/lib/contracts/realtime';
 
 const MARITIME_CHANNELS = [
   {
@@ -241,7 +244,6 @@ function getLiveSatellite(
 }
 
 interface MapEngineProps {
-  currentTimeSeconds: number;
   selectedDay: 'weekday' | 'saturday' | 'sunday';
   paletteTheme: PaletteTheme;
   currentView: CameraViewPreset;
@@ -274,6 +276,8 @@ interface MapEngineProps {
   onSelectAlilaguna?: () => void;
   showCameras?: boolean;
   cameras?: VeniceCameraItem[];
+  showRealtimeVehicles?: boolean;
+  realtimeVehicles?: RealtimeVehicleDto[];
   onSelectCamera?: (camera: VeniceCameraItem) => void;
   showSatellites?: boolean;
   satellites?: SatelliteItem[];
@@ -353,7 +357,6 @@ interface MapEngineProps {
 }
 
 export const MapEngine: React.FC<MapEngineProps> = ({
-  currentTimeSeconds,
   selectedDay,
   paletteTheme,
   currentView,
@@ -386,6 +389,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   onSelectAlilaguna,
   showCameras = true,
   cameras = [],
+  showRealtimeVehicles = false,
+  realtimeVehicles = [],
   onSelectCamera,
   showSatellites = true,
   satellites = [],
@@ -474,17 +479,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
   const mx = useCallback((lon: number) => (lon - LON0) * KX, [LON0, KX]);
   const my = useCallback((lat: number) => (LAT1 - lat) * KY, [LAT1, KY]);
-  const invLon = useCallback((x: number) => LON0 + x / KX, [LON0, KX]);
-  const invLat = useCallback((y: number) => LAT1 - y / KY, [LAT1, KY]);
 
   // View Camera State (x0, y0, scale)
   const [camera, setCamera] = useState({ x0: 0, y0: 0, s: 0.02 });
-  const [targetCamera, setTargetCamera] = useState({ x0: 0, y0: 0, s: 0.02 });
+  const [containerWidth, setContainerWidth] = useState(320);
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0, camX: 0, camY: 0 });
 
   // Hover & Selection state
-  const [hoveredVehicle, setHoveredVehicle] = useState<{ line: string; label: string; x: number; y: number } | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<{
     line: string;
     category: string;
@@ -493,77 +495,15 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     screenY: number;
     color: string;
     headsign: string;
+    /** 'gps' = posizione reale GTFS-RT, 'schedule' = simulazione da orario */
+    source: 'gps' | 'schedule';
+    updatedAt?: number | null;
   } | null>(null);
   const [selectedFlight, setSelectedFlight] = useState<FlightItem | null>(null);
   const [selectedShipOnMap, setSelectedShipOnMap] = useState<ShipItem | null>(null);
   const [selectedAlilagunaBoat, setSelectedAlilagunaBoat] = useState<AlilagunaBoat | null>(null);
   const [selectedSatellite, setSelectedSatellite] = useState<SatelliteItem | null>(null);
 
-  // Active Fleet preallocated buffers
-  const simDataRef = useRef<any>(null);
-
-  // Initialize simulation shapes, routes, profiles, and trips
-  useEffect(() => {
-    const CATS = CFG.cats;
-    const catMap = new Map(CATS.map((c: any, i: number) => [c.k, i]));
-
-    const catOf = (r: any) => {
-      let d = 0;
-      for (let i = 0; i < CATS.length; i++) {
-        const c: any = CATS[i];
-        if (c.base !== r.c) continue;
-        if (c.lines && c.lines.includes(r.n)) return i;
-        d = i;
-      }
-      return d;
-    };
-
-    const shapes = D.shapes.map((a: number[]) => {
-      const n = a.length / 2;
-      const xy = new Float32Array(a);
-      const cum = new Float32Array(n);
-      for (let i = 1; i < n; i++) {
-        cum[i] = cum[i - 1] + Math.hypot(xy[2 * i] - xy[2 * i - 2], xy[2 * i + 1] - xy[2 * i - 1]);
-      }
-      return { xy, cum, n };
-    });
-
-    const routes = D.routes.map((r: any) => ({ ...r, ci: catOf(r) }));
-
-    const profs = D.profiles.map((p: any) => ({
-      sh: shapes[p[0]],
-      route: routes[p[1]],
-      T: Int32Array.from(p[2]),
-      Dd: Int32Array.from(p[3])
-    }));
-
-    // Precalculate trip departure and duration
-    const daysTrips: Record<string, { tP: Int32Array; t0: Int32Array; t1: Int32Array; count: number }> = {};
-    for (const dKey of ['weekday', 'saturday', 'sunday']) {
-      const rawTrips = (D.days as any)[dKey]?.trips || [];
-      const count = rawTrips.length;
-      const tP = new Int32Array(count);
-      const t0 = new Int32Array(count);
-      const t1 = new Int32Array(count);
-
-      rawTrips.forEach((t: number[], i: number) => {
-        const p = profs[t[0]];
-        tP[i] = t[0];
-        t0[i] = t[1];
-        t1[i] = t[1] + p.T[p.T.length - 1];
-      });
-
-      daysTrips[dKey] = { tP, t0, t1, count };
-    }
-
-    simDataRef.current = {
-      shapes,
-      routes,
-      profs,
-      daysTrips,
-      CATS
-    };
-  }, []);
 
   // Update camera based on presets with exact mathematical centering
   const updateCameraToPreset = useCallback((preset: CameraViewPreset, containerWidth: number, containerHeight: number) => {
@@ -625,7 +565,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       };
     }
 
-    setTargetCamera(target);
     setCamera(target);
   }, [mx, my, isDesktopLayerPanelOpen]);
 
@@ -640,7 +579,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         x0: mx(focusedCoordinates.lon) - w / (2 * s),
         y0: my(focusedCoordinates.lat) - h / (2 * s)
       };
-      setTargetCamera(newCam);
       setCamera(newCam);
     }
   }, [focusedCoordinates, mx, my]);
@@ -655,6 +593,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
       canvasRef.current.width = w * dpr;
       canvasRef.current.height = h * dpr;
+      setContainerWidth(w);
 
       updateCameraToPreset(currentView, w, h);
     };
@@ -806,7 +745,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         startScale: camera.s,
         camX: camera.x0,
         camY: camera.y0,
-        startTime: Date.now()
+        startTime: e.timeStamp
       };
     } else if (e.touches.length === 2) {
       const t1 = e.touches[0];
@@ -827,7 +766,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         startScale: camera.s,
         camX: camera.x0,
         camY: camera.y0,
-        startTime: Date.now()
+        startTime: e.timeStamp
       };
     }
   };
@@ -872,7 +811,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     const st = touchStartRef.current;
-    if (st.mode === 'pan' && Date.now() - st.startTime < 320) {
+    if (st.mode === 'pan' && e.timeStamp - st.startTime < 320) {
       if (e.changedTouches.length === 1 && containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
         const t = e.changedTouches[0];
@@ -887,7 +826,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   };
 
   // Unified Point Click handler (used by both Mouse Click and Touch Tap)
+  // Palette attiva (fissa o dinamica secondo l'ora simulata)
+  const paletteAt = (t: number): ColorScheme =>
+    paletteTheme === 'notte' ? NOTTE : paletteTheme === 'carta' ? CARTA : getDynamicPalette(t);
+
   const handlePointClick = (clickX: number, clickY: number) => {
+    const currentTimeSeconds = simClock.get();
     // 0. Hit test Aeroporto di Venezia Marco Polo (VCE / LIPZ)
     const vceX = (mx(12.3519) - camera.x0) * camera.s;
     const vceY = (my(45.5053) - camera.y0) * camera.s;
@@ -1668,45 +1612,19 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     }
 
     // 4. Hit test Moving Vehicles (ACTV)
-    if (showVehicles && simDataRef.current) {
-      const sim = simDataRef.current;
+    if (showVehicles) {
+      const sim = getSimulation();
       const tripsData = sim.daysTrips[selectedDay];
       if (tripsData) {
         const { tP, t0, t1, count } = tripsData;
         const t = currentTimeSeconds;
         const ptNow: [number, number] = [0, 0];
 
-        const distAt = (p: any, dt: number) => {
-          const T = p.T, Dd = p.Dd, hi = T.length - 1;
-          if (dt >= T[hi]) return Dd[hi];
-          if (dt <= 0) return Dd[0];
-          let l = 0, r = hi;
-          while (r - l > 1) {
-            const m = (l + r) >> 1;
-            if (T[m] <= dt) l = m; else r = m;
-          }
-          const span = T[r] - T[l];
-          return span > 0 ? Dd[l] + ((Dd[r] - Dd[l]) * (dt - T[l])) / span : Dd[r];
-        };
-
-        const pointAt = (sh: any, d: number, out: [number, number]) => {
-          const cum = sh.cum, xy = sh.xy, hi = sh.n - 1;
-          if (d <= 0) { out[0] = xy[0]; out[1] = xy[1]; return; }
-          if (d >= cum[hi]) { out[0] = xy[2 * hi]; out[1] = xy[2 * hi + 1]; return; }
-          let l = 0, r = hi;
-          while (r - l > 1) {
-            const m = (l + r) >> 1;
-            if (cum[m] <= d) l = m; else r = m;
-          }
-          const f = (d - cum[l]) / (cum[r] - cum[l] || 1);
-          out[0] = xy[2 * l] + (xy[2 * r] - xy[2 * l]) * f;
-          out[1] = xy[2 * l + 1] + (xy[2 * r + 1] - xy[2 * l + 1]) * f;
-        };
 
         for (let i = 0; i < count; i++) {
           if (t0[i] > t || t1[i] < t) continue;
           const prof = sim.profs[tP[i]];
-          const rCat = prof.route.mode_category || 'vaporetto';
+          const rCat: string = prof.route.cat || 'vaporetto';
           if (selectedCategory !== 'all' && rCat !== selectedCategory) continue;
 
           pointAt(prof.sh, distAt(prof, t - t0[i]), ptNow);
@@ -1714,21 +1632,51 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           const vy = (ptNow[1] - camera.y0) * camera.s;
 
           if (Math.hypot(clickX - vx, clickY - vy) <= 18) {
-            const lineName = prof.route.route_short_name || prof.route.n || 'ACTV';
-            const longName = prof.route.route_long_name || `Linea ${lineName}`;
+            // Velocità media secondo l'orario negli ultimi 30 s (1 unità di griglia ≈ 1 m)
+            const dtNow = t - t0[i];
+            const spanSec = Math.min(30, Math.max(1, dtNow));
+            const speedKmh = Math.round(((distAt(prof, dtNow) - distAt(prof, dtNow - spanSec)) / spanSec) * 3.6 * 10) / 10;
+            const lineName = prof.route.n || 'ACTV';
+            const longName = `Linea ${lineName} · ${language === 'it' ? 'orario ufficiale ACTV' : 'official ACTV timetable'}`;
             setSelectedVehicle({
               line: lineName,
               category: rCat.toUpperCase(),
-              speedKmh: rCat === 'vaporetto' ? 12.8 : rCat === 'motoscafo' ? 17.5 : rCat === 'tram' ? 32.0 : 38.0,
+              speedKmh,
               screenX: clickX,
               screenY: clickY,
-              color: prof.route.route_color || '#5cc8ff',
-              headsign: longName
+              color: paletteAt(currentTimeSeconds).cats[rCat] || '#5cc8ff',
+              headsign: longName,
+              source: 'schedule'
             });
             setSelectedFlight(null);
             setSelectedShipOnMap(null);
             return;
           }
+        }
+      }
+    }
+
+    // 5. Hit test posizioni reali GTFS-RT
+    if (showRealtimeVehicles && realtimeVehicles.length > 0) {
+      for (const v of realtimeVehicles) {
+        const vx = (mx(v.lon) - camera.x0) * camera.s;
+        const vy = (my(v.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - vx, clickY - vy) <= 14) {
+          const cat = v.category || 'vaporetto';
+          setSelectedVehicle({
+            line: v.line || '?',
+            category: `${cat.toUpperCase()} · GPS`,
+            speedKmh: 0,
+            screenX: clickX,
+            screenY: clickY,
+            color: paletteAt(currentTimeSeconds).cats[cat] || '#34d399',
+            headsign: v.line ? `Linea ${v.line} · ${v.network === 'navigazione' ? 'navigazione' : 'automobilistico'}` : `Mezzo ${v.label || v.id} · linea non riconosciuta`,
+            source: 'gps',
+            updatedAt: v.timestamp
+          });
+          setSelectedFlight(null);
+          setSelectedShipOnMap(null);
+          return;
         }
       }
     }
@@ -1756,6 +1704,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     if (!ctx) return;
 
     const render = () => {
+      // Tempo letto dall'orologio di simulazione a ogni frame (non dallo stato React)
+      const currentTimeSeconds = simClock.get();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const cw = canvas.width / dpr;
       const ch = canvas.height / dpr;
@@ -1802,11 +1752,11 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
 
       // 3. Render ACTV Routes (Shapes)
-      if (showRoutes && simDataRef.current) {
+      if (showRoutes) {
         ctx.lineWidth = Math.max(1, 1.2 * (camera.s / (cw / W)));
         ctx.globalAlpha = 0.35;
 
-        for (const shape of simDataRef.current.shapes) {
+        for (const shape of getSimulation().shapes) {
           const xy = shape.xy;
           ctx.beginPath();
           ctx.moveTo(sx(xy[0]), sy(xy[1]));
@@ -1842,8 +1792,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
 
       // 5. Render Moving Fleet (Vehicles with directional trails)
-      if (showVehicles && simDataRef.current) {
-        const sim = simDataRef.current;
+      if (showVehicles) {
+        const sim = getSimulation();
         const tripsData = sim.daysTrips[selectedDay];
 
         if (tripsData) {
@@ -1851,40 +1801,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           const t = currentTimeSeconds;
           const trailSec = 45; // Ghosting trail duration
 
-          // Helper: distance along profile
-          const distAt = (p: any, dt: number) => {
-            const T = p.T;
-            const Dd = p.Dd;
-            const hi = T.length - 1;
-            if (dt >= T[hi]) return Dd[hi];
-            if (dt <= 0) return Dd[0];
-            let l = 0, r = hi;
-            while (r - l > 1) {
-              const m = (l + r) >> 1;
-              if (T[m] <= dt) l = m;
-              else r = m;
-            }
-            const span = T[r] - T[l];
-            return span > 0 ? Dd[l] + ((Dd[r] - Dd[l]) * (dt - T[l])) / span : Dd[r];
-          };
-
-          // Helper: point on polyline
-          const pointAt = (sh: any, d: number, out: [number, number]) => {
-            const cum = sh.cum;
-            const xy = sh.xy;
-            const hi = sh.n - 1;
-            if (d <= 0) { out[0] = xy[0]; out[1] = xy[1]; return; }
-            if (d >= cum[hi]) { out[0] = xy[2 * hi]; out[1] = xy[2 * hi + 1]; return; }
-            let l = 0, r = hi;
-            while (r - l > 1) {
-              const m = (l + r) >> 1;
-              if (cum[m] <= d) l = m;
-              else r = m;
-            }
-            const f = (d - cum[l]) / (cum[r] - cum[l] || 1);
-            out[0] = xy[2 * l] + (xy[2 * r] - xy[2 * l]) * f;
-            out[1] = xy[2 * l + 1] + (xy[2 * r + 1] - xy[2 * l + 1]) * f;
-          };
 
           const ptNow: [number, number] = [0, 0];
           const ptTail: [number, number] = [0, 0];
@@ -1894,7 +1810,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           for (let i = 0; i < count; i++) {
             if (t0[i] > t || t1[i] < t) continue;
             const prof = sim.profs[tP[i]];
-            const rCat = prof.route.mode_category || 'vaporetto';
+            const rCat: string = prof.route.cat || 'vaporetto';
 
             if (selectedCategory !== 'all' && rCat !== selectedCategory) continue;
 
@@ -1927,6 +1843,32 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           ctx.globalCompositeOperation = 'source-over';
           ctx.globalAlpha = 1.0;
+        }
+      }
+
+      // 5b. Posizioni reali GTFS-RT: rombo con bordo bianco, distinguibile dai mezzi simulati (cerchi)
+      if (showRealtimeVehicles && realtimeVehicles.length > 0) {
+        for (const v of realtimeVehicles) {
+          const cat = v.category || 'vaporetto';
+          if (selectedCategory !== 'all' && cat !== selectedCategory) continue;
+          const vx = sx(mx(v.lon));
+          const vy = sy(my(v.lat));
+          if (vx < -20 || vx > cw + 20 || vy < -20 || vy > ch + 20) continue;
+          const col = pal.cats[cat] || '#34d399';
+          ctx.save();
+          ctx.translate(vx, vy);
+          ctx.rotate(Math.PI / 4);
+          ctx.fillStyle = col;
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+          ctx.lineWidth = 1.5;
+          ctx.fillRect(-4.5, -4.5, 9, 9);
+          ctx.strokeRect(-4.5, -4.5, 9, 9);
+          ctx.restore();
+          if (camera.s > 0.03 && v.line) {
+            ctx.font = '700 9px "DM Mono", monospace';
+            ctx.fillStyle = isDark ? '#ffffff' : '#0f172a';
+            ctx.fillText(v.line, vx + 8, vy + 3);
+          }
         }
       }
 
@@ -4401,7 +4343,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     return () => cancelAnimationFrame(animId);
   }, [
     camera,
-    currentTimeSeconds,
+    KY,
     selectedDay,
     paletteTheme,
     showRoutes,
@@ -4434,6 +4376,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     alilagunaBoats,
     selectedAlilagunaBoat,
     showCameras,
+    showRealtimeVehicles,
+    realtimeVehicles,
     cameras,
     showSatellites,
     satellites,
@@ -4568,7 +4512,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             left:
               typeof window !== 'undefined' && window.innerWidth < 640
                 ? 16
-                : Math.max(16, Math.min((containerRef.current?.clientWidth || 320) - 340, selectedVehicle.screenX - 160)),
+                : Math.max(16, Math.min(containerWidth - 340, selectedVehicle.screenX - 160)),
             top:
               typeof window !== 'undefined' && window.innerWidth < 640
                 ? 64
@@ -4604,16 +4548,29 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             <span className="font-medium text-[var(--ink)] leading-snug">{selectedVehicle.headsign}</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[var(--rule)] text-xs">
-            <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.estimatedSpeed')}</span>
-              <span className="font-mono font-bold text-emerald-400">{selectedVehicle.speedKmh} km/h</span>
+          {selectedVehicle.source === 'gps' ? (
+            <div className="pt-1 border-t border-[var(--rule)] text-xs flex flex-col gap-1">
+              <span className="font-mono font-bold text-emerald-400">
+                {language === 'it' ? 'Posizione GPS reale (GTFS-RT ACTV)' : 'Real GPS position (ACTV GTFS-RT)'}
+              </span>
+              <span className="text-[11px] text-[var(--ink-3)] font-mono">
+                {selectedVehicle.updatedAt
+                  ? `${language === 'it' ? 'Aggiornata alle' : 'Updated at'} ${new Date(selectedVehicle.updatedAt * 1000).toLocaleTimeString('it-IT', { timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
+                  : (language === 'it' ? 'Orario della posizione non indicato' : 'Position time not reported')}
+              </span>
             </div>
-            <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.vehicleStatus')}</span>
-              <span className="font-mono font-bold text-cyan-400">{t('map.underway')}</span>
+          ) : (
+            <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[var(--rule)] text-xs">
+              <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
+                <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.estimatedSpeed')}</span>
+                <span className="font-mono font-bold text-emerald-400">{selectedVehicle.speedKmh} km/h</span>
+              </div>
+              <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
+                <span className="text-[10px] text-[var(--ink-3)] block font-mono">{language === 'it' ? 'Fonte' : 'Source'}</span>
+                <span className="font-mono font-bold text-sky-400">{language === 'it' ? 'Simulato da orario' : 'Timetable simulation'}</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 

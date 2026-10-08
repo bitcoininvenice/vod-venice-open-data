@@ -29,7 +29,6 @@ import {
   Zap,
   LifeBuoy,
   ShieldAlert,
-  Sparkles,
   Gauge,
   Train,
   Trash2,
@@ -42,7 +41,8 @@ import {
   Bike,
   Flower2,
   GitBranch,
-  Camera
+  Camera,
+  Radio,
 } from 'lucide-react';
 import { TransportModeCategory } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
@@ -58,6 +58,9 @@ interface LayerPanelProps {
   stopsCount?: number;
   showVehicles: boolean;
   onToggleVehicles: () => void;
+  showRealtimeVehicles?: boolean;
+  onToggleRealtimeVehicles?: () => void;
+  realtimeVehiclesCount?: number;
   showCantieri: boolean;
   onToggleCantieri: () => void;
   cantieriCount?: number;
@@ -203,6 +206,9 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   stopsCount = 0,
   showVehicles,
   onToggleVehicles,
+  showRealtimeVehicles = false,
+  onToggleRealtimeVehicles,
+  realtimeVehiclesCount = 0,
   showCantieri,
   onToggleCantieri,
   cantieriCount = 0,
@@ -535,7 +541,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           </span>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-mono text-[var(--ink-3)] lowercase">
-              {[showVehicles, showRoutes, showStops, showShips, showShipRoutes, showAlilaguna, showFlights, showParkings, showCanalLimits, showBridges, showGondolas, showDocks, showTrains, showWasteBoats, showBikeRoutes].filter(Boolean).length}/15
+              {[showVehicles, showRealtimeVehicles, showRoutes, showStops, showShips, showShipRoutes, showAlilaguna, showFlights, showParkings, showCanalLimits, showBridges, showGondolas, showDocks, showTrains, showWasteBoats, showBikeRoutes].filter(Boolean).length}/16
             </span>
             {sectionOpen.mobility ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </div>
@@ -558,6 +564,32 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </div>
               {showVehicles ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </button>
+
+            {/* 1b. Posizioni reali GTFS-RT */}
+            {onToggleRealtimeVehicles && (
+              <button
+                type="button"
+                onClick={onToggleRealtimeVehicles}
+                aria-pressed={showRealtimeVehicles}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showRealtimeVehicles
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Radio className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{t('layers.layerRealtimeVehicles')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {showRealtimeVehicles && realtimeVehiclesCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                      {realtimeVehiclesCount}
+                    </span>
+                  )}
+                  {showRealtimeVehicles ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
 
             {/* 2. Routes (Shapes) */}
             <button

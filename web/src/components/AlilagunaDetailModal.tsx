@@ -17,7 +17,6 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
   isOpen,
   onClose,
   routes,
-  stops,
   boats
 }) => {
   const { language, t } = useTranslation();

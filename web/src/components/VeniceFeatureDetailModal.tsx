@@ -103,7 +103,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
   onClose,
   currentTideLevelCm
 }) => {
-  const { language, t } = useTranslation();
+  const { language } = useTranslation();
   if (!feature) return null;
 
   return (

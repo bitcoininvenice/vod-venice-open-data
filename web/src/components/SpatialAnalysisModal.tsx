@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, ShieldAlert, SlidersHorizontal, MapPin, Anchor, Construction, ArrowRight, Download } from 'lucide-react';
+import { X, ShieldAlert, SlidersHorizontal, Anchor, Construction, ArrowRight } from 'lucide-react';
 import { StopNearCantiere } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 
@@ -18,21 +18,28 @@ export const SpatialAnalysisModal: React.FC<SpatialAnalysisModalProps> = ({
 }) => {
   const { language, t } = useTranslation();
   const [radius, setRadius] = useState<number>(200);
-  const [loading, setLoading] = useState<boolean>(false);
   const [results, setResults] = useState<StopNearCantiere[]>([]);
+  // Raggio dell'ultima risposta ricevuta: il caricamento è in corso finché non coincide con quello scelto
+  const [loadedRadius, setLoadedRadius] = useState<number | null>(null);
+  const loading = isOpen && loadedRadius !== radius;
 
   useEffect(() => {
     if (!isOpen) return;
-    setLoading(true);
+    let cancelled = false;
     fetch(`/api/spatial/stops-near-cantieri?radius=${radius}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
-          setResults(data.data);
-        }
+        if (cancelled) return;
+        setResults(data.success ? data.data : []);
+        setLoadedRadius(radius);
       })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        console.error(err);
+        if (!cancelled) setLoadedRadius(radius);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen, radius]);
 
   if (!isOpen) return null;

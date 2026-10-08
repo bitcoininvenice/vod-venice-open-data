@@ -42,11 +42,6 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
   if (!isOpen) return null;
 
   const handleFinish = (preset: MapPresetType = selectedPreset) => {
-    try {
-      localStorage.setItem('vod_onboarding_completed', 'true');
-    } catch {
-      // localStorage may fail in private mode
-    }
     onSelectPreset(preset);
     onClose();
   };

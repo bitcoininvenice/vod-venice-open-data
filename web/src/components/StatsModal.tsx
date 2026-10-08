@@ -39,7 +39,7 @@ interface StatsModalProps {
 type MetricCategory = 'all' | 'maree_aria' | 'laguna_scienza' | 'marittimo' | 'trasporti' | 'aeroporto' | 'satelliti' | 'pedoni_citta';
 
 export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
-  const { language, t } = useTranslation();
+  const { language } = useTranslation();
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null);
   const [activeTab, setActiveTab] = useState<MetricCategory>('all');
   const panelRef = useDialogA11y(isOpen, onClose);

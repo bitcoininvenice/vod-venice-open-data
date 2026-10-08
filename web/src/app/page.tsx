@@ -100,15 +100,26 @@ import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { useTranslation } from '@/lib/i18n';
 import { romeDayType, romeSecondsOfDay } from '@/lib/time';
 import { activeTripsAt, dayActivity } from '@/lib/gtfsActivity';
+import { simClock } from '@/lib/simClock';
+import { usePreference, writePreference } from '@/lib/localPreference';
+
+const ONBOARDING_KEY = 'vod_onboarding_completed';
 import type { TideResponse, TideStation, TideForecast, TideTrend, TideCategory } from '@/lib/contracts/tide';
+import type { RealtimeVehicleDto } from '@/lib/contracts/realtime';
 
 export default function HomePage() {
   const { t } = useTranslation();
   // Timeline and simulation state - DEFAULT TO "ORA LIVE" (Current wall-clock time in Venice, 1:1 speed)
-  const [currentTimeSeconds, setCurrentTimeSeconds] = useState<number>(() => Math.floor(romeSecondsOfDay()));
+  // Valori iniziali deterministici (identici tra prerender e client): l'ora reale viene impostata dal
+  // ticker al primo frame. Evita il mismatch di idratazione dovuto all'ora della build.
+  const [currentTimeSeconds, setCurrentTimeSecondsState] = useState<number>(0);
+  const setCurrentTimeSeconds = (value: number) => {
+    simClock.set(value);
+    setCurrentTimeSecondsState(simClock.get());
+  };
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [speed, setSpeed] = useState<number>(1); // Default 1x Reale for live mode
-  const [selectedDay, setSelectedDay] = useState<DayType>(() => romeDayType());
+  const [selectedDay, setSelectedDay] = useState<DayType>('weekday');
   const [isLiveSynced, setIsLiveSynced] = useState<boolean>(true); // Default ORA LIVE active on initial load
   const [isLayerPanelOpenMobile, setIsLayerPanelOpenMobile] = useState<boolean>(false);
   const [isDesktopLayerPanelOpen, setIsDesktopLayerPanelOpen] = useState<boolean>(true);
@@ -147,6 +158,8 @@ export default function HomePage() {
   const [showTrees, setShowTrees] = useState<boolean>(false);
   const [showServicesVenice, setShowServicesVenice] = useState<boolean>(false);
   const [showCameras, setShowCameras] = useState<boolean>(false);
+  const [showRealtimeVehicles, setShowRealtimeVehicles] = useState<boolean>(false);
+  const [realtimeVehicles, setRealtimeVehicles] = useState<RealtimeVehicleDto[]>([]);
 
   // 1. Viabilità Acquea & Canali
   const [showCanalLimits, setShowCanalLimits] = useState<boolean>(false);
@@ -261,22 +274,39 @@ export default function HomePage() {
   const [isTutorialOpen, setIsTutorialOpen] = useState<boolean>(false);
   const [focusedCoordinates, setFocusedCoordinates] = useState<{ lat: number; lon: number } | null>(null);
 
-  // Check onboarding tutorial completion on first load
+  // Tutorial mostrato alla prima visita: lato server si assume già visto per evitare un flash
+  const onboardingDone = usePreference(ONBOARDING_KEY, 'true') !== null;
+  const showTutorial = isTutorialOpen || !onboardingDone;
+  const closeTutorial = () => {
+    writePreference(ONBOARDING_KEY, 'true');
+    setIsTutorialOpen(false);
+  };
+
+  // Posizioni reali ACTV (GTFS-RT): lette solo quando il layer è attivo, ogni 20 s (cache server condivisa)
   useEffect(() => {
-    try {
-      const completed = localStorage.getItem('vod_onboarding_completed');
-      if (!completed) {
-        setIsTutorialOpen(true);
-      }
-    } catch {
-      // In private browsing or non-window contexts
-    }
-  }, []);
+    if (!showRealtimeVehicles) return;
+    let cancelled = false;
+    const load = () => {
+      fetch('/api/realtime/vehicles')
+        .then((res) => res.json())
+        .then((json) => {
+          if (!cancelled && Array.isArray(json.data)) setRealtimeVehicles(json.data);
+        })
+        .catch((err) => console.warn('GTFS-RT unavailable:', err));
+    };
+    load();
+    const id = setInterval(load, 20000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [showRealtimeVehicles]);
 
   const turnAllLayers = (active: boolean) => {
     setShowRoutes(active);
     setShowStops(active);
     setShowVehicles(active);
+    setShowRealtimeVehicles(active);
     setShowCantieri(active);
     setShowSpatialBuffer(active);
     setShowFlights(active);
@@ -688,22 +718,28 @@ export default function HomePage() {
     root.style.setProperty('--c-island', pal.cats.island);
   }, [paletteTheme, currentTimeSeconds]);
 
-  // Simulation loop ticker: synced to exact real-time wall-clock when isLiveSynced is true
+  // Ticker della simulazione: avanza simClock a ogni frame (letto dalla mappa) e aggiorna lo stato
+  // React al massimo 4 volte al secondo. In modalità live segue l'ora e il giorno reali di Venezia.
   const lastTimeRef = useRef<number>(0);
+  const lastCommitRef = useRef<number>(0);
   useEffect(() => {
     let frameId: number;
     lastTimeRef.current = performance.now();
+    lastCommitRef.current = 0;
 
     const tick = (now: number) => {
       const dt = Math.min(0.1, (now - lastTimeRef.current) / 1000);
       lastTimeRef.current = now;
+      const live = isLiveSynced && speed === 1;
 
       if (isPlaying) {
-        if (isLiveSynced && speed === 1) {
-          setCurrentTimeSeconds(romeSecondsOfDay());
-        } else {
-          setCurrentTimeSeconds((prev) => (prev + dt * speed) % 86400);
-        }
+        simClock.set(live ? romeSecondsOfDay() : simClock.get() + dt * speed);
+      }
+
+      if (now - lastCommitRef.current >= 250) {
+        lastCommitRef.current = now;
+        setCurrentTimeSecondsState(simClock.get());
+        if (live) setSelectedDay(romeDayType());
       }
 
       frameId = requestAnimationFrame(tick);
@@ -765,7 +801,6 @@ export default function HomePage() {
       {/* Main Map Canvas Area */}
       <div className="relative flex-1 w-full h-full overflow-hidden">
         <MapEngine
-          currentTimeSeconds={currentTimeSeconds}
           selectedDay={selectedDay}
           paletteTheme={paletteTheme}
           currentView={currentView}
@@ -802,6 +837,8 @@ export default function HomePage() {
           onSelectAlilaguna={() => setIsAlilagunaModalOpen(true)}
           showCameras={showCameras}
           cameras={cameras}
+          showRealtimeVehicles={showRealtimeVehicles}
+          realtimeVehicles={realtimeVehicles}
           onSelectCamera={setSelectedCamera}
           showSatellites={showSatellites}
           satellites={satellites}
@@ -896,6 +933,9 @@ export default function HomePage() {
               stopsCount={stops.length}
               showVehicles={showVehicles}
               onToggleVehicles={() => setShowVehicles((p) => !p)}
+              showRealtimeVehicles={showRealtimeVehicles}
+              onToggleRealtimeVehicles={() => setShowRealtimeVehicles((p) => !p)}
+              realtimeVehiclesCount={realtimeVehicles.length}
               showAlilaguna={showAlilaguna}
               onToggleAlilaguna={() => setShowAlilaguna((p) => !p)}
               alilagunaBoatsCount={alilagunaBoats.length}
@@ -1065,6 +1105,9 @@ export default function HomePage() {
                 stopsCount={stops.length}
                 showVehicles={showVehicles}
                 onToggleVehicles={() => setShowVehicles((p) => !p)}
+                showRealtimeVehicles={showRealtimeVehicles}
+                onToggleRealtimeVehicles={() => setShowRealtimeVehicles((p) => !p)}
+                realtimeVehiclesCount={realtimeVehicles.length}
                 showAlilaguna={showAlilaguna}
                 onToggleAlilaguna={() => setShowAlilaguna((p) => !p)}
                 alilagunaBoatsCount={alilagunaBoats.length}
@@ -1304,8 +1347,8 @@ export default function HomePage() {
       />
 
       <OnboardingTutorialModal
-        isOpen={isTutorialOpen}
-        onClose={() => setIsTutorialOpen(false)}
+        isOpen={showTutorial}
+        onClose={closeTutorial}
         onSelectPreset={applyPreset}
       />
     </main>
