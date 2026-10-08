@@ -2,11 +2,27 @@
 
 **Venice Open Data (VOD)** è una piattaforma web moderna ad alte prestazioni per l'analisi geospaziale, la visualizzazione e l'incrocio degli **Open Data del Comune di Venezia** e della rete di **trasporto pubblico ACTV / AVM** (navigazione lagunare, autobus e tram).
 
-Ispirata e progettata per superare l'esperienza di *SharpGlue Venice Mapping*, VOD integra:
-1. **Simulazione fluida a 60 FPS dell'intera flotta lagunare e di terraferma** (oltre 5.400 corse giornaliere).
-2. **Incrocio Spaziale PostGIS**: analisi d'impatto tra cantieri/opere pubbliche del Comune di Venezia e fermate/pontili del trasporto pubblico entro buffer personalizzati (es. `ST_DWithin` a 200m).
-3. **Palette Solare Dinamica**: sincronizzata con le ore esatte di alba, tramonto e crepuscolo calcolate sulle coordinate geografiche di Venezia.
-4. **Pipeline ETL Robusta**: script Python per download, normalizzazione e ingestione in PostgreSQL + PostGIS di archivi GTFS statici e feed GTFS-RT.
+VOD integra:
+1. **Simulazione da orario della flotta ACTV** (oltre 5.400 corse feriali dal GTFS ufficiale): le posizioni sono calcolate dagli orari, non sono tracciamento GPS.
+2. **Dati live** letti lato server con cache condivisa: maree CPSM (dati.venezia.it), METAR LIPZ (NOAA AWC), voli ADS-B (OpenSky), posizioni reali ACTV (GTFS-RT, via `/api/realtime/vehicles`).
+3. **Analisi spaziale** cantieri ↔ fermate entro un raggio configurabile.
+4. **Palette solare dinamica** sincronizzata con alba e tramonto a Venezia.
+5. **Pipeline Python** per download GTFS, ingestione in PostgreSQL + PostGIS e sincronizzazione GTFS-RT.
+
+> **Nota architetturale**: l'applicazione web oggi non legge da PostgreSQL. Le API servono dati live (fonti esterne) o dataset di riferimento inclusi nel codice; il database è usato solo dalla pipeline. Vedi `docs/AUDIT-2026-10-08.md`.
+
+## 🧭 Provenienza dei dati
+
+Ogni layer dichiara la propria natura in interfaccia (badge) e nelle risposte API (`meta.kind`):
+
+| Tipo | Significato | Esempi |
+| :--- | :--- | :--- |
+| `live` | Misura letta dalla fonte a ogni intervallo di cache | Maree CPSM, METAR LIPZ, voli OpenSky, GTFS-RT ACTV |
+| `schedule-simulation` | Posizioni calcolate da orari e percorsi ufficiali | Vaporetti/bus ACTV, barche Alilaguna |
+| `static-reference` | Anagrafica inclusa nel codice, non aggiornata automaticamente | Fermate, ponti, parcheggi, navi in banchina, cantieri, stazioni ARPAV |
+| `community` | Mappatura collaborativa non verificata | Telecamere Anopticon (tramaci.org) |
+
+Quando una fonte live non risponde l'interfaccia mostra "n.d.": nessun valore viene inventato.
 
 ---
 
@@ -25,7 +41,7 @@ vod-venice-open-data/
 │   ├── import_comune_venezia.py    # Ingestione cantieri e opere pubbliche georeferenziate
 │   ├── sync_gtfs_rt.py             # Sincronizzazione feed real-time GTFS-RT
 │   └── export_simulation_data.py   # Compilazione cinematica GTFS per la simulazione client
-├── web/                            # Applicazione Next.js 15 (App Router)
+├── web/                            # Applicazione Next.js 16 (App Router)
 │   ├── package.json
 │   ├── src/
 │   │   ├── app/
@@ -50,7 +66,8 @@ vod-venice-open-data/
 │   │       ├── types.ts            # Modelli di dominio TypeScript
 │   │       ├── solar.ts            # Calcolo effemeridi e interpolazione palette solare
 │   │       ├── simulation-data.ts  # Dataset lagunare e GTFS pre-baked
-│   │       └── db.ts               # Connessione PostGIS con fallback resiliente
+│   │       └── db.ts               # Dataset di riferimento e calcoli spaziali in memoria
+│   └── src/server/                 # Accesso alle fonti esterne (fetch con timeout e cache, parser validati)
 └── README.md
 ```
 
@@ -69,10 +86,8 @@ docker compose up -d
 docker compose ps
 ```
 
-Il database sarà accessibile a `localhost:5432` con:
-* **Database**: `venice_opendata`
-* **User**: `vod_user`
-* **Password**: `vod_password`
+Prima dell'avvio copiare `.env.example` in `.env` e impostare `POSTGRES_PASSWORD` e `DATABASE_URL`
+(nessuna credenziale di default è inclusa nel codice). Il database è esposto solo su `127.0.0.1:5432`.
 
 ### 2. Eseguire la Pipeline Dati (Opzionale / Aggiornamento)
 ```bash
@@ -88,7 +103,8 @@ python import_gtfs.py
 # 3. Ingerisce il dataset cantieri e opere pubbliche del Comune di Venezia:
 python import_comune_venezia.py
 
-# 4. Sincronizza lo snapshot dei mezzi real-time:
+# 4. Sincronizza le posizioni reali dei mezzi dal feed GTFS-RT ACTV
+#    (se il feed non risponde lo script termina senza scrivere dati):
 python sync_gtfs_rt.py
 ```
 
@@ -102,6 +118,11 @@ npm run dev
 # Oppure build di produzione:
 npm run build
 npm start
+
+# Qualità:
+npm run typecheck
+npm run lint
+npm test
 ```
 
 Apri il browser su: **`http://localhost:3000`**
@@ -139,12 +160,19 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/cantieri` | Elenco di tutti i cantieri del Comune con budget, date e coordinate. |
 | `GET` | `/api/stops` | Fermate e pontili ACTV con filtro opzionale `?mode=navigazione`. |
 | `GET` | `/api/spatial/stops-near-cantieri?radius=200` | Query spaziale: fermate entro il raggio indicato da cantieri attivi. |
-| `GET` | `/api/realtime/vehicles` | Posizione dei mezzi attivi (feed GTFS-RT o snapshot cinematico). |
-| `GET` | `/api/stats` | Metriche aggregate della piattaforma (linee, fermate, investimenti). |
+| `GET` | `/api/realtime/vehicles` | Posizioni reali dei mezzi ACTV dal feed GTFS-RT (cache 20 s). |
+| `GET` | `/api/tide` | Livelli di marea reali, previsione CPSM con data di emissione, anagrafica MOSE. |
+| `GET` | `/api/weather` | METAR LIPZ reale e stazioni vento di riferimento. |
+| `GET` | `/api/flights` | Aerei rilevati da OpenSky nell'area di Venezia (cache 15 s). |
+| `GET` | `/api/stats` | Metriche aggregate; `null` dove manca una fonte in tempo reale. |
 
 ---
 
-## 📄 Fonti e Crediti
-* **ACTV S.p.A. / AVM**: Open Data GTFS Navigazione e Automobilistico & Feed GTFS-RT.
-* **Comune di Venezia**: Portale Open Data `dati.venezia.it` (Opere Pubbliche e Cantieri).
-* **OpenStreetMap contributors**: Dati cartografici e perimetri lagunari.
+## 📄 Fonti, licenze e crediti
+* **ACTV S.p.A. / AVM**: GTFS Navigazione e Automobilistico (Open Data, CC BY – citazione obbligatoria). Il feed GTFS-RT è pubblico ma la licenza d'uso va confermata con AVM.
+* **Comune di Venezia – CPSM**: livelli e previsioni di marea da `dati.venezia.it`.
+* **NOAA Aviation Weather Center**: METAR LIPZ (pubblico dominio).
+* **OpenSky Network**: dati ADS-B, uso non commerciale/ricerca secondo i termini OpenSky.
+* **SkylineWebcams, CNR-ISMAR**: solo collegamenti alle pagine ufficiali delle dirette; nessuna immagine viene ripubblicata.
+* **Anopticon (tramaci.org)**: mappatura civica delle telecamere; licenza dei dati da chiarire con l'autore.
+* **OpenStreetMap contributors**: geometrie della laguna (ODbL – © OpenStreetMap contributors).

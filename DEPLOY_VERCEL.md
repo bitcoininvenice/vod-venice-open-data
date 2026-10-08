@@ -17,7 +17,7 @@ Il progetto è pronto al 100% per essere deployato su **Vercel** sia tramite la 
    * **Build and Output Settings**: Lascia i valori predefiniti, il file `web/vercel.json` imposterà automaticamente:
      * **Build Command**: `next build --webpack` (garantisce zero errori Turbopack su Tailwind v4).
    * **Environment Variables (Facoltative)**:
-     Non sono necessarie variabili d'ambiente obbligatorie: l'applicazione include fallback resilienti su tutti i 9 settori Open Data di Venezia.
+     Non sono necessarie variabili d'ambiente obbligatorie. Facoltative: `OPENSKY_CLIENT_ID` e `OPENSKY_CLIENT_SECRET` (quota OpenSky più alta: l'IP condiviso di Vercel esaurisce rapidamente la quota anonima). Se una fonte live non risponde l'interfaccia mostra "n.d." invece di valori sostitutivi.
      Se disponi di un database cloud (Neon, Supabase, Vercel Postgres) o vuoi integrare PostHog, puoi aggiungere:
      * `DATABASE_URL`: stringa di connessione PostgreSQL + PostGIS (es. Neon).
      * `NEXT_PUBLIC_POSTHOG_KEY`: chiave API di PostHog per le metriche utenti.
