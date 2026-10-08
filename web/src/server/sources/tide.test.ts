@@ -32,6 +32,10 @@ describe('parseTideLevels', () => {
     expect(ref?.levelCm).toBe(12);
     expect(ref?.observedAt).toBe('2026-10-08 01:50:00');
   });
+  it('scarta le stazioni pubblicate senza misura (anomalia intermittente del portale)', () => {
+    const raw = livello.map((s) => ({ ID_stazione: s.ID_stazione, stazione: s.stazione, latDDN: s.latDDN, lonDDE: s.lonDDE }));
+    expect(parseTideLevels(raw)).toEqual([]);
+  });
   it('scarta le stazioni con valore non numerico', () => {
     const raw = [{ ID_stazione: '1', stazione: 'X', latDDN: '45', lonDDE: '12', data: '2026-01-01 00:00:00', valore: '--' }];
     expect(parseTideLevels(raw)).toEqual([]);

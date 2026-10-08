@@ -4527,7 +4527,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       </div>
 
       {/* On-Map Zoom & Centering Controls (+ / - / Centra): top-3 on mobile to avoid TimelineControls, bottom-28 on desktop */}
-      <div className="absolute right-3 sm:right-5 top-3 sm:top-4 md:top-auto md:bottom-28 lg:md:bottom-32 z-30 flex flex-col items-center gap-1.5 shadow-2xl">
+      <div className="absolute right-3 sm:right-5 top-3 sm:top-4 xl:top-auto xl:bottom-36 z-30 flex flex-col items-center gap-1.5 shadow-2xl">
         <button
           type="button"
           onClick={handleZoomIn}

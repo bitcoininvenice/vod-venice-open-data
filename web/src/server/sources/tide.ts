@@ -16,14 +16,16 @@ export const REFERENCE_STATION_ID = '1025';
 /** Una previsione emessa da più di 24 ore viene segnalata come non aggiornata. */
 const FORECAST_STALE_AFTER_MS = 24 * 60 * 60 * 1000;
 
+// Il Comune a volte pubblica l'elenco stazioni senza misure (campi data/valore assenti):
+// quelle righe vengono scartate invece di invalidare l'intero file.
 const RawLevels = z.array(
   z.object({
     ID_stazione: z.string(),
     stazione: z.string(),
     latDDN: z.coerce.number(),
     lonDDE: z.coerce.number(),
-    data: z.string(),
-    valore: z.string(),
+    data: z.string().optional(),
+    valore: z.string().optional(),
   }),
 );
 
@@ -44,6 +46,7 @@ export function metersStringToCm(value: string): number | null {
 
 export function parseTideLevels(raw: unknown): TideStation[] {
   return RawLevels.parse(raw).flatMap((s) => {
+    if (!s.valore || !s.data) return [];
     const levelCm = metersStringToCm(s.valore);
     if (levelCm === null) return [];
     return [{ id: s.ID_stazione, name: s.stazione, lat: s.latDDN, lon: s.lonDDE, levelCm, observedAt: s.data }];

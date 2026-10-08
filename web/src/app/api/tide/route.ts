@@ -12,7 +12,7 @@ import {
   trendFromForecast,
 } from '@/server/sources/tide';
 
-export const revalidate = 120;
+export const revalidate = 60;
 
 /**
  * Anagrafica delle quattro schiere MOSE (dato strutturale statico).
@@ -61,11 +61,19 @@ const SOURCE_NAME = 'Comune di Venezia – Centro Previsioni e Segnalazioni Mare
 
 export async function GET() {
   const now = new Date();
-  const [levels, forecast] = await Promise.all([
-    fetchUpstream(TIDE_LEVELS_URL, parseTideLevels, { revalidate: 120 }),
+  const [firstLevels, forecast] = await Promise.all([
+    fetchUpstream(TIDE_LEVELS_URL, parseTideLevels, { revalidate: 60 }),
     fetchUpstream(TIDE_FORECAST_URL, (raw) => parseTideForecast(raw, now), { revalidate: 600 }),
   ]);
 
+  // Se la copia in cache non contiene misure, un secondo tentativo senza cache: il portale
+  // del Comune alterna copie aggiornate e copie senza valori.
+  const levels =
+    firstLevels.ok && firstLevels.data.length > 0
+      ? firstLevels
+      : await fetchUpstream(`${TIDE_LEVELS_URL}?t=${now.getTime()}`, parseTideLevels, { revalidate: 0 });
+
+  const levelsOk = levels.ok && levels.data.length > 0;
   const stations: TideStation[] = levels.ok ? levels.data : [];
   const byId = new Map(stations.map((s) => [s.id, s]));
   const reference = byId.get(REFERENCE_STATION_ID) ?? null;
@@ -78,7 +86,7 @@ export async function GET() {
   }));
 
   const body: TideResponse = {
-    ok: levels.ok,
+    ok: levelsOk,
     data: {
       reference,
       category: reference ? tideCategory(reference.levelCm) : null,
@@ -94,7 +102,7 @@ export async function GET() {
         sourceUrl: TIDE_LEVELS_URL,
         fetchedAt: levels.ok ? levels.fetchedAt : undefined,
         observedAt: reference?.observedAt,
-        note: levels.ok ? undefined : 'Fonte temporaneamente non raggiungibile',
+        note: levelsOk ? undefined : 'Misure di marea temporaneamente non disponibili dalla fonte',
       },
       forecast: {
         kind: 'live',
@@ -112,5 +120,5 @@ export async function GET() {
     },
   };
 
-  return NextResponse.json(body, { status: levels.ok ? 200 : 503 });
+  return NextResponse.json(body, { status: levelsOk ? 200 : 503 });
 }

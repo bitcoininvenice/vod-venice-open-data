@@ -15,7 +15,7 @@ export const revalidate = 60;
 export async function GET() {
   // Stesse URL e stessa cache di /api/tide e /api/flights: nessuna chiamata upstream aggiuntiva.
   const [tide, flights] = await Promise.all([
-    fetchUpstream(TIDE_LEVELS_URL, parseTideLevels, { revalidate: 120 }),
+    fetchUpstream(TIDE_LEVELS_URL, parseTideLevels, { revalidate: 60 }),
     fetchUpstream(OPENSKY_STATES_URL, parseOpenSkyStates, { revalidate: 15 }),
   ]);
 

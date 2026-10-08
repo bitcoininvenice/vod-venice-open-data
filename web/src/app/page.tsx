@@ -1206,7 +1206,8 @@ export default function HomePage() {
         <div
           className={`absolute bottom-2 sm:bottom-4 md:bottom-6 z-20 w-full px-2 sm:px-4 transition-all duration-300 ${
             isDesktopLayerPanelOpen
-              ? 'left-1/2 -translate-x-1/2 md:left-[calc(50%+9.5rem)] xl:md:left-[calc(50%+10.5rem)] md:-translate-x-1/2 max-w-4xl md:max-w-[calc(100vw-21rem)] lg:max-w-3xl xl:max-w-4xl'
+              ? // Spostata a destra del pannello livelli (w-80 + margine) solo quando c'è spazio
+                'left-1/2 -translate-x-1/2 max-w-4xl lg:left-[calc(50%+10.5rem)] lg:max-w-[min(56rem,calc(100vw-23rem))]'
               : 'left-1/2 -translate-x-1/2 max-w-4xl'
           }`}
         >

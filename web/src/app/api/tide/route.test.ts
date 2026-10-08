@@ -27,6 +27,20 @@ describe('GET /api/tide', () => {
     expect(body.data.moseGates[0].tideLagoonCm).toBe(12);
   });
 
+  it('se la copia in cache non ha misure riprova senza cache', async () => {
+    const empty = livello.map((s) => ({ ID_stazione: s.ID_stazione, stazione: s.stazione, latDDN: s.latDDN, lonDDE: s.lonDDE }));
+    const fetchMock = vi.fn(async (url: string) => {
+      const u = String(url);
+      if (u.includes('previsione')) return json(previsione);
+      return json(u.includes('?t=') ? livello : empty);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const body = (await (await GET()).json()) as TideResponse;
+    expect(body.ok).toBe(true);
+    expect(body.data.reference?.levelCm).toBe(12);
+    expect(fetchMock.mock.calls.some(([u]) => String(u).includes('?t='))).toBe(true);
+  });
+
   it('se la fonte non risponde restituisce 503 senza valori inventati', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('ECONNRESET'); }));
     const res = await GET();

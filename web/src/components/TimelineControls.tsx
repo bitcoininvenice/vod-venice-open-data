@@ -72,20 +72,20 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
             <button
               type="button"
               onClick={onSyncLiveTime}
-              className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-mono font-medium border transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-mono font-medium whitespace-nowrap shrink-0 border transition-all cursor-pointer ${
                 isLiveSynced
                   ? 'bg-rose-500/20 text-rose-400 border-rose-500/50 shadow-sm'
                   : 'bg-[var(--rule)]/60 text-[var(--ink-2)] border-[var(--rule)] hover:text-[var(--ink)]'
               }`}
               title={language === 'it' ? 'Aggancia all\'orario esatto attuale di Venezia' : 'Lock to exact current Venice time'}
             >
-              <span className={`w-2 h-2 rounded-full ${isLiveSynced ? 'bg-rose-500 animate-ping' : 'bg-[var(--ink-3)]'}`} />
+              <span className={`w-2 h-2 shrink-0 rounded-full ${isLiveSynced ? 'bg-rose-500 animate-ping' : 'bg-[var(--ink-3)]'}`} />
               <span className="text-[11px] sm:text-xs">{t('timeline.liveNow')}</span>
             </button>
           )}
 
           <div className="h-5 w-px bg-[var(--rule)] hidden md:block" />
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2 whitespace-nowrap">
             <Waves className="w-4 h-4 text-emerald-400" />
             <div className="text-xs">
               <span className="font-mono font-bold text-sm sm:text-base text-[var(--ink)] tabular">
@@ -127,7 +127,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
           <button
             type="button"
             onClick={() => setIsExpandedMobile((p) => !p)}
-            className="flex md:hidden items-center gap-1 px-2 py-1.5 rounded-xl bg-[var(--rule)]/70 text-[var(--ink-2)] hover:text-[var(--ink)] border border-[var(--rule)] text-xs font-mono cursor-pointer"
+            className="flex xl:hidden items-center gap-1 px-2 py-1.5 rounded-xl bg-[var(--rule)]/70 text-[var(--ink-2)] hover:text-[var(--ink)] border border-[var(--rule)] text-xs font-mono cursor-pointer"
             title={language === 'it' ? 'Mostra opzioni velocità e calendario' : 'Show speed and calendar options'}
           >
             <span>{speed}×</span>
@@ -135,7 +135,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
           </button>
 
           {/* Desktop Day Selector */}
-          <div className="hidden md:flex items-center gap-1 bg-[var(--rule)]/60 p-1 rounded-xl border border-[var(--rule)]">
+          <div className="hidden xl:flex items-center gap-1 bg-[var(--rule)]/60 p-1 rounded-xl border border-[var(--rule)]">
             <Calendar className="w-3.5 h-3.5 text-[var(--ink-3)] ml-1 mr-1" />
             {(['weekday', 'saturday', 'sunday'] as DayType[]).map((d) => (
               <button
@@ -185,11 +185,11 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
       {/* Bottom row / Expandable section on Mobile */}
       <div
         className={`${
-          isExpandedMobile ? 'flex' : 'hidden md:flex'
+          isExpandedMobile ? 'flex' : 'hidden xl:flex'
         } flex-col md:flex-row flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-[var(--rule)]/60 animate-in fade-in duration-150`}
       >
         {/* Mobile Day Selector (when expanded) */}
-        <div className="flex md:hidden items-center justify-between w-full gap-2">
+        <div className="flex xl:hidden items-center justify-between w-full md:w-auto gap-2">
           <span className="text-[11px] text-[var(--ink-3)] font-mono">{language === 'it' ? 'Giorno:' : 'Day:'}</span>
           <div className="flex items-center gap-1 bg-[var(--rule)]/60 p-0.5 rounded-lg border border-[var(--rule)] flex-1 justify-end">
             {(['weekday', 'saturday', 'sunday'] as DayType[]).map((d) => (
@@ -235,13 +235,13 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
         {/* Fleet & Peak summary */}
         <div className="flex items-center justify-between w-full md:w-auto text-[11px] sm:text-xs text-[var(--ink-2)] font-mono">
           <span className="md:hidden">
-            {language === 'it' ? 'Mezzi attivi:' : 'Active vessels:'}{' '}
+            {language === 'it' ? 'Corse da orario:' : 'Scheduled trips:'}{' '}
             <strong className="text-emerald-400">{totalActiveVehicles}</strong>
           </span>
           <span>
             {language === 'it' ? 'Picco:' : 'Peak:'}{' '}
             <span className="text-cyan-400 font-bold">{peakCount}</span>{' '}
-            {language === 'it' ? 'mezzi alle' : 'vessels at'}{' '}
+            {language === 'it' ? 'corse alle' : 'trips at'}{' '}
             <span className="text-[var(--ink)] font-bold">{peakTime}</span>
           </span>
         </div>
