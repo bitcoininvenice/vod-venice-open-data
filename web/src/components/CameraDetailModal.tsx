@@ -5,6 +5,7 @@ import {
   X,
   Video,
   Eye,
+  EyeOff,
   Shield,
   ShieldAlert,
   ExternalLink,
@@ -16,7 +17,8 @@ import {
   Radio,
   CheckCircle2,
   AlertTriangle,
-  Lock
+  Lock,
+  Loader2
 } from 'lucide-react';
 import { VeniceCameraItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
@@ -30,13 +32,21 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
   const { language, t } = useTranslation();
   const [isStreamActive, setIsStreamActive] = useState<boolean>(false);
   const [snapshotTimestamp, setSnapshotTimestamp] = useState<number>(Date.now());
+  const [imageState, setImageState] = useState<'loading' | 'loaded' | 'error'>('loading');
+  const [useFallbackUrl, setUseFallbackUrl] = useState<boolean>(false);
 
   useEffect(() => {
     setIsStreamActive(false);
     setSnapshotTimestamp(Date.now());
+    setImageState('loading');
+    setUseFallbackUrl(false);
   }, [camera?.id]);
 
   if (!camera) return null;
+
+  const currentSrc = useFallbackUrl && camera.snapshotUrl
+    ? `${camera.snapshotUrl}?t=${snapshotTimestamp}`
+    : `/api/cameras/snapshot?id=${camera.id}&t=${snapshotTimestamp}`;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4">
@@ -123,28 +133,32 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
             </div>
 
             {!isStreamActive ? (
-              <div className="p-4 rounded-xl border border-[var(--rule)] bg-[var(--rule)]/20 flex flex-col items-center justify-center gap-3 text-center">
-                <div className="w-12 h-12 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/40">
+              <div className="p-5 rounded-xl border border-[var(--rule)] bg-[var(--rule)]/20 flex flex-col items-center justify-center gap-3 text-center">
+                <div className="w-12 h-12 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/40 shadow-inner">
                   <Play className="w-6 h-6 ml-0.5" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-[var(--ink)]">
+                  <p className="text-sm font-semibold text-[var(--ink)]">
                     {language === 'it'
                       ? 'Webcam live disponibile per questa postazione'
                       : 'Live webcam stream available for this camera'}
                   </p>
-                  <p className="text-[11px] text-[var(--ink-2)] max-w-md mt-0.5">
+                  <p className="text-xs text-[var(--ink-2)] max-w-md mt-1 leading-relaxed">
                     {language === 'it'
-                      ? 'Puoi caricare il fotogramma in tempo reale direttamente in mappa oppure aprire lo streaming video completo sul portale del gestore.'
-                      : 'You can load the live snapshot frame or open the full live stream on the provider portal.'}
+                      ? 'Puoi caricare il fotogramma in tempo reale direttamente in mappa oppure aprire la diretta video HD continua sul sito ufficiale del fornitore.'
+                      : 'You can load the live frame directly on the map or open the continuous HD video stream on the official provider website.'}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 flex-wrap justify-center">
+                <div className="flex items-center gap-2.5 flex-wrap justify-center mt-1">
                   {camera.snapshotUrl && (
                     <button
                       type="button"
-                      onClick={() => setIsStreamActive(true)}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-medium flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-cyan-600/20"
+                      onClick={() => {
+                        setIsStreamActive(true);
+                        setImageState('loading');
+                        setSnapshotTimestamp(Date.now());
+                      }}
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-medium flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-cyan-600/20 hover:scale-[1.02]"
                     >
                       <Play className="w-3.5 h-3.5" />
                       {language === 'it' ? 'Mostra Fotogramma Live' : 'Show Live Snapshot'}
@@ -167,17 +181,72 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
             ) : (
               <div className="flex flex-col gap-3">
                 {camera.snapshotUrl ? (
-                  <div className="relative w-full rounded-xl overflow-hidden border border-cyan-500/40 bg-black flex flex-col items-center shadow-lg">
+                  <div className="relative w-full aspect-video min-h-[220px] sm:min-h-[280px] rounded-xl overflow-hidden border border-cyan-500/40 bg-zinc-950 flex items-center justify-center shadow-inner">
+                    {imageState === 'loading' && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-zinc-950/90 z-0">
+                        <Loader2 className="w-7 h-7 text-cyan-400 animate-spin" />
+                        <span className="text-xs font-mono text-cyan-300">
+                          {language === 'it' ? 'Caricamento fotogramma in tempo reale...' : 'Loading live snapshot...'}
+                        </span>
+                      </div>
+                    )}
+
+                    {imageState === 'error' && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-zinc-950 p-4 text-center z-0">
+                        <AlertTriangle className="w-8 h-8 text-amber-400 mb-1" />
+                        <p className="text-xs text-[var(--ink)] font-semibold">
+                          {language === 'it' ? 'Fotogramma temporaneamente non disponibile' : 'Snapshot temporarily unavailable'}
+                        </p>
+                        <p className="text-[11px] text-[var(--ink-2)] max-w-sm">
+                          {language === 'it'
+                            ? 'Puoi comunque aprire la diretta streaming HD continua sul portale ufficiale.'
+                            : 'You can still open the continuous live HD stream on the official provider website.'}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImageState('loading');
+                            setSnapshotTimestamp(Date.now());
+                          }}
+                          className="mt-2 px-3.5 py-1.5 rounded-lg bg-[var(--rule)] hover:bg-[var(--rule)]/80 text-xs font-mono text-[var(--ink)] flex items-center gap-1.5 cursor-pointer border border-[var(--rule)]"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5 text-cyan-400" />
+                          {language === 'it' ? 'Riprova' : 'Retry'}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Image */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={`${camera.snapshotUrl}?t=${snapshotTimestamp}`}
+                      src={currentSrc}
                       alt={camera.name}
-                      className="w-full max-h-80 object-cover rounded-xl"
+                      referrerPolicy="no-referrer"
+                      onLoad={() => setImageState('loaded')}
+                      onError={() => {
+                        if (!useFallbackUrl && camera.snapshotUrl) {
+                          setUseFallbackUrl(true);
+                        } else {
+                          setImageState('error');
+                        }
+                      }}
+                      className={`w-full h-full object-cover transition-opacity duration-300 ${
+                        imageState === 'loaded' ? 'opacity-100' : 'opacity-0'
+                      }`}
                     />
-                    <div className="absolute top-2 left-2 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur border border-cyan-500/40 text-[10px] font-mono text-cyan-300 flex items-center gap-1.5 shadow">
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                      LIVE SNAPSHOT &bull; {camera.operator}
-                    </div>
+
+                    {/* Overlays on image */}
+                    {imageState === 'loaded' && (
+                      <>
+                        <div className="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-md bg-black/85 backdrop-blur border border-cyan-500/40 text-[10px] font-mono text-cyan-300 flex items-center gap-1.5 shadow">
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                          LIVE SNAPSHOT &bull; {camera.operator}
+                        </div>
+                        <div className="absolute top-2.5 right-2.5 z-10 px-2 py-1 rounded-md bg-black/80 backdrop-blur border border-white/10 text-[10px] font-mono text-slate-300 shadow">
+                          {new Date(snapshotTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </div>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <div className="p-4 rounded-xl border border-cyan-500/30 bg-cyan-950/30 text-center flex flex-col gap-2">
@@ -204,18 +273,22 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                     {camera.snapshotUrl && (
                       <button
                         type="button"
-                        onClick={() => setSnapshotTimestamp(Date.now())}
-                        className="px-3 py-1.5 rounded-lg bg-[var(--rule)] hover:bg-[var(--rule)]/80 text-[var(--ink)] text-xs font-mono flex items-center gap-1.5 cursor-pointer border border-[var(--rule)] transition-all"
+                        onClick={() => {
+                          setImageState('loading');
+                          setSnapshotTimestamp(Date.now());
+                        }}
+                        className="px-3.5 py-2 rounded-xl bg-[var(--rule)] hover:bg-[var(--rule)]/80 text-[var(--ink)] text-xs font-mono flex items-center gap-1.5 cursor-pointer border border-[var(--rule)] transition-all"
                       >
-                        <RotateCcw className="w-3 h-3 text-cyan-400" />
+                        <RotateCcw className={`w-3.5 h-3.5 text-cyan-400 ${imageState === 'loading' ? 'animate-spin' : ''}`} />
                         {language === 'it' ? 'Aggiorna Fotogramma' : 'Refresh Snapshot'}
                       </button>
                     )}
                     <button
                       type="button"
                       onClick={() => setIsStreamActive(false)}
-                      className="text-amber-400 hover:underline flex items-center gap-1 font-mono text-[11px] cursor-pointer ml-1"
+                      className="px-3 py-2 rounded-xl bg-[var(--rule)]/50 hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] text-xs font-mono flex items-center gap-1.5 cursor-pointer border border-[var(--rule)]/60 transition-all"
                     >
+                      <EyeOff className="w-3.5 h-3.5 text-amber-400" />
                       {language === 'it' ? 'Nascondi' : 'Hide'}
                     </button>
                   </div>
@@ -225,11 +298,11 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                       href={camera.streamPageUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-medium flex items-center gap-1.5 shadow-md shadow-cyan-600/20"
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-medium flex items-center gap-1.5 shadow-md shadow-cyan-600/20 transition-all hover:scale-[1.02]"
                     >
                       <Play className="w-3.5 h-3.5" />
                       {language === 'it' ? 'Guarda Video Live 24/7' : 'Watch Live Video 24/7'}
-                      <ExternalLink className="w-3 h-3 ml-0.5" />
+                      <ExternalLink className="w-3.5 h-3.5 ml-0.5" />
                     </a>
                   )}
                 </div>
