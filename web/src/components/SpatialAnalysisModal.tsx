@@ -17,7 +17,7 @@ export const SpatialAnalysisModal: React.FC<SpatialAnalysisModalProps> = ({
   onClose,
   onFocusLocation
 }) => {
-  const { language, t } = useTranslation();
+  const { t } = useTranslation();
   const [radius, setRadius] = useState<number>(200);
   const [results, setResults] = useState<StopNearCantiere[]>([]);
   // Raggio dell'ultima risposta ricevuta: il caricamento è in corso finché non coincide con quello scelto
@@ -64,14 +64,14 @@ export const SpatialAnalysisModal: React.FC<SpatialAnalysisModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] uppercase font-mono tracking-wider text-amber-400">
-                  {language === 'it' ? 'Analisi Spaziale PostGIS · ST_DWithin' : 'PostGIS Spatial Analysis · ST_DWithin'}
+                  {t('ui.spatial.analisiSpazialePostgisStDwithin')}
                 </span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-500/20 text-amber-300">
-                  {results.length} {language === 'it' ? 'Intersezioni Rilevate' : 'Intersections Detected'}
+                  {results.length} {t('ui.spatial.intersezioniRilevate')}
                 </span>
               </div>
               <h3 id="spatial-modal-title" className="text-lg font-bold text-[var(--ink)] leading-snug">
-                {language === 'it' ? 'Incrocio Fermate ACTV & Cantieri Attivi Comune di Venezia' : 'ACTV Stops & Active Worksites Intersection (Venice)'}
+                {t('ui.spatial.incrocioFermateActvCantieriAttivi')}
               </h3>
             </div>
           </div>
@@ -89,7 +89,7 @@ export const SpatialAnalysisModal: React.FC<SpatialAnalysisModalProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-medium text-[var(--ink)]">
               <SlidersHorizontal className="w-4 h-4 text-amber-400" />
-              <span>{language === 'it' ? 'Raggio di prossimità (Buffer geodetico PostGIS):' : 'Proximity radius (PostGIS geodetic buffer):'}</span>
+              <span>{t('ui.spatial.raggioProssimitaBufferGeodeticoPostgis')}</span>
             </div>
             <span className="font-mono font-bold text-amber-400 text-sm">{radius} {t('common.meters')}</span>
           </div>
@@ -125,11 +125,11 @@ export const SpatialAnalysisModal: React.FC<SpatialAnalysisModalProps> = ({
         <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 pr-1">
           {loading ? (
             <div className="py-12 text-center text-xs text-[var(--ink-2)] font-mono animate-pulse">
-              {language === 'it' ? 'Esecuzione query spaziale ST_DWithin su PostGIS...' : 'Executing ST_DWithin spatial query on PostGIS...'}
+              {t('ui.spatial.esecuzioneQuerySpazialeStDwithin')}
             </div>
           ) : results.length === 0 ? (
             <div className="py-12 text-center text-xs text-[var(--ink-3)] font-mono">
-              {language === 'it' ? `Nessuna fermata rilevata entro ${radius} metri da cantieri attivi.` : `No stops detected within ${radius} meters of active worksites.`}
+              {t('ui.spatial.nessunaFermataRaggio', { radius })}
             </div>
           ) : (
             results.map((r, i) => (
@@ -172,7 +172,7 @@ export const SpatialAnalysisModal: React.FC<SpatialAnalysisModalProps> = ({
                       onClose();
                     }}
                     className="p-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500 text-cyan-400 hover:text-white transition-all cursor-pointer"
-                    title={language === 'it' ? 'Centra mappa su questa coppia' : 'Focus map on this pair'}
+                    title={t('ui.spatial.centraMappaSuQuestaCoppia')}
                   >
                     <ArrowRight className="w-4 h-4" />
                   </button>

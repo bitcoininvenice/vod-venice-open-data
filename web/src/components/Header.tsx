@@ -118,7 +118,7 @@ export const Header: React.FC<HeaderProps> = ({
               className={`p-1.5 rounded-lg border cursor-pointer active:scale-95 transition-all ${
                 isMoreOpen ? 'bg-cyan-500 text-white border-cyan-500' : 'bg-[var(--rule)] text-[var(--ink)] border-[var(--rule)]'
               }`}
-              aria-label={language === 'it' ? 'Altre azioni' : 'More actions'}
+              aria-label={t('ui.header.altreAzioni')}
               aria-haspopup="menu"
               aria-expanded={isMoreOpen}
             >
@@ -149,18 +149,18 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
                 <MobileMenuItem
                   icon={<Globe className="w-4 h-4 text-cyan-400" />}
-                  label={language === 'it' ? 'Lingua: Italiano → English' : 'Language: English → Italiano'}
+                  label={t('ui.header.linguaItalianoEnglish')}
                   onClick={() => runAndClose(toggleLanguage)}
                 />
                 <div className="border-t border-[var(--rule)] my-1" />
                 <span className="px-2.5 pt-0.5 text-[10px] uppercase font-mono text-[var(--ink-3)]">
-                  {language === 'it' ? 'Palette mappa' : 'Map palette'}
+                  {t('ui.header.paletteMappa')}
                 </span>
                 <div className="grid grid-cols-3 gap-1 p-1">
                   {([
-                    { key: 'notte', icon: <Moon className="w-4 h-4" />, label: language === 'it' ? 'Notte' : 'Night', active: 'bg-cyan-500 text-white' },
-                    { key: 'carta', icon: <Sun className="w-4 h-4" />, label: language === 'it' ? 'Carta' : 'Paper', active: 'bg-amber-600 text-white' },
-                    { key: 'dynamic', icon: <Sparkles className="w-4 h-4" />, label: language === 'it' ? 'Dinamica' : 'Dynamic', active: 'bg-purple-600 text-white' },
+                    { key: 'notte', icon: <Moon className="w-4 h-4" />, label: t('ui.header.notte'), active: 'bg-cyan-500 text-white' },
+                    { key: 'carta', icon: <Sun className="w-4 h-4" />, label: t('ui.header.carta'), active: 'bg-amber-600 text-white' },
+                    { key: 'dynamic', icon: <Sparkles className="w-4 h-4" />, label: t('ui.header.dinamica'), active: 'bg-purple-600 text-white' },
                   ] as const).map((p) => (
                     <button
                       key={p.key}
@@ -275,7 +275,7 @@ export const Header: React.FC<HeaderProps> = ({
           title={t('header.switchLanguageTitle')}
         >
           <Globe className="w-3.5 h-3.5 text-cyan-400" />
-          <span>{language === 'it' ? 'IT' : 'EN'}</span>
+          <span>{language.toUpperCase()}</span>
         </button>
 
         {/* Theme / Palette Switcher */}

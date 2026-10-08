@@ -79,26 +79,22 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
             </div>
             <div>
               <span className="text-[10px] uppercase font-mono text-[var(--ink-3)] font-bold">
-                {language === 'it' ? 'Interscambio Aeroporto VCE' : 'VCE Airport Interchange'}
+                {t('ui.alilaguna.interscambioAeroportoVce')}
               </span>
               <p className="font-semibold text-[var(--ink)]">
-                {language === 'it'
-                  ? 'Darsena Aeroporto Marco Polo (Tessera) ↔ Centro Storico Venezia'
-                  : 'Marco Polo Airport Dock (Tessera) ↔ Venice Historic Center'}
+                {t('ui.alilaguna.darsenaAeroportoMarcoPoloTessera')}
               </p>
               <p className="text-[11px] text-[var(--ink-2)]">
-                {language === 'it'
-                  ? 'Accesso coperto con tapis roulant dal terminal arrivi alla darsena acquea (7 min a piedi).'
-                  : 'Covered moving walkway connection from arrival terminal to the water dock (7 min walk).'}
+                {t('ui.alilaguna.accessoCopertoConTapisRoulant')}
               </p>
             </div>
           </div>
           <div className="bg-[var(--ground)]/70 px-3 py-1.5 rounded-lg border border-[var(--rule)] shrink-0 text-right">
             <span className="text-[10px] text-[var(--ink-3)] block font-mono">
-              {language === 'it' ? 'Frequenza media' : 'Avg. frequency'}
+              {t('ui.alilaguna.frequenzaMedia')}
             </span>
             <span className="font-mono font-bold text-amber-400">
-              {language === 'it' ? 'Ogni 15-30 min' : 'Every 15-30 min'}
+              {t('ui.alilaguna.ogni1530Min')}
             </span>
           </div>
         </div>
@@ -124,20 +120,20 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
                     </span>
                   </div>
                   <span className="text-[10px] font-mono text-cyan-400 font-bold flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {language === 'it' ? `Ogni ${r.frequencyMinutes}'` : `Every ${r.frequencyMinutes}'`}
+                    <Clock className="w-3 h-3" /> {t('ui.alilaguna.ogniMinuti', { min: r.frequencyMinutes })}
                   </span>
                 </div>
 
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[11px] font-medium text-[var(--ink)]">{r.description}</span>
                   <span className="text-[10px] font-mono text-[var(--ink-3)] truncate">
-                    {language === 'it' ? 'Da' : 'From'}: {r.terminalA} → {language === 'it' ? 'A' : 'To'}: {r.terminalB}
+                    {t('ui.alilaguna.testo')}: {r.terminalA} → {t('ui.alilaguna.testo2')}: {r.terminalB}
                   </span>
                 </div>
 
                 <div className="pt-1.5 border-t border-[var(--rule)] flex items-center justify-between text-[10px] font-mono text-[var(--ink-2)]">
-                  <span>{r.stops.length} {language === 'it' ? 'fermate / pontili' : 'stops / piers'}</span>
-                  <span className="text-emerald-400 font-semibold">{language === 'it' ? 'Attiva 365 gg' : 'Active 365 days'}</span>
+                  <span>{r.stops.length} {t('ui.alilaguna.fermatePontili')}</span>
+                  <span className="text-emerald-400 font-semibold">{t('ui.alilaguna.attiva365Gg')}</span>
                 </div>
               </div>
             ))}
@@ -148,19 +144,17 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
         <div className="flex flex-col gap-2 pt-1 border-t border-[var(--rule)]">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
-              <Waves className="w-4 h-4 text-blue-400" /> {language === 'it' ? 'Flotta Alilaguna in Navigazione' : 'Alilaguna Fleet in Navigation'} ({boats.length} {language === 'it' ? 'Battelli Attivi' : 'Active Vessels'})
+              <Waves className="w-4 h-4 text-blue-400" /> {t('ui.alilaguna.flottaAlilagunaNavigazione')} ({boats.length} {t('ui.alilaguna.battelliAttivi')})
             </span>
             <span className="text-[10px] font-mono text-cyan-400 font-bold">
-              168 {language === 'it' ? 'corse/giorno da orario' : 'scheduled trips/day'}
+              168 {t('ui.alilaguna.corseGiornoOrario')}
             </span>
           </div>
 
           {boats.length === 0 ? (
             <div className="p-3.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] text-center text-xs text-[var(--ink-2)]">
               <Clock className="w-4 h-4 mx-auto mb-1 text-amber-400" />
-              {language === 'it'
-                ? 'Nessun battello in navigazione all’orario selezionato. Il servizio di linea riprende alle 05:00 da Marittima e alle 06:15 dall’Aeroporto Marco Polo.'
-                : 'No vessels operating at selected simulation time. Regular service resumes at 05:00 from Marittima and 06:15 from Marco Polo Airport.'}
+              {t('ui.alilaguna.nessunBattelloNavigazioneAllorarioSelezi')}
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
@@ -180,15 +174,15 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
                     </span>
                   </div>
                   <span className="text-[10px] font-mono text-cyan-400 truncate">
-                    {language === 'it' ? 'Verso:' : 'To:'} {b.destination}
+                    {t('ui.alilaguna.verso')} {b.destination}
                   </span>
                   <span className="text-[10px] font-mono text-[var(--ink-2)] truncate">
-                    {language === 'it' ? 'Prox:' : 'Next:'} {b.nextStop}
+                    {t('ui.alilaguna.prox')} {b.nextStop}
                   </span>
                   {b.scheduledDeparture && (
                     <div className="text-[9px] font-mono text-amber-400/90 flex justify-between">
-                      <span>{language === 'it' ? 'Part:' : 'Dep:'} {b.scheduledDeparture}</span>
-                      <span>{language === 'it' ? 'Arr:' : 'ETA:'} {b.scheduledArrival}</span>
+                      <span>{t('ui.alilaguna.part')} {b.scheduledDeparture}</span>
+                      <span>{t('ui.alilaguna.arr')} {b.scheduledArrival}</span>
                     </div>
                   )}
                   <div className="flex justify-between items-center text-[10px] font-mono pt-1 border-t border-[var(--rule)] text-[var(--ink-3)]">
@@ -205,7 +199,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
         <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] text-xs flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
             <span className="font-semibold text-cyan-400 flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" /> {language === 'it' ? 'Gemello Digitale Deterministico GTFS' : 'GTFS Deterministic Digital Twin'}
+              <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" /> {t('ui.alilaguna.gemelloDigitaleDeterministicoGtfs')}
             </span>
             <span className="text-[10px] font-mono text-[var(--ink-3)]">
               Transitland: f-u20f-alilagunaspa
@@ -222,7 +216,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-2 border-t border-[var(--rule)] text-xs text-[var(--ink-3)]">
-          <span>Fonte: Transitland & Alilaguna S.p.A. Open Mobility Feed</span>
+          <span>{t('ui.alilaguna.sourceTransitland')}</span>
           <button
             type="button"
             onClick={onClose}

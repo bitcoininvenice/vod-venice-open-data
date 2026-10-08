@@ -99,40 +99,40 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
               <span className="text-2xl font-bold font-mono text-[var(--ink)]">{formatSignedCm(tideLevel)}</span>
               {category && (
                 <span className={`text-xs font-semibold ${CATEGORY_LABEL[category].className}`}>
-                  ({CATEGORY_LABEL[category][it ? 'it' : 'en']})
+                  ({CATEGORY_LABEL[category][language]})
                 </span>
               )}
             </div>
             <span className="text-[10px] text-[var(--ink-3)]">
               {tideLevel === null
-                ? (it ? 'Fonte CPSM non raggiungibile' : 'CPSM source unavailable')
+                ? (t('ui.mose.fonteCpsmNonRaggiungibile'))
                 : trend
-                  ? (trend === 'IN_AUMENTO' ? (it ? 'In crescita (da previsione)' : 'Rising (from forecast)') : (it ? 'In calo (da previsione)' : 'Falling (from forecast)'))
-                  : (it ? 'Tendenza non disponibile' : 'Trend not available')}
+                  ? (trend === 'IN_AUMENTO' ? (t('ui.mose.crescitaPrevisione')) : (t('ui.mose.caloPrevisione')))
+                  : (t('ui.mose.tendenzaNonDisponibile'))}
             </span>
           </div>
 
           <div className="bg-[var(--rule)]/40 p-3 rounded-xl border border-[var(--rule)] flex flex-col justify-between gap-1">
-            <span className="text-[10px] text-[var(--ink-3)] font-mono">{it ? 'Massimo previsto' : 'Forecast peak'}</span>
+            <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('ui.mose.massimoPrevisto')}</span>
             <span className={`text-base font-bold font-mono ${thresholdReached ? 'text-rose-400' : 'text-[var(--ink)]'}`}>
               {formatSignedCm(forecastMax)}
             </span>
             <span className="text-[10px] text-[var(--ink-3)]">
               {forecast
-                ? `${it ? 'Emessa' : 'Issued'} ${formatLocalStamp(forecast.issuedAt)}`
-                : (it ? 'Previsione non disponibile' : 'Forecast not available')}
+                ? `${t('ui.mose.emessa')} ${formatLocalStamp(forecast.issuedAt)}`
+                : (t('ui.mose.previsioneNonDisponibile'))}
             </span>
           </div>
 
           <div className="bg-[var(--rule)]/40 p-3 rounded-xl border border-[var(--rule)] flex flex-col justify-between gap-1">
             <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('moseModal.barrierStatus')}</span>
             <span className="text-sm font-bold font-mono text-slate-300 flex items-center gap-1.5">
-              <ShieldQuestion className="w-4 h-4" /> {it ? 'Non pubblicato' : 'Not published'}
+              <ShieldQuestion className="w-4 h-4" /> {t('ui.mose.nonPubblicato')}
             </span>
             <span className="text-[10px] text-[var(--ink-3)]">
               {thresholdReached
-                ? (it ? `Previsione ≥ +${MOSE_THRESHOLD_CM} cm: attivazione possibile` : `Forecast ≥ +${MOSE_THRESHOLD_CM} cm: activation possible`)
-                : (it ? `Soglia indicativa di attivazione +${MOSE_THRESHOLD_CM} cm` : `Indicative activation threshold +${MOSE_THRESHOLD_CM} cm`)}
+                ? t('ui.mose.attivazionePossibile', { cm: MOSE_THRESHOLD_CM })
+                : t('ui.mose.sogliaIndicativa', { cm: MOSE_THRESHOLD_CM })}
             </span>
           </div>
         </div>
@@ -142,9 +142,9 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
           <div className="flex flex-col gap-2">
             <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
               <CalendarClock className="w-4 h-4 text-blue-400" />
-              {it ? 'Previsione estremali CPSM' : 'CPSM forecast extremes'}
+              {t('ui.mose.previsioneEstremaliCpsm')}
               <span className="font-mono font-normal text-[10px] text-[var(--ink-3)]">
-                · {it ? 'ultimo aggiornamento' : 'last updated'} {formatLocalStamp(forecast.issuedAt)}
+                · {t('ui.mose.ultimoAggiornamento')} {formatLocalStamp(forecast.issuedAt)}
               </span>
             </span>
             {forecast.stale && (
@@ -171,7 +171,7 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
         {/* Schiere MOSE con livelli reali delle stazioni più vicine */}
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
-            {it ? 'Bocche di porto' : 'Port inlets'}
+            {t('ui.mose.bocchePorto')}
             <ProvenanceBadge kind="static-reference" />
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
@@ -181,10 +181,10 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
                 <span className="text-[11px] text-[var(--ink-2)]">{gate.channel}</span>
                 <div className="flex justify-between items-center text-[10px] font-mono pt-1 border-t border-[var(--rule)]">
                   <span className="text-[var(--ink-3)]">
-                    {gate.barriersCount} {it ? 'paratoie' : 'gates'}
+                    {gate.barriersCount} {t('ui.mose.paratoie')}
                   </span>
                   <span className="text-cyan-400">
-                    {it ? 'Mare' : 'Sea'} {formatSignedCm(gate.tideSeaCm)} · {it ? 'Laguna' : 'Lagoon'} {formatSignedCm(gate.tideLagoonCm)}
+                    {t('ui.mose.mare')} {formatSignedCm(gate.tideSeaCm)} · {t('ui.mose.laguna')} {formatSignedCm(gate.tideLagoonCm)}
                   </span>
                 </div>
               </div>
@@ -195,10 +195,10 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
         {/* Rete mareografica */}
         <div className="flex flex-col gap-2 pt-1 border-t border-[var(--rule)]">
           <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
-            <Droplets className="w-4 h-4 text-blue-400" /> {it ? 'Rete mareografica CPSM' : 'CPSM tide gauge network'} ({stations.length})
+            <Droplets className="w-4 h-4 text-blue-400" /> {t('ui.mose.reteMareograficaCpsm')} ({stations.length})
           </span>
           {stations.length === 0 ? (
-            <p className="text-[11px] text-[var(--ink-3)]">{it ? 'Dati non disponibili.' : 'Data not available.'}</p>
+            <p className="text-[11px] text-[var(--ink-3)]">{t('ui.mose.datiNonDisponibili')}</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               {stations.map((s) => (
@@ -213,7 +213,7 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
           {trend && (
             <span className="text-[10px] text-[var(--ink-3)] flex items-center gap-1">
               {trend === 'IN_AUMENTO' ? <ArrowUpRight className="w-3 h-3 text-amber-400" /> : <ArrowDownRight className="w-3 h-3 text-blue-400" />}
-              {it ? 'La tendenza è ricavata dal prossimo estremale previsto.' : 'Trend is derived from the next forecast extreme.'}
+              {t('ui.mose.tendenzaRicavataDalProssimoEstremale')}
             </span>
           )}
         </div>
@@ -226,7 +226,7 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
             rel="noopener noreferrer"
             className="flex items-center gap-1 hover:text-[var(--ink)] hover:underline"
           >
-            {it ? 'Fonte: Comune di Venezia – CPSM (dati.venezia.it)' : 'Source: City of Venice – CPSM (dati.venezia.it)'}
+            {t('ui.mose.fonteComuneVeneziaCpsmDati')}
             <ExternalLink className="w-3 h-3" />
           </a>
           <button

@@ -483,7 +483,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   tideLevel = 0,
   isDesktopLayerPanelOpen = true
 }) => {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
+  // alias: nel codice di disegno `t` è anche il nome locale dell'ora simulata
+  const tr = t;
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -1654,7 +1656,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             const spanSec = Math.min(30, Math.max(1, dtNow));
             const speedKmh = Math.round(((distAt(prof, dtNow) - distAt(prof, dtNow - spanSec)) / spanSec) * 3.6 * 10) / 10;
             const lineName = prof.route.n || 'ACTV';
-            const longName = `Linea ${lineName} · ${language === 'it' ? 'orario ufficiale ACTV' : 'official ACTV timetable'}`;
+            const longName = `Linea ${lineName} · ${tr('ui.map.orarioUfficialeActv')}`;
             setSelectedVehicle({
               line: lineName,
               category: rCat.toUpperCase(),
@@ -4585,12 +4587,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           {selectedVehicle.source === 'gps' ? (
             <div className="pt-1 border-t border-[var(--rule)] text-xs flex flex-col gap-1">
               <span className="font-mono font-bold text-emerald-400">
-                {language === 'it' ? 'Posizione GPS reale (GTFS-RT ACTV)' : 'Real GPS position (ACTV GTFS-RT)'}
+                {tr('ui.map.posizioneGpsRealeGtfsRt')}
               </span>
               <span className="text-[11px] text-[var(--ink-3)] font-mono">
                 {selectedVehicle.updatedAt
-                  ? `${language === 'it' ? 'Aggiornata alle' : 'Updated at'} ${new Date(selectedVehicle.updatedAt * 1000).toLocaleTimeString('it-IT', { timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
-                  : (language === 'it' ? 'Orario della posizione non indicato' : 'Position time not reported')}
+                  ? `${tr('ui.map.aggiornataAlle')} ${new Date(selectedVehicle.updatedAt * 1000).toLocaleTimeString('it-IT', { timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
+                  : (tr('ui.map.orarioPosizioneNonIndicato'))}
               </span>
             </div>
           ) : (
@@ -4600,8 +4602,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
                 <span className="font-mono font-bold text-emerald-400">{selectedVehicle.speedKmh} km/h</span>
               </div>
               <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-                <span className="text-[10px] text-[var(--ink-3)] block font-mono">{language === 'it' ? 'Fonte' : 'Source'}</span>
-                <span className="font-mono font-bold text-sky-400">{language === 'it' ? 'Simulato da orario' : 'Timetable simulation'}</span>
+                <span className="text-[10px] text-[var(--ink-3)] block font-mono">{tr('ui.map.fonte')}</span>
+                <span className="font-mono font-bold text-sky-400">{tr('ui.map.simulatoOrario')}</span>
               </div>
             </div>
           )}
@@ -4797,8 +4799,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
           {selectedAlilagunaBoat.scheduledDeparture && (
             <div className="flex items-center justify-between text-[11px] font-mono text-[var(--ink-2)] bg-[var(--rule)]/30 px-2.5 py-1.5 rounded-xl border border-[var(--rule)]">
-              <span className="text-amber-400 font-semibold">{language === 'it' ? 'Partenza:' : 'Dep:'} {selectedAlilagunaBoat.scheduledDeparture}</span>
-              <span className="text-cyan-400 font-semibold">{language === 'it' ? 'Arrivo previsto:' : 'ETA:'} {selectedAlilagunaBoat.scheduledArrival}</span>
+              <span className="text-amber-400 font-semibold">{tr('ui.map.partenza')} {selectedAlilagunaBoat.scheduledDeparture}</span>
+              <span className="text-cyan-400 font-semibold">{tr('ui.map.arrivoPrevisto')} {selectedAlilagunaBoat.scheduledArrival}</span>
             </div>
           )}
 

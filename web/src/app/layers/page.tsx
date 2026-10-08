@@ -760,7 +760,7 @@ const LAYER_CATALOG: LayerDocItem[] = [
 ];
 
 export default function LayersDocumentationPage() {
-  const { language, toggleLanguage } = useTranslation();
+  const { language, toggleLanguage, t } = useTranslation();
   const [selectedGroup, setSelectedGroup] = useState<LayerGroupKey>('all');
   const [selectedRegime, setSelectedRegime] = useState<DataRegimeKey>('all');
   const [selectedAcquisition, setSelectedAcquisition] = useState<AcquisitionKey>('all');
@@ -815,7 +815,7 @@ export default function LayersDocumentationPage() {
           >
             <ArrowLeft className="w-4 h-4 text-cyan-400" />
             <span className="hidden sm:inline">
-              {language === 'it' ? 'Torna alla Mappa' : 'Back to Map'}
+              {t('ui.layersPage.tornaAllaMappa')}
             </span>
           </Link>
 
@@ -827,12 +827,10 @@ export default function LayersDocumentationPage() {
             </div>
             <div>
               <h1 className="text-sm sm:text-base font-bold tracking-tight text-[var(--ink)]">
-                VOD · {language === 'it' ? 'Catalogo Livelli & Trasparenza Dati' : 'Layer Catalog & Data Transparency'}
+                VOD · {t('ui.layersPage.catalogoLivelliTrasparenzaDati')}
               </h1>
               <p className="text-[10px] text-[var(--ink-3)] font-mono hidden md:block">
-                {language === 'it'
-                  ? 'Tracciamento fonti istituzionali, API live, modelli Digital Twin e dati statici'
-                  : 'Institutional sources lineage, live APIs, Digital Twin models, and static datasets'}
+                {t('ui.layersPage.tracciamentoFontiIstituzionaliApiLive')}
               </p>
             </div>
           </div>
@@ -859,12 +857,10 @@ export default function LayersDocumentationPage() {
           <div className="flex flex-col gap-2 max-w-3xl">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 text-xs font-mono font-bold w-max border border-cyan-500/30">
               <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{language === 'it' ? 'DOCUMENTAZIONE & DATA LINEAGE UFFICIALE' : 'OFFICIAL DATA LINEAGE & CATALOG'}</span>
+              <span>{t('ui.layersPage.documentazioneDataLineageUfficiale')}</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--ink)]">
-              {language === 'it'
-                ? 'Come funzionano i dati geospaziali di Venice Open Data'
-                : 'How geospatial data works in Venice Open Data'}
+              {t('ui.layersPage.comeFunzionanoIDatiGeospaziali')}
             </h2>
             <p className="text-xs sm:text-sm text-[var(--ink-2)] leading-relaxed">
               {language === 'it' ? (
@@ -883,19 +879,19 @@ export default function LayersDocumentationPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full md:w-auto shrink-0 font-mono text-center">
             <div className="p-3 rounded-2xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col">
               <span className="text-2xl font-bold text-[var(--ink)]">{totalLayers}</span>
-              <span className="text-[10px] text-[var(--ink-3)] uppercase">{language === 'it' ? 'Livelli Totali' : 'Total Layers'}</span>
+              <span className="text-[10px] text-[var(--ink-3)] uppercase">{t('ui.layersPage.livelliTotali')}</span>
             </div>
             <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col">
               <span className="text-2xl font-bold text-emerald-400">{realtimeLayers}</span>
-              <span className="text-[10px] text-emerald-300 uppercase">{language === 'it' ? 'Tempo Reale' : 'Real-Time'}</span>
+              <span className="text-[10px] text-emerald-300 uppercase">{t('ui.layersPage.tempoReale')}</span>
             </div>
             <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col">
               <span className="text-2xl font-bold text-amber-400">{simulatedLayers}</span>
-              <span className="text-[10px] text-amber-300 uppercase">{language === 'it' ? 'Digital Twin' : 'Digital Twin'}</span>
+              <span className="text-[10px] text-amber-300 uppercase">{t('ui.layersPage.digitalTwin')}</span>
             </div>
             <div className="p-3 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex flex-col">
               <span className="text-2xl font-bold text-sky-400">{staticLayers}</span>
-              <span className="text-[10px] text-sky-300 uppercase">{language === 'it' ? 'Censimento' : 'Open Data'}</span>
+              <span className="text-[10px] text-sky-300 uppercase">{t('ui.layersPage.censimento')}</span>
             </div>
           </div>
         </section>
@@ -905,36 +901,30 @@ export default function LayersDocumentationPage() {
           <div className="glass-panel p-4 rounded-2xl border border-emerald-500/30 flex flex-col gap-1.5">
             <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase font-mono">
               <Radio className="w-4 h-4 shrink-0 animate-pulse" />
-              <span>{language === 'it' ? 'Tempo Reale Genuino (Sensori)' : 'Genuine Real-Time (Sensors)'}</span>
+              <span>{t('ui.layersPage.tempoRealeGenuinoSensori')}</span>
             </div>
             <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">
-              {language === 'it'
-                ? 'Dati idrometrici, atmosferici e marini misurati in tempo reale da sonde e centraline sul territorio (CPSM marea, METAR Aeronautica Militare, boe CNR-ISMAR, TLE satellitari, navi AIS).'
-                : 'Hydrometric, marine, and atmospheric data collected in real time by deployed physical sensors (CPSM tide, Air Force METAR, CNR-ISMAR wave buoys, satellite TLE, live AIS).'}
+              {t('ui.layersPage.datiIdrometriciAtmosfericiMariniMisurati')}
             </p>
           </div>
 
           <div className="glass-panel p-4 rounded-2xl border border-amber-500/30 flex flex-col gap-1.5">
             <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase font-mono">
               <Clock className="w-4 h-4 shrink-0" />
-              <span>{language === 'it' ? 'Simulato / Digital Twin (Orari Ufficiali)' : 'Simulated / Digital Twin (Official Schedules)'}</span>
+              <span>{t('ui.layersPage.simulatoDigitalTwinOrariUfficiali')}</span>
             </div>
             <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">
-              {language === 'it'
-                ? 'Posizionamento deterministico sincronizzato all\'orologio reale o allo scrubber 24h, calcolato interpolando orari ufficiali di servizio, matrici di flusso e velocità di navigazione (vaporetti ACTV GTFS, treni RFI, navette Alilaguna).'
-                : 'Deterministic positioning synchronized with live clock or 24h scrubber, computed by interpolating official timetables, transit frequencies, and legal canal speeds (ACTV GTFS, RFI trains, Alilaguna).'}
+              {t('ui.layersPage.posizionamentoDeterministicoSincronizzat')}
             </p>
           </div>
 
           <div className="glass-panel p-4 rounded-2xl border border-sky-500/30 flex flex-col gap-1.5">
             <div className="flex items-center gap-2 text-sky-400 font-bold text-xs uppercase font-mono">
               <Database className="w-4 h-4 shrink-0" />
-              <span>{language === 'it' ? 'Censimento Statico & Open Data' : 'Static Inventory & Open Data'}</span>
+              <span>{t('ui.layersPage.censimentoStaticoOpenData')}</span>
             </div>
             <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">
-              {language === 'it'
-                ? 'Registri cartografici e patrimoniali certificati di origine comunale e regionale (nizioleti, vere da pozzo, franchi ponti, DAE, pontili SUEM 118, ciclovie, barene, habitat Natura 2000).'
-                : 'Certified cartographic and asset registers from municipal and regional portals (nizioleti street signs, historic wells, bridge heights, AEDs, ambulance docks, bike routes, salt marshes).'}
+              {t('ui.layersPage.registriCartograficiPatrimonialiCertific')}
             </p>
           </div>
         </section>
@@ -950,16 +940,14 @@ export default function LayersDocumentationPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={
-                  language === 'it'
-                    ? 'Cerca per nome, istituzione (es. ACTV, ARPAV, MOSE)...'
-                    : 'Search by name or institution (e.g. ACTV, ARPAV, MOSE)...'
+                  t('ui.layersPage.cercaNomeIstituzioneEsActv')
                 }
                 className="w-full pl-9 pr-3 py-2 rounded-xl bg-[var(--rule)]/40 border border-[var(--rule)] text-xs text-[var(--ink)] placeholder-[var(--ink-3)] focus:outline-none focus:border-cyan-400 transition-all font-mono"
               />
             </div>
 
             <div className="flex items-center gap-2 text-xs font-mono text-[var(--ink-2)] self-end sm:self-auto">
-              <span>{language === 'it' ? 'Risultati trovati:' : 'Matching layers:'}</span>
+              <span>{t('ui.layersPage.risultatiTrovati')}</span>
               <strong className="text-cyan-400 font-bold text-sm">{filteredLayers.length}</strong>
               <span>/ {totalLayers}</span>
             </div>
@@ -970,13 +958,13 @@ export default function LayersDocumentationPage() {
             {/* Filter by Group */}
             <div className="flex items-center gap-1 bg-[var(--rule)]/40 p-1 rounded-xl border border-[var(--rule)] overflow-x-auto no-scrollbar">
               <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono px-2 hidden lg:inline">
-                {language === 'it' ? 'Gruppo:' : 'Group:'}
+                {t('ui.layersPage.gruppo')}
               </span>
               {[
-                { key: 'all', label: language === 'it' ? 'Tutti i Gruppi' : 'All Groups' },
-                { key: 'mobility', label: language === 'it' ? '1. Mobilità' : '1. Mobility' },
-                { key: 'lagoon', label: language === 'it' ? '2. Laguna' : '2. Lagoon' },
-                { key: 'city', label: language === 'it' ? '3. Città' : '3. City' }
+                { key: 'all', label: t('ui.layersPage.tuttiIGruppi') },
+                { key: 'mobility', label: t('ui.layersPage.n1Mobilita') },
+                { key: 'lagoon', label: t('ui.layersPage.n2Laguna') },
+                { key: 'city', label: t('ui.layersPage.n3Citta') }
               ].map((g) => (
                 <button
                   key={g.key}
@@ -995,13 +983,13 @@ export default function LayersDocumentationPage() {
             {/* Filter by Regime */}
             <div className="flex items-center gap-1 bg-[var(--rule)]/40 p-1 rounded-xl border border-[var(--rule)] overflow-x-auto no-scrollbar">
               <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono px-2 hidden lg:inline">
-                {language === 'it' ? 'Regime:' : 'Status:'}
+                {t('ui.layersPage.regime')}
               </span>
               {[
-                { key: 'all', label: language === 'it' ? 'Tutti' : 'All' },
-                { key: 'realtime', label: language === 'it' ? 'Tempo Reale' : 'Live Sensors' },
-                { key: 'simulated', label: language === 'it' ? 'Digital Twin' : 'Digital Twin' },
-                { key: 'static', label: language === 'it' ? 'Censimento' : 'Open Data' }
+                { key: 'all', label: t('ui.layersPage.tutti') },
+                { key: 'realtime', label: t('ui.layersPage.tempoReale2') },
+                { key: 'simulated', label: t('ui.layersPage.digitalTwin') },
+                { key: 'static', label: t('ui.layersPage.censimento') }
               ].map((r) => (
                 <button
                   key={r.key}
@@ -1020,12 +1008,12 @@ export default function LayersDocumentationPage() {
             {/* Filter by Acquisition */}
             <div className="flex items-center gap-1 bg-[var(--rule)]/40 p-1 rounded-xl border border-[var(--rule)] overflow-x-auto no-scrollbar">
               <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono px-2 hidden lg:inline">
-                {language === 'it' ? 'Acquisizione:' : 'Access:'}
+                {t('ui.layersPage.acquisizione')}
               </span>
               {[
-                { key: 'all', label: language === 'it' ? 'Tutte' : 'All' },
+                { key: 'all', label: t('ui.layersPage.tutte') },
                 { key: 'api', label: 'API Live' },
-                { key: 'local', label: language === 'it' ? 'Locale / Cache' : 'Local / Cache' }
+                { key: 'local', label: t('ui.layersPage.localeCache') }
               ].map((a) => (
                 <button
                   key={a.key}
@@ -1049,7 +1037,7 @@ export default function LayersDocumentationPage() {
             <div className="glass-panel p-8 rounded-3xl text-center flex flex-col items-center justify-center gap-2 border border-[var(--rule)]">
               <Info className="w-8 h-8 text-cyan-400" />
               <p className="text-sm font-semibold text-[var(--ink)]">
-                {language === 'it' ? 'Nessun livello corrisponde ai filtri selezionati.' : 'No layers match the selected filters.'}
+                {t('ui.layersPage.nessunLivelloCorrispondeAiFiltri')}
               </p>
               <button
                 type="button"
@@ -1061,7 +1049,7 @@ export default function LayersDocumentationPage() {
                 }}
                 className="mt-2 px-3 py-1.5 rounded-xl bg-cyan-500 text-white text-xs font-mono cursor-pointer shadow-md"
               >
-                {language === 'it' ? 'Reimposta tutti i filtri' : 'Reset all filters'}
+                {t('ui.layersPage.reimpostaTuttiIFiltri')}
               </button>
             </div>
           ) : (
@@ -1123,7 +1111,7 @@ export default function LayersDocumentationPage() {
                       ) : (
                         <>
                           <Database className="w-3 h-3 text-[var(--ink-3)]" />
-                          <span>{language === 'it' ? 'Locale / Cache' : 'Local / Cache'}</span>
+                          <span>{t('ui.layersPage.localeCache')}</span>
                         </>
                       )}
                     </span>
@@ -1139,7 +1127,7 @@ export default function LayersDocumentationPage() {
                 <div className="p-3 rounded-xl bg-[var(--rule)]/25 border border-[var(--rule)]/80 flex flex-col gap-1 text-[11px]">
                   <span className="font-mono text-[10px] text-cyan-400 uppercase font-bold flex items-center gap-1">
                     <Sparkles className="w-3 h-3 text-cyan-400" />
-                    {language === 'it' ? 'Elaborazione Tecnica & Trasparenza:' : 'Technical Processing & Lineage:'}
+                    {t('ui.layersPage.elaborazioneTecnicaTrasparenza')}
                   </span>
                   <p className="text-[var(--ink-2)] leading-relaxed font-sans">
                     {language === 'it' ? layer.technicalNotesIt : layer.technicalNotesEn}
@@ -1149,7 +1137,7 @@ export default function LayersDocumentationPage() {
                 {/* Footer: Source link & Endpoint */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-[var(--rule)]/60 text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-[var(--ink-3)] font-mono">{language === 'it' ? 'Ente / Fonte:' : 'Authority / Source:'}</span>
+                    <span className="text-[11px] text-[var(--ink-3)] font-mono">{t('ui.layersPage.enteFonte')}</span>
                     <a
                       href={layer.portalUrl}
                       target="_blank"

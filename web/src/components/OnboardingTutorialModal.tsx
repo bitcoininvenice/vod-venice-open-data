@@ -68,25 +68,23 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1">
               <span className="text-cyan-400 font-bold flex items-center gap-1.5">
                 <Waves className="w-3.5 h-3.5" />
-                <span>{language === 'it' ? 'Laguna, Maree & Subsidenza' : 'Lagoon, Tides & Subsidence'}</span>
+                <span>{t('ui.onboarding.lagunaMareeSubsidenza')}</span>
               </span>
-              <span>{language === 'it' ? 'CPSM, barriere MOSE, radar InSAR Copernicus EGMS e fondali.' : 'CPSM, MOSE storm gates, Copernicus EGMS InSAR radar and bathymetry.'}</span>
+              <span>{t('ui.onboarding.cpsmBarriereMoseRadarInsar')}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1">
               <span className="text-emerald-400 font-bold flex items-center gap-1.5">
                 <Ship className="w-3.5 h-3.5" />
-                <span>{language === 'it' ? 'Mobilità, Canali & Treni' : 'Mobility, Canals & Rail'}</span>
+                <span>{t('ui.onboarding.mobilitaCanaliTreni')}</span>
               </span>
-              <span>{language === 'it' ? 'ACTV, Alilaguna, Barcavelox, franchi ponti, navi AIS e treni RFI.' : 'ACTV, Alilaguna, Barcavelox, bridge clearance, AIS vessels and trains.'}</span>
+              <span>{t('ui.onboarding.actvAlilagunaBarcaveloxFranchiPonti')}</span>
             </div>
           </div>
           <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-200 flex items-start gap-2">
             <Lightbulb className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
             <div>
-              <strong>{language === 'it' ? 'Mappa pulita di default:' : 'Clean map by default:'}</strong>{' '}
-              {language === 'it'
-                ? "All'inizio troverai la mappa vettoriale pulita: decidi tu quali livelli attivare per un'esplorazione chiara, fluida e senza distrazioni."
-                : 'You will find a clean vector map at start: choose which layers to toggle for a crisp, focused exploration.'}
+              <strong>{t('ui.onboarding.mappaPulitaDefault')}</strong>{' '}
+              {t('ui.onboarding.allInizioTroveraiMappaVettoriale')}
             </div>
           </div>
         </div>
@@ -101,7 +99,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
       content: (
         <div className="flex flex-col gap-3 text-xs leading-relaxed text-[var(--ink-2)]">
           <p>
-            {language === 'it' ? 'Usa il pannello laterale per attivare le informazioni d\'interesse:' : 'Use the side panel to toggle the layers of interest:'}
+            {t('ui.onboarding.usaPannelloLateraleAttivareInformazioni')}
           </p>
           <div className="space-y-2 text-[11px]">
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-start gap-2.5">
@@ -129,23 +127,21 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 font-bold text-xs text-cyan-400">
                 <BookOpen className="w-3.5 h-3.5" />
-                <span>{language === 'it' ? 'Documentazione Completa dei Livelli' : 'Full Layers Documentation'}</span>
+                <span>{t('ui.onboarding.documentazioneCompletaDeiLivelli')}</span>
               </div>
               <a
                 href="/layers"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-mono text-[11px] font-semibold transition-colors"
-                title={language === 'it' ? 'Apri catalogo livelli' : 'Open layers catalog'}
+                title={t('ui.onboarding.apriCatalogoLivelli')}
               >
                 <span>/layers</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
             </div>
             <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">
-              {language === 'it'
-                ? 'Vuoi conoscere l\'origine e la precisione di ogni dato? Nel catalogo sono tracciati tutti i 43 livelli: fonte istituzionale, acquisizione (API vs locale) e natura temporale (sensori fisici in tempo reale, digital twin simulato su orari ufficiali o censimenti statici).'
-                : 'Want to know data provenance and fidelity? The catalog tracks all 43 layers: official source, acquisition type (API vs local), and temporal regime (physical real-time sensors, scheduled digital twin, or static open data).'}
+              {t('ui.onboarding.vuoiConoscereLOriginePrecisione')}
             </p>
           </div>
         </div>
@@ -160,7 +156,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
       content: (
         <div className="flex flex-col gap-2.5 text-xs">
           <p className="text-[var(--ink-2)]">
-            {language === 'it' ? 'Seleziona una configurazione iniziale con cui iniziare l\'esplorazione:' : 'Select an initial setup to start exploring:'}
+            {t('ui.onboarding.selezionaConfigurazioneInizialeConCui')}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
             {/* Option 1: Clean */}
@@ -175,14 +171,12 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold text-xs text-cyan-400 flex items-center gap-1.5">
-                  <EyeOff className="w-3.5 h-3.5" /> {language === 'it' ? 'Mappa Pulita (Consigliato)' : 'Clean Map (Recommended)'}
+                  <EyeOff className="w-3.5 h-3.5" /> {t('ui.onboarding.mappaPulitaConsigliato')}
                 </span>
                 {selectedPreset === 'clean' && <CheckCircle2 className="w-4 h-4 text-cyan-400" />}
               </div>
               <span className="text-[11px] leading-tight text-[var(--ink-2)]">
-                {language === 'it'
-                  ? 'Zero icone. Esplora la geografia della Laguna e accendi manualmente i livelli che preferisci.'
-                  : 'Zero icons. Explore the lagoon geography and manually toggle the layers you prefer.'}
+                {t('ui.onboarding.zeroIconeEsploraGeografiaLaguna')}
               </span>
             </button>
 
@@ -203,9 +197,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
                 {selectedPreset === 'mobility' && <CheckCircle2 className="w-4 h-4 text-teal-400" />}
               </div>
               <span className="text-[11px] leading-tight text-[var(--ink-2)]">
-                {language === 'it'
-                  ? 'Vaporetti ACTV in movimento, battelli Alilaguna e navi mercantili/crociere AIS.'
-                  : 'Moving ACTV waterbuses, Alilaguna airport shuttles, and AIS commercial/cruise ships.'}
+                {t('ui.onboarding.vaporettiActvMovimentoBattelliAlilaguna')}
               </span>
             </button>
 
@@ -226,9 +218,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
                 {selectedPreset === 'lagoon' && <CheckCircle2 className="w-4 h-4 text-blue-400" />}
               </div>
               <span className="text-[11px] leading-tight text-[var(--ink-2)]">
-                {language === 'it'
-                  ? 'Barriere MOSE, passerelle per l\'acqua alta, piattaforma CNR e anemometri.'
-                  : 'MOSE flood barriers, high water walkways, CNR research platform, and wind anemometers.'}
+                {t('ui.onboarding.barriereMosePasserelleLAcqua')}
               </span>
             </button>
 
@@ -249,9 +239,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
                 {selectedPreset === 'satellites' && <CheckCircle2 className="w-4 h-4 text-purple-400" />}
               </div>
               <span className="text-[11px] leading-tight text-[var(--ink-2)]">
-                {language === 'it'
-                  ? 'Tracce orbitali Sentinel-1/2, COSMO-SkyMed, scansioni radar e Stazione Spaziale ISS.'
-                  : 'Orbital ground tracks of Sentinel-1/2, COSMO-SkyMed radar, and International Space Station ISS.'}
+                {t('ui.onboarding.tracceOrbitaliSentinel12')}
               </span>
             </button>
           </div>
@@ -260,42 +248,40 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
     },
     // Step 3: Timeline & Controls
     {
-      badge: language === 'it' ? 'CONTROLLI TEMPO REALE' : 'REAL-TIME CONTROLS',
-      title: language === 'it' ? 'Timeline 24h & Modalità Live' : '24h Timeline & Live Mode',
-      subtitle: language === 'it' ? 'Viaggia nel tempo o resta sincronizzato al secondo' : 'Travel in time or stay synchronized to the second',
+      badge: t('ui.onboarding.controlliTempoReale'),
+      title: t('ui.onboarding.timeline24hModalitaLive'),
+      subtitle: t('ui.onboarding.viaggiaNelTempoOResta'),
       icon: <Clock className="w-6 h-6 text-blue-400" />,
       content: (
         <div className="flex flex-col gap-3 text-xs leading-relaxed text-[var(--ink-2)]">
           <p>
-            {language === 'it' ? 'In basso al centro trovi la barra di controllo temporale:' : 'At the bottom center you will find the time control bar:'}
+            {t('ui.onboarding.bassoAlCentroTroviBarra')}
           </p>
           <div className="space-y-2 text-[11px]">
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-center justify-between">
               <span className="text-[var(--ink)] flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <strong>{language === 'it' ? 'Modalità ORA LIVE:' : 'LIVE NOW Mode:'}</strong>
+                <strong>{t('ui.onboarding.modalitaOraLive')}</strong>
               </span>
-              <span className="text-cyan-400 font-mono">{language === 'it' ? '1:1 Orario Reale di Venezia' : '1:1 Real Venice Time'}</span>
+              <span className="text-cyan-400 font-mono">{t('ui.onboarding.n11OrarioRealeVenezia')}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-center justify-between">
               <span className="text-[var(--ink)] flex items-center gap-2">
                 <FastForward className="w-3.5 h-3.5 text-amber-400" />
-                <strong>{language === 'it' ? 'Scrubber & Velocità:' : 'Scrubber & Speed:'}</strong>
+                <strong>{t('ui.onboarding.scrubberVelocita')}</strong>
               </span>
-              <span className="text-amber-400 font-mono">{language === 'it' ? 'Fino a 720x orario programmato' : 'Up to 720x speed'}</span>
+              <span className="text-amber-400 font-mono">{t('ui.onboarding.fino720xOrarioProgrammato')}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-center justify-between">
               <span className="text-[var(--ink)] flex items-center gap-2">
                 <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-                <strong>{language === 'it' ? 'Calendario Feriale / Festivo:' : 'Weekday / Holiday Calendar:'}</strong>
+                <strong>{t('ui.onboarding.calendarioFerialeFestivo')}</strong>
               </span>
-              <span className="text-emerald-400 font-mono">{language === 'it' ? 'Orari GTFS ufficiali ACTV' : 'Official ACTV GTFS schedules'}</span>
+              <span className="text-emerald-400 font-mono">{t('ui.onboarding.orariGtfsUfficialiActv')}</span>
             </div>
           </div>
           <p className="text-[11px] text-[var(--ink-3)] pt-1">
-            {language === 'it'
-              ? 'Puoi riaprire questa guida in qualsiasi momento cliccando sul tasto Guida nella barra superiore.'
-              : 'You can reopen this guide anytime by clicking the Guide button in the top navigation bar.'}
+            {t('ui.onboarding.puoiRiaprireQuestaGuidaQualsiasi')}
           </p>
         </div>
       )
@@ -358,7 +344,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
                 className={`h-2 rounded-full transition-all cursor-pointer ${
                   currentStep === idx ? 'w-6 bg-cyan-400' : 'w-2 bg-[var(--rule)] hover:bg-[var(--ink-3)]'
                 }`}
-                title={`${language === 'it' ? 'Vai al passo' : 'Go to step'} ${idx + 1}`}
+                title={`${t('ui.onboarding.vaiAlPasso')} ${idx + 1}`}
               />
             ))}
           </div>

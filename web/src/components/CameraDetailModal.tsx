@@ -89,7 +89,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
           <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1">
             <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase flex items-center gap-1">
               <Building2 className="w-3 h-3 text-cyan-400" />{' '}
-              {language === 'it' ? 'Ubicazione & Sestiere' : 'Location & District'}
+              {t('ui.camera.ubicazioneSestiere')}
             </span>
             <span className="font-semibold text-[var(--ink)]">{camera.location}</span>
             <span className="text-[11px] font-mono text-cyan-400">{camera.sestiere}</span>
@@ -98,7 +98,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
           <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1">
             <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase flex items-center gap-1">
               <Compass className="w-3 h-3 text-amber-400" />{' '}
-              {language === 'it' ? 'Inquadratura & Obiettivo' : 'Field of View & Target'}
+              {t('ui.camera.inquadraturaObiettivo')}
             </span>
             <span className="font-medium text-[var(--ink)] leading-tight">{camera.targetDescription}</span>
             {camera.bearingDeg !== undefined && (
@@ -117,7 +117,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
             </div>
             <div>
               <p className="text-sm font-semibold text-[var(--ink)]">
-                {language === 'it' ? 'Diretta disponibile sul sito del fornitore' : 'Live stream available on the provider website'}
+                {t('ui.camera.direttaDisponibileSulSitoFornitore')}
               </p>
               <p className="text-xs text-[var(--ink-2)] max-w-md mt-1 leading-relaxed">
                 {language === 'it'
@@ -133,7 +133,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                 className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-medium flex items-center gap-1.5 shadow-md shadow-cyan-600/20 transition-all"
               >
                 <Play className="w-3.5 h-3.5" />
-                {language === 'it' ? 'Apri la diretta ufficiale' : 'Open the official stream'}
+                {t('ui.camera.apriDirettaUfficiale')}
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             )}
@@ -144,9 +144,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
             <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
             <div className="flex flex-col gap-1">
               <strong className="text-amber-300 text-xs">
-                {language === 'it'
-                  ? 'Video Monitoraggio Urbano a Circuito Chiuso (CCTV)'
-                  : 'Closed-Circuit Urban Monitoring (CCTV)'}
+                {t('ui.camera.videoMonitoraggioUrbanoCircuitoChiuso')}
               </strong>
               <p className="text-[11px] leading-relaxed text-[var(--ink-2)]">
                 {language === 'it'
@@ -162,14 +160,14 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             <div>
               <span className="text-[10px] text-[var(--ink-3)] font-mono block">
-                {language === 'it' ? 'Titolare / Gestore' : 'Operator / Owner'}
+                {t('ui.camera.titolareGestore')}
               </span>
               <strong className="text-[var(--ink)] text-xs truncate block">{camera.operator}</strong>
             </div>
 
             <div>
               <span className="text-[10px] text-[var(--ink-3)] font-mono block">
-                {language === 'it' ? 'Cartello Informativa' : 'Privacy Sign'}
+                {t('ui.camera.cartelloInformativa')}
               </span>
               {camera.privacyNoticeStatus === 'PRESENTE' ? (
                 <span className="text-emerald-400 font-mono text-[11px] font-semibold flex items-center gap-1">
@@ -184,15 +182,15 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                   <AlertTriangle className="w-3 h-3" /> Incompleta
                 </span>
               ) : camera.privacyNoticeStatus === 'NON_APPLICABILE_PANORAMICA' ? (
-                <span className="text-cyan-400 font-mono text-[11px]">{language === 'it' ? 'Non richiesta' : 'Not required'}</span>
+                <span className="text-cyan-400 font-mono text-[11px]">{t('ui.camera.nonRichiesta')}</span>
               ) : (
-                <span className="text-[var(--ink-3)] font-mono text-[11px]">{language === 'it' ? 'Non indicato' : 'Not reported'}</span>
+                <span className="text-[var(--ink-3)] font-mono text-[11px]">{t('ui.camera.nonIndicato')}</span>
               )}
             </div>
 
             <div className="col-span-2 sm:col-span-1">
               <span className="text-[10px] text-[var(--ink-3)] font-mono block">
-                {language === 'it' ? 'Fonte Mappatura' : 'Mapping Source'}
+                {t('ui.camera.fonteMappatura')}
               </span>
               <a
                 href={camera.sourceUrl}

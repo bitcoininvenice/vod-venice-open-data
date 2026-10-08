@@ -335,7 +335,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   categoryColors,
   onClose
 }) => {
-  const { language, t } = useTranslation();
+  const { t } = useTranslation();
   const [sectionOpen, setSectionOpen] = useState({
     mobility: false,
     lagoon: false,
@@ -374,12 +374,12 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
 
   const CATEGORIES: { key: TransportModeCategory; label: string }[] = [
     { key: 'vaporetto', label: 'Vaporetto' },
-    { key: 'motoscafo', label: language === 'it' ? 'Motoscafo' : 'Motorboat' },
-    { key: 'motonave', label: language === 'it' ? 'Motonave' : 'Motorship' },
+    { key: 'motoscafo', label: t('ui.layerPanel.motoscafo') },
+    { key: 'motonave', label: t('ui.layerPanel.motonave') },
     { key: 'ferry', label: 'Ferry-boat' },
     { key: 'tram', label: 'Tram T1/T2' },
-    { key: 'bus', label: language === 'it' ? 'Bus Terraferma' : 'Mainland Bus' },
-    { key: 'island', label: language === 'it' ? 'Bus Isole' : 'Island Bus' },
+    { key: 'bus', label: t('ui.layerPanel.busTerraferma') },
+    { key: 'island', label: t('ui.layerPanel.busIsole') },
   ];
 
   return (
@@ -418,7 +418,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 setSectionOpen({ mobility: false, lagoon: false, city: false, actv: false });
               }}
               className="flex-1 py-1.5 px-2 rounded-xl bg-[var(--rule)]/40 hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] font-mono text-[11px] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-              title={language === 'it' ? 'Disattiva tutti i livelli per una mappa pulita' : 'Turn off all layers for a clean map'}
+              title={t('ui.layerPanel.disattivaTuttiILivelliMappa')}
             >
               <EyeOff className="w-3.5 h-3.5 text-rose-400" />
               <span>{t('layers.presetClean')}</span>
@@ -432,7 +432,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 setSectionOpen({ mobility: true, lagoon: true, city: true, actv: false });
               }}
               className="flex-1 py-1.5 px-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 font-mono text-[11px] flex items-center justify-center gap-1.5 border border-cyan-500/20 transition-all cursor-pointer"
-              title={language === 'it' ? 'Attiva tutti i livelli contemporaneamente' : 'Turn on all layers simultaneously'}
+              title={t('ui.layerPanel.attivaTuttiILivelliContemporaneamente')}
             >
               <Eye className="w-3.5 h-3.5" />
               <span>{t('layers.presetAll')}</span>
@@ -443,7 +443,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
         {onApplyPreset && (
           <div className="flex items-center gap-1 pt-0.5 w-full relative">
             <span className="text-[10px] text-[var(--ink-3)] font-mono uppercase shrink-0 font-semibold select-none">
-              {language === 'it' ? 'Preset:' : 'Presets:'}
+              {t('ui.layerPanel.preset')}
             </span>
 
             {canScrollLeft && (
@@ -451,7 +451,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 type="button"
                 onClick={() => handleScrollPresets('left')}
                 className="p-1 rounded-md bg-[var(--rule)]/70 hover:bg-cyan-500/20 text-[var(--ink-2)] hover:text-cyan-400 border border-[var(--rule)] transition-all cursor-pointer shrink-0 shadow-sm active:scale-90"
-                title={language === 'it' ? 'Scorri preset a sinistra' : 'Scroll presets left'}
+                title={t('ui.layerPanel.scorriPresetSinistra')}
               >
                 <ChevronLeft className="w-3 h-3" />
               </button>
@@ -519,7 +519,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 type="button"
                 onClick={() => handleScrollPresets('right')}
                 className="p-1 rounded-md bg-[var(--rule)]/70 hover:bg-cyan-500/20 text-[var(--ink-2)] hover:text-cyan-400 border border-[var(--rule)] transition-all cursor-pointer shrink-0 shadow-sm active:scale-90"
-                title={language === 'it' ? 'Scorri preset a destra' : 'Scroll presets right'}
+                title={t('ui.layerPanel.scorriPresetDestra')}
               >
                 <ChevronRight className="w-3 h-3" />
               </button>
@@ -665,7 +665,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Compass className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{language === 'it' ? 'Rotte & Canali Marittimi' : 'Maritime Shipping Routes'}</span>
+                  <span>{t('ui.layerPanel.rotteCanaliMarittimi')}</span>
                 </div>
                 {showShipRoutes ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
               </button>
@@ -1225,7 +1225,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             <div className="flex flex-col gap-1.5 bg-[var(--rule)]/30 p-2.5 rounded-xl border border-[var(--rule)]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-[var(--ink)] flex items-center gap-1.5">
-                  <SlidersHorizontal className="w-3 h-3 text-amber-400" /> {language === 'it' ? 'Buffer Spaziale Cantieri' : 'Worksite Spatial Buffer'}
+                  <SlidersHorizontal className="w-3 h-3 text-amber-400" /> {t('ui.layerPanel.bufferSpazialeCantieri')}
                 </span>
                 <button
                   type="button"
@@ -1242,7 +1242,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               {showSpatialBuffer && (
                 <div className="flex flex-col gap-1 pt-1">
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-[var(--ink-2)]">{language === 'it' ? 'Raggio impatto:' : 'Impact radius:'}</span>
+                    <span className="text-[var(--ink-2)]">{t('ui.layerPanel.raggioImpatto')}</span>
                     <span className="font-mono font-bold text-amber-400">{bufferRadiusMeters} {t('common.meters')}</span>
                   </div>
                   <input
@@ -1705,7 +1705,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           >
             <span className="flex items-center gap-1.5 font-bold">
               <Zap className="w-3.5 h-3.5 text-amber-400" />
-              <span>{language === 'it' ? 'Flotta ACTV per Tipo' : 'ACTV Fleet by Vessel Type'}</span>
+              <span>{t('ui.layerPanel.flottaActvTipo')}</span>
             </span>
             {sectionOpen.actv ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
@@ -1719,7 +1719,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                     onClick={() => onSelectCategory('all')}
                     className="text-[10px] font-mono text-cyan-400 hover:underline cursor-pointer"
                   >
-                    {language === 'it' ? 'Mostra tutti i tipi' : 'Show all types'}
+                    {t('ui.layerPanel.mostraTuttiITipi')}
                   </button>
                 </div>
               )}

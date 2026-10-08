@@ -37,7 +37,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
   onSyncLiveTime,
   isLiveSynced
 }) => {
-  const { language, t } = useTranslation();
+  const { t } = useTranslation();
   const [isExpandedMobile, setIsExpandedMobile] = useState<boolean>(false);
   const sliderValue = Math.floor(currentTimeSeconds / 60);
 
@@ -48,9 +48,9 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
   };
 
   const speedOptions = [
-    { val: 1, label: language === 'it' ? '1× Reale' : '1× Real' },
-    { val: 5, label: language === 'it' ? '5× Naturale' : '5× Natural' },
-    { val: 20, label: language === 'it' ? '20× Fluido' : '20× Smooth' },
+    { val: 1, label: t('ui.timeline.n1Reale') },
+    { val: 5, label: t('ui.timeline.n5Naturale') },
+    { val: 20, label: t('ui.timeline.n20Fluido') },
     { val: 180, label: '180×' },
     { val: 720, label: '720×' },
   ];
@@ -77,7 +77,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
                   ? 'bg-rose-500/20 text-rose-400 border-rose-500/50 shadow-sm'
                   : 'bg-[var(--rule)]/60 text-[var(--ink-2)] border-[var(--rule)] hover:text-[var(--ink)]'
               }`}
-              title={language === 'it' ? 'Aggancia all\'orario esatto attuale di Venezia' : 'Lock to exact current Venice time'}
+              title={t('ui.timeline.agganciaAllOrarioEsattoAttuale')}
             >
               <span className={`w-2 h-2 shrink-0 rounded-full ${isLiveSynced ? 'bg-rose-500 animate-ping' : 'bg-[var(--ink-3)]'}`} />
               <span className="text-[11px] sm:text-xs">{t('timeline.liveNow')}</span>
@@ -91,8 +91,8 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
               <span className="font-mono font-bold text-sm sm:text-base text-[var(--ink)] tabular">
                 {totalActiveVehicles}
               </span>{' '}
-              <span className="text-[var(--ink-2)]" title={language === 'it' ? 'Corse in servizio secondo l\'orario GTFS ACTV (simulazione, non posizioni GPS)' : 'Trips in service according to the ACTV GTFS timetable (simulation, not GPS positions)'}>
-                {language === 'it' ? 'corse da orario' : 'scheduled trips'}
+              <span className="text-[var(--ink-2)]" title={t('ui.timeline.corseServizioSecondoLOrario')}>
+                {t('ui.timeline.corseOrario')}
               </span>
             </div>
           </div>
@@ -113,12 +113,12 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
             {isPlaying ? (
               <>
                 <Pause className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{language === 'it' ? 'Pausa' : 'Pause'}</span>
+                <span className="hidden sm:inline">{t('ui.timeline.pausa')}</span>
               </>
             ) : (
               <>
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span className="hidden sm:inline">{language === 'it' ? 'Avvia' : 'Play'}</span>
+                <span className="hidden sm:inline">{t('ui.timeline.avvia')}</span>
               </>
             )}
           </button>
@@ -128,7 +128,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
             type="button"
             onClick={() => setIsExpandedMobile((p) => !p)}
             className="flex xl:hidden items-center gap-1 px-2 py-1.5 rounded-xl bg-[var(--rule)]/70 text-[var(--ink-2)] hover:text-[var(--ink)] border border-[var(--rule)] text-xs font-mono cursor-pointer"
-            title={language === 'it' ? 'Mostra opzioni velocità e calendario' : 'Show speed and calendar options'}
+            title={t('ui.timeline.mostraOpzioniVelocitaCalendario')}
           >
             <span>{speed}×</span>
             {isExpandedMobile ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -166,7 +166,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
             value={sliderValue}
             onChange={(e) => onTimeChange(Number(e.target.value) * 60)}
             className="w-full h-2 rounded-lg cursor-ew-resize appearance-none"
-            aria-label={language === 'it' ? 'Orario del giorno' : 'Time of day'}
+            aria-label={t('ui.timeline.orarioGiorno')}
           />
         </div>
 
@@ -190,7 +190,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
       >
         {/* Mobile Day Selector (when expanded) */}
         <div className="flex xl:hidden items-center justify-between w-full md:w-auto gap-2">
-          <span className="text-[11px] text-[var(--ink-3)] font-mono">{language === 'it' ? 'Giorno:' : 'Day:'}</span>
+          <span className="text-[11px] text-[var(--ink-3)] font-mono">{t('ui.timeline.giorno')}</span>
           <div className="flex items-center gap-1 bg-[var(--rule)]/60 p-0.5 rounded-lg border border-[var(--rule)] flex-1 justify-end">
             {(['weekday', 'saturday', 'sunday'] as DayType[]).map((d) => (
               <button
@@ -235,13 +235,13 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
         {/* Fleet & Peak summary */}
         <div className="flex items-center justify-between w-full md:w-auto text-[11px] sm:text-xs text-[var(--ink-2)] font-mono">
           <span className="md:hidden">
-            {language === 'it' ? 'Corse da orario:' : 'Scheduled trips:'}{' '}
+            {t('ui.timeline.corseOrario2')}{' '}
             <strong className="text-emerald-400">{totalActiveVehicles}</strong>
           </span>
           <span>
-            {language === 'it' ? 'Picco:' : 'Peak:'}{' '}
+            {t('ui.timeline.picco')}{' '}
             <span className="text-cyan-400 font-bold">{peakCount}</span>{' '}
-            {language === 'it' ? 'corse alle' : 'trips at'}{' '}
+            {t('ui.timeline.corseAlle')}{' '}
             <span className="text-[var(--ink)] font-bold">{peakTime}</span>
           </span>
         </div>

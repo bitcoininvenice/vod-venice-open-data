@@ -1,3 +1,5 @@
+import type { UiTranslations } from './ui.it';
+
 export type Language = 'it' | 'en';
 
 export interface Translations {
@@ -396,5 +398,6 @@ export interface Translations {
     satelliteElevation: string;
     satelliteDetailsButton: string;
   };
+  /** Testi dei componenti, raggruppati per componente */
+  ui: UiTranslations;
 }
-

@@ -62,7 +62,7 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
         <div className="p-3 rounded-xl bg-[var(--rule)]/40 border border-[var(--rule)] flex flex-col gap-1 text-xs">
           <div className="flex items-center justify-between">
             <span className="text-[10px] uppercase font-mono text-[var(--ink-3)]">
-              {language === 'it' ? 'Ormeggio Assegnato / Banchina' : 'Assigned Berth / Quay'}
+              {t('ui.ship.ormeggioAssegnatoBanchina')}
             </span>
             <span className="font-mono font-bold text-cyan-400">{ship.operator}</span>
           </div>
@@ -71,7 +71,7 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
             {ship.berth}
           </span>
           <span className="text-[11px] text-[var(--ink-2)]">
-            {language === 'it' ? 'Destinazione:' : 'Destination:'} <strong>{ship.destination}</strong>
+            {t('ui.ship.destinazione')} <strong>{ship.destination}</strong>
           </span>
         </div>
 
@@ -86,12 +86,12 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
               {ship.isRestrictedLagoonRoute ? (
                 <>
                   <AlertTriangle className="w-4 h-4 text-amber-400" />
-                  <span>{language === 'it' ? 'Deviazione Obbligatoria (D.L. 103/2021)' : 'Mandatory Rerouting (Decree 103/2021)'}</span>
+                  <span>{t('ui.ship.deviazioneObbligatoriaDL103')}</span>
                 </>
               ) : (
                 <>
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <span>{language === 'it' ? 'Nave Autorizzata al Tronchetto / Marittima' : 'Authorized at Tronchetto / Marittima'}</span>
+                  <span>{t('ui.ship.naveAutorizzataAlTronchettoMarittima')}</span>
                 </>
               )}
             </div>
@@ -117,19 +117,19 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
         <div className="grid grid-cols-3 gap-2 text-xs">
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
             <span className="text-[10px] text-[var(--ink-3)] block font-mono">
-              {language === 'it' ? 'Stazza Lorda' : 'Gross Tonnage'}
+              {t('ui.ship.stazzaLorda')}
             </span>
             <span className="font-mono font-bold text-[var(--ink)] text-sm">{ship.grossTonnage.toLocaleString()} GT</span>
           </div>
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
             <span className="text-[10px] text-[var(--ink-3)] block font-mono">
-              {language === 'it' ? 'Lunghezza' : 'Length'}
+              {t('ui.ship.lunghezza')}
             </span>
             <span className="font-mono font-bold text-cyan-400 text-sm">{ship.lengthMeters} {t('common.meters')}</span>
           </div>
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
             <span className="text-[10px] text-[var(--ink-3)] block font-mono">
-              {language === 'it' ? 'Pescaggio' : 'Draught'}
+              {t('ui.ship.pescaggio')}
             </span>
             <span className="font-mono font-bold text-emerald-400 text-sm">{ship.draughtMeters} {t('common.meters')}</span>
           </div>
@@ -139,13 +139,13 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
             <span className="text-[10px] text-[var(--ink-3)] block font-mono">
-              {language === 'it' ? 'Velocità Navigazione' : 'Speed'}
+              {t('ui.ship.velocitaNavigazione')}
             </span>
             <span className="font-mono font-bold text-cyan-300">{ship.speedKnots} {t('common.knots')}</span>
           </div>
           <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
             <span className="text-[10px] text-[var(--ink-3)] block font-mono">
-              {language === 'it' ? 'Rotta (Heading)' : 'Heading'}
+              {t('ui.ship.rottaHeading')}
             </span>
             <span className="font-mono font-bold text-sky-400">{ship.heading}°</span>
           </div>

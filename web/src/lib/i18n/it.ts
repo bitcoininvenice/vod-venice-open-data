@@ -1,3 +1,4 @@
+import { itUi } from './ui.it';
 import { Translations } from './types';
 
 export const itTranslations: Translations = {
@@ -395,6 +396,6 @@ export const itTranslations: Translations = {
     satellitePass: 'Passaggio',
     satelliteElevation: 'Elev.',
     satelliteDetailsButton: 'Scheda Completa & Dati ESA/ASI'
-  }
+  },
+  ui: itUi
 };
-

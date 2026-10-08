@@ -16,7 +16,7 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
   stop,
   onClose
 }) => {
-  const { language, t } = useTranslation();
+  const { t } = useTranslation();
   const panelRef = useDialogA11y(stop !== null, onClose);
   if (!stop) return null;
 
@@ -39,7 +39,7 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
             </div>
             <div>
               <span className="text-[10px] uppercase font-mono tracking-wider text-cyan-400">
-                {language === 'it' ? `Fermata ACTV · ${stop.mode.toUpperCase()}` : `ACTV Stop · ${stop.mode.toUpperCase()}`}
+                {t('ui.stop.fermataActvModo', { mode: stop.mode.toUpperCase() })}
               </span>
               <h3 id="stop-modal-title" className="text-base font-bold text-[var(--ink)] leading-snug">
                 {stop.name}
@@ -83,7 +83,7 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
                 key={l}
                 className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30"
               >
-                {language === 'it' ? 'Linea' : 'Route'} {l}
+                {t('ui.stop.linea')} {l}
               </span>
             ))}
           </div>
@@ -93,12 +93,10 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
         <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 flex flex-col gap-2">
           <div className="flex items-center gap-2 text-xs text-blue-300 font-semibold">
             <ShieldCheck className="w-4 h-4 text-blue-400" />
-            <span>{language === 'it' ? 'Dato Istituzionale GTFS ACTV' : 'ACTV Institutional GTFS Data'}</span>
+            <span>{t('ui.stop.datoIstituzionaleGtfsActv')}</span>
           </div>
           <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">
-            {language === 'it'
-              ? 'Approdo censito nel catalogo open data ufficiale GTFS di ACTV / AVM S.p.A. e Comune di Venezia. Per gli orari ufficiali di passaggio in tempo reale e gli avvisi di linea consulta il portale ufficiale di ACTV o i display di pontile.'
-              : 'Official dock catalogued in the ACTV / AVM S.p.A. and Municipality of Venice GTFS open data registry. For official live timetables and service alerts, consult the official ACTV portal or electronic dock displays.'}
+            {t('ui.stop.approdoCensitoNelCatalogoOpen')}
           </p>
           <a
             href="https://actv.avmspa.it/it/content/orari-servizio-di-navigazione-0"
@@ -107,7 +105,7 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
             className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 text-xs font-semibold border border-cyan-500/30 transition-colors"
           >
             <ExternalLink className="w-3.5 h-3.5" />
-            {language === 'it' ? 'Orari Ufficiali di Navigazione ACTV' : 'Official ACTV Navigation Timetables'}
+            {t('ui.stop.orariUfficialiNavigazioneActv')}
           </a>
         </div>
       </div>
