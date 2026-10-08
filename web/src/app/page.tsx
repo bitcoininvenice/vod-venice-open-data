@@ -537,7 +537,7 @@ export default function HomePage() {
       })
       .catch((err) => console.warn('Using fallback venice assets:', err));
 
-    // Fetch Venice Cameras & Webcams (Anopticon CCTV + Skyline/CPSM Live Feeds)
+    // Fetch Venice Cameras & Webcams (Anopticon CCTV + SkylineWebcams / CNR Live Feeds)
     fetch('/api/cameras')
       .then((res) => res.json())
       .then((data) => {

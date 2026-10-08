@@ -20,7 +20,7 @@ export async function GET() {
     metadata: {
       regime: 'CATALOGO_IBRIDO_CERTIFICATO_E_CIVICO',
       sources: {
-        liveWebcams: 'Centro Previsioni Maree (CPSM), CNR-ISMAR Acqua Alta, SkylineWebcams, I Love You Venice',
+        liveWebcams: 'SkylineWebcams (Rete pubblica) e CNR-ISMAR Acqua Alta (Piattaforma oceanografica)',
         cctvMonitoring: 'Anopticon / Tramaci.org (Mappatura civica partecipativa - Open Counter-Mapping)',
         cctvSurveillance: 'Anopticon / Tramaci.org (Mappatura civica partecipativa - Open Counter-Mapping)'
       },
