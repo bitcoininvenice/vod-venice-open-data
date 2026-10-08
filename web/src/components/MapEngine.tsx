@@ -1720,7 +1720,21 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Rendering on demand: con soli layer statici si ridisegna quando l'effetto viene ricreato
+    // (camera, selezioni o dati cambiati) e poi una volta al secondo (palette dinamica);
+    // con layer animati a ogni frame.
+    const hasAnimatedLayers =
+      showVehicles || showFlights || showShips || showAlilaguna || showSatellites ||
+      showCameras || showMarineSignals || showOceanStations || showLagoonWater;
+    let lastDraw = -Infinity;
+
     const render = () => {
+      const frameTime = performance.now();
+      if (!hasAnimatedLayers && frameTime - lastDraw < 1000) {
+        animId = requestAnimationFrame(render);
+        return;
+      }
+      lastDraw = frameTime;
       // Tempo letto dall'orologio di simulazione a ogni frame (non dallo stato React)
       const currentTimeSeconds = simClock.get();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
