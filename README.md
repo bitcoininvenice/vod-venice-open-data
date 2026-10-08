@@ -3,8 +3,8 @@
 **Venice Open Data (VOD)** è una piattaforma web moderna ad alte prestazioni per l'analisi geospaziale, la visualizzazione e l'incrocio degli **Open Data del Comune di Venezia** e della rete di **trasporto pubblico ACTV / AVM** (navigazione lagunare, autobus e tram).
 
 VOD integra:
-1. **Simulazione da orario della flotta ACTV** (oltre 5.400 corse feriali dal GTFS ufficiale): le posizioni sono calcolate dagli orari, non sono tracciamento GPS.
-2. **Dati live** letti lato server con cache condivisa: maree CPSM (dati.venezia.it), METAR LIPZ (NOAA AWC), voli ADS-B (OpenSky), posizioni reali ACTV (GTFS-RT, via `/api/realtime/vehicles`).
+1. **Simulazione da orario della flotta ACTV** (oltre 5.400 corse feriali dal GTFS ufficiale, rigenerata dalla pipeline) e, separatamente, **posizioni GPS reali** dal feed GTFS-RT.
+2. **Dati live** letti lato server con cache condivisa: maree e rete meteo-marina CPSM (dati.venezia.it), METAR LIPZ (NOAA AWC), voli ADS-B (OpenSky), mezzi ACTV (GTFS-RT), orbite satellitari (TLE CelesTrak).
 3. **Analisi spaziale** cantieri ↔ fermate entro un raggio configurabile.
 4. **Palette solare dinamica** sincronizzata con alba e tramonto a Venezia.
 5. **Pipeline Python** per download GTFS, ingestione in PostgreSQL + PostGIS e sincronizzazione GTFS-RT.
@@ -17,10 +17,10 @@ Ogni layer dichiara la propria natura in interfaccia (badge) e nelle risposte AP
 
 | Tipo | Significato | Esempi |
 | :--- | :--- | :--- |
-| `live` | Misura letta dalla fonte a ogni intervallo di cache | Maree CPSM, METAR LIPZ, voli OpenSky, GTFS-RT ACTV |
+| `live` | Misura letta dalla fonte a ogni intervallo di cache | Maree e rete meteo-marina CPSM, METAR LIPZ, voli OpenSky, GTFS-RT ACTV, orbite satellitari (TLE CelesTrak) |
 | `schedule-simulation` | Posizioni calcolate da orari e percorsi ufficiali | Vaporetti/bus ACTV, barche Alilaguna |
-| `static-reference` | Anagrafica inclusa nel codice, non aggiornata automaticamente | Fermate, ponti, parcheggi, navi in banchina, cantieri, stazioni ARPAV |
-| `community` | Mappatura collaborativa non verificata | Telecamere Anopticon (tramaci.org) |
+| `static-reference` | Dataset ufficiale importato dalla pipeline o anagrafica statica | Opere pubbliche, WiFi (dati.venezia.it), qualità dell'aria ARPAV (medie annue), fermate, ponti, parcheggi, navi in banchina |
+| `community` | Mappatura collaborativa non verificata | Telecamere OpenStreetMap (ODbL) e selezione Anopticon |
 
 Quando una fonte live non risponde l'interfaccia mostra "n.d.": nessun valore viene inventato.
 
@@ -40,7 +40,12 @@ vod-venice-open-data/
 │   ├── import_gtfs.py              # Ingestione e conversione shapes in LineString PostGIS
 │   ├── import_comune_venezia.py    # Ingestione cantieri e opere pubbliche georeferenziate
 │   ├── sync_gtfs_rt.py             # Sincronizzazione feed real-time GTFS-RT
-│   └── export_simulation_data.py   # Compilazione cinematica GTFS per la simulazione client
+│   ├── export_simulation_data.py   # GTFS ACTV -> dataset di simulazione e indice corse
+│   ├── import_opere_pubbliche.py   # Elenco Annuale dei Lavori + geocodifica approssimata
+│   ├── import_wifi_hotspots.py     # Hotspot WiFi del Comune
+│   ├── import_arpav_air.py         # Qualità dell'aria ARPAV (medie annue validate)
+│   ├── import_osm_surveillance.py  # Telecamere da OpenStreetMap
+│   └── tests/                      # Test pytest
 ├── web/                            # Applicazione Next.js 16 (App Router)
 │   ├── package.json
 │   ├── src/
@@ -67,7 +72,11 @@ vod-venice-open-data/
 │   │       ├── solar.ts            # Calcolo effemeridi e interpolazione palette solare
 │   │       ├── simulation-data.ts  # Dataset lagunare e GTFS pre-baked
 │   │       └── db.ts               # Dataset di riferimento e calcoli spaziali in memoria
-│   └── src/server/                 # Accesso alle fonti esterne (fetch con timeout e cache, parser validati)
+│   ├── src/server/                 # Accesso alle fonti esterne (fetch con timeout e cache, parser validati)
+│   ├── src/components/map/         # Layer di disegno della mappa (un modulo per tema) e contesto del frame
+│   ├── src/data/                   # Dataset generati dalla pipeline (opere, WiFi, ARPAV, telecamere, indice GTFS)
+│   ├── src/proxy.ts                # Rate limit delle API
+│   └── e2e/                        # Test end-to-end Playwright
 └── README.md
 ```
 
@@ -89,23 +98,35 @@ docker compose ps
 Prima dell'avvio copiare `.env.example` in `.env` e impostare `POSTGRES_PASSWORD` e `DATABASE_URL`
 (nessuna credenziale di default è inclusa nel codice). Il database è esposto solo su `127.0.0.1:5432`.
 
-### 2. Eseguire la Pipeline Dati (Opzionale / Aggiornamento)
+### 2. Aggiornare i dati (pipeline)
+I dataset statici dell'app sono generati dalla pipeline e versionati in `web/src/data/` e
+`web/src/lib/simulation-data.ts`. Il workflow `.github/workflows/refresh-data.yml` li rigenera ogni
+lunedì e apre una pull request; in locale:
+
 ```bash
 cd pipeline
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 
-# 1. Scarica i file GTFS più recenti da ACTV:
+# Simulazione dei mezzi dai GTFS ACTV (download + rigenerazione di D e dell'indice corse)
 python download_gtfs.py
+python export_simulation_data.py            # opzionale: --date YYYY-MM-DD
 
-# 2. Ingerisce orari, corse, fermate e genera le geometrie PostGIS:
+# Dataset ufficiali (ognuno indipendente dagli altri)
+python import_opere_pubbliche.py            # Elenco Annuale dei Lavori (dati.venezia.it) + geocodifica OSM
+python import_wifi_hotspots.py              # Hotspot WiFi del Comune
+python import_arpav_air.py                  # Medie annue validate ARPAV
+python import_osm_surveillance.py           # Telecamere da OpenStreetMap
+
+# Test della pipeline
+python -m pytest -q tests
+```
+
+Caricamento facoltativo in PostgreSQL/PostGIS (non usato dall'app web):
+
+```bash
 python import_gtfs.py
-
-# 3. Ingerisce il dataset cantieri e opere pubbliche del Comune di Venezia:
-python import_comune_venezia.py
-
-# 4. Sincronizza le posizioni reali dei mezzi dal feed GTFS-RT ACTV
-#    (se il feed non risponde lo script termina senza scrivere dati):
-python sync_gtfs_rt.py
+python import_comune_venezia.py             # opere pubbliche reali + esempi statici
+python sync_gtfs_rt.py                      # posizioni GTFS-RT reali; nessuna scrittura se il feed non risponde
 ```
 
 ### 3. Avviare il Frontend Web
@@ -122,8 +143,12 @@ npm start
 # Qualità:
 npm run typecheck
 npm run lint
-npm test
+npm test                                  # Vitest (unit, contratto API, parser su fixture reali)
+npm run build && PW_CHANNEL=chrome npm run test:e2e --workspace=web   # Playwright
 ```
+
+La CI (`.github/workflows/ci.yml`) esegue typecheck, lint, test, build, test end-to-end,
+`npm audit` sulle dipendenze di produzione e i test della pipeline.
 
 Apri il browser su: **`http://localhost:3000`**
 
@@ -137,16 +162,11 @@ Apri il browser su: **`http://localhost:3000`**
 * **Modalità Fusione Additiva (`lighter`)**: in modalità notte, l'incrocio dei vaporetti genera fasci di luce combinati.
 * **7 Categorie Distinte**: Vaporetto, Motoscafo, Motonave, Ferry-boat, Tram T1/T2, Bus Terraferma e Bus Isole.
 
-### 2. Incrocio Spaziale PostGIS: Buffer Cantieri
-* Permette di definire un raggio di influenza (da 50m a 500m) attorno a ciascun cantiere attivo.
-* Esegue la query geodetica:
-  ```sql
-  SELECT s.stop_name, c.titolo, ROUND(ST_Distance(s.geom::geography, c.geom::geography)) AS distanza
-  FROM stops s
-  JOIN comune_cantieri c ON ST_DWithin(s.geom::geography, c.geom::geography, 200)
-  WHERE c.stato = 'In corso';
-  ```
-* Mostra a schermo gli anelli di attenzione e apre la dashboard interattiva con l'elenco delle fermate impattate e la possibilità di centrare istantaneamente la mappa.
+### 2. Incrocio spaziale: opere pubbliche e fermate
+* Raggio configurabile (10–2000 m) attorno alle opere pubbliche localizzate dell'Elenco Annuale dei Lavori.
+* Nell'app il calcolo avviene in memoria (`/api/spatial/stops-near-cantieri`); la stessa analisi è disponibile
+  in PostGIS con `get_stops_near_cantieri(raggio)` (`db/02_spatial_queries.sql`, indici GiST su geography).
+* Le posizioni delle opere sono approssimate (geocodifica del luogo citato nel titolo).
 
 ### 3. Palette Solare Dinamica
 * Oltre alle modalità fisse (**Notte** e **Carta**), la modalità **Dinamica** calcola al secondo la posizione del sole a Venezia (Alba nautica, Alba civile, Sunrise, Tramonto, Crepuscolo) e interpola la palette cromatica di laguna, cielo e mezzi in modo continuo.
@@ -165,6 +185,12 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/weather` | METAR LIPZ reale e stazioni vento di riferimento. |
 | `GET` | `/api/flights` | Aerei rilevati da OpenSky nell'area di Venezia (cache 15 s). |
 | `GET` | `/api/stats` | Metriche aggregate; `null` dove manca una fonte in tempo reale. |
+| `GET` | `/api/health` | Stato ed età di ogni fonte live e dei dataset della pipeline (`ok` / `stale` / `down`). |
+| `GET` | `/api/satellites` | Satelliti con orbite SGP4 da TLE CelesTrak e prossimo passaggio sopra Venezia. |
+| `GET` | `/api/cantieri` | Opere pubbliche dell'Elenco Annuale dei Lavori 2026 (posizioni approssimate). |
+
+Le API sono pubbliche e in sola lettura, con cache server per ogni fonte e un limite di
+600 richieste al minuto per IP (`API_RATE_LIMIT_PER_MINUTE`).
 
 ---
 
@@ -174,5 +200,8 @@ Apri il browser su: **`http://localhost:3000`**
 * **NOAA Aviation Weather Center**: METAR LIPZ (pubblico dominio).
 * **OpenSky Network**: dati ADS-B, uso non commerciale/ricerca secondo i termini OpenSky.
 * **SkylineWebcams, CNR-ISMAR**: solo collegamenti alle pagine ufficiali delle dirette; nessuna immagine viene ripubblicata.
-* **Anopticon (tramaci.org)**: mappatura civica delle telecamere; licenza dei dati da chiarire con l'autore.
+* **Anopticon (tramaci.org)**: mappatura civica delle telecamere. I termini d'uso vietano l'accesso automatico senza autorizzazione: il dataset completo non è incluso (bozza di richiesta in `docs/richieste-autorizzazione.md`).
+* **Comune di Venezia – dati.venezia.it**: Elenco Annuale dei Lavori, hotspot WiFi, rete meteo-marina CPSM (CC BY).
+* **ARPAV**: medie annue validate di PM10, PM2.5 e NO2 (CC BY 4.0).
+* **CelesTrak**: elementi orbitali TLE.
 * **OpenStreetMap contributors**: geometrie della laguna (ODbL – © OpenStreetMap contributors).
