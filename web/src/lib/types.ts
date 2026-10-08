@@ -403,7 +403,7 @@ export interface VeniceCameraItem {
   location: string;
   targetDescription: string;
   operator: string;
-  source: 'ANOPTICON_CIVIC' | 'PUBLIC_STREAM' | 'CPSM_COMUNE_VENEZIA' | 'CNR_ISMAR';
+  source: 'ANOPTICON_CIVIC' | 'OPENSTREETMAP' | 'PUBLIC_STREAM' | 'CPSM_COMUNE_VENEZIA' | 'CNR_ISMAR';
   sourceLabel: string;
   sourceUrl: string;
   hasLiveFeed: boolean;

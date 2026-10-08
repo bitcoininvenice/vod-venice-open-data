@@ -64,7 +64,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                     <Lock className="w-2.5 h-2.5" /> CCTV Video Monitoraggio Urbano
                   </span>
                 )}
-                {camera.source === 'ANOPTICON_CIVIC' && <ProvenanceBadge kind="community" />}
+                {(camera.source === 'ANOPTICON_CIVIC' || camera.source === 'OPENSTREETMAP') && <ProvenanceBadge kind="community" />}
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[var(--rule)]/60 text-[var(--ink-2)] border border-[var(--rule)]">
                   {camera.typeLabel}
                 </span>
@@ -150,8 +150,8 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
               </strong>
               <p className="text-[11px] leading-relaxed text-[var(--ink-2)]">
                 {language === 'it'
-                  ? 'Le telecamere di videosorveglianza non hanno un flusso video pubblico (Regolamento UE 2016/679 - GDPR). Posizione, tipologia e cartello informativo provengono dalla mappatura collaborativa Anopticon e non sono verificati da un ente: il titolare effettivo dell’impianto non è noto.'
-                  : 'Surveillance cameras have no public video feed (EU GDPR). Position, type and privacy sign come from the Anopticon community mapping and are not verified by any authority: the actual owner of the system is unknown.'}
+                  ? `Le telecamere di videosorveglianza non hanno un flusso video pubblico (Regolamento UE 2016/679 - GDPR). Posizione e tipologia provengono dalla mappatura collaborativa ${camera.source === 'OPENSTREETMAP' ? 'OpenStreetMap (© OpenStreetMap contributors, ODbL)' : 'Anopticon'} e non sono verificate da un ente${camera.operator === 'Non indicato' || camera.operator === 'Non verificato' ? ': il titolare dell’impianto non è noto' : ''}.`
+                  : `Surveillance cameras have no public video feed (EU GDPR). Position and type come from the ${camera.source === 'OPENSTREETMAP' ? 'OpenStreetMap (© OpenStreetMap contributors, ODbL)' : 'Anopticon'} community mapping and are not verified by any authority${camera.operator === 'Non indicato' || camera.operator === 'Non verificato' ? '; the system owner is unknown' : ''}.`}
               </p>
             </div>
           </div>
@@ -183,8 +183,10 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                 <span className="text-amber-400 font-mono text-[11px] font-semibold flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3" /> Incompleta
                 </span>
+              ) : camera.privacyNoticeStatus === 'NON_APPLICABILE_PANORAMICA' ? (
+                <span className="text-cyan-400 font-mono text-[11px]">{language === 'it' ? 'Non richiesta' : 'Not required'}</span>
               ) : (
-                <span className="text-cyan-400 font-mono text-[11px]">Non richiesta</span>
+                <span className="text-[var(--ink-3)] font-mono text-[11px]">{language === 'it' ? 'Non indicato' : 'Not reported'}</span>
               )}
             </div>
 

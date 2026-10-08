@@ -3062,7 +3062,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
             // Optional field of view wedge/cone
             if (cam.bearingDeg !== undefined && camera.s > 0.02) {
-              const rad = (cam.bearingDeg * Math.PI) / 180;
+              // bearing geografico (0° = nord, senso orario) -> angolo canvas (0 = est)
+              const rad = ((cam.bearingDeg - 90) * Math.PI) / 180;
               const fovRad = ((cam.fovDeg || 80) * Math.PI) / 360;
               const coneLen = 32;
               ctx.beginPath();
@@ -3119,7 +3120,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
             // Direction tick if available
             if (cam.bearingDeg !== undefined && camera.s > 0.03) {
-              const rad = (cam.bearingDeg * Math.PI) / 180;
+              const rad = ((cam.bearingDeg - 90) * Math.PI) / 180;
               ctx.beginPath();
               ctx.moveTo(cx, cy);
               ctx.lineTo(cx + Math.cos(rad) * 14, cy + Math.sin(rad) * 14);

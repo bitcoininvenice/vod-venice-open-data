@@ -1,4 +1,6 @@
 import { VeniceCameraItem } from './types';
+import osmSurveillance from '@/data/osm-surveillance.json';
+import { calculateDistanceMeters } from './geo';
 
 // ============================================================================
 // VENICE CAMERAS & WEBCAMS CATALOG
@@ -7,7 +9,7 @@ import { VeniceCameraItem } from './types';
 // 2. LIVE WEBCAMS & SCIENTIFIC OBSERVATORIES - SkylineWebcams & CNR-ISMAR
 // ============================================================================
 
-export const VENICE_CAMERAS: VeniceCameraItem[] = [
+const CURATED_CAMERAS: VeniceCameraItem[] = [
   // --------------------------------------------------------------------------
   // A. PUBLIC LIVE WEBCAMS & SCIENTIFIC OBSERVATORIES (WITH VERIFIED FEED)
   // Fonti ufficiali e verificate: SkylineWebcams & CNR-ISMAR Acqua Alta
@@ -944,4 +946,25 @@ export const VENICE_CAMERAS: VeniceCameraItem[] = [
     rangeMeters: 90,
     notes: 'Zona ad alta sicurezza per la sede centrale delle forze dell’ordine.'
   }
+];
+
+/** Telecamere da OpenStreetMap (ODbL, © OpenStreetMap contributors), generate da pipeline/import_osm_surveillance.py */
+export const OSM_SURVEILLANCE_META = {
+  generatedAt: osmSurveillance.generatedAt,
+  license: osmSurveillance.license,
+  attribution: osmSurveillance.attribution,
+  count: osmSurveillance.count,
+};
+const OSM_CAMERAS = osmSurveillance.cameras as VeniceCameraItem[];
+
+/** Distanza sotto la quale una voce Anopticon è considerata la stessa telecamera già presente in OSM. */
+const DUPLICATE_RADIUS_M = 20;
+
+export const VENICE_CAMERAS: VeniceCameraItem[] = [
+  ...CURATED_CAMERAS.filter(
+    (c) =>
+      c.source !== 'ANOPTICON_CIVIC' ||
+      !OSM_CAMERAS.some((o) => calculateDistanceMeters(c.lat, c.lon, o.lat, o.lon) <= DUPLICATE_RADIUS_M),
+  ),
+  ...OSM_CAMERAS,
 ];
