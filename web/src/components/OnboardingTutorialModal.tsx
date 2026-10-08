@@ -21,6 +21,7 @@ import {
   FastForward
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { useDialogA11y } from '@/components/ui/useDialogA11y';
 
 export type MapPresetType = 'mobility' | 'lagoon' | 'city' | 'satellites' | 'regional' | 'clean' | 'all';
 
@@ -39,6 +40,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [selectedPreset, setSelectedPreset] = useState<MapPresetType>('clean');
 
+  const panelRef = useDialogA11y(isOpen, onClose);
   if (!isOpen) return null;
 
   const handleFinish = (preset: MapPresetType = selectedPreset) => {
@@ -304,7 +306,13 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-[var(--surface)] text-[var(--ink)] border border-[var(--rule)] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="onboarding-modal-title"
+        tabIndex={-1}
+        className="bg-[var(--surface)] text-[var(--ink)] border border-[var(--rule)] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] outline-none">
         {/* Top Header */}
         <div className="p-4 sm:p-5 border-b border-[var(--rule)] flex items-center justify-between bg-black/10">
           <div className="flex items-center gap-3">
@@ -315,7 +323,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
               <span className="text-[10px] font-mono tracking-wider font-bold text-cyan-400 uppercase">
                 {step.badge} ({currentStep + 1}/{steps.length})
               </span>
-              <h3 className="text-base sm:text-lg font-bold text-[var(--ink)] leading-tight">
+              <h3 id="onboarding-modal-title" className="text-base sm:text-lg font-bold text-[var(--ink)] leading-tight">
                 {step.title}
               </h3>
               <p className="text-xs text-[var(--ink-3)] mt-0.5">

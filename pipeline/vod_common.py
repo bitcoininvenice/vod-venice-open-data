@@ -8,8 +8,6 @@ import os
 import sys
 from urllib.parse import urlsplit
 
-import psycopg2
-
 
 def database_url() -> str:
     """Legge DATABASE_URL dall'ambiente. Nessun valore di default: credenziali mai nel codice."""
@@ -29,6 +27,8 @@ def redact(url: str) -> str:
 
 
 def connect():
+    import psycopg2  # import differito: le utility di questo modulo non richiedono il driver
+
     url = database_url()
     try:
         conn = psycopg2.connect(url)

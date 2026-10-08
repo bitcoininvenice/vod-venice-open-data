@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { X, ShieldAlert, SlidersHorizontal, Anchor, Construction, ArrowRight } from 'lucide-react';
 import { StopNearCantiere } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
+import { useDialogA11y } from '@/components/ui/useDialogA11y';
 
 interface SpatialAnalysisModalProps {
   isOpen: boolean;
@@ -42,11 +43,18 @@ export const SpatialAnalysisModal: React.FC<SpatialAnalysisModalProps> = ({
     };
   }, [isOpen, radius]);
 
+  const panelRef = useDialogA11y(isOpen, onClose);
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4">
-      <div className="glass-panel w-full max-w-3xl rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 sm:gap-5 border border-amber-500/40 max-h-[88vh] animate-in fade-in zoom-in-95 duration-200">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="spatial-modal-title"
+        tabIndex={-1}
+        className="glass-panel w-full max-w-3xl rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 sm:gap-5 border border-amber-500/40 max-h-[88vh] animate-in fade-in zoom-in-95 duration-200 outline-none">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
           <div className="flex items-center gap-3">
@@ -62,7 +70,7 @@ export const SpatialAnalysisModal: React.FC<SpatialAnalysisModalProps> = ({
                   {results.length} {language === 'it' ? 'Intersezioni Rilevate' : 'Intersections Detected'}
                 </span>
               </div>
-              <h3 className="text-lg font-bold text-[var(--ink)] leading-snug">
+              <h3 id="spatial-modal-title" className="text-lg font-bold text-[var(--ink)] leading-snug">
                 {language === 'it' ? 'Incrocio Fermate ACTV & Cantieri Attivi Comune di Venezia' : 'ACTV Stops & Active Worksites Intersection (Venice)'}
               </h3>
             </div>

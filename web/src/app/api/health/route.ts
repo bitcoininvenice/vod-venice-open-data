@@ -1,0 +1,60 @@
+import { NextResponse } from 'next/server';
+import { fetchUpstream } from '@/server/upstream';
+import { assess, fromRomeLocal, type SourceHealth } from '@/server/sourceHealth';
+import { REFERENCE_STATION_ID, TIDE_FORECAST_URL, TIDE_LEVELS_URL, parseTideForecast, parseTideLevels } from '@/server/sources/tide';
+import { LIPZ_METAR_URL, parseLipzMetar } from '@/server/sources/metar';
+import { ACTV_GTFS_RT_FEEDS, parseVehiclePositions } from '@/server/sources/gtfsRt';
+import { CPSM_METEO_URLS, parseCpsmFeed } from '@/server/sources/cpsmMeteo';
+import { OPENSKY_STATES_URL, parseOpenSkyStates } from '@/server/sources/opensky';
+import { GTFS_INDEX_GENERATED_AT } from '@/server/sources/gtfsIndex';
+import { OPERE_PUBBLICHE_META } from '@/lib/db';
+import { WIFI_HOTSPOTS_META } from '@/lib/urbanAssetsVeniceData';
+import { ARPAV_AIR_META } from '@/lib/airQuality';
+import { OSM_SURVEILLANCE_META } from '@/lib/cameras-data';
+
+export const revalidate = 60;
+
+const DAY = 24 * 60;
+
+/**
+ * Stato delle fonti: per i dati live l'età dell'ultima misura, per i dataset generati dalla
+ * pipeline la data di generazione. Usabile da un monitor esterno (es. uptime check su "status").
+ */
+export async function GET() {
+  const now = new Date();
+  const [levels, forecast, metar, rtNav, rtAut, wind, flights] = await Promise.all([
+    fetchUpstream(TIDE_LEVELS_URL, parseTideLevels, { revalidate: 60 }),
+    fetchUpstream(TIDE_FORECAST_URL, (raw) => parseTideForecast(raw, now), { revalidate: 600 }),
+    fetchUpstream(LIPZ_METAR_URL, parseLipzMetar, { revalidate: 300 }),
+    fetchUpstream(ACTV_GTFS_RT_FEEDS.navigazione, (raw) => parseVehiclePositions(raw as ArrayBuffer), { revalidate: 20, responseType: 'arrayBuffer' }),
+    fetchUpstream(ACTV_GTFS_RT_FEEDS.automobilistico, (raw) => parseVehiclePositions(raw as ArrayBuffer), { revalidate: 20, responseType: 'arrayBuffer' }),
+    fetchUpstream(CPSM_METEO_URLS.vento, parseCpsmFeed, { revalidate: 300 }),
+    fetchUpstream(OPENSKY_STATES_URL, parseOpenSkyStates, { revalidate: 15 }),
+  ]);
+
+  const newestVehicle = (r: typeof rtNav) =>
+    r.ok && r.data.length > 0 ? new Date(Math.max(...r.data.map((v) => (v.timestamp ?? 0) * 1000))) : null;
+  const newestWind = wind.ok
+    ? wind.data.map((r) => fromRomeLocal(r.observedAt)).filter((d): d is Date => d !== null).sort((a, b) => b.getTime() - a.getTime())[0] ?? null
+    : null;
+  const reference = levels.ok ? levels.data.find((s) => s.id === REFERENCE_STATION_ID) : undefined;
+
+  const sources: SourceHealth[] = [
+    assess('tide', 'Marea CPSM (livello.json)', 'live', fromRomeLocal(reference?.observedAt), 30, now),
+    assess('tide-forecast', 'Previsione marea CPSM (previsione.json)', 'live', forecast.ok ? fromRomeLocal(forecast.data?.issuedAt) : null, DAY, now,
+      'emissione dell\'ultima previsione'),
+    assess('metar', 'METAR LIPZ (NOAA AWC)', 'live', metar.ok ? new Date(metar.data.observationTime) : null, 90, now),
+    assess('gtfs-rt-nav', 'GTFS-RT ACTV navigazione', 'live', newestVehicle(rtNav), 10, now),
+    assess('gtfs-rt-aut', 'GTFS-RT ACTV automobilistico', 'live', newestVehicle(rtAut), 10, now),
+    assess('cpsm-meteo', 'Rete meteo-marina CPSM', 'live', newestWind, 30, now),
+    assess('opensky', 'OpenSky Network', 'live', flights.ok ? now : null, 5, now, flights.ok ? undefined : 'quota esaurita o servizio non raggiungibile'),
+    assess('gtfs-static', 'Simulazione GTFS ACTV (pipeline)', 'dataset', new Date(GTFS_INDEX_GENERATED_AT), 8 * DAY, now),
+    assess('opere-pubbliche', 'Opere pubbliche (pipeline)', 'dataset', new Date(OPERE_PUBBLICHE_META.generatedAt), 31 * DAY, now),
+    assess('wifi', 'Hotspot WiFi (pipeline)', 'dataset', new Date(WIFI_HOTSPOTS_META.generatedAt), 31 * DAY, now),
+    assess('arpav', 'Qualità aria ARPAV (pipeline)', 'dataset', new Date(ARPAV_AIR_META.generatedAt), 120 * DAY, now),
+    assess('osm-cameras', 'Telecamere OpenStreetMap (pipeline)', 'dataset', new Date(OSM_SURVEILLANCE_META.generatedAt), 31 * DAY, now),
+  ];
+
+  const status = sources.some((s) => s.status === 'down') ? 'degraded' : sources.some((s) => s.status === 'stale') ? 'stale' : 'ok';
+  return NextResponse.json({ status, checkedAt: now.toISOString(), sources });
+}

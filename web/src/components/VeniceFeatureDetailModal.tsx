@@ -59,6 +59,7 @@ import {
 } from '@/lib/types';
 import { Droplet, Building2, Bike, Flower2, GitBranch, Car } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { useDialogA11y } from '@/components/ui/useDialogA11y';
 
 export type VeniceFeatureSelected =
   | { type: 'passerella'; data: PasserellaItem }
@@ -104,11 +105,18 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
   currentTideLevelCm
 }) => {
   const { language } = useTranslation();
+  const panelRef = useDialogA11y(feature !== null, onClose);
   if (!feature) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[var(--surface)] text-[var(--ink)] border border-[var(--rule)] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="feature-modal-title"
+        tabIndex={-1}
+        className="bg-[var(--surface)] text-[var(--ink)] border border-[var(--rule)] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] outline-none">
         {/* Header */}
         <div className="p-4 border-b border-[var(--rule)] flex items-center justify-between bg-black/10">
           <div className="flex items-center gap-2.5">
@@ -204,7 +212,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             )}
 
             <div>
-              <h2 className="text-base font-bold leading-tight">
+              <h2 id="feature-modal-title" className="text-base font-bold leading-tight">
                 {feature.type === 'passerella' && feature.data.name}
                 {feature.type === 'briccola' && `${feature.data.code} · ${feature.data.channelName}`}
                 {feature.type === 'oceanStation' && feature.data.name}

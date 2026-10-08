@@ -1,0 +1,63 @@
+name: Aggiornamento dati
+
+# Rigenera i dataset statici dalle fonti ufficiali e apre una pull request da revisionare.
+on:
+  schedule:
+    - cron: '0 4 * * 1' # ogni lunedì alle 04:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: pipeline/requirements-dev.txt
+      - run: pip install -r pipeline/requirements-dev.txt
+
+      - name: GTFS ACTV e simulazione
+        working-directory: pipeline
+        run: |
+          python download_gtfs.py
+          python export_simulation_data.py
+      - name: Opere pubbliche, WiFi, qualità dell'aria, telecamere OSM
+        working-directory: pipeline
+        # ogni fonte è indipendente: un errore non blocca l'aggiornamento delle altre
+        run: |
+          python import_opere_pubbliche.py || echo "::warning::opere pubbliche non aggiornate"
+          python import_wifi_hotspots.py || echo "::warning::hotspot WiFi non aggiornati"
+          python import_arpav_air.py || echo "::warning::qualità dell'aria non aggiornata"
+          python import_osm_surveillance.py || echo "::warning::telecamere OSM non aggiornate"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verifica che i nuovi dati non rompano l'app
+        run: |
+          npm run typecheck
+          npm test
+          npm run build
+
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: data/refresh
+          delete-branch: true
+          commit-message: 'chore(data): aggiornamento automatico dei dataset'
+          title: 'Aggiornamento automatico dei dataset'
+          body: |
+            Dataset rigenerati dalle fonti ufficiali dal workflow `refresh-data`:
+            - simulazione GTFS ACTV e indice corse (`web/src/lib/simulation-data.ts`, `web/src/data/actv-gtfs-index.json`)
+            - opere pubbliche, hotspot WiFi (dati.venezia.it), qualità dell'aria (ARPAV), telecamere (OpenStreetMap)
+
+            Typecheck, test e build sono passati sui nuovi dati. Controllare il diff prima del merge.
+          labels: data

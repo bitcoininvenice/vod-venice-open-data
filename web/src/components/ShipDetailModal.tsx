@@ -4,6 +4,7 @@ import React from 'react';
 import { X, Anchor, ShieldCheck, AlertTriangle, MapPin } from 'lucide-react';
 import { ShipItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
+import { useDialogA11y } from '@/components/ui/useDialogA11y';
 
 interface ShipDetailModalProps {
   ship: ShipItem | null;
@@ -15,11 +16,18 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
   onClose
 }) => {
   const { language, t } = useTranslation();
+  const panelRef = useDialogA11y(ship !== null, onClose);
   if (!ship) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
-      <div className="glass-panel w-full max-w-lg rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-3.5 sm:gap-4 border border-cyan-500/40 animate-in fade-in zoom-in-95 duration-200 max-h-[88vh] overflow-y-auto">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ship-modal-title"
+        tabIndex={-1}
+        className="glass-panel w-full max-w-lg rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-3.5 sm:gap-4 border border-cyan-500/40 animate-in fade-in zoom-in-95 duration-200 max-h-[88vh] overflow-y-auto outline-none">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
           <div className="flex items-center gap-3">
@@ -35,7 +43,7 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> AIS LIVE
                 </span>
               </div>
-              <h3 className="text-lg font-bold text-[var(--ink)] leading-snug">
+              <h3 id="ship-modal-title" className="text-lg font-bold text-[var(--ink)] leading-snug">
                 {ship.name}
               </h3>
             </div>
