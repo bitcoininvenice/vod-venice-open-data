@@ -92,8 +92,8 @@ export const enTranslations: Translations = {
     shareFailed: 'Copy failed'
   },
   layers: {
-    panelTitle: 'Map Layers & Filters',
-    openPanelTitle: 'Open Layers & Filters',
+    panelTitle: 'Layers',
+    openPanelTitle: 'Open layers',
     hidePanel: 'Hide panel',
     searchPlaceholder: 'Filter by layer name...',
     quickPresets: 'Quick Presets',

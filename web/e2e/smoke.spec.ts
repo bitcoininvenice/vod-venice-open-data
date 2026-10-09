@@ -177,8 +177,8 @@ test('la ricerca nel pannello filtra i livelli', async ({ page, isMobile }) => {
 test('troppi livelli: avviso con "Pulisci"', async ({ page, isMobile }) => {
   await page.goto('/');
   const panel = await openLayerPanel(page, isMobile);
-  await panel.getByRole('button', { name: /accendi i livelli verificati di mobilità/i }).click();
-  await panel.getByRole('button', { name: /accendi i livelli verificati di ambiente/i }).click();
+  await panel.getByRole('button', { name: /attiva i livelli verificati di mobilità/i }).click();
+  await panel.getByRole('button', { name: /attiva i livelli verificati di ambiente/i }).click();
   const warning = panel.getByRole('status').filter({ hasText: /livelli accesi/i });
   await expect(warning).toBeVisible();
   await warning.getByRole('button', { name: /pulisci/i }).click();
@@ -190,7 +190,7 @@ test('legenda dei livelli attivi: si apre e spegne un livello', async ({ page })
   await page.goto('/?layers=farmacie_turno,dae_pubblici');
   const legend = page.getByRole('button', { name: /mostra i livelli attivi/i });
   await legend.click();
-  await page.getByRole('button', { name: /spegni defibrillatori|spegni dae/i }).first().click();
+  await page.getByRole('button', { name: /disattiva defibrillatori|disattiva dae/i }).first().click();
   await expect(page).not.toHaveURL(/dae_pubblici/);
   await expect(page).toHaveURL(/farmacie_turno/);
 });

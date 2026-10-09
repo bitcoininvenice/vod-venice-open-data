@@ -92,8 +92,8 @@ export const itTranslations: Translations = {
     shareFailed: 'Copia non riuscita'
   },
   layers: {
-    panelTitle: 'Livelli e Filtri Mappa',
-    openPanelTitle: 'Apri Livelli & Filtri',
+    panelTitle: 'Livelli',
+    openPanelTitle: 'Apri i livelli',
     hidePanel: 'Chiudi pannello',
     searchPlaceholder: 'Filtra per nome livello...',
     quickPresets: 'Configurazioni Rapide',
