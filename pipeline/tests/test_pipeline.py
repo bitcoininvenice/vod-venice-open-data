@@ -362,3 +362,30 @@ def test_simulazione_in_file_con_hash(tmp_path, monkeypatch):
     assert sim.write_hashed_json("sim", {"a": 1}) == url
     stats = sim.sim_stats({"routes": [{"n": "1", "c": "vaporetto"}, {"n": "2", "c": "bus"}], "days": {"weekday": {"trips": [[0, 1], [0, 2]]}}})
     assert stats == {"routeModes": ["vaporetto", "bus"], "trips": {"weekday": 2}}
+
+
+# --- Fontanelle: zona da geocodifica inversa ---
+import import_osm_fountains as fnt  # noqa: E402
+
+
+def test_fontanelle_zona_da_indirizzo():
+    # centro storico: il sestiere è in "neighbourhood" (village/town di Nominatim lì sono inaffidabili)
+    assert fnt.zone_from_address({"neighbourhood": "Cannaregio", "village": "Murano", "suburb": "Venezia-Murano-Burano"}) == "Cannaregio"
+    assert fnt.zone_from_address({"neighbourhood": "Giudecca", "town": "Lido"}) == "Giudecca & Sacca Fisola"
+    # isole
+    assert fnt.zone_from_address({"suburb": "Venezia-Murano-Burano", "village": "Burano"}) == "Burano / Mazzorbo / Torcello"
+    assert fnt.zone_from_address({"suburb": "Lido-Pellestrina", "town": "Lido"}) == "Lido di Venezia"
+    # terraferma: la frazione, mai un sestiere
+    assert fnt.zone_from_address({"suburb": "Favaro Veneto", "village": "Tessera"}) == "Tessera"
+    assert fnt.zone_from_address({"suburb": "Rione Pertini", "village": "Campalto"}) == "Campalto"
+
+
+def test_fontanelle_ripiego_senza_rete():
+    # le fontanelle segnalate (Campalto, Tessera) non sono più "Cannaregio"
+    assert fnt.determine_sestiere(45.49807, 12.33124) == "Terraferma"
+    assert fnt.determine_sestiere(45.47432, 12.28121) == "Terraferma"
+    assert fnt.determine_sestiere(45.4448, 12.3270) == "Cannaregio"
+    assert fnt.determine_sestiere(45.4466, 12.3485) == "San Michele (cimitero)"
+    assert fnt.reverse_zone(45.4466, 12.3485, {}) == "San Michele (cimitero)"  # senza rete
+    # valore in cache usato senza richieste
+    assert fnt.reverse_zone(45.5, 12.3, {"reverse:45.50000,12.30000": "Campalto"}) == "Campalto"

@@ -19,6 +19,8 @@ from datetime import datetime, timezone
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Cache condivisa delle geocodifiche (versionata: nessuna nuova richiesta per i punti già noti)
+CACHE_FILE = os.path.join(BASE_DIR, "geocode-cache.json")
 OUT_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "fountains.json")
 
 OVERPASS_URLS = [
@@ -37,8 +39,62 @@ QUERY = f"""[out:json][timeout:35];
 node["amenity"="drinking_water"]({BBOX[0]},{BBOX[1]},{BBOX[2]},{BBOX[3]});
 out body;"""
 
+# Centro storico (sestieri e Giudecca): fuori da questo riquadro non si assegna mai un sestiere
+CENTRO_STORICO = (45.424, 12.305, 45.452, 12.372)  # lat0, lon0, lat1, lon1
+
+# Nomi delle zone usati in VOD per le isole (dalla frazione restituita da Nominatim)
+ISLAND_ZONES = {
+    "Murano": "Murano",
+    "Burano": "Burano / Mazzorbo / Torcello",
+    "Mazzorbo": "Burano / Mazzorbo / Torcello",
+    "Torcello": "Burano / Mazzorbo / Torcello",
+    "Sant'Erasmo": "Sant'Erasmo / Vignole",
+    "Vignole": "Sant'Erasmo / Vignole",
+    "Lido": "Lido di Venezia",
+    "Malamocco": "Lido di Venezia",
+    "Alberoni": "Lido di Venezia",
+    "Pellestrina": "Pellestrina",
+    "San Pietro in Volta": "Pellestrina",
+}
+# Isole piccole senza strade con nome: Nominatim restituirebbe la strada più vicina su un'altra isola
+SMALL_ISLANDS = [
+    ("San Michele (cimitero)", (45.4445, 12.3435, 45.4495, 12.3515)),
+]
+SESTIERI = {"Cannaregio", "Castello", "San Marco", "San Polo", "Santa Croce", "Dorsoduro"}
+NOMINATIM_REVERSE = "https://nominatim.openstreetmap.org/reverse"
+NOMINATIM_UA = "VOD-VeniceOpenData/1.0 (+https://venice-open-data.vercel.app)"
+
+
+def zone_from_address(addr: dict) -> str | None:
+    """Zona da un indirizzo Nominatim. Nel centro storico il sestiere è in `neighbourhood`;
+    nelle isole e in terraferma conta la frazione (village/town/suburb)."""
+    hood = addr.get("neighbourhood")
+    if hood in SESTIERI:
+        return hood
+    if hood == "Giudecca" or hood == "Sacca Fisola":
+        return "Giudecca & Sacca Fisola"
+    if hood == "Sant'Elena":
+        return "Castello (Sant'Elena)"
+    district = addr.get("suburb", "")
+    place = addr.get("village") or addr.get("town") or addr.get("hamlet")
+    if district in ("Venezia-Murano-Burano", "Lido-Pellestrina"):
+        return ISLAND_ZONES.get(place or "", None)
+    # Terraferma: la frazione (es. Campalto, Tessera) o il quartiere (es. Mestre, Marghera)
+    return place or district or None
+
+
+def small_island(lat: float, lon: float) -> str | None:
+    for name, (lat0, lon0, lat1, lon1) in SMALL_ISLANDS:
+        if lat0 <= lat <= lat1 and lon0 <= lon <= lon1:
+            return name
+    return None
+
+
 def determine_sestiere(lat: float, lon: float) -> str:
-    # Isole della Laguna ed Estuario
+    """Ripiego senza rete: sestieri solo dentro il centro storico, isole per riquadro, altrimenti terraferma."""
+    island = small_island(lat, lon)
+    if island:
+        return island
     if lon > 12.41 and 45.47 <= lat <= 45.50:
         return "Burano / Mazzorbo / Torcello"
     if 12.34 <= lon <= 12.37 and 45.45 <= lat <= 45.47:
@@ -49,12 +105,13 @@ def determine_sestiere(lat: float, lon: float) -> str:
         return "Pellestrina"
     if 12.36 <= lon <= 12.43 and 45.44 <= lat <= 45.48:
         return "Sant'Erasmo / Vignole"
+    in_centre = CENTRO_STORICO[0] <= lat <= CENTRO_STORICO[2] and CENTRO_STORICO[1] <= lon <= CENTRO_STORICO[3]
+    if not in_centre:
+        return "Terraferma"
     if 12.30 <= lon <= 12.34 and 45.420 <= lat <= 45.430:
         return "Giudecca & Sacca Fisola"
     if 12.35 <= lon <= 12.37 and 45.425 <= lat <= 45.435:
         return "Castello (Sant'Elena)"
-    
-    # Centro Storico di Venezia (6 Sestieri)
     if lat >= 45.440 and lon <= 12.345:
         return "Cannaregio"
     if lat >= 45.432 and lon > 12.338:
@@ -67,8 +124,28 @@ def determine_sestiere(lat: float, lon: float) -> str:
         return "Santa Croce"
     if 45.428 <= lat < 45.436 and 12.315 <= lon < 12.336:
         return "Dorsoduro"
-        
     return "Venezia Centro Storico"
+
+
+def reverse_zone(lat: float, lon: float, cache: dict) -> str:
+    """Zona dalla geocodifica inversa di OpenStreetMap (cache su file, 1 richiesta al secondo)."""
+    island = small_island(lat, lon)
+    if island:
+        return island
+    key = f"reverse:{lat:.5f},{lon:.5f}"
+    if key not in cache:
+        params = urllib.parse.urlencode({"format": "jsonv2", "lat": lat, "lon": lon, "zoom": 17, "addressdetails": 1})
+        try:
+            req = urllib.request.Request(f"{NOMINATIM_REVERSE}?{params}", headers={"User-Agent": NOMINATIM_UA})
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                cache[key] = zone_from_address(json.load(resp).get("address", {}))
+        except Exception as e:  # noqa: BLE001
+            logging.warning("Geocodifica inversa fallita per %s: %s", key, e)
+            return determine_sestiere(lat, lon)
+        finally:
+            time.sleep(1.1)
+    return cache[key] or determine_sestiere(lat, lon)
+
 
 def format_fountain_name(tags: dict, sestiere: str, index: int) -> str:
     name = tags.get("name")
@@ -122,6 +199,10 @@ def main():
     fountains = []
     seen_coords = set()
     counter_by_sestiere = {}
+    cache = {}
+    if os.path.exists(CACHE_FILE):
+        with open(CACHE_FILE, encoding="utf-8") as f:
+            cache = json.load(f)
     
     for el in elements:
         if el.get("type") != "node":
@@ -141,7 +222,7 @@ def main():
         if tags.get("drinking_water") == "no":
             continue
             
-        sestiere = determine_sestiere(lat, lon)
+        sestiere = reverse_zone(lat, lon, cache)
         counter_by_sestiere[sestiere] = counter_by_sestiere.get(sestiere, 0) + 1
         
         osm_id = el.get("id")
@@ -173,6 +254,8 @@ def main():
             "potable": True
         })
         
+    with open(CACHE_FILE, "w", encoding="utf-8") as f:
+        json.dump(cache, f, ensure_ascii=False, indent=1)
     logging.info(f"Fontanelle totali elaborate e validate: {len(fountains)}")
     
     # Ordina per sestiere e nome
@@ -185,7 +268,8 @@ def main():
             "totalFountains": len(fountains),
             "distributionByZone": counter_by_sestiere,
             "notes": (
-                "Fontanelle pubbliche mappate su OpenStreetMap nel centro storico e nelle isole. "
+                "Fontanelle pubbliche mappate su OpenStreetMap nel centro storico, nelle isole e nella terraferma vicina; "
+                "zona dalla geocodifica inversa di OpenStreetMap (Nominatim). "
                 "Escluse quelle con drinking_water=no. Funzionamento dei singoli punti non verificato."
             )
         },
