@@ -514,7 +514,7 @@ export const enUi: UiTranslations = {
     gruppo: "Group:",
     tuttiIGruppi: "All Groups",
     n1Mobilita: "1. Mobility",
-    n2Laguna: "2. Lagoon",
+    n2Laguna: "2. Environment",
     n3Citta: "3. City",
     regime: "Status:",
     tutti: "All",
@@ -542,7 +542,7 @@ export const enUi: UiTranslations = {
     regime_curated: "Curated list · to be verified",
     acqApi: "Served by API",
     group_mobility: "Water, air and rail mobility",
-    group_lagoon: "Lagoon, hydrography and sea defence",
+    group_lagoon: "Environment",
     group_city: "Historic city, heritage and services",
     target: "File / endpoint:",
     switchLanguage: "Switch language (IT / EN)"

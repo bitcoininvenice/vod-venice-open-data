@@ -512,7 +512,7 @@ export const itUi = {
     gruppo: "Gruppo:",
     tuttiIGruppi: "Tutti i Gruppi",
     n1Mobilita: "1. Mobilità",
-    n2Laguna: "2. Laguna",
+    n2Laguna: "2. Ambiente",
     n3Citta: "3. Città",
     regime: "Regime:",
     tutti: "Tutti",
@@ -540,7 +540,7 @@ export const itUi = {
     regime_curated: "Elenco curato · da verificare",
     acqApi: "Servito da API",
     group_mobility: "Mobilità acquea, aerea e ferroviaria",
-    group_lagoon: "Laguna, idrografia e difesa dal mare",
+    group_lagoon: "Ambiente",
     group_city: "Città storica, patrimonio e servizi",
     target: "File / endpoint:",
     switchLanguage: "Cambia lingua (IT / EN)"
