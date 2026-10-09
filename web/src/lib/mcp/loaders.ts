@@ -9,6 +9,7 @@ import { GET as stopsGET } from '@/app/api/stops/route';
 import { GET as vehiclesGET } from '@/app/api/realtime/vehicles/route';
 import { GET as alilagunaGET } from '@/app/api/alilaguna/route';
 import { GET as flightsGET } from '@/app/api/flights/route';
+import { GET as shipsGET } from '@/app/api/ships/route';
 import { GET as emergencyGET } from '@/app/api/emergency-health/route';
 import { GET as cityAssetsGET } from '@/app/api/city-assets/route';
 import { GET as veniceAssetsGET } from '@/app/api/venice-assets/route';
@@ -100,6 +101,10 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   alilaguna_boats: async () => {
     const j = await read(alilagunaGET());
     return { items: asRows(j.boats), meta: { ...(j.metadata as Row), stops: asRows(j.stops).length } };
+  },
+  ships: async () => {
+    const j = await read(shipsGET());
+    return { items: asRows(j.data), meta: j.meta as Row };
   },
   flights: async () => {
     const j = await read(flightsGET());

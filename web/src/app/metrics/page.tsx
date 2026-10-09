@@ -135,7 +135,7 @@ const PLATFORM_CARDS: PlatformCard[] = [
     noteParams: (_m, f) => ({ year: String(BATHING?.year ?? 'n.d.'), points: f(BATHING?.points), suitable: String(BATHING?.suitablePercent ?? 'n.d.') }),
   },
   // Marittimo
-  { id: 'ships', sector: 'marittimo', keywords: 'navi ships porto port', icon: Ship, color: 'blue', badge: 'VOD', value: (m) => m?.activeShipsCount },
+  { id: 'ships', sector: 'marittimo', keywords: 'navi ships porto port ais', icon: Ship, color: 'blue', badge: 'AIS', value: (m) => m?.activeShipsCount },
   { id: 'channels', sector: 'marittimo', keywords: 'canali channels marittimi petroli', icon: Compass, color: 'cyan', badge: 'n.d.', value: (m) => m?.maritimeChannelsCount },
   // Trasporti
   { id: 'actv', sector: 'trasporti', keywords: 'actv vaporetti waterbus corse trips gtfs', icon: Navigation, color: 'sky', badge: 'GTFS ACTV', value: (m) => m?.totalTrips, noteParams: (m, f) => ({ routes: f(m?.routesNavigazione), stops: f(m?.totalStops) }) },

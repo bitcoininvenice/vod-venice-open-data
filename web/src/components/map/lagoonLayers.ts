@@ -2,7 +2,8 @@
 import type { RenderContext } from './renderContext';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 
-import { MARITIME_CHANNELS, getLiveShip } from './mapHelpers';
+import { MARITIME_CHANNELS } from './mapHelpers';
+import type { ShipCategory } from '@/lib/types';
 
 export function drawMose(rc: RenderContext): void {
   const { ctx, isDark, sx, sy, mx, my, camera, paletteTheme, showMose, moseGates } = rc;
@@ -59,14 +60,12 @@ export function drawMose(rc: RenderContext): void {
 }
 
 export function drawShipRoutes(rc: RenderContext): void {
-  const { ctx, isDark, sx, sy, mx, my, camera, selectedShipOnMap, showShipRoutes } = rc;
+  const { ctx, isDark, sx, sy, mx, my, camera, showShipRoutes } = rc;
   // 11b. Render Maritime Navigational Channels & Fairways (Canale dei Petroli & Bocca di Lido -> Tronchetto)
   if (showShipRoutes) {
     for (const ch of MARITIME_CHANNELS) {
       const wps = ch.waypoints;
       if (wps.length < 2) continue;
-
-      const isChannelSelected = selectedShipOnMap?.routeId === ch.id;
 
       // 1. Draw Channel Centerline
       ctx.beginPath();
@@ -75,15 +74,15 @@ export function drawShipRoutes(rc: RenderContext): void {
         ctx.lineTo(sx(mx(wps[wi].lon)), sy(my(wps[wi].lat)));
       }
       ctx.strokeStyle = ch.color;
-      ctx.globalAlpha = isChannelSelected ? 0.95 : 0.5;
-      ctx.lineWidth = isChannelSelected ? Math.max(3, 4.5 * (camera.s / 0.02)) : Math.max(1.8, 2.5 * (camera.s / 0.02));
+      ctx.globalAlpha = 0.5;
+      ctx.lineWidth = Math.max(1.8, 2.5 * (camera.s / 0.02));
       ctx.setLineDash([8, 6]);
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.globalAlpha = 1.0;
 
       // 2. Lateral Channel Fairway Guide Lines (representing lateral buoys / briccole)
-      if (camera.s > 0.015 || isChannelSelected) {
+      if (camera.s > 0.015) {
         ctx.beginPath();
         for (let wi = 0; wi < wps.length - 1; wi++) {
           const p1x = sx(mx(wps[wi].lon));
@@ -101,7 +100,7 @@ export function drawShipRoutes(rc: RenderContext): void {
           ctx.lineTo(p2x - perpX * offsetPx, p2y - perpY * offsetPx);
         }
         ctx.strokeStyle = ch.color;
-        ctx.globalAlpha = isChannelSelected ? 0.45 : 0.22;
+        ctx.globalAlpha = 0.22;
         ctx.lineWidth = 1;
         ctx.setLineDash([3, 5]);
         ctx.stroke();
@@ -128,9 +127,9 @@ export function drawShipRoutes(rc: RenderContext): void {
         ctx.stroke();
 
         // Waypoint Label
-        if (camera.s > 0.02 || isChannelSelected) {
+        if (camera.s > 0.02) {
           ctx.font = '600 8.5px "DM Mono", monospace';
-          ctx.fillStyle = isChannelSelected ? (isDark ? '#ffffff' : '#0f172a') : (isDark ? ch.color : '#1e3a8a');
+          ctx.fillStyle = isDark ? ch.color : '#1e3a8a';
           ctx.fillText(`${wp.name} · ${wp.depth}`, wpx + 7, wpy + 3);
         }
         ctx.restore();
@@ -139,147 +138,78 @@ export function drawShipRoutes(rc: RenderContext): void {
   }
 }
 
+/** Colori per categoria AIS */
+export const SHIP_COLORS: Record<ShipCategory, string> = {
+  PASSENGER: '#6366f1',
+  CARGO: '#3b82f6',
+  TANKER: '#ef4444',
+  HIGH_SPEED: '#06b6d4',
+  TUG: '#f97316',
+  FISHING: '#22c55e',
+  PLEASURE: '#a855f7',
+  SERVICE: '#eab308',
+  OTHER: '#94a3b8',
+};
+
 export function drawShips(rc: RenderContext): void {
-  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, currentTimeSeconds, selectedShipOnMap, paletteTheme, showShips, ships } = rc;
-  // 12. Render Ships & Cruise Vessels (Tronchetto / Marittima AIS Traffic)
-  if (showShips && ships && ships.length > 0) {
-    for (const sh of ships) {
-      const live = getLiveShip(sh, currentTimeSeconds);
-      const shx = sx(mx(live.lon));
-      const shy = sy(my(live.lat));
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, selectedShipOnMap, paletteTheme, showShips, ships } = rc;
+  // Navi AIS: posizione e rotta dell'ultimo segnale ricevuto, senza movimenti simulati
+  if (!showShips || !ships || ships.length === 0) return;
+  for (const sh of ships) {
+    const shx = sx(mx(sh.lon));
+    const shy = sy(my(sh.lat));
+    if (shx < -60 || shx > cw + 60 || shy < -60 || shy > ch + 60) continue;
 
-      if (shx < -80 || shx > cw + 80 || shy < -80 || shy > ch + 80) continue;
+    const isSelected = selectedShipOnMap?.mmsi === sh.mmsi;
+    const moving = (sh.speedKnots ?? 0) > 0.5;
+    const bearing = sh.heading ?? sh.courseDeg;
+    const color = SHIP_COLORS[sh.category];
+    // Grandi navi un po' più grandi, entro limiti leggibili
+    const scale = sh.lengthMeters ? Math.min(1.8, Math.max(0.8, sh.lengthMeters / 120)) : 1;
 
-      const isSelected = selectedShipOnMap?.mmsi === sh.mmsi;
-      const headingRad = (live.heading * Math.PI) / 180;
-
-      // 1. Ship Wake Trail (behind vessel)
-      if (sh.speedKnots > 0.5) {
-        ctx.save();
-        ctx.translate(shx, shy);
-        ctx.rotate(headingRad);
-        const wakeLen = Math.min(80, isSelected ? sh.speedKnots * 7 : sh.speedKnots * 4);
-        const wakeGrad = ctx.createLinearGradient(0, 0, 0, wakeLen);
-        wakeGrad.addColorStop(0, isSelected ? 'rgba(56, 189, 248, 0.95)' : (isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 100, 160, 0.35)'));
-        wakeGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
-
+    ctx.save();
+    ctx.translate(shx, shy);
+    if (bearing !== null) {
+      ctx.rotate((bearing * Math.PI) / 180);
+      // Scia proporzionale alla velocità reale
+      if (moving) {
+        const wake = Math.min(40, (sh.speedKnots ?? 0) * 3);
+        const grad = ctx.createLinearGradient(0, 8 * scale, 0, 8 * scale + wake);
+        grad.addColorStop(0, isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,100,160,0.3)');
+        grad.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.moveTo(-3, 8);
-        ctx.lineTo(-9, 8 + wakeLen);
-        ctx.lineTo(9, 8 + wakeLen);
-        ctx.lineTo(3, 8);
+        ctx.moveTo(-3 * scale, 8 * scale);
+        ctx.lineTo(-7 * scale, 8 * scale + wake);
+        ctx.lineTo(7 * scale, 8 * scale + wake);
+        ctx.lineTo(3 * scale, 8 * scale);
         ctx.closePath();
-        ctx.fillStyle = wakeGrad;
         ctx.fill();
-        ctx.restore();
       }
-
-      // 2. Projected Heading Course Vector
-      if (sh.speedKnots > 0.5) {
-        const forwardDist = isSelected ? 0.025 : 0.015;
-        const forwardLon = live.lon + Math.sin(headingRad) * forwardDist;
-        const forwardLat = live.lat + Math.cos(headingRad) * forwardDist;
-        ctx.beginPath();
-        ctx.moveTo(shx, shy);
-        ctx.lineTo(sx(mx(forwardLon)), sy(my(forwardLat)));
-        ctx.strokeStyle = isSelected ? '#fbbf24' : (isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(30, 41, 59, 0.45)');
-        ctx.lineWidth = isSelected ? 2.5 : 1.2;
-        ctx.setLineDash([4, 4]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      }
-
-      // 3. When Selected, draw direct vector to destination berth with Nautical Miles readout
-      if (isSelected) {
-        const berthCoord = sh.routeId === 'CANALE_PETROLI'
-          ? { lon: 12.2450, lat: 45.4420 }
-          : sh.routeId === 'FAST_FERRY_ISTRIA'
-          ? { lon: 12.3160, lat: 45.4335 }
-          : { lon: 12.3050, lat: 45.4418 };
-        const bx = sx(mx(berthCoord.lon));
-        const by = sy(my(berthCoord.lat));
-
-        ctx.beginPath();
-        ctx.moveTo(shx, shy);
-        ctx.lineTo(bx, by);
-        ctx.strokeStyle = isDark ? '#38bdf8' : '#0284c7';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([6, 5]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // Nautical distance badge
-        const distNM = (Math.hypot(live.lon - berthCoord.lon, live.lat - berthCoord.lat) * 60).toFixed(1);
-        ctx.font = '700 10px "DM Mono", monospace';
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillText(`${distNM} NM · ${sh.berth.split(',')[0]}`, shx + 14, shy - 14);
-      }
-
-      // 4. Ship Hull & Superstructure (Rotated to heading)
-      ctx.save();
-      ctx.translate(shx, shy);
-      ctx.rotate(headingRad);
-
-      const isCruise = sh.shipType === 'CRUISE';
-      const isTug = sh.shipType === 'TUG';
-      const isHydrofoil = sh.shipType === 'HYDROFOIL';
-
-      const hullColor = isCruise
-        ? (sh.isRestrictedLagoonRoute ? '#f59e0b' : '#6366f1')
-        : isTug
-        ? '#f97316'
-        : isHydrofoil
-        ? '#06b6d4'
-        : '#3b82f6';
-
-      const sScale = isCruise ? Math.max(1.2, sh.lengthMeters / 180) : 1.0;
-
-      // Ship Hull Polygon
       ctx.beginPath();
-      ctx.moveTo(0, -14 * sScale); // Bow
-      ctx.lineTo(5 * sScale, -4 * sScale);
-      ctx.lineTo(5 * sScale, 12 * sScale);
-      ctx.lineTo(-5 * sScale, 12 * sScale);
-      ctx.lineTo(-5 * sScale, -4 * sScale);
+      ctx.moveTo(0, -11 * scale);
+      ctx.lineTo(4.5 * scale, -3 * scale);
+      ctx.lineTo(4.5 * scale, 8 * scale);
+      ctx.lineTo(-4.5 * scale, 8 * scale);
+      ctx.lineTo(-4.5 * scale, -3 * scale);
       ctx.closePath();
-      ctx.fillStyle = hullColor;
-      ctx.fill();
-      ctx.strokeStyle = isSelected ? '#fbbf24' : (isDark ? '#ffffff' : '#0f172a');
-      ctx.lineWidth = isSelected ? 2 : 1.2;
-      ctx.stroke();
+    } else {
+      // Rotta sconosciuta: cerchio
+      ctx.beginPath();
+      ctx.arc(0, 0, 5 * scale, 0, Math.PI * 2);
+    }
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = isSelected ? '#fbbf24' : isDark ? '#ffffff' : '#0f172a';
+    ctx.lineWidth = isSelected ? 2 : 1;
+    ctx.stroke();
+    ctx.restore();
 
-      // Superstructure / Deck for cruise ships
-      if (isCruise) {
-        ctx.fillStyle = isDark ? '#ffffff' : '#e2e8f0';
-        ctx.fillRect(-3 * sScale, -5 * sScale, 6 * sScale, 12 * sScale);
-        // Funnel
-        ctx.fillStyle = '#ef4444';
-        ctx.fillRect(-2 * sScale, 3 * sScale, 4 * sScale, 3 * sScale);
-      }
-
-      ctx.restore(); // Undo rotation and translation
-
-      // Ship Label Tag
-      ctx.font = '600 10px "Bricolage Grotesque", sans-serif';
-      const shipLabel = isCruise
-        ? `${sh.name} (${sh.speedKnots} kn)`
-        : isTug
-        ? `${sh.name} (Rimorchiatore)`
-        : isHydrofoil
-        ? `${sh.name} (Aliscafo)`
-        : `${sh.name}`;
-
+    if (camera.s > 0.03 || isSelected) {
+      ctx.font = '600 9.5px "Bricolage Grotesque", sans-serif';
       ctx.fillStyle = paletteTheme === 'notte' ? '#e2e8f0' : '#1e293b';
-      ctx.fillText(shipLabel, shx + 10, shy - 2);
-
-      // Berth subtext
-      if (camera.s > 0.02 || isSelected) {
-        ctx.font = '500 8.5px "DM Mono", monospace';
-        ctx.fillStyle = sh.isRestrictedLagoonRoute
-          ? (isDark ? '#f59e0b' : '#b45309')
-          : (isDark ? '#38bdf8' : '#0284c7');
-        ctx.fillText(sh.berth, shx + 10, shy + 9);
-      }
+      const speed = sh.speedKnots !== null && moving ? ` · ${sh.speedKnots} kn` : '';
+      ctx.fillText(`${sh.name}${speed}`, shx + 10, shy - 2);
     }
   }
 }

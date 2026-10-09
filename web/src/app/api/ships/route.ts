@@ -1,19 +1,28 @@
 import { NextResponse } from 'next/server';
-import { MARITIME_ROUTES, SHIPS_REFERENCE } from '@/lib/shipsData';
+import { MARITIME_ROUTES } from '@/lib/shipsData';
+import { AIS_SOURCE, getShipsSnapshot } from '@/server/sources/aisstream';
 
-export const revalidate = 86400;
+// Si rigenera al massimo ogni minuto; il modulo AIS limita comunque i collegamenti
+export const revalidate = 60;
+export const maxDuration = 30;
 
 export async function GET() {
+  const snap = await getShipsSnapshot();
   return NextResponse.json({
     success: true,
-    totalShips: SHIPS_REFERENCE.length,
-    regulationNotice: "Decreto Legge 103/2021: navi passeggeri >25.000 GT instradate a Marghera via Canale dei Petroli; navi <25.000 GT e traghetti autorizzati a Tronchetto / San Basilio.",
+    totalShips: snap.ships.length,
+    regulationNotice: 'Decreto Legge 103/2021: navi passeggeri oltre 25.000 GT instradate a Marghera via Canale dei Petroli; vietato il transito nel Bacino di San Marco e nel Canale della Giudecca.',
     meta: {
-      kind: 'curated-reference',
-      source: 'Elenco curato del progetto, da verificare (riferimento: AdSP Mare Adriatico Settentrionale)',
-      note: 'Le navi indicate sono un elenco di riferimento con banchina assegnata, non posizioni AIS in tempo reale.',
+      kind: snap.configured ? 'live' : 'not-configured',
+      source: AIS_SOURCE,
+      sourceUrl: 'https://aisstream.io',
+      license: 'Messaggi AIS trasmessi pubblicamente dalle navi, ricevuti tramite aisstream.io',
+      collectedAt: snap.collectedAt,
+      messagesLastCollection: snap.messages,
+      error: snap.error,
+      note: 'Navi sentite via AIS negli ultimi 30 minuti, con l’ora dell’ultimo segnale. La copertura dipende dai ricevitori a terra: alcune navi possono mancare. Non usare per la navigazione.',
     },
     routes: MARITIME_ROUTES,
-    data: SHIPS_REFERENCE,
+    data: snap.ships,
   });
 }

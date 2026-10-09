@@ -59,7 +59,7 @@ import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { useTranslation } from '@/lib/i18n';
 import { simClock } from '@/lib/simClock';
-import { getLiveFlight, getLiveShip, getLiveSatellite } from './map/mapHelpers';
+import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
 import { drawRoutes, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
@@ -734,16 +734,10 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     // 1b. Hit test Ships & Cruise Vessels (with live channel motion)
     if (showShips && ships && ships.length > 0) {
       for (const s of ships) {
-        const live = getLiveShip(s, currentTimeSeconds);
-        const sxPos = (mx(live.lon) - camera.x0) * camera.s;
-        const syPos = (my(live.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - sxPos, clickY - syPos) <= 24) {
-          setSelectedShipOnMap({
-            ...s,
-            lon: live.lon,
-            lat: live.lat,
-            heading: live.heading
-          });
+        const sxPos = (mx(s.lon) - camera.x0) * camera.s;
+        const syPos = (my(s.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - sxPos, clickY - syPos) <= 18) {
+          setSelectedShipOnMap(s);
           setSelectedVehicle(null);
           setSelectedFlight(null);
           setSelectedAlilagunaBoat(null);
@@ -1681,7 +1675,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     // (camera, selezioni o dati cambiati) e poi una volta al secondo (palette dinamica);
     // con layer animati a ogni frame.
     const hasAnimatedLayers =
-      showVehicles || showFlights || showShips || showAlilaguna || showSatellites ||
+      showVehicles || showFlights || showAlilaguna || showSatellites ||
       showCameras || showMarineSignals || showOceanStations || showLagoonWater ||
       (showMarineWind && windField !== null);
     let lastDraw = -Infinity;
@@ -2390,12 +2384,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between border-b border-[var(--rule)] pb-2">
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold bg-indigo-500 text-white flex items-center gap-1 shadow-sm">
-                <Ship className="w-3.5 h-3.5" /> {selectedShipOnMap.name}
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold bg-indigo-500 text-white flex items-center gap-1 shadow-sm truncate">
+                <Ship className="w-3.5 h-3.5 shrink-0" /> {selectedShipOnMap.name}
               </span>
-              <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase">
-                {selectedShipOnMap.shipType}
+              <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase shrink-0">
+                {tr(`ui.ship.category_${selectedShipOnMap.category}`)}
               </span>
             </div>
             <button
@@ -2407,38 +2401,25 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             </button>
           </div>
 
-          <div className="flex flex-col gap-1 text-xs">
-            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('map.berthChannel')}</span>
-            <span className="font-semibold text-[var(--ink)] leading-snug">{selectedShipOnMap.berth}</span>
-            <span className="text-[11px] text-[var(--ink-2)] font-mono">{selectedShipOnMap.destination}</span>
-          </div>
-
-          {/* Regulatory compliance pill */}
-          <div className={`p-2 rounded-xl text-[11px] font-mono flex items-center gap-1.5 border ${selectedShipOnMap.isRestrictedLagoonRoute
-            ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
-            : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-            }`}>
-            <span>
-              {selectedShipOnMap.isRestrictedLagoonRoute
-                ? t('map.restrictedNotice')
-                : t('map.authorizedNotice')}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[var(--rule)] text-xs">
+          <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
               <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.speed')}</span>
-              <span className="font-mono font-bold text-emerald-400">{selectedShipOnMap.speedKnots} {t('common.knots')}</span>
+              <span className="font-mono font-bold text-emerald-400">{selectedShipOnMap.speedKnots ?? 'n.d.'} {t('common.knots')}</span>
             </div>
             <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.grossTonnage')}</span>
-              <span className="font-mono font-bold text-indigo-300">{selectedShipOnMap.grossTonnage.toLocaleString()} GT</span>
+              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.track')}</span>
+              <span className="font-mono font-bold text-indigo-300">{selectedShipOnMap.courseDeg ?? selectedShipOnMap.heading ?? 'n.d.'}°</span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-1 border-t border-[var(--rule)] text-[11px] font-mono text-[var(--ink-2)]">
-            <span>{t('map.track')}: {selectedShipOnMap.heading}° · {t('map.draught')}: {selectedShipOnMap.draughtMeters}m</span>
-            <span className="text-amber-400 font-semibold">{selectedShipOnMap.flag}</span>
+          {selectedShipOnMap.destination && (
+            <div className="text-xs text-[var(--ink-2)]">
+              {tr('ui.ship.destination')}: <b className="text-[var(--ink)]">{selectedShipOnMap.destination}</b>
+            </div>
+          )}
+          <div className="text-[11px] font-mono text-[var(--ink-3)]">
+            {selectedShipOnMap.navStatus ? `${tr(`ui.ship.nav_${selectedShipOnMap.navStatus}`)} · ` : ''}
+            {tr('ui.ship.lastSeen', { time: new Date(selectedShipOnMap.lastSeen).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' }) })}
           </div>
 
           {onSelectShip && (

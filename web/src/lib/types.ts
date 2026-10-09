@@ -173,8 +173,7 @@ export interface PlatformMetrics {
   airQualityStatus: string | null;
 
   // Traffico Marittimo AIS & Canali (VTS / Crociere)
-  activeShipsCount: number;
-  totalGrossTonnage: number;
+  activeShipsCount: number | null;
   maritimeChannelsCount: number | null;
   restrictedLagoonVesselsCount: number | null;
 
@@ -239,25 +238,31 @@ export interface MaritimeRouteItem {
   waypoints: MaritimeWaypoint[];
 }
 
+export type ShipCategory = 'PASSENGER' | 'CARGO' | 'TANKER' | 'HIGH_SPEED' | 'TUG' | 'FISHING' | 'PLEASURE' | 'SERVICE' | 'OTHER';
+
+/** Nave ricevuta via AIS (aisstream.io): posizione reale all'ora dell'ultimo segnale. */
 export interface ShipItem {
   mmsi: string;
-  imo: string;
+  imo: string | null;
   name: string;
-  shipType: 'CRUISE' | 'FERRY' | 'CARGO' | 'TUG' | 'HYDROFOIL';
+  callSign: string | null;
+  category: ShipCategory;
+  /** codice di tipo AIS, se trasmesso */
+  typeCode: number | null;
   lat: number;
   lon: number;
-  speedKnots: number;
-  heading: number;
-  draughtMeters: number;
-  lengthMeters: number;
-  grossTonnage: number;
-  destination: string;
-  berth: string;
-  flag: string;
-  operator: string;
-  eta: string;
-  isRestrictedLagoonRoute: boolean; // True for big cruise ships banned from San Marco / Giudecca (DL 103/2021)
-  routeId?: string;
+  speedKnots: number | null;
+  courseDeg: number | null;
+  heading: number | null;
+  /** chiave dello stato di navigazione (underway, anchored, moored…) */
+  navStatus: string | null;
+  destination: string | null;
+  /** arrivo previsto dichiarato dalla nave, testo UTC */
+  eta: string | null;
+  lengthMeters: number | null;
+  draughtMeters: number | null;
+  /** ora (ISO) dell'ultimo messaggio ricevuto */
+  lastSeen: string;
 }
 
 export interface MoseGateItem {

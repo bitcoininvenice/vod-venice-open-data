@@ -187,8 +187,8 @@ export interface PlatformMetricsInputs {
   routesAutomobilistico: number;
   weekdayTrips: number;
   alilagunaBoatsNow: number;
-  shipsCount: number;
-  shipsGrossTonnage: number;
+  /** navi AIS note all'istanza (null se il feed non è configurato o non ancora letto) */
+  shipsCount: number | null;
   /** Marea reale a Punta Salute (null se la fonte non risponde) */
   tideLevelCm: number | null;
   /** Aerei rilevati da OpenSky (null se la fonte non risponde) */
@@ -244,7 +244,6 @@ export async function fetchPlatformMetrics(inputs: PlatformMetricsInputs): Promi
 
     // Traffico marittimo (anagrafica banchine)
     activeShipsCount: inputs.shipsCount,
-    totalGrossTonnage: inputs.shipsGrossTonnage,
     maritimeChannelsCount: null,
     restrictedLagoonVesselsCount: null,
 

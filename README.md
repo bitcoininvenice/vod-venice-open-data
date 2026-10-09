@@ -206,6 +206,7 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/realtime/vehicles` | Posizioni reali dei mezzi ACTV dal feed GTFS-RT (cache 20 s). |
 | `GET` | `/api/tide` | Livelli di marea reali, previsione CPSM con data di emissione, anagrafica MOSE. |
 | `GET` | `/api/weather` | METAR LIPZ reale e stazioni vento di riferimento. |
+| `GET` | `/api/ships` | Navi nell'area di Venezia via AIS (aisstream.io, chiave in `AISSTREAM_API_KEY`): collegamento di 15 s al massimo una volta al minuto, navi sentite negli ultimi 30 minuti. Senza chiave restituisce un elenco vuoto con `meta.kind: not-configured`. |
 | `GET` | `/api/flights` | Aerei rilevati da OpenSky nell'area di Venezia (cache 15 s). |
 | `GET` | `/api/datasets` | Catalogo dei dataset (lo stesso del server MCP) e servizi MCP correlati. |
 | `GET` | `/api/datasets/<id>` | Voci di un dataset con filtri `text`, `lat`/`lon`/`radius`, `limit` (≤100), `offset`: per script e scaricamenti in blocco. |

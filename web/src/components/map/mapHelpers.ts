@@ -1,7 +1,6 @@
 // Funzioni di posizione e costanti condivise tra MapEngine (clic) e i layer di disegno.
 import { FlightItem } from '@/lib/types';
 import { SatelliteItem } from '@/lib/types';
-import { ShipItem } from '@/lib/types';
 import { dateAtRomeSeconds } from '@/lib/time';
 import { groundTrack } from '@/lib/orbits';
 import { headingAt } from '@/lib/orbits';
@@ -134,46 +133,6 @@ export function getLiveFlight(
 }
 
 // Live kinematics for AIS ships along maritime navigation channels
-export function getLiveShip(
-  sh: ShipItem,
-  t: number
-): { lon: number; lat: number; heading: number } {
-  if (sh.speedKnots <= 0.2) {
-    return { lon: sh.lon, lat: sh.lat, heading: sh.heading };
-  }
-
-  const channel = MARITIME_CHANNELS.find((c) => c.id === sh.routeId);
-  if (!channel || !channel.waypoints || channel.waypoints.length < 2) {
-    const rad = (sh.heading * Math.PI) / 180;
-    const cycle = 1800;
-    const hash = (parseInt(sh.mmsi, 10) || 1) * 37;
-    const p = ((t + hash) % cycle) / cycle;
-    const dist = (p - 0.5) * 0.03;
-    return {
-      lon: sh.lon + Math.sin(rad) * dist,
-      lat: sh.lat + Math.cos(rad) * dist,
-      heading: sh.heading
-    };
-  }
-
-  const wps = channel.waypoints.map((w) => ({ lon: w.lon, lat: w.lat }));
-  const cycle = 2400; // 40 min roundtrip
-  const hash = (parseInt(sh.mmsi, 10) || 1) * 47;
-  const p = ((t + hash) % cycle) / cycle;
-
-  if (p <= 0.5) {
-    const prog = p * 2;
-    return interpolateAlongWaypoints(wps, prog);
-  } else {
-    const prog = (1 - p) * 2;
-    const pt = interpolateAlongWaypoints(wps, prog);
-    return {
-      lon: pt.lon,
-      lat: pt.lat,
-      heading: (pt.heading + 180) % 360
-    };
-  }
-}
 
 // Tracce a terra in cache per satellite e minuto: il ricalcolo SGP4 avviene al massimo una volta al minuto
 export const groundTrackCache = new Map<string, [number, number][]>();

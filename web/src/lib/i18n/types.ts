@@ -253,18 +253,6 @@ export interface Translations {
     flightStats: string;
     close: string;
   };
-  shipModal: {
-    title: string;
-    vesselType: string;
-    mmsiImo: string;
-    speedHeading: string;
-    dimensions: string;
-    draught: string;
-    destination: string;
-    navStatus: string;
-    sourceAis: string;
-    close: string;
-  };
   moseModal: {
     title: string;
     subtitle: string;
@@ -411,11 +399,6 @@ export interface Translations {
     track: string;
     vceDist: string;
     airportDetailsButton: string;
-    berthChannel: string;
-    restrictedNotice: string;
-    authorizedNotice: string;
-    grossTonnage: string;
-    draught: string;
     shipDetailsButton: string;
     destinationNextStop: string;
     directionLabel: string;

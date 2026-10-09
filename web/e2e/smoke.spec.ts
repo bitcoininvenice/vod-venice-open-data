@@ -179,6 +179,18 @@ test('llms.txt descrive il sito e il server MCP', async ({ request }) => {
 });
 
 test.describe('API', () => {
+  test('ships restituisce navi AIS reali o dichiara che il feed non è configurato', async ({ request }) => {
+    const body = await (await request.get('/api/ships')).json();
+    expect(body.success).toBe(true);
+    expect(['live', 'not-configured']).toContain(body.meta.kind);
+    expect(Array.isArray(body.data)).toBe(true);
+    for (const s of body.data) {
+      expect(s.mmsi).toMatch(/^\d+$/);
+      expect(s.lastSeen).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    }
+    if (body.meta.kind === 'not-configured') expect(body.data).toEqual([]);
+  });
+
   test('API REST dei dataset: catalogo, filtro geografico ed errori espliciti', async ({ request }) => {
     const cat = await (await request.get('/api/datasets')).json();
     expect(cat.datasets.length).toBeGreaterThan(20);

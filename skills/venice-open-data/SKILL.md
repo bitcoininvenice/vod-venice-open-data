@@ -1,6 +1,6 @@
 ---
 name: venice-open-data
-description: Answers questions about Venice (Venezia) and its lagoon with verified public data from Venice Open Data (VOD) - tide and acqua alta, MOSE, weather and wind, air quality, pollen, lagoon water, ACTV waterbus stops and live vehicles, Alilaguna, pharmacies, defibrillators, drinking fountains, recycling centres, libraries, car parks, EV charging, fibre coverage, canals and briccole, public works, tourism and municipal statistics. Use it whenever the user asks about Venice, Mestre, Lido, Murano, Burano, Chioggia or the Venetian lagoon, even without naming VOD.
+description: Answers questions about Venice (Venezia) and its lagoon with verified public data from Venice Open Data (VOD) - tide and acqua alta, MOSE, ships (AIS), weather and wind, air quality, pollen, lagoon water, ACTV waterbus stops and live vehicles, Alilaguna, pharmacies, defibrillators, drinking fountains, recycling centres, libraries, car parks, EV charging, fibre coverage, canals and briccole, public works, tourism and municipal statistics. Use it whenever the user asks about Venice, Mestre, Lido, Murano, Burano, Chioggia or the Venetian lagoon, even without naming VOD.
 ---
 
 # Venice Open Data (VOD)

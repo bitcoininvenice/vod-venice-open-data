@@ -261,6 +261,21 @@ export default function HomePage() {
   const [simulatedTideLevel, setSimulatedTideLevel] = useState<number | null>(null);
 
   // Global Keyboard Shortcut: Cmd+K / Ctrl+K for Global Search
+  // Navi AIS reali: caricate quando il layer è attivo e aggiornate ogni minuto
+  useEffect(() => {
+    if (!showShips) return;
+    const load = () =>
+      fetch('/api/ships')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && Array.isArray(data.data)) setShips(data.data);
+        })
+        .catch((err) => console.warn('Navi AIS non disponibili:', err));
+    void load();
+    const id = setInterval(load, 60 * 1000);
+    return () => clearInterval(id);
+  }, [showShips]);
+
   useEffect(() => {
     if ((!showMarineSignals && !showCanals) || lagoonNetwork) return;
     fetch('/api/lagoon-network')
@@ -432,14 +447,6 @@ export default function HomePage() {
     };
     loadTide();
     const tideInterval = setInterval(loadTide, 5 * 60 * 1000);
-
-    // Fetch Ships (AIS Maritime Traffic & Cruise Ships)
-    fetch('/api/ships')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.data) setShips(data.data);
-      })
-      .catch((err) => console.warn('Using fallback ships:', err));
 
     // Fetch City Assets (Fountains, Bridges, Veritas, Parkings)
     fetch('/api/city-assets')

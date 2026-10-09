@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { fetchPlatformMetrics } from '@/lib/db';
-import { SHIPS_REFERENCE } from '@/lib/shipsData';
+import { peekShipsCount } from '@/server/sources/aisstream';
 import { SATELLITES_DATA } from '@/lib/satellitesData';
 import { PASSERELLE_DATA } from '@/lib/passerelleData';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
@@ -29,8 +29,7 @@ export async function GET() {
   const metrics = await fetchPlatformMetrics({
     ...gtfsNetworkStats(),
     alilagunaBoatsNow: getScheduledAlilagunaBoats(Math.floor(romeSecondsOfDay())).length,
-    shipsCount: SHIPS_REFERENCE.length,
-    shipsGrossTonnage: SHIPS_REFERENCE.reduce((acc, s) => acc + (s.grossTonnage || 0), 0),
+    shipsCount: peekShipsCount(),
     tideLevelCm: tide.ok ? tide.data.find((s) => s.id === REFERENCE_STATION_ID)?.levelCm ?? null : null,
     activeFlightsCount: flights.ok ? flights.data.length : null,
     satellitesCount: SATELLITES_DATA.length,

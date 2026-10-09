@@ -51,6 +51,7 @@ const SOURCES_METADATA: Record<string, SourceMetadata> = {
   'gtfs-rt-nav': { institution: 'AVM / ACTV', portalUrl: 'https://actv.avmspa.it', portalName: 'tpl.actv.it', license: '—', format: 'GTFS-RT (protobuf)', refresh: 'r20s', hasNote: true },
   'gtfs-rt-aut': { institution: 'AVM / ACTV', portalUrl: 'https://actv.avmspa.it', portalName: 'tpl.actv.it', license: '—', format: 'GTFS-RT (protobuf)', refresh: 'r20s', hasNote: true },
   'cpsm-meteo': { institution: `${COMUNE} – Centro Maree (CPSM)`, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY', format: 'JSON', refresh: 'r5min' },
+  aisstream: { institution: 'aisstream.io', portalUrl: 'https://aisstream.io', portalName: 'aisstream.io', license: 'Messaggi AIS pubblici', format: 'WebSocket JSON', refresh: 'r60s', hasNote: true },
   opensky: { institution: 'OpenSky Network', portalUrl: 'https://opensky-network.org', portalName: 'opensky-network.org', license: 'OpenSky Terms of Use', format: 'REST JSON', refresh: 'r15s', hasNote: true },
   'open-meteo': { institution: 'Open-Meteo (modelli DWD ICON / ECMWF)', portalUrl: 'https://open-meteo.com', portalName: 'open-meteo.com', license: 'CC BY 4.0', format: 'REST JSON', refresh: 'r30min', hasNote: true },
   'cams-air': { institution: 'Copernicus CAMS via Open-Meteo', portalUrl: 'https://open-meteo.com/en/docs/air-quality-api', portalName: 'open-meteo.com', license: 'CC BY 4.0', format: 'REST JSON', refresh: 'r30min', hasNote: true },
@@ -78,6 +79,8 @@ const DETAIL_KEYS: Record<string, string> = {
   'fonte non raggiungibile o senza data': 'detailUnreachable',
   "emissione dell'ultima previsione": 'detailForecastIssue',
   'quota esaurita o servizio non raggiungibile': 'detailQuota',
+  'nessuna nave ricevuta nell’ultima lettura': 'detailNoShips',
+  'AISSTREAM_API_KEY non configurata': 'detailAisNotConfigured',
   'orario importato non più valido': 'detailTimetableExpired',
 };
 

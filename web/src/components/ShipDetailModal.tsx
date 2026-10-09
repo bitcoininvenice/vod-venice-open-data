@@ -1,10 +1,9 @@
 'use client';
 
 import React from 'react';
-import { X, Anchor, ShieldCheck, AlertTriangle, MapPin } from 'lucide-react';
+import { X, Anchor, ExternalLink } from 'lucide-react';
 import { ShipItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
-import { RichText } from './ui/RichText';
 import { useDialogA11y } from '@/components/ui/useDialogA11y';
 
 interface ShipDetailModalProps {
@@ -12,13 +11,29 @@ interface ShipDetailModalProps {
   onClose: () => void;
 }
 
-export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
-  ship,
-  onClose
-}) => {
-  const { language, t } = useTranslation();
+/** Scheda di una nave ricevuta via AIS: solo i dati trasmessi dalla nave, con l'ora dell'ultimo segnale. */
+export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({ ship, onClose }) => {
+  const { t, language } = useTranslation();
   const panelRef = useDialogA11y(ship !== null, onClose);
   if (!ship) return null;
+  const s = (key: string, params?: Record<string, string | number>) => t(`ui.ship.${key}`, params);
+  const locale = language === 'it' ? 'it-IT' : 'en-GB';
+  const lastSeen = new Date(ship.lastSeen).toLocaleString(locale, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
+
+  const rows: Array<[string, string | number | null]> = [
+    [s('speed'), ship.speedKnots !== null ? `${ship.speedKnots} kn` : null],
+    [s('course'), ship.courseDeg !== null ? `${ship.courseDeg}°` : null],
+    [s('heading'), ship.heading !== null ? `${ship.heading}°` : null],
+    [s('navStatus'), ship.navStatus ? s(`nav_${ship.navStatus}`) : null],
+    [s('destination'), ship.destination],
+    [s('eta'), ship.eta],
+    [s('length'), ship.lengthMeters !== null ? `${ship.lengthMeters} m` : null],
+    [s('draught'), ship.draughtMeters !== null ? `${ship.draughtMeters} m` : null],
+    [s('callSign'), ship.callSign],
+    ['IMO', ship.imo],
+    ['MMSI', ship.mmsi],
+    [s('position'), `${ship.lat.toFixed(5)}, ${ship.lon.toFixed(5)}`],
+  ];
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
@@ -28,133 +43,50 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
         aria-modal="true"
         aria-labelledby="ship-modal-title"
         tabIndex={-1}
-        className="glass-panel w-full max-w-lg rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-3.5 sm:gap-4 border border-cyan-500/40 animate-in fade-in zoom-in-95 duration-200 max-h-[88vh] overflow-y-auto outline-none">
-        {/* Header */}
+        className="glass-panel w-full max-w-lg rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 border border-cyan-500/40 max-h-[88vh] overflow-y-auto outline-none"
+      >
         <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/40 shadow-lg shadow-cyan-500/10">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-11 h-11 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/40 shrink-0">
               <Anchor className="w-6 h-6" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-mono tracking-wider font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                  {ship.shipType} · {ship.flag}
-                </span>
-                <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 motion-safe:animate-pulse" /> AIS LIVE
-                </span>
-              </div>
-              <h3 id="ship-modal-title" className="text-lg font-bold text-[var(--ink)] leading-snug">
-                {ship.name}
-              </h3>
+            <div className="min-w-0">
+              <span className="text-[10px] uppercase font-mono tracking-wider font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                {s(`category_${ship.category}`)}
+              </span>
+              <h2 id="ship-modal-title" className="text-lg font-bold text-[var(--ink)] truncate mt-1">{ship.name}</h2>
+              <span className="text-[11px] font-mono text-[var(--ink-3)]">{s('lastSeen', { time: lastSeen })}</span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded-lg hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] cursor-pointer"
-            title={t('common.close')}
-          >
+          <button type="button" onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--rule)] text-[var(--ink-2)] cursor-pointer" aria-label={t('common.close')}>
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Berth & Destination Banner */}
-        <div className="p-3 rounded-xl bg-[var(--rule)]/40 border border-[var(--rule)] flex flex-col gap-1 text-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase font-mono text-[var(--ink-3)]">
-              {t('ui.ship.ormeggioAssegnatoBanchina')}
-            </span>
-            <span className="font-mono font-bold text-cyan-400">{ship.operator}</span>
-          </div>
-          <span className="text-sm font-bold text-[var(--ink)] flex items-center gap-1.5">
-            <MapPin className="w-4 h-4 text-cyan-400 shrink-0" />
-            {ship.berth}
-          </span>
-          <span className="text-[11px] text-[var(--ink-2)]">
-            {t('ui.ship.destinazione')} <strong>{ship.destination}</strong>
-          </span>
-        </div>
-
-        {/* Cruise Regulation Notice (DL 103/2021) */}
-        {ship.shipType === 'CRUISE' && (
-          <div className={`p-3 rounded-xl border text-xs flex flex-col gap-1.5 ${
-            ship.isRestrictedLagoonRoute
-              ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
-              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-          }`}>
-            <div className="flex items-center gap-2 font-bold">
-              {ship.isRestrictedLagoonRoute ? (
-                <>
-                  <AlertTriangle className="w-4 h-4 text-amber-400" />
-                  <span>{t('ui.ship.deviazioneObbligatoriaDL103')}</span>
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <span>{t('ui.ship.naveAutorizzataAlTronchettoMarittima')}</span>
-                </>
-              )}
+        <dl className="grid grid-cols-2 gap-2 text-xs">
+          {rows.filter(([, v]) => v !== null && v !== '').map(([label, value]) => (
+            <div key={label} className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
+              <dt className="text-[10px] uppercase font-mono text-[var(--ink-3)]">{label}</dt>
+              <dd className="font-mono font-bold text-[var(--ink)] break-words">{value}</dd>
             </div>
-            <p className="text-[11px] leading-relaxed opacity-90 text-[var(--ink)]">
-              <RichText
-                text={t(ship.isRestrictedLagoonRoute ? 'ui.ship.restrictedNote' : 'ui.ship.allowedNote', {
-                  gt: ship.grossTonnage.toLocaleString(language === 'it' ? 'it-IT' : 'en-GB'),
-                })}
-              />
-            </p>
-          </div>
+          ))}
+        </dl>
+
+        {ship.category === 'PASSENGER' && (ship.lengthMeters ?? 0) >= 180 && (
+          <p className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300">{s('largeShipNotice')}</p>
         )}
 
-        {/* Specs Grid */}
-        <div className="grid grid-cols-3 gap-2 text-xs">
-          <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
-            <span className="text-[10px] text-[var(--ink-3)] block font-mono">
-              {t('ui.ship.stazzaLorda')}
-            </span>
-            <span className="font-mono font-bold text-[var(--ink)] text-sm">{ship.grossTonnage.toLocaleString()} GT</span>
-          </div>
-          <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
-            <span className="text-[10px] text-[var(--ink-3)] block font-mono">
-              {t('ui.ship.lunghezza')}
-            </span>
-            <span className="font-mono font-bold text-cyan-400 text-sm">{ship.lengthMeters} {t('common.meters')}</span>
-          </div>
-          <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
-            <span className="text-[10px] text-[var(--ink-3)] block font-mono">
-              {t('ui.ship.pescaggio')}
-            </span>
-            <span className="font-mono font-bold text-emerald-400 text-sm">{ship.draughtMeters} {t('common.meters')}</span>
-          </div>
-        </div>
-
-        {/* Navigation & Telemetry */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
-            <span className="text-[10px] text-[var(--ink-3)] block font-mono">
-              {t('ui.ship.velocitaNavigazione')}
-            </span>
-            <span className="font-mono font-bold text-cyan-300">{ship.speedKnots} {t('common.knots')}</span>
-          </div>
-          <div className="bg-[var(--rule)]/40 p-2.5 rounded-xl border border-[var(--rule)]">
-            <span className="text-[10px] text-[var(--ink-3)] block font-mono">
-              {t('ui.ship.rottaHeading')}
-            </span>
-            <span className="font-mono font-bold text-sky-400">{ship.heading}°</span>
-          </div>
-        </div>
-
-        {/* Identifiers Footer */}
-        <div className="pt-2 border-t border-[var(--rule)] flex items-center justify-between text-[11px] font-mono text-[var(--ink-3)]">
-          <span>IMO: {ship.imo} · MMSI: {ship.mmsi}</span>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-3.5 py-1.5 rounded-xl bg-cyan-500 text-white font-medium hover:bg-cyan-400 transition-all cursor-pointer"
+        <p className="text-[11px] text-[var(--ink-3)] leading-relaxed">{s('aisNote')}</p>
+        {ship.imo && (
+          <a
+            href={`https://www.marinetraffic.com/en/ais/details/ships/imo:${ship.imo}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] text-cyan-400 hover:underline flex items-center gap-1"
           >
-            {t('common.close')}
-          </button>
-        </div>
+            {s('moreInfo')} <ExternalLink className="w-3 h-3" />
+          </a>
+        )}
       </div>
     </div>
   );
