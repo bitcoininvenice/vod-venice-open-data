@@ -57,6 +57,18 @@ export interface Translations {
     paletteDynamicTitle: string;
     spatialTitle: string;
     switchLanguageTitle: string;
+    menu: string;
+    menuTitle: string;
+    guideHint: string;
+    metricsHint: string;
+    sources: string;
+    sourcesHint: string;
+    exportHint: string;
+    floodHint: string;
+    language: string;
+    tideRising: string;
+    tideFalling: string;
+    tideClickHint: string;
   };
   timeline: {
     liveNow: string;
@@ -74,6 +86,7 @@ export interface Translations {
     timeScrubber: string;
     share: string;
     shareSuccess: string;
+    shareFailed: string;
   };
   layers: {
     panelTitle: string;
@@ -403,7 +416,6 @@ export interface Translations {
     destinationNextStop: string;
     directionLabel: string;
     nextStopLabel: string;
-    passengersOnBoard: string;
     alilagunaDetailsButton: string;
     missionRemoteSensing: string;
     altitudeSpeed: string;

@@ -124,7 +124,7 @@ export const SpatialAnalysisModal: React.FC<SpatialAnalysisModalProps> = ({
         {/* Results List */}
         <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 pr-1">
           {loading ? (
-            <div className="py-12 text-center text-xs text-[var(--ink-2)] font-mono animate-pulse">
+            <div className="py-12 text-center text-xs text-[var(--ink-2)] font-mono motion-safe:animate-pulse">
               {t('ui.spatial.esecuzioneQuerySpazialeStDwithin')}
             </div>
           ) : results.length === 0 ? (

@@ -11,6 +11,7 @@ import math
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+NEAR_SITE_MAX_M = 150
 FOUNTAINS_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "fountains.json")
 
 # Catalogo toponomastico storico veneziano (da Conoscere Venezia / Catasto Storico)
@@ -18,7 +19,7 @@ KNOWN_VENICE_SITES = [
     # CASTELLO
     ("Fondamenta Quintavalle", 45.4308, 12.3601, "Castello"),
     ("Campo San Pietro di Castello", 45.4344, 12.3598, "Castello"),
-    ("Seco Marina", 45.4312, 45.4315 and 12.3582, "Castello"),
+    ("Seco Marina", 45.4312, 12.3582, "Castello"),
     ("Corte de le Case Nove", 45.4320, 12.3565, "Castello"),
     ("Campiello de la Colomba", 45.4332, 12.3550, "Castello"),
     ("Giardini Pubblici (Viale Garibaldi)", 45.4315, 12.3560, "Castello"),
@@ -193,37 +194,37 @@ def main():
                 min_dist = d
                 best_site = (name, zone)
 
-        # Se il nome attuale è generico (#number) e c'è un toponimo entro 250m
-        if "#" in fnt['name'] and best_site and min_dist <= 280:
+        # Se il nome attuale è generico (#number) e c'è un toponimo noto entro NEAR_SITE_MAX_M.
+        # È una stima di prossimità, non l'indirizzo: per questo il testo dice "nei pressi di".
+        if "#" in fnt['name'] and best_site and min_dist <= NEAR_SITE_MAX_M:
             toponym, zone = best_site
             count = used_names_counter.get(toponym, 0) + 1
             used_names_counter[toponym] = count
             
             if count == 1:
-                fnt['name'] = f"Fontanella {toponym}"
+                fnt['name'] = f"Fontanella presso {toponym}"
             else:
-                fnt['name'] = f"Fontanella {toponym} #{count}"
-                
-            fnt['sestiere'] = zone
-            fnt['address'] = toponym
+                fnt['name'] = f"Fontanella presso {toponym} #{count}"
 
-        # Arricchimento dettagli e certificazione potabilità Veritas
+            fnt['sestiere'] = zone
+            fnt['address'] = f"Nei pressi di {toponym} (~{round(min_dist)} m, stima)"
+
+        # Solo informazioni generali vere per tutte le fontanelle: nessuna certificazione o orario
+        # attribuiti al singolo punto senza una fonte che li riporti.
         fnt['details'] = (
-            f"Acqua potabile H24 dall'acquedotto Veritas S.p.A. da falda profonda. "
-            f"Punto di ricarica borracce censito nel progetto Venice Tap Water (plastic-free). "
-            f"Censimento storico Conoscere Venezia."
+            "Fontanella pubblica mappata su OpenStreetMap. A Venezia l'acquedotto è gestito da Veritas S.p.A.; "
+            "funzionamento e orari del singolo punto non sono verificati."
         )
-        fnt['operator'] = "Veritas S.p.A. / Comune di Venezia"
-        fnt['waterSource'] = "Acquedotto Civico Veritas S.p.A. (Falda artesiana di terraferma)"
-        fnt['campaign'] = "Venice Tap Water (www.venicetapwater.org)"
-        fnt['toponomasticSource'] = "Conoscere Venezia (www.conoscerevenezia.it/?p=3231)"
+        fnt['operator'] = fnt.get('operator') or "Non indicato (OSM)"
+        fnt['waterSource'] = "Acquedotto civico (gestore Veritas S.p.A.)"
+        fnt.pop('campaign', None)
+        if "#" not in fnt['name']:
+            fnt['toponomasticSource'] = "Toponimo più vicino da elenco curato (pipeline/enrich_fountains.py)"
 
     doc['metadata']['toponomasticEnriched'] = True
     doc['metadata']['provenance'] = [
         "OpenStreetMap contributors (ODbL 1.0)",
-        "Venice Tap Water (www.venicetapwater.org)",
-        "Conoscere Venezia (www.conoscerevenezia.it/?p=3231)",
-        "Veritas S.p.A. (Gruppo Veritas) / Comune di Venezia"
+        "Toponimi di prossimità: elenco curato del progetto (stima, non indirizzo)",
     ]
 
     with open(FOUNTAINS_FILE, 'w', encoding='utf-8') as f:

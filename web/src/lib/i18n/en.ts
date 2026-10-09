@@ -55,7 +55,19 @@ export const enTranslations: Translations = {
     paletteLightTitle: 'Paper Palette (Historic light map)',
     paletteDynamicTitle: 'Dynamic Palette (Synced with Venice sunrise & sunset)',
     spatialTitle: 'Spatial Intersection: ACTV stops within radius of public works',
-    switchLanguageTitle: 'Switch language / Cambia lingua'
+    switchLanguageTitle: 'Switch language / Cambia lingua',
+    menu: 'Menu',
+    menuTitle: 'Tools and options menu',
+    guideHint: 'Tutorial and map presets',
+    metricsHint: 'KPI dashboard and forecasts',
+    sources: 'Source status',
+    sourcesHint: 'Data availability and freshness',
+    exportHint: 'GeoJSON, CSV and SHA-256',
+    floodHint: 'Flooding and CPSM forecasts',
+    language: 'Language / Lingua',
+    tideRising: 'Rising towards high tide',
+    tideFalling: 'Falling towards low tide',
+    tideClickHint: 'Click for the simulator'
   },
   timeline: {
     liveNow: 'LIVE NOW',
@@ -72,7 +84,8 @@ export const enTranslations: Translations = {
     pause: 'Pause',
     timeScrubber: 'Scrub time',
     share: 'Share',
-    shareSuccess: 'Link copied!'
+    shareSuccess: 'Link copied!',
+    shareFailed: 'Copy failed'
   },
   layers: {
     panelTitle: 'Map Layers & Filters',
@@ -402,7 +415,6 @@ export const enTranslations: Translations = {
     destinationNextStop: 'Destination & Next Port',
     directionLabel: 'Direction',
     nextStopLabel: 'Next stop',
-    passengersOnBoard: 'Passengers on board',
     alilagunaDetailsButton: 'Route Details & Transitland GTFS',
     missionRemoteSensing: 'Mission & Remote Sensing',
     altitudeSpeed: 'Altitude & Speed',

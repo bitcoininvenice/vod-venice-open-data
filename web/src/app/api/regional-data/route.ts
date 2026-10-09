@@ -12,8 +12,8 @@ export const revalidate = 86400;
 export async function GET() {
   return NextResponse.json({
     success: true,
-    portal: 'Open Data Regione del Veneto (dati.veneto.it)',
-    license: 'Creative Commons Attribuzione 4.0 Internazionale (CC BY 4.0)',
+    kind: 'curated-reference',
+    source: 'Elenco curato del progetto con valori di esempio, da verificare (riferimenti: dati.veneto.it, ARPAV). Non è un download dal portale regionale.',
     summary: {
       waterQualityCount: REGIONAL_LAGOON_WATER_QUALITY.length,
       accommodationsCount: REGIONAL_TOURIST_ACCOMMODATIONS.length,

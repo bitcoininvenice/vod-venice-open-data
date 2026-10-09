@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import fountainsDataset from '@/data/fountains.json';
 
-describe('Venice Tap Water & Conoscere Venezia drinking fountains dataset', () => {
+describe('OpenStreetMap drinking fountains dataset', () => {
   it('contains valid fountain records with correct metadata', () => {
     expect(fountainsDataset.metadata).toBeDefined();
     expect(fountainsDataset.metadata.totalFountains).toBeGreaterThanOrEqual(140);
@@ -19,7 +19,9 @@ describe('Venice Tap Water & Conoscere Venezia drinking fountains dataset', () =
       expect(f.lat).toBeLessThanOrEqual(45.52);
       expect(f.lon).toBeGreaterThanOrEqual(12.28);
       expect(f.lon).toBeLessThanOrEqual(12.44);
-      expect(f.details).toContain('Veritas');
+      expect(f.details).toContain('OpenStreetMap');
+      // nessun orario o certificazione attribuiti senza fonte
+      expect(f.details).not.toMatch(/H24|certificat/i);
       expect(f.potable).toBe(true);
     }
   });

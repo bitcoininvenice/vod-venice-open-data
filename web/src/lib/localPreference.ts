@@ -7,6 +7,8 @@ import { useSyncExternalStore } from 'react';
  * il rendering lato server usa `serverValue` e il client si allinea senza setState negli effetti.
  * Se lo storage non è disponibile (navigazione privata, blocchi) il valore resta in memoria.
  */
+export const THEME_PREFERENCE_KEY = 'vod_theme_preference';
+
 const listeners = new Set<() => void>();
 const memory = new Map<string, string | null>();
 

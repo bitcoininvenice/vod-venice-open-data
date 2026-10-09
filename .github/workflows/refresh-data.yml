@@ -28,7 +28,7 @@ jobs:
         run: |
           python download_gtfs.py
           python export_simulation_data.py
-      - name: Opere pubbliche, WiFi, qualità dell'aria, telecamere OSM
+      - name: Opere pubbliche, WiFi, qualità dell'aria, orario Alilaguna, dati OSM (telecamere, DAE, farmacie, fontanelle, POI)
         working-directory: pipeline
         # ogni fonte è indipendente: un errore non blocca l'aggiornamento delle altre
         run: |
@@ -36,6 +36,11 @@ jobs:
           python import_wifi_hotspots.py || echo "::warning::hotspot WiFi non aggiornati"
           python import_arpav_air.py || echo "::warning::qualità dell'aria non aggiornata"
           python import_osm_surveillance.py || echo "::warning::telecamere OSM non aggiornate"
+          python import_osm_defibrillators.py || echo "::warning::defibrillatori OSM non aggiornati"
+          python import_osm_pharmacies.py || echo "::warning::farmacie OSM non aggiornate"
+          (python import_osm_fountains.py && python enrich_fountains.py) || echo "::warning::fontanelle OSM non aggiornate"
+          python import_osm_poi.py || echo "::warning::POI OSM (colonnine, parcheggi, pozzi, alberi) non aggiornati"
+          python import_alilaguna_gtfs.py || echo "::warning::orario Alilaguna non aggiornato"
 
       - uses: actions/setup-node@v4
         with:
@@ -57,7 +62,9 @@ jobs:
           body: |
             Dataset rigenerati dalle fonti ufficiali dal workflow `refresh-data`:
             - simulazione GTFS ACTV e indice corse (`web/src/lib/simulation-data.ts`, `web/src/data/actv-gtfs-index.json`)
-            - opere pubbliche, hotspot WiFi (dati.venezia.it), qualità dell'aria (ARPAV), telecamere (OpenStreetMap)
+            - opere pubbliche, hotspot WiFi (dati.venezia.it), qualità dell'aria (ARPAV)
+            - orario Alilaguna (GTFS dell'operatore, `web/src/data/alilaguna-gtfs.json`)
+            - OpenStreetMap: telecamere, DAE, farmacie, fontanelle, colonnine, parcheggi, vere da pozzo, alberi monumentali
 
             Typecheck, test e build sono passati sui nuovi dati. Controllare il diff prima del merge.
           labels: data

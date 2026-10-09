@@ -14,7 +14,7 @@ import {
   LagoonFortressIslandItem,
   EmergencyWaterDockItem,
   PublicDaeItem,
-  PharmacyDutyItem,
+  PharmacyItem,
   HeatIslandSurfaceTempItem
 } from './types';
 import { METEO_MARINE_WIND_STATIONS } from './weatherWindData';
@@ -887,11 +887,7 @@ export const OPEN_LIVE_TRAINS: TrainLiveItem[] = [
     currentLocation: "Fondamenta Santa Lucia, Cannaregio",
     lat: 45.4412,
     lon: 12.3210,
-    delayMinutes: 0,
-    speedKmh: 0,
     platform: "23 binari di testa elettrificati (3 kV CC)",
-    status: "IN_ORARIO",
-    routeProgress: 1.0
   },
   {
     id: "RFI_MESTRE",
@@ -902,11 +898,7 @@ export const OPEN_LIVE_TRAINS: TrainLiveItem[] = [
     currentLocation: "Piazzale Favretti, Mestre",
     lat: 45.4825,
     lon: 12.2320,
-    delayMinutes: 0,
-    speedKmh: 0,
     platform: "13 binari passanti con banchine rialzate e ascensori PRM",
-    status: "IN_ORARIO",
-    routeProgress: 0.0
   },
   {
     id: "RFI_PONTE_LIBERTA_VIADOTTO",
@@ -917,11 +909,7 @@ export const OPEN_LIVE_TRAINS: TrainLiveItem[] = [
     currentLocation: "Viadotto lagunare storico a 4 binari (Km 262-267)",
     lat: 45.4470,
     lon: 12.2845,
-    delayMinutes: 0,
-    speedKmh: 90,
     platform: "4 binari di corsa banalizzati (Quadruplicamento RFI)",
-    status: "IN_ORARIO",
-    routeProgress: 0.5
   },
   {
     id: "RFI_PORTO_MARGHERA_STAZIONE",
@@ -932,11 +920,7 @@ export const OPEN_LIVE_TRAINS: TrainLiveItem[] = [
     currentLocation: "Via Torino / Parco VEGA",
     lat: 45.4640,
     lon: 12.2560,
-    delayMinutes: 0,
-    speedKmh: 0,
     platform: "4 binari viaggiatori con sottopasso pedonale",
-    status: "IN_ORARIO",
-    routeProgress: 0.25
   },
   {
     id: "RFI_SCALO_MERCI_MARGHERA",
@@ -947,11 +931,7 @@ export const OPEN_LIVE_TRAINS: TrainLiveItem[] = [
     currentLocation: "Raccordo Ferroviario Portuale, Porto Marghera",
     lat: 45.4710,
     lon: 12.2380,
-    delayMinutes: 0,
-    speedKmh: 0,
     platform: "Fascio binari smistamento merci pesanti e raccordi chimici",
-    status: "IN_ORARIO",
-    routeProgress: 0.12
   },
   {
     id: "RFI_SOTTOSTAZIONE_MARGHERA",
@@ -962,11 +942,7 @@ export const OPEN_LIVE_TRAINS: TrainLiveItem[] = [
     currentLocation: "Area Impianti RFI Mestre Sud",
     lat: 45.4760,
     lon: 12.2420,
-    delayMinutes: 0,
-    speedKmh: 0,
     platform: "Impianto primario di trasformazione e soccorso TE lagunare",
-    status: "IN_ORARIO",
-    routeProgress: 0.18
   },
   {
     id: "RFI_RACCORDO_TRONCHETTO",
@@ -977,11 +953,7 @@ export const OPEN_LIVE_TRAINS: TrainLiveItem[] = [
     currentLocation: "Isola del Tronchetto, Raccordo Merci",
     lat: 45.4425,
     lon: 12.3080,
-    delayMinutes: 0,
-    speedKmh: 0,
     platform: "Binari di consegna e manovra carri ferroviari",
-    status: "IN_ORARIO",
-    routeProgress: 0.85
   },
   {
     id: "RFI_DEPOSITO_SANTA_LUCIA",
@@ -992,11 +964,7 @@ export const OPEN_LIVE_TRAINS: TrainLiveItem[] = [
     currentLocation: "Scalo Ovest Santa Lucia, Cannaregio",
     lat: 45.4435,
     lon: 12.3140,
-    delayMinutes: 0,
-    speedKmh: 0,
     platform: "8 binari tronchi per ricovero e manutenzione materiale rotabile",
-    status: "IN_ORARIO",
-    routeProgress: 0.92
   }
 ];
 
@@ -1010,8 +978,7 @@ export const OPEN_VERITAS_WASTE_BOATS: VeritasWasteBoatItem[] = [
     lon: 12.3335,
     collectionType: 'INDIFFERENZIATO',
     scheduleHours: '06:30 - 08:30',
-    capacityKg: 2400,
-    isOperatingNow: true
+    capacityKg: 2400
   },
   {
     id: 'VERITAS_BOAT_07',
@@ -1022,8 +989,7 @@ export const OPEN_VERITAS_WASTE_BOATS: VeritasWasteBoatItem[] = [
     lon: 12.3248,
     collectionType: 'CARTA_CARTONE',
     scheduleHours: '06:45 - 08:45',
-    capacityKg: 1800,
-    isOperatingNow: true
+    capacityKg: 1800
   },
   {
     id: 'VERITAS_BOAT_11',
@@ -1034,8 +1000,7 @@ export const OPEN_VERITAS_WASTE_BOATS: VeritasWasteBoatItem[] = [
     lon: 12.3485,
     collectionType: 'PLASTICA_VETRO_LATTINE',
     scheduleHours: '06:30 - 08:30',
-    capacityKg: 2100,
-    isOperatingNow: true
+    capacityKg: 2100
   },
   {
     id: 'VERITAS_BOAT_15',
@@ -1046,8 +1011,7 @@ export const OPEN_VERITAS_WASTE_BOATS: VeritasWasteBoatItem[] = [
     lon: 12.3362,
     collectionType: 'INDIFFERENZIATO',
     scheduleHours: '06:00 - 08:00',
-    capacityKg: 3200,
-    isOperatingNow: false
+    capacityKg: 3200
   },
   {
     id: 'VERITAS_BOAT_02',
@@ -1058,8 +1022,7 @@ export const OPEN_VERITAS_WASTE_BOATS: VeritasWasteBoatItem[] = [
     lon: 12.3245,
     collectionType: 'CARTA_CARTONE',
     scheduleHours: '06:30 - 08:30',
-    capacityKg: 2000,
-    isOperatingNow: true
+    capacityKg: 2000
   },
   {
     id: 'VERITAS_BOAT_18',
@@ -1070,8 +1033,7 @@ export const OPEN_VERITAS_WASTE_BOATS: VeritasWasteBoatItem[] = [
     lon: 12.3275,
     collectionType: 'INDIFFERENZIATO',
     scheduleHours: '06:45 - 08:45',
-    capacityKg: 2600,
-    isOperatingNow: true
+    capacityKg: 2600
   },
   {
     id: 'VERITAS_BOAT_09',
@@ -1082,8 +1044,7 @@ export const OPEN_VERITAS_WASTE_BOATS: VeritasWasteBoatItem[] = [
     lon: 12.3325,
     collectionType: 'PLASTICA_VETRO_LATTINE',
     scheduleHours: '06:15 - 08:15',
-    capacityKg: 2200,
-    isOperatingNow: true
+    capacityKg: 2200
   },
   {
     id: 'VERITAS_BOAT_22',
@@ -1094,8 +1055,7 @@ export const OPEN_VERITAS_WASTE_BOATS: VeritasWasteBoatItem[] = [
     lon: 12.3525,
     collectionType: 'INDIFFERENZIATO',
     scheduleHours: '07:00 - 09:00',
-    capacityKg: 2800,
-    isOperatingNow: true
+    capacityKg: 2800
   }
 ];
 
@@ -1295,8 +1255,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Campo San Polo',
     lat: 45.4371,
     lon: 12.3305,
-    conservationState: 'OTTIMO',
-    cisternaDepthMeters: 5.4
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_SAN_BARTOLOMEO',
@@ -1307,8 +1266,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Campo San Bartolomeo',
     lat: 45.4378,
     lon: 12.3365,
-    conservationState: 'BUONO',
-    cisternaDepthMeters: 4.8
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_SANT_ELENA',
@@ -1319,8 +1277,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Chiostro Convento Sant\'Elena',
     lat: 45.4285,
     lon: 12.3665,
-    conservationState: 'RESTAURATO',
-    cisternaDepthMeters: 4.2
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_SANTA_MARINA',
@@ -1331,8 +1288,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Campo Santa Marina',
     lat: 45.4389,
     lon: 12.3402,
-    conservationState: 'OTTIMO',
-    cisternaDepthMeters: 4.9
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_SAN_ZAN_DEGOLA',
@@ -1343,8 +1299,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Campo San Zan Degola',
     lat: 45.4415,
     lon: 12.3280,
-    conservationState: 'BUONO',
-    cisternaDepthMeters: 4.6
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_SAN_GIACOMO_DELL_ORIO',
@@ -1355,8 +1310,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Campo San Giacomo da l\'Orio',
     lat: 45.4402,
     lon: 12.3268,
-    conservationState: 'OTTIMO',
-    cisternaDepthMeters: 5.2
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_SANTA_MARGHERITA',
@@ -1367,8 +1321,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Campo Santa Margherita',
     lat: 45.4342,
     lon: 12.3235,
-    conservationState: 'OTTIMO',
-    cisternaDepthMeters: 5.6
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_SAN_BARNABA',
@@ -1379,8 +1332,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Campo San Barnaba',
     lat: 45.4332,
     lon: 12.3255,
-    conservationState: 'BUONO',
-    cisternaDepthMeters: 4.7
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_SANTO_STEFANO',
@@ -1391,8 +1343,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Campo Santo Stefano',
     lat: 45.4330,
     lon: 12.3315,
-    conservationState: 'OTTIMO',
-    cisternaDepthMeters: 5.8
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_SANT_ANGELO',
@@ -1403,8 +1354,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Campo Sant\'Angelo',
     lat: 45.4350,
     lon: 12.3330,
-    conservationState: 'OTTIMO',
-    cisternaDepthMeters: 5.0
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_SANTA_MARIA_FORMOSA',
@@ -1415,8 +1365,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Campo Santa Maria Formosa',
     lat: 45.4372,
     lon: 12.3412,
-    conservationState: 'OTTIMO',
-    cisternaDepthMeters: 5.5
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_SS_GIOVANNI_E_PAOLO',
@@ -1427,8 +1376,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Campo Santi Giovanni e Paolo (San Zanipolo)',
     lat: 45.4398,
     lon: 12.3420,
-    conservationState: 'OTTIMO',
-    cisternaDepthMeters: 6.0
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_GHETTO_NUOVO',
@@ -1439,8 +1387,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Campo di Ghetto Nuovo',
     lat: 45.4452,
     lon: 12.3262,
-    conservationState: 'RESTAURATO',
-    cisternaDepthMeters: 5.1
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_MADONNA_DELL_ORTO',
@@ -1451,8 +1398,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Campo Madonna dell\'Orto',
     lat: 45.4478,
     lon: 12.3328,
-    conservationState: 'BUONO',
-    cisternaDepthMeters: 4.8
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_CA_D_ORO',
@@ -1463,8 +1409,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Corte di Ca\' d\'Oro',
     lat: 45.4408,
     lon: 12.3338,
-    conservationState: 'OTTIMO',
-    cisternaDepthMeters: 4.5
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'WELL_SAN_TROVASO',
@@ -1475,8 +1420,7 @@ export const OPEN_VENICE_WELLS: VeniceWellItem[] = [
     campo: 'Campo San Trovaso (Squero)',
     lat: 45.4305,
     lon: 12.3248,
-    conservationState: 'BUONO',
-    cisternaDepthMeters: 5.3
+    source: 'ELENCO_CURATO'
   }
 ];
 
@@ -1598,124 +1542,128 @@ export const OPEN_LAGOON_FORTRESS_ISLANDS: LagoonFortressIslandItem[] = [
     id: 'FORT_MARGHERA',
     name: 'Forte Marghera (Mestre / Gronda Lagunare)',
     era: 'NAPOLEONICA',
-    status: 'MUSEO_APERTO',
     areaMq: 480000,
     lat: 45.4785,
     lon: 12.2580,
-    description: 'Complesso fortificato di 48 ettari con ridotti, polveriere, darsena e canali. Oggi parco pubblico e polo di arte contemporanea.'
+    description: 'Complesso fortificato di 48 ettari con ridotti, polveriere, darsena e canali. Oggi parco pubblico e polo di arte contemporanea.',
+    status: 'MUSEO_APERTO'
   },
   {
     id: 'FORT_SANT_ANDREA',
     name: 'Forte di Sant\'Andrea (Bocca di Porto di Lido)',
     era: 'SERENISSIMA_REPUBBLICA',
-    status: 'RESTAURO_IN_CORSO',
     areaMq: 95000,
     lat: 45.4310,
     lon: 12.3820,
-    description: 'Capolavoro militare di Michele Sanmicheli (1545) con 40 bocche da fuoco in pietra d\'Istria a guardia dell\'ingresso dal mare.'
+    description: 'Capolavoro militare di Michele Sanmicheli (1545) con 40 bocche da fuoco in pietra d\'Istria a guardia dell\'ingresso dal mare.',
+    status: 'RESTAURO_IN_CORSO'
   },
   {
     id: 'ISLE_OTTAGONO_ALBERONI',
     name: 'Ottagono Alberoni (Canale di Malamocco)',
     era: 'SERENISSIMA_REPUBBLICA',
-    status: 'ZONA_MILITARE_DISMESSA',
     areaMq: 2800,
     lat: 45.3480,
     lon: 12.3120,
-    description: 'Uno dei 5 forti a pianta ottagonale costruiti dopo la Guerra di Cipro (1571) a guardia delle bocche lagunari.'
+    description: 'Uno dei 5 forti a pianta ottagonale costruiti dopo la Guerra di Cipro (1571) a guardia delle bocche lagunari.',
+    status: 'ZONA_MILITARE_DISMESSA'
   },
   {
     id: 'ISLE_POVEGLIA',
     name: 'Isola di Poveglia (Canale Malamocco)',
     era: 'SANITARIO_MEDIEVALE',
-    status: 'ISOLA_ABBANDONATA',
     areaMq: 72000,
     lat: 45.3820,
     lon: 12.3310,
-    description: 'Storico borgo lagunare medievale, divenuto stazione di quarantena e lazzaretto della Serenissima nel Settecento.'
+    description: 'Storico borgo lagunare medievale, divenuto stazione di quarantena e lazzaretto della Serenissima nel Settecento.',
+    status: 'ISOLA_ABBANDONATA'
   },
   {
     id: 'ISLE_LAZZARETTO_NUOVO',
     name: 'Isola del Lazzaretto Nuovo (Canale dei Marani)',
     era: 'SANITARIO_MEDIEVALE',
-    status: 'MUSEO_APERTO',
     areaMq: 86000,
     lat: 45.4560,
     lon: 12.3860,
-    description: 'Istituito dal Senato della Repubblica nel 1468 per la contumacia delle navi e merci sospette di peste. Ospita il grandioso Tezon Grande.'
+    description: 'Istituito dal Senato della Repubblica nel 1468 per la contumacia delle navi e merci sospette di peste. Ospita il grandioso Tezon Grande.',
+    status: 'MUSEO_APERTO'
   },
   {
     id: 'ISLE_LAZZARETTO_VECCHIO',
     name: 'Isola del Lazzaretto Vecchio (Bacino Lido)',
     era: 'SANITARIO_MEDIEVALE',
-    status: 'RESTAURO_IN_CORSO',
     areaMq: 25000,
     lat: 45.4090,
     lon: 12.3610,
-    description: 'Il primo lazzaretto al mondo (istituito nel 1423 dal Doge Tommaso Mocenigo). In corso di trasformazione a Museo della Città e della Laguna.'
+    description: 'Il primo lazzaretto al mondo (istituito nel 1423 dal Doge Tommaso Mocenigo). In corso di trasformazione a Museo della Città e della Laguna.',
+    status: 'RESTAURO_IN_CORSO'
   },
   {
     id: 'FORT_SAN_FELICE_CHIOGGIA',
     name: 'Forte San Felice (Bocca di Porto di Chioggia)',
     era: 'SERENISSIMA_REPUBBLICA',
-    status: 'RESTAURO_IN_CORSO',
     areaMq: 110000,
     lat: 45.2285,
     lon: 12.2960,
-    description: 'Castello a pianta stellata del 1385 (Guerra di Chioggia) potenziato dal Sanmicheli con portale monumentale in pietra d\'Istria.'
+    description: 'Castello a pianta stellata del 1385 (Guerra di Chioggia) potenziato dal Sanmicheli con portale monumentale in pietra d\'Istria.',
+    status: 'RESTAURO_IN_CORSO'
   },
   {
     id: 'ISLE_CERTOSA',
     name: 'Isola della Certosa (Parco della Certosa)',
     era: 'SERENISSIMA_REPUBBLICA',
-    status: 'MUSEO_APERTO',
     areaMq: 240000,
     lat: 45.4335,
     lon: 12.3705,
-    description: 'Antico monastero certosino del \'200, poi opificio militare napoleonico e oggi parco naturale con marina per voga e vela.'
+    description: 'Antico monastero certosino del \'200, poi opificio militare napoleonico e oggi parco naturale con marina per voga e vela.',
+    status: 'MUSEO_APERTO'
   },
   {
     id: 'ISLE_SAN_SERVOLO',
     name: 'Isola di San Servolo (Polo Museale e Universitario)',
     era: 'SANITARIO_MEDIEVALE',
-    status: 'MUSEO_APERTO',
     areaMq: 48000,
     lat: 45.4195,
     lon: 12.3555,
-    description: 'Convento benedettino millenario, ospedale militare e psichiatrico storico; oggi sede universitaria Venice International University e museo del manicomio.'
+    description: 'Convento benedettino millenario, ospedale militare e psichiatrico storico; oggi sede universitaria Venice International University e museo del manicomio.',
+    status: 'MUSEO_APERTO'
   },
   {
     id: 'ISLE_OTTAGONO_CA_ROMAN',
     name: 'Ottagono Ca\' Roman (Bocca di Chioggia)',
     era: 'SERENISSIMA_REPUBBLICA',
-    status: 'ZONA_MILITARE_DISMESSA',
     areaMq: 2500,
     lat: 45.2340,
     lon: 12.2880,
-    description: 'Fortificazione ottagonale insulare a protezione del canale interno dei Murazzi di Pellestrina e dell\'imbocco meridionale.'
+    description: 'Fortificazione ottagonale insulare a protezione del canale interno dei Murazzi di Pellestrina e dell\'imbocco meridionale.',
+    status: 'ZONA_MILITARE_DISMESSA'
   },
   {
     id: 'FORT_BATTERIA_DANDOLO',
     name: 'Batteria Dandolo (Lido di Venezia)',
     era: 'ASBURGICA',
-    status: 'ZONA_MILITARE_DISMESSA',
     areaMq: 34000,
     lat: 45.3850,
     lon: 12.3550,
-    description: 'Postazione corazzata ottocentesca della piazzaforte marittima veneziana con casematte e terrapieni di difesa litoranea.'
+    description: 'Postazione corazzata ottocentesca della piazzaforte marittima veneziana con casematte e terrapieni di difesa litoranea.',
+    status: 'ZONA_MILITARE_DISMESSA'
   },
   {
     id: 'ISLE_SANT_ANGELO_POLVERE',
     name: 'Isola di Sant\'Angelo della Polvere (Canale di Contorta)',
     era: 'SERENISSIMA_REPUBBLICA',
-    status: 'ISOLA_ABBANDONATA',
     areaMq: 5200,
     lat: 45.3980,
     lon: 12.2850,
-    description: 'Monastero trasformato dal Senato nel 1555 in polveriera di massima sicurezza isolata nella laguna centrale.'
+    description: 'Monastero trasformato dal Senato nel 1555 in polveriera di massima sicurezza isolata nella laguna centrale.',
+    status: 'ISOLA_ABBANDONATA'
   }
 ];
 
+/**
+ * Approdi idroambulanze: elenco compilato a mano. Non esiste un dataset aperto SUEM 118/ULSS 3;
+ * posizioni e dotazioni vanno verificate. L'interfaccia lo dichiara e ricorda di chiamare il 118.
+ */
 export const OPEN_EMERGENCY_WATER_DOCKS: EmergencyWaterDockItem[] = [
   {
     id: 'EMERGENCY_DOCK_OSPEDALE',
@@ -1726,7 +1674,8 @@ export const OPEN_EMERGENCY_WATER_DOCKS: EmergencyWaterDockItem[] = [
     lon: 12.3425,
     is24hOperative: true,
     phone: '118 / 041-5294111',
-    hasDirectHospitalRamp: true
+    hasDirectHospitalRamp: true,
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'EMERGENCY_DOCK_SAN_MARCO',
@@ -1737,7 +1686,8 @@ export const OPEN_EMERGENCY_WATER_DOCKS: EmergencyWaterDockItem[] = [
     lon: 12.3375,
     is24hOperative: true,
     phone: '118',
-    hasDirectHospitalRamp: false
+    hasDirectHospitalRamp: false,
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'EMERGENCY_DOCK_TRONCHETTO',
@@ -1748,7 +1698,8 @@ export const OPEN_EMERGENCY_WATER_DOCKS: EmergencyWaterDockItem[] = [
     lon: 12.3060,
     is24hOperative: true,
     phone: '118',
-    hasDirectHospitalRamp: false
+    hasDirectHospitalRamp: false,
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'EMERGENCY_DOCK_LIDO',
@@ -1759,7 +1710,8 @@ export const OPEN_EMERGENCY_WATER_DOCKS: EmergencyWaterDockItem[] = [
     lon: 12.3780,
     is24hOperative: true,
     phone: '118',
-    hasDirectHospitalRamp: true
+    hasDirectHospitalRamp: true,
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'EMERGENCY_DOCK_FONDAMENTE_NOVE',
@@ -1770,7 +1722,8 @@ export const OPEN_EMERGENCY_WATER_DOCKS: EmergencyWaterDockItem[] = [
     lon: 12.3415,
     is24hOperative: true,
     phone: '118',
-    hasDirectHospitalRamp: false
+    hasDirectHospitalRamp: false,
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'EMERGENCY_DOCK_GIUSTINIAN',
@@ -1781,7 +1734,8 @@ export const OPEN_EMERGENCY_WATER_DOCKS: EmergencyWaterDockItem[] = [
     lon: 12.3195,
     is24hOperative: true,
     phone: '118',
-    hasDirectHospitalRamp: true
+    hasDirectHospitalRamp: true,
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'EMERGENCY_DOCK_BURANO',
@@ -1792,7 +1746,8 @@ export const OPEN_EMERGENCY_WATER_DOCKS: EmergencyWaterDockItem[] = [
     lon: 12.4168,
     is24hOperative: true,
     phone: '118',
-    hasDirectHospitalRamp: true
+    hasDirectHospitalRamp: true,
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'EMERGENCY_DOCK_OSPEDALE_AL_MARE',
@@ -1803,11 +1758,17 @@ export const OPEN_EMERGENCY_WATER_DOCKS: EmergencyWaterDockItem[] = [
     lon: 12.3855,
     is24hOperative: true,
     phone: '118',
-    hasDirectHospitalRamp: false
+    hasDirectHospitalRamp: false,
+    source: 'ELENCO_CURATO'
   }
 ];
 
-export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
+/**
+ * Elenco DAE compilato a mano nel progetto, senza fonte aperta verificabile.
+ * Non usarlo direttamente: lib/dae-data.ts lo unisce ai DAE OpenStreetMap e mostra
+ * come "da verificare" solo le voci che non coincidono con un DAE OSM.
+ */
+export const CURATED_PUBLIC_DAE: PublicDaeItem[] = [
   {
     id: 'DAE_SAN_MARCO',
     code: 'DAE-VE-01',
@@ -1816,7 +1777,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.3398,
     accessType: 'PUBBLICO_H24',
     operator: 'ULSS 3 Serenissima / Cuore di Venezia',
-    lastInspected: '2026-09-15'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_SANTA_LUCIA',
@@ -1826,7 +1787,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.3218,
     accessType: 'PUBBLICO_H24',
     operator: 'RFI / Croce Rossa Italiana',
-    lastInspected: '2026-09-20'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_PIAZZALE_ROMA',
@@ -1836,7 +1797,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.3182,
     accessType: 'PUBBLICO_H24',
     operator: 'AVM SpA',
-    lastInspected: '2026-09-22'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_SANTA_MARGHERITA',
@@ -1846,7 +1807,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.3238,
     accessType: 'PUBBLICO_H24',
     operator: 'ULSS 3 Serenissima',
-    lastInspected: '2026-08-30'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_RIALTO',
@@ -1856,7 +1817,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.3368,
     accessType: 'PUBBLICO_H24',
     operator: 'ULSS 3 Serenissima',
-    lastInspected: '2026-09-10'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_ZATTERE',
@@ -1866,7 +1827,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.3282,
     accessType: 'PUBBLICO_H24',
     operator: 'ULSS 3 Serenissima',
-    lastInspected: '2026-09-18'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_SAN_GIACOMO_DELL_ORIO',
@@ -1876,7 +1837,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.3272,
     accessType: 'PUBBLICO_H24',
     operator: 'ULSS 3 Serenissima',
-    lastInspected: '2026-09-12'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_SAN_BARNABA',
@@ -1886,7 +1847,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.3252,
     accessType: 'PUBBLICO_H24',
     operator: 'ULSS 3 Serenissima',
-    lastInspected: '2026-09-14'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_FONDAMENTE_NOVE',
@@ -1896,7 +1857,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.3402,
     accessType: 'PUBBLICO_H24',
     operator: 'AVM SpA / ULSS 3',
-    lastInspected: '2026-09-25'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_ARSENALE_MUSEO',
@@ -1906,7 +1867,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.3495,
     accessType: 'PUBBLICO_H24',
     operator: 'Marina Militare / ULSS 3',
-    lastInspected: '2026-09-08'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_MURANO_COLONNA',
@@ -1916,7 +1877,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.3512,
     accessType: 'PUBBLICO_H24',
     operator: 'ULSS 3 Serenissima',
-    lastInspected: '2026-09-11'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_BURANO_GALUPPI',
@@ -1926,7 +1887,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.4172,
     accessType: 'PUBBLICO_H24',
     operator: 'ULSS 3 Serenissima',
-    lastInspected: '2026-09-16'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_GIUDECCA_PALANCA',
@@ -1936,7 +1897,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.3250,
     accessType: 'PUBBLICO_H24',
     operator: 'ULSS 3 Serenissima',
-    lastInspected: '2026-09-21'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_SANT_ELENA_STADIO',
@@ -1946,7 +1907,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.3630,
     accessType: 'PUBBLICO_H24',
     operator: 'ULSS 3 Serenissima / Venezia FC',
-    lastInspected: '2026-09-19'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_TRONCHETTO_PEOPLE_MOVER',
@@ -1956,7 +1917,7 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.3052,
     accessType: 'PUBBLICO_H24',
     operator: 'AVM SpA',
-    lastInspected: '2026-09-24'
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'DAE_MESTRE_STAZIONE',
@@ -1966,20 +1927,24 @@ export const OPEN_PUBLIC_DAE: PublicDaeItem[] = [
     lon: 12.2320,
     accessType: 'PUBBLICO_H24',
     operator: 'RFI / Polfer / ULSS 3',
-    lastInspected: '2026-09-26'
+    source: 'ELENCO_CURATO'
   }
 ];
 
-export const OPEN_PHARMACY_DUTY: PharmacyDutyItem[] = [
+/**
+ * Elenco farmacie compilato a mano nel progetto (recapiti non verificati).
+ * Non usarlo direttamente: lib/pharmacies-data.ts lo unisce alle farmacie OpenStreetMap
+ * e mostra come "da verificare" solo le voci che non coincidono con una farmacia OSM.
+ */
+export const CURATED_PHARMACIES: PharmacyItem[] = [
   {
     id: 'PHARM_MORELLI_RIALTO',
     name: 'Farmacia Morelli (Ponte di Rialto)',
     address: 'San Polo 5364 (Piede Ponte di Rialto)',
     lat: 45.4382,
     lon: 12.3355,
-    isOnDutyNow: true,
-    isNightShift: true,
-    phone: '041-5224196'
+    phone: '041-5224196',
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'PHARM_SAN_MARCO',
@@ -1987,9 +1952,8 @@ export const OPEN_PHARMACY_DUTY: PharmacyDutyItem[] = [
     address: 'Piazza San Marco 88 (Sotto i Portici)',
     lat: 45.4344,
     lon: 12.3382,
-    isOnDutyNow: true,
-    isNightShift: false,
-    phone: '041-5223297'
+    phone: '041-5223297',
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'PHARM_SANTA_LUCIA',
@@ -1997,9 +1961,8 @@ export const OPEN_PHARMACY_DUTY: PharmacyDutyItem[] = [
     address: 'Fondamenta Santa Lucia 1',
     lat: 45.4412,
     lon: 12.3210,
-    isOnDutyNow: true,
-    isNightShift: false,
-    phone: '041-716442'
+    phone: '041-716442',
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'PHARM_DUE_SAN_MARCHI',
@@ -2007,9 +1970,8 @@ export const OPEN_PHARMACY_DUTY: PharmacyDutyItem[] = [
     address: 'Strada Nova, Cannaregio 2133',
     lat: 45.4422,
     lon: 12.3298,
-    isOnDutyNow: false,
-    isNightShift: false,
-    phone: '041-715783'
+    phone: '041-715783',
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'PHARM_ZAMPIRONI_SALVATORE',
@@ -2017,9 +1979,8 @@ export const OPEN_PHARMACY_DUTY: PharmacyDutyItem[] = [
     address: 'Campo San Salvador 4813 (San Marco)',
     lat: 45.4368,
     lon: 12.3370,
-    isOnDutyNow: true,
-    isNightShift: true,
-    phone: '041-5224993'
+    phone: '041-5224993',
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'PHARM_SANTA_MARGHERITA',
@@ -2027,9 +1988,8 @@ export const OPEN_PHARMACY_DUTY: PharmacyDutyItem[] = [
     address: 'Campo Santa Margherita 2930 (Dorsoduro)',
     lat: 45.4340,
     lon: 12.3230,
-    isOnDutyNow: true,
-    isNightShift: false,
-    phone: '041-5223872'
+    phone: '041-5223872',
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'PHARM_PONCI_ZATTERE',
@@ -2037,9 +1997,8 @@ export const OPEN_PHARMACY_DUTY: PharmacyDutyItem[] = [
     address: 'Fondamenta Zattere 1483 (Dorsoduro)',
     lat: 45.4288,
     lon: 12.3270,
-    isOnDutyNow: false,
-    isNightShift: false,
-    phone: '041-5225287'
+    phone: '041-5225287',
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'PHARM_STELLA_D_ORO',
@@ -2047,9 +2006,8 @@ export const OPEN_PHARMACY_DUTY: PharmacyDutyItem[] = [
     address: 'Rio Terà San Leonardo 1345 (Cannaregio)',
     lat: 45.4435,
     lon: 12.3265,
-    isOnDutyNow: true,
-    isNightShift: true,
-    phone: '041-716377'
+    phone: '041-716377',
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'PHARM_SAN_BOLDO',
@@ -2057,9 +2015,8 @@ export const OPEN_PHARMACY_DUTY: PharmacyDutyItem[] = [
     address: 'Campo San Boldo 2818 (Santa Croce)',
     lat: 45.4390,
     lon: 12.3288,
-    isOnDutyNow: false,
-    isNightShift: false,
-    phone: '041-718290'
+    phone: '041-718290',
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'PHARM_REDENTORE_GIUDECCA',
@@ -2067,9 +2024,8 @@ export const OPEN_PHARMACY_DUTY: PharmacyDutyItem[] = [
     address: 'Fondamenta Sant\'Eufemia 460 (Giudecca)',
     lat: 45.4260,
     lon: 12.3245,
-    isOnDutyNow: true,
-    isNightShift: false,
-    phone: '041-5285141'
+    phone: '041-5285141',
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'PHARM_BURANO_GALUPPI',
@@ -2077,9 +2033,8 @@ export const OPEN_PHARMACY_DUTY: PharmacyDutyItem[] = [
     address: 'Via Baldassarre Galuppi 312 (Burano)',
     lat: 45.4855,
     lon: 12.4170,
-    isOnDutyNow: true,
-    isNightShift: false,
-    phone: '041-730058'
+    phone: '041-730058',
+    source: 'ELENCO_CURATO'
   },
   {
     id: 'PHARM_LIDO_SME',
@@ -2087,9 +2042,8 @@ export const OPEN_PHARMACY_DUTY: PharmacyDutyItem[] = [
     address: 'Gran Viale Santa Maria Elisabetta 2 (Lido)',
     lat: 45.4172,
     lon: 12.3685,
-    isOnDutyNow: true,
-    isNightShift: true,
-    phone: '041-5260133'
+    phone: '041-5260133',
+    source: 'ELENCO_CURATO'
   }
 ];
 

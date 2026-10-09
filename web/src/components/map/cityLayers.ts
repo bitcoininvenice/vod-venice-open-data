@@ -329,11 +329,11 @@ export function drawTrees(rc: RenderContext): void {
       const ty = sy(my(tr.lat));
       ctx.save();
 
-      const canopyR = Math.max(5, Math.min(18, (tr.canopyDiameterMeters / 2) * (camera.s / 0.02)));
+      const canopyR = Math.max(5, Math.min(18, ((tr.heightMeters ?? 12) / 2) * (camera.s / 0.02)));
       // Tree foliage canopy
       ctx.beginPath();
       ctx.arc(tx, ty, canopyR, 0, Math.PI * 2);
-      ctx.fillStyle = tr.ageClass === 'MONUMENTALE' ? 'rgba(34, 197, 94, 0.50)' : 'rgba(74, 222, 128, 0.40)';
+      ctx.fillStyle = 'rgba(34, 197, 94, 0.50)';
       ctx.fill();
       ctx.strokeStyle = '#15803d';
       ctx.lineWidth = 1;
@@ -457,7 +457,7 @@ export function drawTrains(rc: RenderContext): void {
       if (camera.s > 0.02) {
         ctx.font = 'bold 8px "DM Mono", monospace';
         ctx.fillStyle = isDark ? '#f87171' : '#b91c1c';
-        ctx.fillText(`RFI ${tr.trainNumber} (${tr.speedKmh} km/h)`, tx - 14, ty - 8);
+        ctx.fillText(tr.trainNumber, tx - 14, ty - 8);
       }
       ctx.restore();
     }
@@ -740,7 +740,7 @@ export function drawPharmacies(rc: RenderContext): void {
       if (camera.s > 0.05) {
         ctx.font = '600 7.5px "DM Mono", monospace';
         ctx.fillStyle = isDark ? '#4ade80' : '#15803d';
-        ctx.fillText(`Farmacia ${ph.isOnDutyNow ? '(Aperta)' : ''}`, px + 7, py + 3);
+        ctx.fillText(ph.name, px + 7, py + 3);
       }
       ctx.restore();
     }

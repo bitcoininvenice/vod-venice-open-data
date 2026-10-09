@@ -212,7 +212,7 @@ export function drawShips(rc: RenderContext): void {
         const distNM = (Math.hypot(live.lon - berthCoord.lon, live.lat - berthCoord.lat) * 60).toFixed(1);
         ctx.font = '700 10px "DM Mono", monospace';
         ctx.fillStyle = '#fbbf24';
-        ctx.fillText(`${distNM} NM a ${sh.berth.split(',')[0]} (ETA: ${sh.eta})`, shx + 14, shy - 14);
+        ctx.fillText(`${distNM} NM · ${sh.berth.split(',')[0]}`, shx + 14, shy - 14);
       }
 
       // 4. Ship Hull & Superstructure (Rotated to heading)

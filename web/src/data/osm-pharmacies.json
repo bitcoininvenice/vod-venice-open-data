@@ -1,0 +1,1581 @@
+{
+ "generatedAt": "2026-10-08T17:52:48+00:00",
+ "source": "OpenStreetMap - amenity=pharmacy",
+ "license": "ODbL 1.0",
+ "attribution": "© OpenStreetMap contributors",
+ "bbox": [
+  45.18,
+  12.1,
+  45.58,
+  12.62
+ ],
+ "count": 164,
+ "pharmacies": [
+  {
+   "id": "osm_node_10009274147",
+   "name": "Dr. Max",
+   "address": "Dorsoduro 1053/C",
+   "lat": 45.43169,
+   "lon": 12.327749,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/10009274147"
+  },
+  {
+   "id": "osm_node_10059494455",
+   "name": "Farmacia \"alla giustizia\"",
+   "address": "Via Roma 152",
+   "lat": 45.492044,
+   "lon": 12.163624,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/10059494455",
+   "openingHours": "Mo-Sa 08:00-20:00"
+  },
+  {
+   "id": "osm_node_1021302440",
+   "name": "Alla stazione farmacia",
+   "address": "Via Piave 182",
+   "lat": 45.484229,
+   "lon": 12.232731,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1021302440"
+  },
+  {
+   "id": "osm_node_1023574866",
+   "name": "Farmacia Risorta",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.427821,
+   "lon": 12.314274,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1023574866",
+   "dispensing": false
+  },
+  {
+   "id": "osm_node_1024860789",
+   "name": "del Redentore",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.425468,
+   "lon": 12.331888,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1024860789",
+   "openingHours": "Mo-Fr 09:00-12:30, 15:45-19:30; Sa 09:00-12:45",
+   "dispensing": false
+  },
+  {
+   "id": "osm_node_1024860791",
+   "name": "Farmacia Ghezzo ai S.S. Cosma e Damiano (ex Boldi)",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.426321,
+   "lon": 12.326576,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1024860791",
+   "dispensing": false
+  },
+  {
+   "id": "osm_node_1024957774",
+   "name": "Farmacia Menis",
+   "address": "Via Cappuccina 29",
+   "lat": 45.487189,
+   "lon": 12.238612,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1024957774",
+   "phone": "+39 041 8221044",
+   "openingHours": "Mo-Fr 08:00-20:00; Sa 08:00-19:00"
+  },
+  {
+   "id": "osm_node_1025272491",
+   "name": "Farmacia Centrale",
+   "address": "Piazza Erminio Ferretto 92",
+   "lat": 45.493034,
+   "lon": 12.240298,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1025272491",
+   "openingHours": "Mo-Fr 08:30-12:30,15:30-19:30; Sa 09:00-12:30,16:00-19:30; Su 09:00-12:30",
+   "dispensing": false
+  },
+  {
+   "id": "osm_node_1026529613",
+   "name": "Graziati",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.494465,
+   "lon": 12.241935,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1026529613",
+   "openingHours": "Mo-Sa 08:30-13:00, Mo-Fr 15:00-19:30, Sa 15:00-19:30"
+  },
+  {
+   "id": "osm_node_1110248815",
+   "name": "Farmacia",
+   "address": "Via Castellana 47",
+   "lat": 45.499204,
+   "lon": 12.227808,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1110248815",
+   "phone": "+39 041 972802"
+  },
+  {
+   "id": "osm_node_1120722404",
+   "name": "Farmacia Favero",
+   "address": "Via Venezia 119",
+   "lat": 45.451221,
+   "lon": 12.170082,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1120722404"
+  },
+  {
+   "id": "osm_node_11225297062",
+   "name": "FARMACIA CARRARO",
+   "address": "Via Stazione 2",
+   "lat": 45.522495,
+   "lon": 12.155084,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/11225297062"
+  },
+  {
+   "id": "osm_node_11225298132",
+   "name": "Farmacia Colacci",
+   "address": "Via Olmo 55e",
+   "lat": 45.523117,
+   "lon": 12.162878,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/11225298132"
+  },
+  {
+   "id": "osm_node_11274901550",
+   "name": "Farmacia al Duomo",
+   "address": "Corso del Popolo 993",
+   "lat": 45.217964,
+   "lon": 12.278266,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/11274901550",
+   "phone": "+39 041 400453",
+   "openingHours": "Mo-Sa 08:30-12:30,15:45-19:30; Su closed; PH closed"
+  },
+  {
+   "id": "osm_node_11275976496",
+   "name": "Farmacia Cutulakis",
+   "address": "Fondamenta Riva Vena 1146",
+   "lat": 45.218894,
+   "lon": 12.279565,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/11275976496",
+   "phone": "+39 041 400546",
+   "openingHours": "Mo-Fr 08:45-12:30,15:45-19:30; Sa 08:45-12:45,15:30-19:15; Su closed; PH closed"
+  },
+  {
+   "id": "osm_node_11329098871",
+   "name": "Farmacia Rossetto",
+   "address": "Via Arrigo Boito 2a",
+   "lat": 45.434899,
+   "lon": 12.199153,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/11329098871"
+  },
+  {
+   "id": "osm_node_11524181851",
+   "name": "Farmacia Zerman",
+   "address": "Via della Chiesa Zerman 30",
+   "lat": 45.579361,
+   "lon": 12.26991,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/11524181851",
+   "phone": "+39 041 4176806"
+  },
+  {
+   "id": "osm_node_1166381495",
+   "name": "Farmacia Al Lido",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.213321,
+   "lon": 12.292051,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1166381495"
+  },
+  {
+   "id": "osm_node_1170289426",
+   "name": "Farmacia",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.215369,
+   "lon": 12.291212,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1170289426"
+  },
+  {
+   "id": "osm_node_1182812723",
+   "name": "Farmacia",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.224485,
+   "lon": 12.192749,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1182812723"
+  },
+  {
+   "id": "osm_node_11871852338",
+   "name": "Farmacia",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.210056,
+   "lon": 12.151121,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/11871852338"
+  },
+  {
+   "id": "osm_node_11951647170",
+   "name": "Farmacia Morello",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.437607,
+   "lon": 12.336664,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/11951647170"
+  },
+  {
+   "id": "osm_node_12193920463",
+   "name": "Farmacia",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.392848,
+   "lon": 12.35478,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/12193920463"
+  },
+  {
+   "id": "osm_node_12606833494",
+   "name": "Farmacia comunale Oriago",
+   "address": "Piazza Mercato 11b",
+   "lat": 45.446094,
+   "lon": 12.162328,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/12606833494"
+  },
+  {
+   "id": "osm_node_12607122977",
+   "name": "La Farmacia",
+   "address": "Via Damiano Chiesa 1a",
+   "lat": 45.435885,
+   "lon": 12.123292,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/12607122977"
+  },
+  {
+   "id": "osm_node_12753844707",
+   "name": "Farmacia Centrale",
+   "address": "Via Castellana 6",
+   "lat": 45.545718,
+   "lon": 12.161639,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/12753844707"
+  },
+  {
+   "id": "osm_node_12753914669",
+   "name": "Farmacia Castellana",
+   "address": "Piazza della Vittoria 71",
+   "lat": 45.546332,
+   "lon": 12.158244,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/12753914669"
+  },
+  {
+   "id": "osm_node_12754539172",
+   "name": "Parafarmacia",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.436129,
+   "lon": 12.440632,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/12754539172",
+   "openingHours": "10:00-13:00,16:00-22:00"
+  },
+  {
+   "id": "osm_node_12761823999",
+   "name": "Farmacia all'Olmo",
+   "address": "Piazza Maestri del Lavoro 6",
+   "lat": 45.517896,
+   "lon": 12.187091,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/12761823999"
+  },
+  {
+   "id": "osm_node_1279814279",
+   "name": "Farmacia Excelsior",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.407227,
+   "lon": 12.365064,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1279814279"
+  },
+  {
+   "id": "osm_node_12815212493",
+   "name": "Farmacia dell'Orso",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.437543,
+   "lon": 12.341105,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/12815212493",
+   "openingHours": "Mo-Sa 09:00-19:30"
+  },
+  {
+   "id": "osm_node_13022599644",
+   "name": "Farmacia Ginfan",
+   "address": "Via Caltana 4e",
+   "lat": 45.466373,
+   "lon": 12.111308,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/13022599644"
+  },
+  {
+   "id": "osm_node_1347254743",
+   "name": "Farmacia Gumirato",
+   "address": "Via Bissuola 94l",
+   "lat": 45.494228,
+   "lon": 12.261854,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1347254743",
+   "phone": "+39 0415341310"
+  },
+  {
+   "id": "osm_node_13664433698",
+   "name": "Farmacia Faggin",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.267113,
+   "lon": 12.10123,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/13664433698"
+  },
+  {
+   "id": "osm_node_13849361828",
+   "name": "Farmacia",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.529306,
+   "lon": 12.187618,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/13849361828"
+  },
+  {
+   "id": "osm_node_13850641003",
+   "name": "Punto Salute Farmaci",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.466763,
+   "lon": 12.530615,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/13850641003"
+  },
+  {
+   "id": "osm_node_1419946941",
+   "name": "Dottor Fabro",
+   "address": "Viale Viareggio 42b",
+   "lat": 45.48932,
+   "lon": 12.152403,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1419946941",
+   "phone": "+39 041 5410240",
+   "openingHours": "Mo-Fr 08:30-12:30,15:30-19:30; Sa 08:30-12:45,16:00-19:00"
+  },
+  {
+   "id": "osm_node_1456859133",
+   "name": "Farmacia San Nicolò",
+   "address": "Via Tiro 1",
+   "lat": 45.418911,
+   "lon": 12.375229,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1456859133"
+  },
+  {
+   "id": "osm_node_1624050560",
+   "name": "Alla Fama",
+   "address": "Cannaregio",
+   "lat": 45.44054,
+   "lon": 12.336288,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1624050560",
+   "phone": "+39 041 5224239"
+  },
+  {
+   "id": "osm_node_1625636294",
+   "name": "Farmacia Al Castoro",
+   "address": "San Polo 482",
+   "lat": 45.438641,
+   "lon": 12.334258,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1625636294",
+   "phone": "+39 041 237 8966",
+   "openingHours": "Mo-Fr 08:30-19:30; Sa 08:30-19:00; Su closed; PH closed"
+  },
+  {
+   "id": "osm_node_1625636300",
+   "name": "al Pellegrino",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.437581,
+   "lon": 12.338194,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1625636300"
+  },
+  {
+   "id": "osm_node_1636849138",
+   "name": "Farmacia alle Due Colonne",
+   "address": "Cannaregio 6045",
+   "lat": 45.439874,
+   "lon": 12.338692,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1636849138",
+   "openingHours": "Mo-Fr 08:30-13:00,15:30-19:30; Sa 08:45-12:45"
+  },
+  {
+   "id": "osm_node_1671853362",
+   "name": "Farmacia all'Adriatico",
+   "address": "Viale Mediterraneo 159",
+   "lat": 45.197547,
+   "lon": 12.295558,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1671853362"
+  },
+  {
+   "id": "osm_node_1681386241",
+   "name": "Farmacia Checchia",
+   "address": "Cannaregio 1825",
+   "lat": 45.443826,
+   "lon": 12.329193,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1681386241"
+  },
+  {
+   "id": "osm_node_1681386242",
+   "name": "Speziera all'Ercole d'Oro",
+   "address": "Cannaregio 2234a",
+   "lat": 45.442628,
+   "lon": 12.332209,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1681386242"
+  },
+  {
+   "id": "osm_node_1722699795",
+   "name": "Lafarmacia.Bottacin",
+   "address": "Via Monte Grappa 16",
+   "lat": 45.521964,
+   "lon": 12.108828,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1722699795"
+  },
+  {
+   "id": "osm_node_1839134081",
+   "name": "Farmacia",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.281937,
+   "lon": 12.301913,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1839134081"
+  },
+  {
+   "id": "osm_node_1864722358",
+   "name": "Pisanello",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.437137,
+   "lon": 12.330147,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/1864722358"
+  },
+  {
+   "id": "osm_node_2158630582",
+   "name": "Farmacia San Teodoro",
+   "address": "San Marco 3467",
+   "lat": 45.433917,
+   "lon": 12.330768,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/2158630582"
+  },
+  {
+   "id": "osm_node_2165121247",
+   "name": "Farmacia Santa Margherita",
+   "address": "Dorsoduro 3692",
+   "lat": 45.435265,
+   "lon": 12.324188,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/2165121247",
+   "openingHours": "Mo-Fr 09:00-19:30; Sa 09:00-12:45"
+  },
+  {
+   "id": "osm_node_2459274839",
+   "name": "Quinavalle",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.494011,
+   "lon": 12.611942,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/2459274839",
+   "phone": "+39 0421 370600",
+   "openingHours": "Mo-Sa 09:00-13:00,16:00-20:00; Su 09:00-13:00"
+  },
+  {
+   "id": "osm_node_2525066525",
+   "name": "Farmacia Nicolini",
+   "address": "Corso del Popolo 1494",
+   "lat": 45.220528,
+   "lon": 12.279036,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/2525066525",
+   "phone": "+39 041 400223",
+   "openingHours": "Mo-Fr 09:00-12:30,16:00-19:15; Sa 08:45-12:30; Su closed; PH closed"
+  },
+  {
+   "id": "osm_node_274315855",
+   "name": "Farmacia alla Marca",
+   "address": "Via Roma 91",
+   "lat": 45.56098,
+   "lon": 12.229243,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/274315855"
+  },
+  {
+   "id": "osm_node_276615885",
+   "name": "Farmacia alla Madonetta",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.561981,
+   "lon": 12.246716,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/276615885"
+  },
+  {
+   "id": "osm_node_277101746",
+   "name": "Farmacia Villa",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.561126,
+   "lon": 12.233983,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/277101746"
+  },
+  {
+   "id": "osm_node_2956162530",
+   "name": "Farmacia alla gatta",
+   "address": "Sotoportego Lezze 2651",
+   "lat": 45.445225,
+   "lon": 12.329714,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/2956162530",
+   "openingHours": "Mo-Fr 09:00-12:30,15:45-19:30; Sa 09:00-12:45; Su closed; PH closed"
+  },
+  {
+   "id": "osm_node_2964496691",
+   "name": "Farmacia Baldisserotto Antonia",
+   "address": "Via Giuseppe Garibaldi 1778",
+   "lat": 45.43233,
+   "lon": 12.352741,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/2964496691",
+   "phone": "+39 041 5224109"
+  },
+  {
+   "id": "osm_node_297058554",
+   "name": "Farmacia Comunale",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.541075,
+   "lon": 12.236331,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/297058554"
+  },
+  {
+   "id": "osm_node_303784596",
+   "name": "Farmacia San Marco",
+   "address": "Via Ronzinella 68a",
+   "lat": 45.554237,
+   "lon": 12.238078,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/303784596"
+  },
+  {
+   "id": "osm_node_3143632792",
+   "name": "Farmacia Alla Madonna",
+   "address": "Via Venticinque Aprile 7",
+   "lat": 45.418734,
+   "lon": 12.150476,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/3143632792"
+  },
+  {
+   "id": "osm_node_331035125",
+   "name": "Farmacia al Terraglio",
+   "address": "Via Guglielmo Marconi 18",
+   "lat": 45.562076,
+   "lon": 12.235156,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/331035125"
+  },
+  {
+   "id": "osm_node_331620086",
+   "name": "Farmacia Dott Giovanna Bortignon",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.562355,
+   "lon": 12.186346,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/331620086"
+  },
+  {
+   "id": "osm_node_3353028082",
+   "name": "Farmacia delle Catene",
+   "address": "Via Trieste 179c",
+   "lat": 45.477062,
+   "lon": 12.204266,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/3353028082"
+  },
+  {
+   "id": "osm_node_3522319750",
+   "name": "Farmacia Salvadori",
+   "address": "Cannaregio 1339",
+   "lat": 45.443782,
+   "lon": 12.32683,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/3522319750",
+   "phone": "+39 041 717356",
+   "openingHours": "Mo-Fr 09:00-13:00,15:30-19:30; Sa 09:00-12:45"
+  },
+  {
+   "id": "osm_node_3623864665",
+   "name": "Farmacia",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.458429,
+   "lon": 12.355503,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/3623864665"
+  },
+  {
+   "id": "osm_node_3623864666",
+   "name": "Farmacia Colleoni",
+   "address": "Fondamenta Vetrai 139",
+   "lat": 45.455617,
+   "lon": 12.352657,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/3623864666"
+  },
+  {
+   "id": "osm_node_3819706486",
+   "name": "Farmacia",
+   "address": "Via Ca' Rossa 33",
+   "lat": 45.498088,
+   "lon": 12.24996,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/3819706486",
+   "phone": "+39 041 5343524"
+  },
+  {
+   "id": "osm_node_4158655320",
+   "name": "Farmacia del Litorale",
+   "address": "Via Fausta",
+   "lat": 45.465137,
+   "lon": 12.514555,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4158655320"
+  },
+  {
+   "id": "osm_node_4158655324",
+   "name": "Farmacia Zorzetto Dr. Paolo",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.45329,
+   "lon": 12.454023,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4158655324",
+   "phone": "+39 041 966349"
+  },
+  {
+   "id": "osm_node_4190308691",
+   "name": "Farmacia alla Salute",
+   "address": "Piazzale Lazzaro Giovannacci 13",
+   "lat": 45.478845,
+   "lon": 12.22869,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4190308691",
+   "phone": "+39 041 920783",
+   "openingHours": "Mo-Fr 08:30-12:30,15:30-19:30; Sa 08:30-12:30,15:00-19:00"
+  },
+  {
+   "id": "osm_node_4216769513",
+   "name": "Farmacia Polito",
+   "address": "Via Giuseppe Garibaldi 1792",
+   "lat": 45.432395,
+   "lon": 12.353464,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4216769513",
+   "openingHours": "Mo-Sa 08:30-20:00"
+  },
+  {
+   "id": "osm_node_4217838067",
+   "name": "Farmacia Morelli",
+   "address": "San Marco 5310",
+   "lat": 45.437623,
+   "lon": 12.336905,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4217838067"
+  },
+  {
+   "id": "osm_node_4234614742",
+   "name": "Farmacia",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.433185,
+   "lon": 12.319706,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4234614742"
+  },
+  {
+   "id": "osm_node_4234614789",
+   "name": "Farmacia",
+   "address": "Santa Croce 181",
+   "lat": 45.437446,
+   "lon": 12.321241,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4234614789"
+  },
+  {
+   "id": "osm_node_4234614967",
+   "name": "Farmacia Italo Inglese",
+   "address": "San Marco",
+   "lat": 45.434994,
+   "lon": 12.333546,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4234614967",
+   "openingHours": "Mo-Sa 09:00-19:30"
+  },
+  {
+   "id": "osm_node_4237130790",
+   "name": "Farmacia",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.434265,
+   "lon": 12.336093,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4237130790"
+  },
+  {
+   "id": "osm_node_4250080755",
+   "name": "Farmacia Patelli",
+   "address": "Via Orlanda 172",
+   "lat": 45.487038,
+   "lon": 12.297756,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4250080755"
+  },
+  {
+   "id": "osm_node_4268293215",
+   "name": "Farmacia",
+   "address": "Via San Donà 400",
+   "lat": 45.504176,
+   "lon": 12.281321,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4268293215"
+  },
+  {
+   "id": "osm_node_4269569413",
+   "name": "Farmacia \"Ai due Gigli\"",
+   "address": "Via Monte Piana 26",
+   "lat": 45.485715,
+   "lon": 12.229249,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4269569413",
+   "openingHours": "09:00-12:30,15:15-19:30"
+  },
+  {
+   "id": "osm_node_4288446636",
+   "name": "Farmacia comunale n. 3 \"Al Bivio\"",
+   "address": "Via Altinia 133",
+   "lat": 45.512215,
+   "lon": 12.282996,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4288446636",
+   "phone": "+39 041 631222"
+  },
+  {
+   "id": "osm_node_428936147",
+   "name": "Farmacia Internazionale",
+   "address": "Via Ugo Foscolo 86",
+   "lat": 45.491972,
+   "lon": 12.607414,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/428936147",
+   "phone": "+39 0421 371380",
+   "dispensing": false
+  },
+  {
+   "id": "osm_node_4304670699",
+   "name": "Parafarmacia",
+   "address": "Rio Terà Canal 3066",
+   "lat": 45.433553,
+   "lon": 12.324229,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4304670699",
+   "phone": "+39 041 2412423",
+   "openingHours": "Mo-Sa 09:00-19:00",
+   "dispensing": false
+  },
+  {
+   "id": "osm_node_4347576733",
+   "name": "Farmacia Comunale Cavallino",
+   "address": "Via Equilia 26",
+   "lat": 45.48307,
+   "lon": 12.552296,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4347576733",
+   "phone": "+39041968196",
+   "openingHours": "Mo-Sa 08:30-19:00"
+  },
+  {
+   "id": "osm_node_436908683",
+   "name": "Farmacia Mazzini",
+   "address": "Via Andrea Bafile 425",
+   "lat": 45.496827,
+   "lon": 12.619381,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/436908683",
+   "phone": "+39 0421 370256",
+   "openingHours": "Mo-Su 08:30-22:00",
+   "dispensing": false
+  },
+  {
+   "id": "osm_node_443122698",
+   "name": "Farmacia Santa Lucia",
+   "address": "Cannaregio 122",
+   "lat": 45.441668,
+   "lon": 12.322869,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/443122698",
+   "phone": "+39 041 716332",
+   "openingHours": "Mo-Sa 08:00-20:00; Su 09:00-13:30"
+  },
+  {
+   "id": "osm_node_443122705",
+   "name": "Farmacia Dr. Chiaro",
+   "address": "Cannaregio 3823a",
+   "lat": 45.441433,
+   "lon": 12.333545,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/443122705",
+   "phone": "+39 0415225970"
+  },
+  {
+   "id": "osm_node_443122707",
+   "name": "Alla Vecchia e al Cedro Imperiale",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.435988,
+   "lon": 12.335175,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/443122707",
+   "openingHours": "Mo-Fr 08:30-19:30; Sa 08:30-12:45"
+  },
+  {
+   "id": "osm_node_4437783675",
+   "name": "Farmacia al Lupo Coronato",
+   "address": "Castello 4513",
+   "lat": 45.435056,
+   "lon": 12.341686,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4437783675"
+  },
+  {
+   "id": "osm_node_471487403",
+   "name": "Viviani",
+   "address": "Piazza Martiri della Libertà 2",
+   "lat": 45.492964,
+   "lon": 12.109005,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/471487403"
+  },
+  {
+   "id": "osm_node_4740208532",
+   "name": "Ai due Delfini d'oro",
+   "address": "Via Bissuola 43",
+   "lat": 45.495334,
+   "lon": 12.252242,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4740208532",
+   "phone": "+39 0415348930"
+  },
+  {
+   "id": "osm_node_4751157289",
+   "name": "Farmacia Brusadini",
+   "address": "Viale San Marco 15v",
+   "lat": 45.492429,
+   "lon": 12.248313,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4751157289",
+   "phone": "+39 041 951039"
+  },
+  {
+   "id": "osm_node_4784224055",
+   "name": "Farmacia Comunale n. 7 \"Garibaldi\"",
+   "address": "Viale Giuseppe Garibaldi 45",
+   "lat": 45.499047,
+   "lon": 12.246041,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4784224055",
+   "phone": "+39 041 5350422"
+  },
+  {
+   "id": "osm_node_4853799872",
+   "name": "Orario Estivo Farmacia",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.465863,
+   "lon": 12.457031,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4853799872"
+  },
+  {
+   "id": "osm_node_4876309113",
+   "name": "Farmacia",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.433757,
+   "lon": 12.121228,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4876309113"
+  },
+  {
+   "id": "osm_node_4881348623",
+   "name": "Farmacia al Doge",
+   "address": "Via San Donà 105",
+   "lat": 45.504002,
+   "lon": 12.255157,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4881348623",
+   "phone": "+39 041 615985"
+  },
+  {
+   "id": "osm_node_4894969530",
+   "name": "Farmacia Comunale n. 5 \"Ducale\"",
+   "address": "Viale San Marco 142b",
+   "lat": 45.485048,
+   "lon": 12.256933,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4894969530",
+   "phone": "+39 041 5317242"
+  },
+  {
+   "id": "osm_node_4942072354",
+   "name": "Farmacia Comunale",
+   "address": "Via Roma 65",
+   "lat": 45.521249,
+   "lon": 12.102538,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/4942072354",
+   "openingHours": "Mo-Fr 09:00-12:30,15:45-19:30; Sa 09:00-12:45"
+  },
+  {
+   "id": "osm_node_5237669040",
+   "name": "Farmacia Alla Provvidenza",
+   "address": "Via Tevere 40d",
+   "lat": 45.498683,
+   "lon": 12.254605,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/5237669040",
+   "phone": "+39 0415345776"
+  },
+  {
+   "id": "osm_node_5266077349",
+   "name": "Farmacia Mazzini",
+   "address": "Via dei Mille 2",
+   "lat": 45.487256,
+   "lon": 12.596615,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/5266077349",
+   "phone": "+39 0421 371296"
+  },
+  {
+   "id": "osm_node_5270224285",
+   "name": "Farmacia Medina SNC",
+   "address": "Via Bernardo Canal 2",
+   "lat": 45.476291,
+   "lon": 12.223898,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/5270224285",
+   "openingHours": "Mo-Fr 09:00-12:30,15:45-19:30; Sa 09:00-12:30"
+  },
+  {
+   "id": "osm_node_544981766",
+   "name": "Zambello",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.556035,
+   "lon": 12.298985,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/544981766"
+  },
+  {
+   "id": "osm_node_5599901734",
+   "name": "Farmacia Ca' Rossa",
+   "address": "Via Ca' Rossa 60b",
+   "lat": 45.501299,
+   "lon": 12.254125,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/5599901734",
+   "phone": "+39 0415345850"
+  },
+  {
+   "id": "osm_node_566829246",
+   "name": "Farmacia Cometti",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.484808,
+   "lon": 12.20224,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/566829246"
+  },
+  {
+   "id": "osm_node_5787092827",
+   "name": "Lloyds farmacia Gobbin",
+   "address": "Via Asseggiano 216",
+   "lat": 45.497061,
+   "lon": 12.184177,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/5787092827"
+  },
+  {
+   "id": "osm_node_590057613",
+   "name": "Farmacia alla Croce di Malta",
+   "address": "Castello 3470",
+   "lat": 45.435571,
+   "lon": 12.345918,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/590057613",
+   "openingHours": "Mo-Sa 09:00-19:30"
+  },
+  {
+   "id": "osm_node_5923753130",
+   "name": "Farmacia Internazionale",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.433037,
+   "lon": 12.335034,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/5923753130",
+   "openingHours": "Mo-Fr 09:00-19:30; Sa 09:00-18:00; Su 10:00-18:00"
+  },
+  {
+   "id": "osm_node_6002168278",
+   "name": "Farmacia Magnaguagno",
+   "address": "Via Miranese 31",
+   "lat": 45.491908,
+   "lon": 12.229901,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6002168278"
+  },
+  {
+   "id": "osm_node_6005882600",
+   "name": "Farmacia di Marcon",
+   "address": "Piazza IV Novembre 28",
+   "lat": 45.564525,
+   "lon": 12.299242,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6005882600"
+  },
+  {
+   "id": "osm_node_6010686069",
+   "name": "Farmacia alla Dogaressa",
+   "address": "Via San Vigilio 4/c",
+   "lat": 45.514533,
+   "lon": 12.207855,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6010686069"
+  },
+  {
+   "id": "osm_node_6015931933",
+   "name": "Farmacia Piva",
+   "address": "Via Altinia 248/d",
+   "lat": 45.529622,
+   "lon": 12.304102,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6015931933"
+  },
+  {
+   "id": "osm_node_6016341512",
+   "name": "Farmacia all' Ospedale",
+   "address": "Via Circonvallazione 23",
+   "lat": 45.49478,
+   "lon": 12.23586,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6016341512"
+  },
+  {
+   "id": "osm_node_6017291664",
+   "name": "Farmacia alla Madonna",
+   "address": "Via San Donà 6",
+   "lat": 45.504869,
+   "lon": 12.251697,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6017291664"
+  },
+  {
+   "id": "osm_node_6023033560",
+   "name": "Farmacia Boscolo",
+   "address": "Via San Donà 323",
+   "lat": 45.503238,
+   "lon": 12.277825,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6023033560",
+   "phone": "+39 041635419"
+  },
+  {
+   "id": "osm_node_6025479851",
+   "name": "Farmacia all'Aeroporto",
+   "address": "Via Orlanda 262",
+   "lat": 45.503276,
+   "lon": 12.326275,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6025479851"
+  },
+  {
+   "id": "osm_node_6027973457",
+   "name": "Farmacia all'Europa",
+   "address": "Via Piave 86",
+   "lat": 45.487007,
+   "lon": 12.2339,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6027973457"
+  },
+  {
+   "id": "osm_node_603760875",
+   "name": "Farmacia San Benedetto",
+   "address": "Via Cercariolo 7",
+   "lat": 45.570519,
+   "lon": 12.111904,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/603760875"
+  },
+  {
+   "id": "osm_node_6052306638",
+   "name": "Farmacia Rialto",
+   "address": "Via San Donà 170/c",
+   "lat": 45.503832,
+   "lon": 12.262519,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6052306638"
+  },
+  {
+   "id": "osm_node_6074621934",
+   "name": "Farmacia de Notariis",
+   "address": "Via Miranese 252",
+   "lat": 45.485217,
+   "lon": 12.209808,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6074621934"
+  },
+  {
+   "id": "osm_node_6080840288",
+   "name": "Farmacia Pedrina",
+   "address": "Via Castellana 99/q",
+   "lat": 45.512462,
+   "lon": 12.211298,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6080840288"
+  },
+  {
+   "id": "osm_node_6083354676",
+   "name": "Farmacia Ambasciatori",
+   "address": "Via Torino 33",
+   "lat": 45.48329,
+   "lon": 12.242741,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6083354676",
+   "openingHours": "Mo-Fr 09:00-12:30,15:45-19:30; Sa 09:00-12:45"
+  },
+  {
+   "id": "osm_node_6087268493",
+   "name": "Farmacia al Brenta",
+   "address": "Via Cesare Beccaria 115",
+   "lat": 45.466179,
+   "lon": 12.223101,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6087268493"
+  },
+  {
+   "id": "osm_node_6096919522",
+   "name": "Farmacia Rigamonti",
+   "address": "Corso del Popolo 38",
+   "lat": 45.489392,
+   "lon": 12.243675,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6096919522",
+   "openingHours": "Mo-Fr 08:30-12:30,15:30-19:30; Sa 08:45-12:45"
+  },
+  {
+   "id": "osm_node_6116618679",
+   "name": "Farmacia alla Testa d'Oro",
+   "address": "Via Aldo Camporese 120",
+   "lat": 45.486037,
+   "lon": 12.268273,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6116618679"
+  },
+  {
+   "id": "osm_node_611859829",
+   "name": "Farmacia Pinelli",
+   "address": "Via Roma 325",
+   "lat": 45.495861,
+   "lon": 12.153829,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/611859829"
+  },
+  {
+   "id": "osm_node_6126074100",
+   "name": "Farmacia ai due Angeli",
+   "address": "Via Baldassarre Longhena 2",
+   "lat": 45.480079,
+   "lon": 12.224256,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6126074100",
+   "openingHours": "Mo-Fr 08:30-13:00,15:30-19:30; Sa 08:30-12:45"
+  },
+  {
+   "id": "osm_node_6185409737",
+   "name": "Farmacia Serenissima",
+   "address": "Piazzale Bernardino Zendrini 21",
+   "lat": 45.479978,
+   "lon": 12.289108,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6185409737"
+  },
+  {
+   "id": "osm_node_6185415177",
+   "name": "Farmacia delle Barche",
+   "address": "Piazza Ventisette Ottobre 90",
+   "lat": 45.492498,
+   "lon": 12.243091,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6185415177"
+  },
+  {
+   "id": "osm_node_6202824975",
+   "name": "Farmacia alla Pace",
+   "address": "Via Gazzera Alta 133",
+   "lat": 45.494647,
+   "lon": 12.218402,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6202824975"
+  },
+  {
+   "id": "osm_node_6202830619",
+   "name": "Farmacia Malcontenta",
+   "address": "Via della Stazione 77/b",
+   "lat": 45.442743,
+   "lon": 12.196364,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6202830619"
+  },
+  {
+   "id": "osm_node_6202836657",
+   "name": "Farmacia Comunale Gaggio",
+   "address": "Piazza 1° Maggio 29",
+   "lat": 45.552653,
+   "lon": 12.316693,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6202836657"
+  },
+  {
+   "id": "osm_node_6312250707",
+   "name": "Farmacia Polato",
+   "address": "Viale Don Luigi Sturzo 180",
+   "lat": 45.548255,
+   "lon": 12.341513,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6312250707"
+  },
+  {
+   "id": "osm_node_6564299438",
+   "name": "Farmacia all'Autostrada",
+   "address": "Via Trieste 2",
+   "lat": 45.477164,
+   "lon": 12.2175,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6564299438"
+  },
+  {
+   "id": "osm_node_6579539347",
+   "name": "All'Ala d'Oro",
+   "address": "Via Torre Belfredo",
+   "lat": 45.497699,
+   "lon": 12.237456,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6579539347"
+  },
+  {
+   "id": "osm_node_659019599",
+   "name": "Farmacia Dott. Zambon Paolo",
+   "address": "Via Firenze 1",
+   "lat": 45.455771,
+   "lon": 12.15533,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/659019599"
+  },
+  {
+   "id": "osm_node_6780388770",
+   "name": "Farmacia S. Antonio",
+   "address": "Via Nicolò Tommaseo 11",
+   "lat": 45.471158,
+   "lon": 12.225006,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6780388770"
+  },
+  {
+   "id": "osm_node_6780431495",
+   "name": "Farmacia Zamparo",
+   "address": "Via Milano 21",
+   "lat": 45.48657,
+   "lon": 12.244409,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/6780431495"
+  },
+  {
+   "id": "osm_node_7138650744",
+   "name": "Farmacia San Giovanni",
+   "address": "Via Moglianese 33",
+   "lat": 45.568546,
+   "lon": 12.144951,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/7138650744",
+   "phone": "+39 041 446933"
+  },
+  {
+   "id": "osm_node_7172558239",
+   "name": "Farmacia comunale di Mira",
+   "address": "Via Dante Alighieri 6/19",
+   "lat": 45.437719,
+   "lon": 12.129212,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/7172558239"
+  },
+  {
+   "id": "osm_node_7187070121",
+   "name": "Farmacia Conche",
+   "address": "Via Vallona 1",
+   "lat": 45.234062,
+   "lon": 12.16456,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/7187070121",
+   "phone": "+39 049 9789513",
+   "openingHours": "Mo-Sa 09:00-19:30; Su off"
+  },
+  {
+   "id": "osm_node_762194312",
+   "name": "Farmacia ai Due Ombrelli",
+   "address": "Santa Croce 1659",
+   "lat": 45.440617,
+   "lon": 12.328114,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/762194312"
+  },
+  {
+   "id": "osm_node_7746346765",
+   "name": "Lafarmacia.INTERNACIONALE",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.416004,
+   "lon": 12.372449,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/7746346765"
+  },
+  {
+   "id": "osm_node_8026189150",
+   "name": "Farmacia Bevilacqua",
+   "address": "Via Dante Alighieri 4",
+   "lat": 45.491384,
+   "lon": 12.116255,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/8026189150"
+  },
+  {
+   "id": "osm_node_8235098789",
+   "name": "Erboristeria Parafarmacia Dr.ssa Franz",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.5082,
+   "lon": 12.258519,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/8235098789",
+   "dispensing": false
+  },
+  {
+   "id": "osm_node_8360723483",
+   "name": "Farmacia San Michele",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.194776,
+   "lon": 12.281901,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/8360723483"
+  },
+  {
+   "id": "osm_node_8360758139",
+   "name": "Farmacia alla Navicella",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.196925,
+   "lon": 12.289597,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/8360758139"
+  },
+  {
+   "id": "osm_node_8380900041",
+   "name": "Farmacia (San Giovanni)",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.201965,
+   "lon": 12.277097,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/8380900041"
+  },
+  {
+   "id": "osm_node_8553813865",
+   "name": "Farmacia Comunale n°1 S. Elena",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.427462,
+   "lon": 12.360255,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/8553813865",
+   "phone": "+39 041 522 5468",
+   "openingHours": "Mo-Fr 09:00-12:30,15:45-19:30; Sa 09:00-12:45; Su closed; PH closed"
+  },
+  {
+   "id": "osm_node_8741532938",
+   "name": "Farmacia dei fiori",
+   "address": "Via Murano 15",
+   "lat": 45.491307,
+   "lon": 12.155416,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/8741532938",
+   "openingHours": "07:30-19:30"
+  },
+  {
+   "id": "osm_node_8755739707",
+   "name": "Farmacia del Mare",
+   "address": "Viale San Marco 629",
+   "lat": 45.218505,
+   "lon": 12.292778,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/8755739707",
+   "phone": "+39 041 400066",
+   "openingHours": "Mo-Sa 08:30-12:30,16:00-20:00; Su 08:30-12:30; PH closed"
+  },
+  {
+   "id": "osm_node_8829665915",
+   "name": "Farmacia Santo Spirito",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.204931,
+   "lon": 12.288302,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/8829665915"
+  },
+  {
+   "id": "osm_node_8862805800",
+   "name": "Parafarmacia Sanilandia",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.215067,
+   "lon": 12.292418,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/8862805800",
+   "dispensing": false
+  },
+  {
+   "id": "osm_node_8869339820",
+   "name": "Farmacia Internazionale alla Salute",
+   "address": "Via Rosa 7",
+   "lat": 45.492611,
+   "lon": 12.239715,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/8869339820"
+  },
+  {
+   "id": "osm_node_8869361714",
+   "name": "Farmacia ai tre Archi",
+   "address": "Via Monte Grappa 100",
+   "lat": 45.559407,
+   "lon": 12.277565,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/8869361714"
+  },
+  {
+   "id": "osm_node_8874377633",
+   "name": "Farmacia Menegale",
+   "address": "Via Trieste 71",
+   "lat": 45.559289,
+   "lon": 12.4356,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/8874377633"
+  },
+  {
+   "id": "osm_node_9161399761",
+   "name": "Al Redentore",
+   "address": "Corso del Popolo 1228",
+   "lat": 45.218995,
+   "lon": 12.278355,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/9161399761",
+   "phone": "+39 041 400091",
+   "openingHours": "Mo-Sa 08:00-12:30,15:45-19:30; Su closed; PH closed"
+  },
+  {
+   "id": "osm_node_9504675630",
+   "name": "Farmacia Piumelli",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.5305,
+   "lon": 12.239235,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/9504675630"
+  },
+  {
+   "id": "osm_node_9728736196",
+   "name": "Farmacia Ai Due San Marchi",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.437815,
+   "lon": 12.327087,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/9728736196",
+   "openingHours": "Mo-Fr 09:00-19:30, Sa 09:00-18:30, Su 10:00-13:00, Su 14:00-18:00"
+  },
+  {
+   "id": "osm_node_973568547",
+   "name": "Farmacia Volpato",
+   "address": "Via Antonio Gramsci 1",
+   "lat": 45.491547,
+   "lon": 12.106858,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/973568547",
+   "phone": "+39 041 432198",
+   "openingHours": "Mo-Fr 08:30-13:00,15:30-19:30; Sa 08:30-13:00"
+  },
+  {
+   "id": "osm_node_9738907654",
+   "name": "Farmacia",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.499408,
+   "lon": 12.112929,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/9738907654"
+  },
+  {
+   "id": "osm_node_9786721245",
+   "name": "Farmacia Al Giglio Coronato Dott. Sansoni Francesco",
+   "address": "Piazza Martiri della Libertà 30",
+   "lat": 45.493552,
+   "lon": 12.109917,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/node/9786721245"
+  },
+  {
+   "id": "osm_way_141987955",
+   "name": "Parafarmacia della salute",
+   "address": "Indirizzo non indicato in OSM",
+   "lat": 45.417162,
+   "lon": 12.369317,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/way/141987955",
+   "openingHours": "Mo-Su 09:00-12:30,15:30-19:30",
+   "dispensing": false
+  },
+  {
+   "id": "osm_way_152738577",
+   "name": "Farmacia Zanetti",
+   "address": "Via Miranese 303",
+   "lat": 45.484427,
+   "lon": 12.193484,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/way/152738577"
+  },
+  {
+   "id": "osm_way_187117463",
+   "name": "Farmacia",
+   "address": "Via Prati",
+   "lat": 45.47629,
+   "lon": 12.159855,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/way/187117463"
+  },
+  {
+   "id": "osm_way_189971082",
+   "name": "Farmacia Libralesso",
+   "address": "Via Mocenigo 30",
+   "lat": 45.439575,
+   "lon": 12.13964,
+   "source": "OPENSTREETMAP",
+   "sourceUrl": "https://www.openstreetmap.org/way/189971082",
+   "openingHours": "Mo-Fr 09:00-19:30"
+  }
+ ]
+}

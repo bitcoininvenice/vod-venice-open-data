@@ -36,6 +36,7 @@ export async function GET() {
     satellitesCount: SATELLITES_DATA.length,
     passerelleTotalMeters: PASSERELLE_DATA.reduce((acc, p) => acc + p.lengthMeters, 0),
     passerelleMountedCount: PASSERELLE_DATA.filter((p) => p.isMounted).length,
+    cpsmStationsCount: tide.ok ? tide.data.length : null,
     cnrWaveHeightMeters: platform.waveHeightMeters,
     cnrWaterTempC: platform.waterTempC,
   });

@@ -25,7 +25,7 @@ export function ProvenanceBadge({ kind, detail, className = '' }: ProvenanceBadg
     <span
       className={`inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border ${STYLE[kind]} ${className}`}
     >
-      {kind === 'live' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden />}
+      {kind === 'live' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 motion-safe:animate-pulse" aria-hidden />}
       {PROVENANCE_LABEL[kind][language === 'it' ? 'it' : 'en']}
       {detail && <span className="font-normal normal-case opacity-80">· {detail}</span>}
     </span>

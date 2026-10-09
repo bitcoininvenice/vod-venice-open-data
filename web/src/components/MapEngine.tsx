@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { X, Plane, Ship, Satellite, Plus, Minus, Maximize2 } from 'lucide-react';
+import { X, Plane, Ship, Satellite, Plus, Minus, Maximize2, Box } from 'lucide-react';
 import {
   CameraViewPreset,
   TransportModeCategory,
@@ -42,7 +42,7 @@ import {
   LagoonFortressIslandItem,
   EmergencyWaterDockItem,
   PublicDaeItem,
-  PharmacyDutyItem,
+  PharmacyItem,
   HeatIslandSurfaceTempItem,
   LagoonWaterQualityItem,
   TouristAccommodationItem,
@@ -64,6 +64,8 @@ import { drawFlights } from './map/airLayers';
 import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, drawMarineSignals, drawOceanStations, drawCanalLimits, drawBridges, drawGondolas, drawDocks, drawMarineWind } from './map/lagoonLayers';
 import { drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
+import { drawFloodLayer } from './map/floodLayer';
+import { MAP_3D_CSS_TRANSFORM, unprojectFrom3D } from '@/lib/map3d';
 
 
 import { distAt, getSimulation, pointAt } from '@/lib/simulationModel';
@@ -166,7 +168,7 @@ export interface MapEngineProps {
   showDae?: boolean;
   daeList?: PublicDaeItem[];
   showPharmacies?: boolean;
-  pharmacies?: PharmacyDutyItem[];
+  pharmacies?: PharmacyItem[];
   showHeatIslands?: boolean;
   heatIslands?: HeatIslandSurfaceTempItem[];
   // Open Data Regione Veneto (dati.veneto.it)
@@ -181,6 +183,7 @@ export interface MapEngineProps {
   showTributaries?: boolean;
   lagoonTributaryRivers?: LagoonTributaryRiverItem[];
   tideLevel?: number;
+  simulatedTideLevel?: number | null;
   isDesktopLayerPanelOpen?: boolean;
 }
 
@@ -293,6 +296,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   showTributaries = false,
   lagoonTributaryRivers = [],
   tideLevel = 0,
+  simulatedTideLevel = null,
   isDesktopLayerPanelOpen = true
 }) => {
   const { t } = useTranslation();
@@ -314,6 +318,11 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   // View Camera State (x0, y0, scale)
   const [camera, setCamera] = useState({ x0: 0, y0: 0, s: 0.02 });
   const [containerWidth, setContainerWidth] = useState(320);
+  const [is3DView, setIs3DView] = useState(false);
+
+  /** Coordinate dello schermo -> piano della mappa (in 3D il canvas è inclinato via CSS). */
+  const toMapPlane = (x: number, y: number, rect: DOMRect) =>
+    is3DView ? unprojectFrom3D(x, y, rect.width, rect.height) : { x, y };
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0, camX: 0, camY: 0 });
 
@@ -522,8 +531,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     e.preventDefault();
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    const { x: mouseX, y: mouseY } = toMapPlane(e.clientX - rect.left, e.clientY - rect.top, rect);
 
     const zoomFactor = e.deltaY < 0 ? 1.15 : 0.87;
     const newScale = Math.max(containerRef.current.clientWidth / W, Math.min(1.25, camera.s * zoomFactor));
@@ -566,10 +574,11 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
     if (e.touches.length === 1) {
       const t = e.touches[0];
+      const p = toMapPlane(t.clientX - rect.left, t.clientY - rect.top, rect);
       touchStartRef.current = {
         mode: 'pan',
-        x1: t.clientX - rect.left,
-        y1: t.clientY - rect.top,
+        x1: p.x,
+        y1: p.y,
         x2: 0,
         y2: 0,
         dist: 0,
@@ -581,10 +590,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     } else if (e.touches.length === 2) {
       const t1 = e.touches[0];
       const t2 = e.touches[1];
-      const x1 = t1.clientX - rect.left;
-      const y1 = t1.clientY - rect.top;
-      const x2 = t2.clientX - rect.left;
-      const y2 = t2.clientY - rect.top;
+      const { x: x1, y: y1 } = toMapPlane(t1.clientX - rect.left, t1.clientY - rect.top, rect);
+      const { x: x2, y: y2 } = toMapPlane(t2.clientX - rect.left, t2.clientY - rect.top, rect);
       const dist = Math.hypot(x2 - x1, y2 - y1);
 
       touchStartRef.current = {
@@ -609,8 +616,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
     if (e.touches.length === 1 && st.mode === 'pan') {
       const t = e.touches[0];
-      const currentX = t.clientX - rect.left;
-      const currentY = t.clientY - rect.top;
+      const { x: currentX, y: currentY } = toMapPlane(t.clientX - rect.left, t.clientY - rect.top, rect);
       const dx = (currentX - st.x1) / camera.s;
       const dy = (currentY - st.y1) / camera.s;
 
@@ -622,10 +628,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     } else if (e.touches.length === 2 && st.mode === 'pinch') {
       const t1 = e.touches[0];
       const t2 = e.touches[1];
-      const x1 = t1.clientX - rect.left;
-      const y1 = t1.clientY - rect.top;
-      const x2 = t2.clientX - rect.left;
-      const y2 = t2.clientY - rect.top;
+      const { x: x1, y: y1 } = toMapPlane(t1.clientX - rect.left, t1.clientY - rect.top, rect);
+      const { x: x2, y: y2 } = toMapPlane(t2.clientX - rect.left, t2.clientY - rect.top, rect);
       const newDist = Math.hypot(x2 - x1, y2 - y1);
       const ratio = newDist / (st.dist || 1);
 
@@ -646,8 +650,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       if (e.changedTouches.length === 1 && containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
         const t = e.changedTouches[0];
-        const tapX = t.clientX - rect.left;
-        const tapY = t.clientY - rect.top;
+        const { x: tapX, y: tapY } = toMapPlane(t.clientX - rect.left, t.clientY - rect.top, rect);
         if (Math.hypot(tapX - st.x1, tapY - st.y1) < 14) {
           handlePointClick(tapX, tapY);
         }
@@ -1542,7 +1545,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   const handleClick = (e: React.MouseEvent) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    handlePointClick(e.clientX - rect.left, e.clientY - rect.top);
+    const p = toMapPlane(e.clientX - rect.left, e.clientY - rect.top, rect);
+    handlePointClick(p.x, p.y);
   };
 
   // Main Render Loop (Canvas 2D)
@@ -1594,12 +1598,30 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       const sy = (y: number) => (y - camera.y0) * camera.s;
 
       // 2. Render Land Polygons (Venice Islands & Mainland)
+      const zoomed = camera.s / (cw / W) > 1.6;
+      const landSet = zoomed ? LAND.hi : LAND.lo;
+
+      if (is3DView) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+        for (const rings of landSet) {
+          ctx.beginPath();
+          for (const ring of rings) {
+            if (ring.length < 4) continue;
+            ctx.moveTo(sx(ring[0]), sy(ring[1]) + 4);
+            for (let i = 2; i < ring.length; i += 2) {
+              ctx.lineTo(sx(ring[i]), sy(ring[i + 1]) + 4);
+            }
+            ctx.closePath();
+          }
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
       ctx.fillStyle = pal.land;
       ctx.strokeStyle = pal.coast;
       ctx.lineWidth = 1;
-
-      const zoomed = camera.s / (cw / W) > 1.6;
-      const landSet = zoomed ? LAND.hi : LAND.lo;
 
       for (const rings of landSet) {
         ctx.beginPath();
@@ -1726,7 +1748,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         showWells,
         stops,
         subsidencePoints,
-        tideLevel,
+        tideLevel: (simulatedTideLevel !== undefined && simulatedTideLevel !== null) ? simulatedTideLevel : tideLevel,
         touristAccommodations,
         trees,
         veritasServices,
@@ -1738,6 +1760,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       drawRoutes(rc);
 
       drawSpatialBuffer(rc);
+
+      // Zone allagate (stima indicativa): con il simulatore attivo o con il layer passerelle acceso
+      if (simulatedTideLevel != null || showPasserelle) drawFloodLayer(rc, rc.tideLevel);
 
       drawVehicles(rc);
 
@@ -1937,6 +1962,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     showTributaries,
     lagoonTributaryRivers,
     tideLevel,
+    simulatedTideLevel,
+    is3DView,
     W,
     mx,
     my
@@ -1956,15 +1983,23 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       onTouchEnd={handleTouchEnd}
       style={{ touchAction: 'none' }}
     >
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full block"
+        style={{
+          transform: is3DView ? MAP_3D_CSS_TRANSFORM : 'none',
+          transformOrigin: 'center 75%',
+          transition: 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
+        }}
+      />
 
       {/* Floating map hint (desktop only to prevent clutter on mobile) */}
-      <div className="hidden md:flex absolute md:top-4 md:left-[21rem] xl:md:left-[22rem] pointer-events-none glass-panel px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-[var(--rule)] text-[11px] sm:text-xs text-[var(--ink-2)] items-center gap-1.5 sm:gap-2 shadow-lg max-w-[calc(100vw-5rem)]">
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+      {/* <div className="hidden md:flex absolute md:top-4 md:left-[21rem] xl:md:left-[22rem] pointer-events-none glass-panel px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-[var(--rule)] text-[11px] sm:text-xs text-[var(--ink-2)] items-center gap-1.5 sm:gap-2 shadow-lg max-w-[calc(100vw-5rem)]">
+        <span className="w-2 h-2 rounded-full bg-emerald-400 motion-safe:animate-pulse shrink-0" />
         <span className="truncate">{t('map.clickHint')}</span>
-      </div>
+      </div> */}
 
-      {/* On-Map Zoom & Centering Controls (+ / - / Centra): top-3 on mobile to avoid TimelineControls, bottom-28 on desktop */}
+      {/* On-Map Zoom & Centering Controls (+ / - / Centra / 3D): top-3 on mobile to avoid TimelineControls, bottom-28 on desktop */}
       <div className="absolute right-3 sm:right-5 top-3 sm:top-4 xl:top-auto xl:bottom-36 z-30 flex flex-col items-center gap-1.5 shadow-2xl">
         <button
           type="button"
@@ -1994,6 +2029,19 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           aria-label={t('map.resetViewAria')}
         >
           <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setIs3DView((v) => !v)}
+          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl glass-panel border transition-all shadow-lg active:scale-95 cursor-pointer mt-0.5 flex items-center justify-center ${is3DView
+              ? 'bg-cyan-500 text-white border-cyan-400 font-semibold'
+              : 'border-[var(--rule)] hover:border-cyan-400/50 bg-[var(--ground)]/90 text-[var(--ink-2)] hover:text-cyan-400'
+            }`}
+          title={is3DView ? t('ui.view3D.mode2D') : t('ui.view3D.mode3D')}
+          aria-label={t('ui.view3D.toggle3D')}
+        >
+          <Box className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
       </div>
 
@@ -2248,8 +2296,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               <span className="font-mono font-bold text-emerald-400">{selectedAlilagunaBoat.speedKmh} km/h</span>
             </div>
             <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.passengersOnBoard')}</span>
-              <span className="font-mono font-bold text-cyan-400">{selectedAlilagunaBoat.passengersOnBoard} pax</span>
+              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{tr('ui.alilaguna.positionLabel')}</span>
+              <span className="font-mono font-bold text-cyan-400">{tr('ui.alilaguna.fromTimetable')}</span>
             </div>
           </div>
 

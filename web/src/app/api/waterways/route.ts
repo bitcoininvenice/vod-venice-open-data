@@ -18,7 +18,8 @@ export async function GET() {
       docks: OPEN_PUBLIC_DOCKS
     },
     meta: {
-      source: 'Comune di Venezia - Ordinanza Circolazione Acquea n. 274/2015, GeoSMA, Venice Project Center',
+      kind: 'curated-reference',
+      source: 'Elenco curato del progetto, da verificare (riferimenti: regolamento comunale della circolazione acquea, Venice Project Center)',
       countSpeedLimits: OPEN_CANAL_SPEED_LIMITS.length,
       countBridges: OPEN_BRIDGE_CLEARANCES.length,
       countGondolas: OPEN_GONDOLA_STATIONS.length,

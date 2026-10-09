@@ -9,7 +9,8 @@ export async function GET() {
 
   return NextResponse.json({
     success: true,
-    source: 'Comune di Venezia - CPSM Centro Previsioni e Segnalazioni Maree & Protezione Civile',
+    kind: 'curated-reference',
+    source: 'Elenco curato del progetto, da verificare (riferimento: Comune di Venezia – CPSM). Lo stato di montaggio non è un dato in tempo reale.',
     totalMeters,
     mountedCount,
     count: PASSERELLE_DATA.length,

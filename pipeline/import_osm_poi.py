@@ -1,0 +1,204 @@
+#!/usr/bin/env python3
+"""
+VOD - Venice Open Data
+Pipeline: punti di interesse da OpenStreetMap che sostituiscono elenchi compilati a mano.
+
+- colonnine di ricarica (amenity=charging_station)
+- parcheggi con capienza dichiarata ≥ 100 posti (amenity=parking + capacity)
+- vere da pozzo del centro storico e delle isole (man_made=water_well)
+- alberi monumentali (natural=tree con denotation; molti riportano ref:masaf, il codice
+  dell'Elenco nazionale degli alberi monumentali del Ministero dell'agricoltura)
+
+Licenza dei dati: ODbL 1.0 - © OpenStreetMap contributors.
+Output: web/src/data/osm-poi.json (letto da web/src/lib/osmPoi.ts).
+Uso: python import_osm_poi.py
+"""
+
+import json
+import logging
+import os
+import re
+import sys
+from datetime import datetime, timezone
+
+from import_osm_defibrillators import BBOX, fetch_overpass
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+OUT_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "osm-poi.json")
+
+B = f"{BBOX[0]},{BBOX[1]},{BBOX[2]},{BBOX[3]}"
+# Centro storico, Giudecca, Murano, Burano, Lido: le vere da pozzo di interesse storico
+WELLS_BBOX = (45.40, 12.29, 45.50, 12.43)
+MIN_PARKING_CAPACITY = 100
+
+QUERY = f"""[out:json][timeout:120];
+(
+  nwr["amenity"="charging_station"]({B});
+  nwr["amenity"="parking"]["capacity"]({B});
+  nwr["man_made"="water_well"]({WELLS_BBOX[0]},{WELLS_BBOX[1]},{WELLS_BBOX[2]},{WELLS_BBOX[3]});
+  nwr["natural"="tree"]["denotation"~"natural_monument|landmark"]({B});
+);
+out tags center;"""
+
+SOCKET_LABELS = {
+    "type2": "Type 2",
+    "type2_combo": "CCS Combo 2",
+    "chademo": "CHAdeMO",
+    "schuko": "Schuko",
+    "type2_cable": "Type 2 (cavo)",
+}
+
+
+def coords(el):
+    lat = el.get("lat", el.get("center", {}).get("lat"))
+    lon = el.get("lon", el.get("center", {}).get("lon"))
+    return (round(lat, 6), round(lon, 6)) if lat is not None and lon is not None else None
+
+
+def osm_ref(el):
+    return f"osm_{el['type']}_{el['id']}", f"https://www.openstreetmap.org/{el['type']}/{el['id']}"
+
+
+def to_int(value):
+    m = re.match(r"^\s*(\d+)", str(value or ""))
+    return int(m.group(1)) if m else None
+
+
+def to_float(value):
+    m = re.match(r"^\s*(\d+(?:[.,]\d+)?)", str(value or ""))
+    return float(m.group(1).replace(",", ".")) if m else None
+
+
+def power_kw(tags):
+    """Potenza massima dichiarata (kW) da maxpower o socket:*:output."""
+    values = []
+    for k, v in tags.items():
+        if k == "maxpower" or (k.startswith("socket:") and k.endswith(":output")):
+            n = to_float(v)
+            if n is None:
+                continue
+            values.append(n / 1000 if "kw" not in v.lower() and n > 1000 else n)
+    return max(values) if values else None
+
+
+def zone(lat, lon):
+    """Zona indicativa per la scheda (riquadri approssimati, non confini amministrativi)."""
+    if 45.425 <= lat <= 45.45 and 12.30 <= lon <= 12.37:
+        return "Venezia centro storico"
+    if lat < 45.425 and lon >= 12.33:
+        return "Lido / Pellestrina"
+    if lon >= 12.45:
+        return "Cavallino-Treporti / litorale"
+    if lat >= 45.49 and lon >= 12.32:
+        return "Tessera / Aeroporto"
+    if lon < 12.30 and lat >= 45.47:
+        return "Mestre"
+    if lon < 12.30:
+        return "Marghera / Terraferma"
+    return "Laguna"
+
+
+def ev(el, tags, lat, lon):
+    rid, url = osm_ref(el)
+    sockets = [label for key, label in SOCKET_LABELS.items() if tags.get(f"socket:{key}")]
+    return {
+        "id": rid, "sourceUrl": url, "lat": lat, "lon": lon,
+        "name": tags.get("name") or tags.get("brand") or "Colonnina di ricarica",
+        "operator": tags.get("operator") or tags.get("brand") or "Non indicato",
+        "location": tags.get("addr:street") or zone(lat, lon),
+        "totalSockets": to_int(tags.get("capacity")),
+        "powerKw": power_kw(tags),
+        "socketTypes": sockets,
+        "openingHours": tags.get("opening_hours"),
+        "fee": tags.get("fee"),
+    }
+
+
+def parking(el, tags, lat, lon):
+    rid, url = osm_ref(el)
+    return {
+        "id": rid, "sourceUrl": url, "lat": lat, "lon": lon,
+        "name": tags.get("name") or "Parcheggio",
+        "location": zone(lat, lon),
+        "totalSpots": to_int(tags.get("capacity")),
+        "operator": tags.get("operator") or "Non indicato",
+        "fee": tags.get("fee"),
+        "parkingType": tags.get("parking"),
+        "parkRide": tags.get("park_ride") not in (None, "no"),
+    }
+
+
+def well(el, tags, lat, lon):
+    rid, url = osm_ref(el)
+    return {
+        "id": rid, "sourceUrl": url, "lat": lat, "lon": lon,
+        "name": tags.get("name") or "Vera da pozzo",
+        "historic": tags.get("historic") is not None or tags.get("disused") == "yes",
+        "startDate": tags.get("start_date"),
+        "drinkingWater": tags.get("drinking_water") == "yes" and tags.get("disused") != "yes",
+    }
+
+
+def tree(el, tags, lat, lon):
+    rid, url = osm_ref(el)
+    return {
+        "id": rid, "sourceUrl": url, "lat": lat, "lon": lon,
+        "species": tags.get("species") or tags.get("genus") or "Specie non indicata",
+        "commonName": tags.get("species:it") or tags.get("name") or tags.get("species") or "Albero monumentale",
+        "heightMeters": to_float(tags.get("height")),
+        "circumferenceMeters": to_float(tags.get("circumference")),
+        "masafRef": tags.get("ref:masaf"),
+        "wikidata": tags.get("wikidata"),
+        "location": zone(lat, lon),
+    }
+
+
+def main() -> int:
+    try:
+        payload = fetch_overpass(QUERY)
+    except Exception as e:
+        logging.error("%s", e)
+        return 1
+
+    out = {"evCharging": [], "parkings": [], "wells": [], "monumentalTrees": []}
+    seen = set()
+    for el in payload.get("elements", []):
+        tags = el.get("tags", {})
+        c = coords(el)
+        if not c or (el["type"], el["id"]) in seen:
+            continue
+        seen.add((el["type"], el["id"]))
+        lat, lon = c
+        if tags.get("amenity") == "charging_station":
+            out["evCharging"].append(ev(el, tags, lat, lon))
+        elif tags.get("amenity") == "parking":
+            cap = to_int(tags.get("capacity"))
+            if cap is not None and cap >= MIN_PARKING_CAPACITY:
+                out["parkings"].append(parking(el, tags, lat, lon))
+        elif tags.get("man_made") == "water_well":
+            out["wells"].append(well(el, tags, lat, lon))
+        elif tags.get("natural") == "tree":
+            out["monumentalTrees"].append(tree(el, tags, lat, lon))
+
+    for items in out.values():
+        items.sort(key=lambda x: x["id"])
+    doc = {
+        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "source": "OpenStreetMap (Overpass API)",
+        "license": "ODbL 1.0",
+        "attribution": "© OpenStreetMap contributors",
+        "counts": {k: len(v) for k, v in out.items()},
+        **out,
+    }
+    os.makedirs(os.path.dirname(OUT_FILE), exist_ok=True)
+    with open(OUT_FILE, "w", encoding="utf-8") as f:
+        json.dump(doc, f, ensure_ascii=False, indent=1)
+        f.write("\n")
+    logging.info("POI OSM salvati: %s", doc["counts"])
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

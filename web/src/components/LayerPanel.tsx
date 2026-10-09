@@ -522,17 +522,6 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 <Landmark className="w-3 h-3" />
                 <span>{t('layers.presetCity')}</span>
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onApplyPreset('satellites');
-                  setSectionOpen({ mobility: false, lagoon: false, city: true, actv: false });
-                }}
-                className="px-2 py-0.5 rounded-lg bg-[var(--rule)]/30 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 text-[10px] font-mono whitespace-nowrap border border-[var(--rule)] hover:border-purple-500/30 transition-all cursor-pointer shrink-0 active:scale-95 flex items-center gap-1.5"
-              >
-                <Satellite className="w-3 h-3" />
-                <span>{t('layers.presetSatellites')}</span>
-              </button>
             </div>
 
             {canScrollRight && (
@@ -1551,7 +1540,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                     <div className="flex items-center gap-1">
                       {liveWebcamsCount > 0 && (
                         <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/25 text-cyan-300 font-bold border border-cyan-500/40 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 motion-safe:animate-pulse" />
                           {liveWebcamsCount} live
                         </span>
                       )}

@@ -14,7 +14,8 @@ export async function GET() {
       wasteBoats: OPEN_VERITAS_WASTE_BOATS
     },
     meta: {
-      source: 'Viaggiatreno / Rete Ferroviaria Italiana (RFI), Gruppo Veritas SpA',
+      kind: 'curated-reference',
+      source: 'Elenco curato del progetto, da verificare: treni e battelli Veritas di esempio, non posizioni né ritardi in tempo reale (riferimenti: RFI Viaggiatreno, Gruppo Veritas)',
       countTrains: OPEN_LIVE_TRAINS.length,
       countWasteBoats: OPEN_VERITAS_WASTE_BOATS.length,
     }

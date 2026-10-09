@@ -16,12 +16,16 @@ import {
   Landmark,
   Globe,
   Sparkles,
-  Info
+  Info,
+  Gauge,
+  BarChart3,
+  Layers,
+  Activity
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
 type LayerGroupKey = 'all' | 'mobility' | 'lagoon' | 'city';
-type DataRegimeKey = 'all' | 'realtime' | 'simulated' | 'static';
+type DataRegimeKey = 'all' | 'realtime' | 'simulated' | 'static' | 'curated';
 type AcquisitionKey = 'all' | 'api' | 'local';
 
 interface LayerDocItem {
@@ -29,7 +33,7 @@ interface LayerDocItem {
   nameIt: string;
   nameEn: string;
   group: 'mobility' | 'lagoon' | 'city';
-  regime: 'realtime' | 'simulated' | 'static';
+  regime: 'realtime' | 'simulated' | 'static' | 'curated';
   acquisition: 'api' | 'local';
   institution: string;
   portalUrl: string;
@@ -55,11 +59,11 @@ const LAYER_CATALOG: LayerDocItem[] = [
     institution: 'AVM S.p.A. / ACTV Venezia',
     portalUrl: 'https://actv.avmspa.it',
     portalName: 'actv.avmspa.it & dati.venezia.it',
-    descriptionIt: 'Posizione in tempo reale dei vaporetti in navigazione nella Laguna Centro, Canal Grande e Litorale.',
-    descriptionEn: 'Real-time computed positions of waterbuses navigating Central Lagoon, Grand Canal, and Coast.',
-    technicalNotesIt: 'Digital Twin deterministico: le coordinate sono calcolate interpolando orari ufficiali GTFS ACTV con matrici cinematiche e velocità effettive di canale, sincronizzate al secondo con l\'orologio o con lo scrubber 24h.',
-    technicalNotesEn: 'Deterministic Digital Twin: positions are computed by interpolating official ACTV GTFS timetables with canal speed curves, synchronized down to the second with live clock or 24h timeline.',
-    endpointOrFile: 'GTFS Timetables / Engine Canvas Kinematics'
+    descriptionIt: 'Posizione dei vaporetti calcolata dall\'orario ufficiale ACTV (simulata, non GPS), con eventuale sovrapposizione delle posizioni GTFS-Realtime quando il feed AVM è disponibile.',
+    descriptionEn: 'Waterbus positions computed from the official ACTV timetable (simulated, not GPS), overlaid with GTFS-Realtime positions when the AVM feed is available.',
+    technicalNotesIt: 'Simulato da orario: le coordinate sono interpolate tra le fermate del GTFS statico ACTV (CC BY) lungo i percorsi, sincronizzate con l\'orologio o con la timeline 24h. Non è un tracciamento GPS.',
+    technicalNotesEn: 'Simulated from timetable: positions are interpolated between stops of the ACTV static GTFS (CC BY) along route shapes, synced to the clock or the 24h timeline. Not GPS tracking.',
+    endpointOrFile: 'GTFS ACTV (actv-shapes.json) + /api/realtime/vehicles'
   },
   {
     id: 'rotte_actv',
@@ -68,13 +72,13 @@ const LAYER_CATALOG: LayerDocItem[] = [
     group: 'mobility',
     regime: 'static',
     acquisition: 'local',
-    institution: 'ACTV / Comune di Venezia',
+    institution: 'ACTV / AVM S.p.A. (GTFS, CC BY)',
     portalUrl: 'https://dati.venezia.it',
-    portalName: 'dati.venezia.it',
+    portalName: 'actv.avmspa.it (GTFS)',
     descriptionIt: 'Polilinee georeferenziate dei canali e delle tratte di navigazione autorizzate per i mezzi pubblici.',
     descriptionEn: 'Georeferenced vector polylines of authorized public transit water channels.',
-    technicalNotesIt: 'Dataset vettoriale GeoJSON ufficiale estratto dai rilievi comunali della viabilità lagunare.',
-    technicalNotesEn: 'Official vector GeoJSON dataset extracted from municipal lagoon hydrographic surveys.',
+    technicalNotesIt: 'Percorsi (shapes) del GTFS statico ACTV, licenza CC BY, convertiti in GeoJSON dalla pipeline del progetto.',
+    technicalNotesEn: 'Route shapes from the ACTV static GTFS (CC BY), converted to GeoJSON by the project pipeline.',
     endpointOrFile: 'actv-shapes.json'
   },
   {
@@ -84,13 +88,13 @@ const LAYER_CATALOG: LayerDocItem[] = [
     group: 'mobility',
     regime: 'static',
     acquisition: 'api',
-    institution: 'Comune di Venezia & ACTV',
+    institution: 'ACTV / AVM S.p.A. (GTFS, CC BY)',
     portalUrl: 'https://dati.venezia.it',
     portalName: 'dati.venezia.it',
     descriptionIt: 'Censimento dei pontili e approdi di navigazione con dettaglio accessibilità PRM e prossime partenze.',
     descriptionEn: 'Inventory of public boat docks with PRM accessibility details and scheduled departures.',
-    technicalNotesIt: 'Rete di 72 approdi e pontili lagunari georeferenziati via API /api/stops (Canal Grande, Giudecca, Cannaregio, Murano, Burano, Torcello, Sant\'Erasmo, Lido, Pellestrina, Chioggia e interscambi); orari ufficiali di linea.',
-    technicalNotesEn: 'Network of 72 georeferenced lagoon docks served via /api/stops (Grand Canal, Giudecca, Cannaregio, Murano, Burano, Torcello, Sant\'Erasmo, Lido, Pellestrina, Chioggia, and hubs); official line timetables.',
+    technicalNotesIt: 'Approdi georeferenziati serviti da /api/stops a partire dal GTFS ACTV (CC BY); le prossime partenze vengono dall\'orario, non da tabelloni in tempo reale.',
+    technicalNotesEn: 'Georeferenced stops served by /api/stops from the ACTV GTFS (CC BY); next departures come from the timetable, not live boards.',
     endpointOrFile: '/api/stops'
   },
   {
@@ -98,15 +102,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Banchine Portuali & Ormeggi Commerciali (AdSP)',
     nameEn: 'Port Berths & Commercial Moorings (AdSP)',
     group: 'mobility',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'api',
-    institution: 'AdSP Mare Adriatico Settentrionale / Capitaneria di Porto',
+    institution: 'Elenco curato del progetto · rif. AdSP Mare Adriatico Settentrionale',
     portalUrl: 'https://www.port.venice.it',
     portalName: 'port.venice.it (Autorità Portuale)',
-    descriptionIt: '14 banchine e ormeggi autorizzati tra Tronchetto, San Basilio, Fusina e Porto Marghera con verifica dei vincoli del D.L. 103/2021 (divieto grandi navi a San Marco).',
-    descriptionEn: '14 authorized port berths across Tronchetto, San Basilio, Fusina, and Porto Marghera with DL 103/2021 regulatory compliance.',
-    technicalNotesIt: 'Censimento nautico ufficiale delle strutture di ormeggio e delle prescrizioni per le Grandi Navi (>25.000 GT deviate a Marghera). Esclude categoricamente telemetria AIS sintetica.',
-    technicalNotesEn: 'Official hydrographic inventory of docking facilities and nautical restrictions under DL 103/2021. Strictly excludes synthetic AIS telemetry.',
+    descriptionIt: 'Banchine e ormeggi tra Tronchetto, San Basilio, Fusina e Porto Marghera con navi di riferimento e il quadro del D.L. 103/2021 (grandi navi fuori dal bacino di San Marco).',
+    descriptionEn: 'Berths between Tronchetto, San Basilio, Fusina and Porto Marghera with reference ships and the Decree-Law 103/2021 framework (large ships kept out of St Mark\'s basin).',
+    technicalNotesIt: 'Non sono posizioni AIS: le navi sono un elenco di riferimento con banchina assegnata. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'These are not AIS positions: ships are a reference list with an assigned berth. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: '/api/ships (Banchine e canali ufficiali)'
   },
   {
@@ -114,15 +118,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Rotte & Canali Marittimi',
     nameEn: 'Deep-Water Shipping Channels',
     group: 'mobility',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Capitaneria di Porto di Venezia / Magistrato alle Acque',
+    institution: 'Elenco curato del progetto · rif. Capitaneria di Porto di Venezia',
     portalUrl: 'https://www.guardiacostiera.gov.it/venezia',
     portalName: 'guardiacostiera.gov.it',
     descriptionIt: 'Canali navigabili ad alto pescaggio (Canale dei Petroli, Bocca di Malamocco, Canale San Nicolò, Tronchetto).',
     descriptionEn: 'Deep-draft navigable commercial fairways across the lagoon and port inlets.',
-    technicalNotesIt: 'Censimento nautico ufficiale con batimetria garantita di scavo (-10.5m / -12.0m).',
-    technicalNotesEn: 'Official hydrographic fairways with dredged minimum depth guarantees (-10.5m / -12.0m).',
+    technicalNotesIt: 'Tracciati semplificati dei canali; i fondali indicati sono valori nominali. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Simplified channel tracks; depths are nominal values. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'simulation-data.ts (MARITIME_CHANNELS)'
   },
   {
@@ -132,13 +136,13 @@ const LAYER_CATALOG: LayerDocItem[] = [
     group: 'mobility',
     regime: 'simulated',
     acquisition: 'api',
-    institution: 'Alilaguna S.p.A. & Transitland Registry',
-    portalUrl: 'https://www.transit.land/feeds/f-u20f-alilagunaspa',
-    portalName: 'transit.land (Feed f-u20f-alilagunaspa)',
+    institution: 'Alilaguna S.p.A. (GTFS dell\'operatore)',
+    portalUrl: 'https://www.alilaguna.it',
+    portalName: 'alilaguna.it (GTFS) · Transitland f-u20f-alilagunaspa',
     descriptionIt: 'Rete ufficiale e flotta dei collegamenti acquei tra Marco Polo VCE, Murano, Canal Grande, Lido e Terminal Passeggeri.',
     descriptionEn: 'Official network and fleet of water connections between Marco Polo VCE, Murano, Grand Canal, Lido, and Cruise Terminal.',
-    technicalNotesIt: 'Simulazione da orario: le posizioni delle barche sono interpolate lungo i percorsi a partire dagli orari di partenza (168 corse giornaliere, Linee Blu, Arancio, Rossa, Verde). Non è un tracciamento GPS.',
-    technicalNotesEn: 'Timetable simulation: boat positions are interpolated along routes from scheduled departure times (168 daily runs, Blu, Arancio, Rossa, Verde lines). Not GPS tracking.',
+    technicalNotesIt: 'Simulazione da orario: corse, fermate e percorsi dal GTFS ufficiale Alilaguna (alilaguna.it, importato con pipeline/import_alilaguna_gtfs.py); le posizioni sono interpolate tra le fermate. Non è un tracciamento GPS. L\'orario ha una validità stagionale: fuori dal periodo non vengono mostrate barche.',
+    technicalNotesEn: 'Timetable simulation: trips, stops and shapes from the official Alilaguna GTFS (alilaguna.it, imported with pipeline/import_alilaguna_gtfs.py); positions are interpolated between stops. Not GPS tracking. The timetable is seasonal: outside its validity no boats are shown.',
     endpointOrFile: '/api/alilaguna'
   },
   {
@@ -148,7 +152,7 @@ const LAYER_CATALOG: LayerDocItem[] = [
     group: 'mobility',
     regime: 'realtime',
     acquisition: 'api',
-    institution: 'SAVE S.p.A. / ENAV / OpenSky Network',
+    institution: 'OpenSky Network (ADS-B)',
     portalUrl: 'https://opensky-network.org',
     portalName: 'opensky-network.org (ADS-B Live)',
     descriptionIt: 'Traffico aereo in tempo reale nello spazio aereo e nell\\\'area terminale di controllo (TMA) di Venezia Marco Polo.',
@@ -164,29 +168,29 @@ const LAYER_CATALOG: LayerDocItem[] = [
     group: 'mobility',
     regime: 'static',
     acquisition: 'local',
-    institution: 'AVM S.p.A., Metropark FS & Garage San Marco',
-    portalUrl: 'https://avm.avmspa.it',
-    portalName: 'avm.avmspa.it & comune.venezia.it',
-    descriptionIt: 'Capienze totali certificate (15 hub per oltre 10.000 posti auto), tariffe orarie e 24h ufficiali tra centro storico lagunare (P.le Roma, Tronchetto) e terraferma (Mestre Centro, Stazione FS, San Giuliano, Marghera, Favaro).',
-    descriptionEn: 'Official certified capacities (15 facilities with over 10,000 spots), hourly and 24h rates across Venice lagoon and mainland hubs.',
-    technicalNotesIt: 'Tutti i dati di capienza totale, tariffe e coordinate georeferenziate sono ufficiali e certificati da AVM e FS. Poiché AVM non espone un\\\'API REST aperta per i sensori di spira dei varchi in tempo reale (visibili solo su PMV stradali), la piattaforma esclude categoricamente stime sintetiche fittizie.',
-    technicalNotesEn: 'All capacity, tariff, and coordinate data are official and certified by AVM and FS. As AVM does not expose an open REST API for live gate loops, the platform strictly excludes unverified synthetic estimates.',
-    endpointOrFile: '/api/city-assets'
+    institution: 'OpenStreetMap contributors (ODbL) + elenco curato',
+    portalUrl: 'https://www.openstreetmap.org',
+    portalName: 'openstreetmap.org (amenity=parking)',
+    descriptionIt: 'Parcheggi con capienza dichiarata di almeno 100 posti mappati su OpenStreetMap, più le autorimesse principali di un elenco curato del progetto quando non trovano riscontro in OSM.',
+    descriptionEn: 'Car parks with a declared capacity of at least 100 spaces mapped on OpenStreetMap, plus the main garages from a curated project list when OSM has no match.',
+    technicalNotesIt: 'Import con pipeline/import_osm_poi.py (amenity=parking con capacity ≥ 100, ODbL). Le voci curate (tariffe incluse) restano solo se non c\'è un parcheggio OSM entro 150 m e sono segnate "da verificare". Nessun dato di occupazione in tempo reale: AVM non lo pubblica come open data.',
+    technicalNotesEn: 'Imported with pipeline/import_osm_poi.py (amenity=parking with capacity ≥ 100, ODbL). Curated entries (rates included) are kept only if no OSM car park lies within 150 m and are marked "to be verified". No live occupancy: AVM does not publish it as open data.',
+    endpointOrFile: '/api/city-assets (src/data/osm-poi.json)'
   },
   {
     id: 'limiti_velocita',
     nameIt: 'Limiti Velocità & Barcavelox',
     nameEn: 'Speed Limits & Barcavelox Radar',
     group: 'mobility',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Comune di Venezia - Direzione Mobilità Acquea',
+    institution: 'Elenco curato del progetto · rif. regolamento comunale della circolazione acquea',
     portalUrl: 'https://dati.venezia.it',
     portalName: 'dati.venezia.it',
     descriptionIt: 'Regolamentazione del moto ondoso: limiti di velocità vigenti (5, 7, 11, 20 km/h) e postazioni fisse Barcavelox.',
     descriptionEn: 'Wake reduction speed regulations (5, 7, 11, 20 km/h) and radar enforcement locations.',
-    technicalNotesIt: 'Censimento normativo ufficiale basato sulle ordinanze comunali e prefettizie.',
-    technicalNotesEn: 'Official regulatory geographic census derived from municipal navigation decrees.',
+    technicalNotesIt: 'Limiti e postazioni riassunti dal regolamento comunale; fa fede il testo vigente pubblicato dal Comune. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Limits and checkpoints summarised from the municipal regulation; the official text in force prevails. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'open-data-catalog.ts (OPEN_CANAL_SPEED_LIMITS)'
   },
   {
@@ -194,15 +198,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Franchi di Tiro Ponti vs Marea',
     nameEn: 'Bridge Clearances vs Tide Level',
     group: 'mobility',
-    regime: 'realtime',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Insula S.p.A. & Centro Maree CPSM',
+    institution: 'Elenco curato del progetto · rif. Insula S.p.A.; marea: CPSM',
     portalUrl: 'https://dati.venezia.it',
     portalName: 'dati.venezia.it',
-    descriptionIt: 'Altezza libera sotto i 400+ ponti di Venezia ricalcolata in tempo reale in base alla marea idrometrica.',
-    descriptionEn: 'Air draft clearance beneath 400+ bridges continuously computed against current tide level.',
-    technicalNotesIt: 'Ibrido real-time: l\'altezza fisica intradossale del censimento Insula viene sottratta in tempo reale dal livello idrometrico CPSM corrente per indicare l\'impraticabilità o il transito sicuro.',
-    technicalNotesEn: 'Real-time hybrid: structural soffit height from Insula census is dynamically subtracted by current CPSM tide level.',
+    descriptionIt: 'Altezza libera sotto una selezione di ponti, ricalcolata con il livello di marea misurato.',
+    descriptionEn: 'Clearance under a selection of bridges, recalculated with the measured tide level.',
+    technicalNotesIt: 'La marea è reale (CPSM, dati.venezia.it); le altezze dei ponti allo zero mareografico vengono da un elenco curato e vanno verificate. Non usare per la navigazione. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'The tide is real (CPSM, dati.venezia.it); bridge heights above tide datum come from a curated list and must be verified. Do not use for navigation. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'open-data-catalog.ts (OPEN_BRIDGE_CLEARANCES)'
   },
   {
@@ -210,15 +214,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Traghetti da Parada & Stazi Gondole',
     nameEn: 'Gondola Ferries & Traditional Stations',
     group: 'mobility',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Ente Gondola Venezia',
+    institution: 'Elenco curato del progetto · rif. Ente Gondola',
     portalUrl: 'https://www.entegondola.it',
     portalName: 'entegondola.it',
     descriptionIt: 'I traghetti tradizionali a remi sul Canal Grande (S. Sofia, S. Tomà, Giglio, Carbon) e le basi operative dei gondolieri.',
     descriptionEn: 'Traditional gondola ferry crossings across Grand Canal and historic gondolier boarding stations.',
-    technicalNotesIt: 'Censimento geografico delle postazioni comunali autorizzate con tariffe residenti/turisti.',
-    technicalNotesEn: 'Geographic census of authorized municipal boarding docks with regulated fares.',
+    technicalNotesIt: 'Postazioni, numero di gondole e tariffe sono indicativi. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Stations, gondola counts and fares are indicative. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'open-data-catalog.ts (OPEN_GONDOLA_STATIONS)'
   },
   {
@@ -226,15 +230,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Rive Merci & Taxi Acquei',
     nameEn: 'Freight Docks & Water Taxi Berths',
     group: 'mobility',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Comune di Venezia · dati.venezia.it',
+    institution: 'Elenco curato del progetto · rif. Comune di Venezia',
     portalUrl: 'https://dati.venezia.it',
     portalName: 'dati.venezia.it',
     descriptionIt: 'Banchine pubbliche di carico/scarico per l\'approvvigionamento merci e stalli del servizio pubblico taxi acqueo.',
     descriptionEn: 'Public freight loading/unloading docks and licensed municipal water taxi stands.',
-    technicalNotesIt: 'Censimento georeferenziato con fasce orarie operative e restrizioni di sosta.',
-    technicalNotesEn: 'Geocoded inventory with operational time slots and docking regulations.',
+    technicalNotesIt: 'Fasce orarie e soste sono indicative. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Time windows and stay limits are indicative. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'open-data-catalog.ts (OPEN_PUBLIC_DOCKS)'
   },
   {
@@ -242,15 +246,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Infrastruttura Ferroviaria RFI (Ponte della Libertà & Stazioni)',
     nameEn: 'RFI Railway Infrastructure (Libertà Viaduct & Stations)',
     group: 'mobility',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'api',
-    institution: 'Rete Ferroviaria Italiana (RFI) / Gruppo FS',
+    institution: 'Elenco curato del progetto · rif. RFI – Prospetto Informativo della Rete',
     portalUrl: 'https://www.rfi.it',
     portalName: 'rfi.it (PIR RFI)',
     descriptionIt: 'Nodi ferroviari di testa e di transito (Santa Lucia, Mestre), viadotto lagunare quadruplicato a 4 binari (Km 262-267) e fascio merci Porto Marghera.',
     descriptionEn: 'Terminal and junction railway stations (Santa Lucia, Mestre), 4-track lagoon viaduct (Km 262-267), and Porto Marghera freight yard.',
-    technicalNotesIt: 'Dati ufficiali del Prospetto Informativo della Rete (PIR) di RFI. Riporta capienze di binario, elettrificazione a 3 kV CC e raccordi industriali senza telemetria sintetica.',
-    technicalNotesEn: 'Official network statement data from RFI (PIR). Reports certified track capacities, 3 kV DC electrification, and industrial rail sidings without synthetic telemetry.',
+    technicalNotesIt: 'Anagrafica dei nodi ferroviari: nessuna posizione o ritardo dei treni in tempo reale. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Railway node inventory: no live train positions or delays. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: '/api/rail-logistics'
   },
   {
@@ -258,15 +262,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Pontili di Conferimento & Rifiuti Veritas',
     nameEn: 'Veritas Waste Collection Docks & Barges',
     group: 'mobility',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Veritas S.p.A. (Settore Ambientale)',
+    institution: 'Elenco curato del progetto · rif. Gruppo Veritas',
     portalUrl: 'https://www.gruppoveritas.it',
     portalName: 'gruppoveritas.it',
     descriptionIt: 'Pontili e ormeggi dei battelli compattatori adibiti all\\\'asporto rifiuti nei canali con fasce orarie mattutine (06:30 - 08:30).',
     descriptionEn: 'Canal collection docks and waste barge moorings with official morning schedules (06:30 - 08:30).',
-    technicalNotesIt: 'Censimento dei pontili di conferimento con orari e frazioni merceologiche autorizzate (indifferenziato, carta, plastica/vetro).',
-    technicalNotesEn: 'Official census of municipal canal collection docks with authorized collection fractions and time slots.',
+    technicalNotesIt: 'Pontili, orari e frazioni sono indicativi; nessuna posizione dei battelli in tempo reale. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Docks, times and waste streams are indicative; no live boat positions. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'open-data-catalog.ts (OPEN_VERITAS_WASTE_BOATS)'
   },
   {
@@ -274,15 +278,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Ciclovie Isole & Gronda del Veneto',
     nameEn: 'Veneto Island & Coastal Bike Routes',
     group: 'mobility',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Regione Veneto - Direzione Infrastrutture e Trasporti',
+    institution: 'Elenco curato del progetto · rif. Regione Veneto',
     portalUrl: 'https://dati.veneto.it',
     portalName: 'dati.veneto.it (Open Data Regione Veneto)',
     descriptionIt: 'Rete di 6 itinerari ciclabili protetti lungo le isole di Venezia e la gronda lagunare: Lido, Pellestrina, Dolomiti-Venezia I4, Riviera del Brenta, Cavallino Lio Piccolo e Ponte della Libertà.',
     descriptionEn: 'Network of 6 protected cycle routes across barrier islands and the lagoon fringe: Lido, Pellestrina, Dolomiti-Venice I4, Riviera del Brenta, Cavallino Lio Piccolo, and Libertà Bridge.',
-    technicalNotesIt: 'Open Data ufficiale della Regione Veneto (REV) e Comune di Venezia con tracciati geometrici vettoriali, tipo di fondo e nodi d\'interscambio ferry.',
-    technicalNotesEn: 'Official Open Data from Veneto Region (REV) and Municipality with vector tracks, surface typology, and ferry interchange nodes.',
+    technicalNotesIt: 'Tracciati semplificati, tipo di fondo e interscambi indicativi. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Simplified tracks; surface type and interchanges are indicative. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'regionalVenetoData.ts (REGIONAL_BIKE_ROUTES)'
   },
 
@@ -296,11 +300,11 @@ const LAYER_CATALOG: LayerDocItem[] = [
     group: 'lagoon',
     regime: 'realtime',
     acquisition: 'api',
-    institution: 'Ministero Infrastrutture e Trasporti / Consorzio Venezia Nuova',
+    institution: 'Comune di Venezia – CPSM (marea); anagrafica MOSE',
     portalUrl: 'https://www.mosevenezia.eu',
     portalName: 'mosevenezia.eu & Provveditorato OO.PP.',
-    descriptionIt: 'Stato operativo delle 78 paratoie a scomparsa alle bocche di Lido Treporti, S. Nicolò, Malamocco e Chioggia.',
-    descriptionEn: 'Operational status of the 78 retractable storm floodgates across the three lagoon port inlets.',
+    descriptionIt: 'Marea misurata e prevista dal Centro Maree, con l\'anagrafica delle 78 paratoie alle bocche di Lido, Malamocco e Chioggia.',
+    descriptionEn: 'Measured and forecast tide from the Tide Centre, with the inventory of the 78 gates at the Lido, Malamocco and Chioggia inlets.',
     technicalNotesIt: 'Livelli di marea reali dalla rete mareografica CPSM (dati.venezia.it, aggiornamento ogni 5 minuti) e previsione degli estremali con data di emissione. Lo stato operativo delle paratoie non è pubblicato come open data: viene indicato come non disponibile.',
     technicalNotesEn: 'Real tide levels from the CPSM gauge network (dati.venezia.it, 5-minute updates) and forecast extremes with issue time. Floodgate operating status is not published as open data and is shown as unavailable.',
     endpointOrFile: '/api/tide'
@@ -310,15 +314,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Passerelle Acqua Alta CPSM',
     nameEn: 'CPSM High-Water Elevated Walkways',
     group: 'lagoon',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'CPSM - Centro Maree Comune di Venezia',
+    institution: 'Elenco curato del progetto · rif. Comune di Venezia – CPSM',
     portalUrl: 'https://www.comune.venezia.it/it/content/centro-maree-previsioni',
     portalName: 'comune.venezia.it/maree',
     descriptionIt: 'Rete dei percorsi sopraelevati su cavalletti in legno installati dalla Protezione Civile in caso di marea superiore a +110 cm.',
     descriptionEn: 'Network of elevated timber walkways deployed during high water events exceeding +110 cm.',
-    technicalNotesIt: 'Tracciati ufficiali georeferenziati con quote idrometriche di posa per sestiere (San Marco, Rialto, Ferrovia).',
-    technicalNotesEn: 'Official geocoded deployment routes categorized by installation tide thresholds per neighborhood.',
+    technicalNotesIt: 'Percorsi e soglie di posa indicativi; lo stato di montaggio non è un dato in tempo reale. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Routes and installation thresholds are indicative; mounting status is not live. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'passerelleData.ts'
   },
   {
@@ -326,15 +330,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Briccole & Segnalamenti Canali',
     nameEn: 'Lagoon Channel Markers & Lights',
     group: 'lagoon',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Provveditorato OO.PP. & Comune di Venezia',
+    institution: 'Elenco curato del progetto · rif. Provveditorato OO.PP. / Comune di Venezia',
     portalUrl: 'https://dati.venezia.it',
     portalName: 'dati.venezia.it',
     descriptionIt: 'Paline e briccole in legno di quercia che delimitano i bordi navigabili dei canali lagunari e fanali d\'accesso.',
     descriptionEn: 'Traditional oak wooden piles and sector lights marking navigable lagoon channels.',
-    technicalNotesIt: 'Censimento nautico geolocalizzato con identificativi di canale e codice fanale IALA.',
-    technicalNotesEn: 'Geocoded maritime inventory with channel IDs and official IALA buoyage markers.',
+    technicalNotesIt: 'Codici e fondali indicativi. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Codes and depths are indicative. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'marineSensorsData.ts'
   },
   {
@@ -358,15 +362,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Spiagge & Acque Balneazione ARPAV',
     nameEn: 'ARPAV Bathing Waters & Beaches',
     group: 'lagoon',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'ARPAV Veneto & Ministero della Salute',
+    institution: 'Elenco curato del progetto · rif. ARPAV / Portale Acque Ministero della Salute',
     portalUrl: 'https://www.arpa.veneto.it',
     portalName: 'arpa.veneto.it (Portale Acque)',
     descriptionIt: 'Punti di campionamento microbiologico e idoneità alla balneazione sui litorali di Lido, Pellestrina e Cavallino.',
     descriptionEn: 'Microbiological sampling stations and bathing water quality classifications on coastal beaches.',
-    technicalNotesIt: 'Bollettino stagionale ufficiale con classificazione quadriennale eccellente/buona (Direttiva 2006/7/CE).',
-    technicalNotesEn: 'Official seasonal classification reporting under EU Bathing Water Directive 2006/7/EC.',
+    technicalNotesIt: 'Punti e classi indicativi: per idoneità e campionamenti aggiornati consultare il Portale Acque del Ministero della Salute o ARPAV. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Points and classes are indicative: check the Ministry of Health bathing-water portal or ARPAV for current status and samples. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'marineSensorsData.ts'
   },
   {
@@ -374,15 +378,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Subsidenza InSAR (Copernicus EGMS)',
     nameEn: 'InSAR Land Subsidence (Copernicus EGMS)',
     group: 'lagoon',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'ESA / European Ground Motion Service (EGMS)',
+    institution: 'Elenco curato del progetto · rif. Copernicus EGMS',
     portalUrl: 'https://egms.land.copernicus.eu',
     portalName: 'egms.land.copernicus.eu',
-    descriptionIt: 'Velocità di spostamento verticale millimetrico del suolo misurata dai satelliti radar Sentinel-1 DInSAR.',
-    descriptionEn: 'Millimeter-scale ground motion velocity mapped by Sentinel-1 radar satellite interferometry.',
-    technicalNotesIt: 'Rilievo scientifico consolidato: serie temporali interferometriche con velocità media di abbassamento (mm/anno) calibrate su capisaldi GNSS.',
-    technicalNotesEn: 'Consolidated radar interferometry time-series with average vertical velocity (mm/year) calibrated against GNSS stations.',
+    descriptionIt: 'Punti di esempio con velocità di abbassamento del suolo, sul modello dei prodotti InSAR (Sentinel-1).',
+    descriptionEn: 'Example points with ground subsidence rates, modelled on InSAR products (Sentinel-1).',
+    technicalNotesIt: 'I valori non sono scaricati da EGMS: per le serie misurate consultare egms.land.copernicus.eu. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Values are not downloaded from EGMS: see egms.land.copernicus.eu for measured series. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'open-data-catalog.ts (OPEN_SUBSIDENCE_INSAR)'
   },
   {
@@ -390,15 +394,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Morfologia Barene & Velme (Natura 2000)',
     nameEn: 'Salt Marshes & Mudflats (Natura 2000)',
     group: 'lagoon',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Regione Veneto - Carta degli Habitat Lagunari',
+    institution: 'Elenco curato del progetto · rif. Regione Veneto – Carta degli habitat',
     portalUrl: 'https://dati.veneto.it',
     portalName: 'dati.veneto.it',
     descriptionIt: 'Zone umide intertidali, barene e velme della Laguna Nord e Sud tutelate dalla Convenzione di Ramsar.',
     descriptionEn: 'Intertidal salt marshes (barene) and mudflats (velme) protected under the Ramsar Convention.',
-    technicalNotesIt: 'Poligoni ecologici georeferenziati con quote di sommergenza rispetto al medio mare.',
-    technicalNotesEn: 'Georeferenced ecological habitats with bathymetric submergence levels relative to mean sea level.',
+    technicalNotesIt: 'Aree e quote indicative. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Areas and elevations are indicative. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'open-data-catalog.ts (OPEN_LAGOON_MORPHOLOGY)'
   },
   {
@@ -422,15 +426,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Fortezze Lagunari & Isole Difensive',
     nameEn: 'Lagoon Fortresses & Defense Islands',
     group: 'lagoon',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Polo Museale Veneto & Archivio di Stato',
+    institution: 'Elenco curato del progetto · rif. Demanio / Archivio di Stato',
     portalUrl: 'https://dati.venezia.it',
     portalName: 'dati.venezia.it',
     descriptionIt: 'Censimento di 12 isole fortificate del sistema difensivo e sanitario storico: Ottagoni (Alberoni, Ca\' Roman), Forte San Felice a Chioggia, Forte Sant\'Andrea, Forte Marghera, Poveglia, Lazzaretti, Certosa, San Servolo e Sant\'Angelo della Polvere.',
     descriptionEn: 'Inventory of 12 historic defense and quarantine islands: Octagons, Chioggia San Felice, Sant\'Andrea, Forte Marghera, Poveglia, Lazarets, Certosa, and San Servolo.',
-    technicalNotesIt: 'Censimento storico-militare e demaniale con epoca di fondazione (Serenissima, Napoleonica, Asburgica), superficie in m² e stato di conservazione/accessibilità.',
-    technicalNotesEn: 'Military architectural inventory documenting foundation era (Serenissima, Napoleonic, Habsburg), surface area in m², and current preservation/accessibility status.',
+    technicalNotesIt: 'Epoche, superfici e stato di conservazione indicativi. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Periods, areas and condition are indicative. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'open-data-catalog.ts (OPEN_LAGOON_FORTRESS_ISLANDS)'
   },
   {
@@ -440,13 +444,13 @@ const LAYER_CATALOG: LayerDocItem[] = [
     group: 'lagoon',
     regime: 'static',
     acquisition: 'local',
-    institution: 'Engine Analitico VOD (PostGIS ST_DWithin)',
+    institution: 'Calcolo del progetto (client-side)',
     portalUrl: 'https://postgis.net',
-    portalName: 'PostGIS Spatial Query Engine',
+    portalName: 'VOD',
     descriptionIt: 'Raggio d\'interferenza interattivo (50m - 500m) calcolato in tempo reale tra cantieri comunali e fermate ACTV.',
     descriptionEn: 'Interactive dynamic proximity buffer (50m - 500m) computed between active worksites and ACTV boat stops.',
-    technicalNotesIt: 'Calcolo geospaziale client-side in tempo reale basato su formule di geodinamica sferica ad alta precisione.',
-    technicalNotesEn: 'Client-side real-time geospatial computing executing spherical spatial intersection tests.',
+    technicalNotesIt: 'Distanze calcolate nel browser con la formula dell\'emisenoverso (haversine) tra cantieri geocodificati e fermate ACTV.',
+    technicalNotesEn: 'Distances computed in the browser with the haversine formula between geocoded public works and ACTV stops.',
     endpointOrFile: 'SpatialAnalysisModal.tsx'
   },
   {
@@ -454,15 +458,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Sonde Qualità Acque Lagunari ARPAV',
     nameEn: 'ARPAV Lagoon Water Quality Probes',
     group: 'lagoon',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'api',
-    institution: 'ARPAV & Regione Veneto',
+    institution: 'Elenco curato del progetto · rif. ARPAV',
     portalUrl: 'https://dati.veneto.it',
     portalName: 'dati.veneto.it (Open Data Regione Veneto)',
-    descriptionIt: 'Sonde multiparametriche fisse di monitoraggio chimico-fisico delle acque lagunari interne.',
-    descriptionEn: 'Continuous multiparameter monitoring probes measuring physical and chemical water quality in the lagoon.',
-    technicalNotesIt: 'Telemetria sensori ufficiali: ossigeno disciolto (%), salinità (PSU), temperatura dell\'acqua (°C) e conducibilità.',
-    technicalNotesEn: 'Official probe telemetry: dissolved oxygen (%), salinity (PSU), water temperature (°C), and conductivity.',
+    descriptionIt: 'Stazioni di esempio con parametri chimico-fisici delle acque lagunari.',
+    descriptionEn: 'Example stations with physico-chemical lagoon water parameters.',
+    technicalNotesIt: 'Ossigeno, salinità, temperatura e conducibilità sono valori di esempio, non telemetria ARPAV. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Oxygen, salinity, temperature and conductivity are example values, not ARPAV telemetry. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: '/api/regional-data'
   },
   {
@@ -470,15 +474,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Fiumi Immissari in Laguna',
     nameEn: 'Lagoon Tributary Rivers',
     group: 'lagoon',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Regione Veneto - Direzione Difesa del Suolo & Distretto Alpi Orientali',
+    institution: 'Elenco curato del progetto · rif. Regione Veneto / Distretto Alpi Orientali',
     portalUrl: 'https://dati.veneto.it',
     portalName: 'dati.veneto.it',
     descriptionIt: 'I corsi d\'acqua del Bacino Scolante che scaricano acqua dolce nella Laguna di Venezia (Brenta, Dese, Marzenego, Zero, Silone).',
     descriptionEn: 'Tributary freshwater drainage basin rivers flowing into the Venice Lagoon (Brenta, Dese, Marzenego, Zero, Silone).',
-    technicalNotesIt: 'Censimento idrografico regionale con bacino imbrifero (km²) e portate idrauliche medie ufficiali (m³/s).',
-    technicalNotesEn: 'Regional hydrographic census providing drainage catchment area (km²) and official average discharges (m³/s).',
+    technicalNotesIt: 'Bacini e portate medie indicativi. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Basins and mean flows are indicative. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'regionalVenetoData.ts (REGIONAL_TRIBUTARY_RIVERS)'
   },
 
@@ -524,30 +528,30 @@ const LAYER_CATALOG: LayerDocItem[] = [
     group: 'city',
     regime: 'static',
     acquisition: 'api',
-    institution: 'Veritas S.p.A. & Venice Tap Water & Conoscere Venezia & Comune di Venezia',
-    portalUrl: 'https://www.venicetapwater.org',
-    portalName: 'venicetapwater.org / dati.venezia.it',
-    descriptionIt: '177 punti di erogazione gratuita di acqua potabile nei campielli e nelle isole (rete idrica Veritas S.p.A., Venice Tap Water e Conoscere Venezia) e 8 ponti provvisti di rampe agevolate o montascale.',
-    descriptionEn: '177 public drinking water fountains across city squares and lagoon islands (Veritas S.p.A. network, Venice Tap Water and Conoscere Venezia) and 8 bridges equipped with accessibility ramps or stairlifts.',
-    technicalNotesIt: 'Censimento cartografico integrato tra OpenStreetMap, rete acquedotto Veritas S.p.A., progetto Venice Tap Water e toponomastica storica di Conoscere Venezia.',
-    technicalNotesEn: 'Integrated geospatial inventory cross-referencing OpenStreetMap, Veritas S.p.A. aqueduct, Venice Tap Water initiative and Conoscere Venezia historical toponomastics.',
+    institution: 'OpenStreetMap contributors (ODbL); ponti: elenco curato del progetto',
+    portalUrl: 'https://wiki.openstreetmap.org/wiki/Tag:amenity%3Ddrinking_water',
+    portalName: 'openstreetmap.org (amenity=drinking_water)',
+    descriptionIt: 'Fontanelle pubbliche mappate su OpenStreetMap nel centro storico e nelle isole (l\'acquedotto è gestito da Veritas S.p.A.) e una selezione di ponti con rampe o montascale.',
+    descriptionEn: 'Public drinking fountains mapped on OpenStreetMap in the historic centre and islands (the water network is run by Veritas S.p.A.) and a selection of bridges with ramps or stairlifts.',
+    technicalNotesIt: 'Import con pipeline/import_osm_fountains.py (esclusi i punti con drinking_water=no). enrich_fountains.py dà ai punti senza nome il toponimo noto più vicino entro 150 m, indicato come "nei pressi di" (stima, non indirizzo). Funzionamento dei singoli punti non verificato.',
+    technicalNotesEn: 'Imported with pipeline/import_osm_fountains.py (points tagged drinking_water=no excluded). enrich_fountains.py names unnamed points after the nearest known place within 150 m, shown as "near" (estimate, not an address). Individual fountains are not verified as working.',
     endpointOrFile: '/api/city-assets'
   },
   {
     id: 'verde_urbano',
-    nameIt: 'Verde Urbano & Alberi Monumentali',
-    nameEn: 'Urban Parks & Monumental Trees',
+    nameIt: 'Alberi Monumentali',
+    nameEn: 'Monumental Trees',
     group: 'city',
     regime: 'static',
     acquisition: 'local',
-    institution: 'Comune di Venezia - Servizio Verde Pubblico',
-    portalUrl: 'https://dati.venezia.it',
-    portalName: 'dati.venezia.it',
-    descriptionIt: 'Patrimonio arboreo pubblico censito nei parchi storici (Giardini Reali, Biennale) e alberature monumentali.',
-    descriptionEn: 'Inventory of public urban forestry and designated monumental trees in historic parks and gardens.',
-    technicalNotesIt: 'Censimento botanico con specie tassonomica, diametro del fusto e classe di rischio fitostatico.',
-    technicalNotesEn: 'Botanical census including species name, trunk diameter, and arboricultural health class.',
-    endpointOrFile: 'urbanAssetsVeniceData.ts'
+    institution: 'OpenStreetMap contributors (ODbL); codici MASAF',
+    portalUrl: 'https://www.openstreetmap.org',
+    portalName: 'openstreetmap.org (natural=tree)',
+    descriptionIt: 'Alberi monumentali mappati su OpenStreetMap (molti con il codice dell\'Elenco nazionale MASAF), più alcune voci di un elenco curato senza riscontro in OSM.',
+    descriptionEn: 'Monumental trees mapped on OpenStreetMap (many with the national MASAF register code), plus a few curated entries with no OSM match.',
+    technicalNotesIt: 'Import con pipeline/import_osm_poi.py (natural=tree con denotation, ODbL). Specie, altezza e circonferenza solo se presenti in OSM. Le voci curate restano solo se non c\'è un albero OSM entro 40 m.',
+    technicalNotesEn: 'Imported with pipeline/import_osm_poi.py (natural=tree with denotation, ODbL). Species, height and girth only when tagged in OSM. Curated entries are kept only if no OSM tree lies within 40 m.',
+    endpointOrFile: '/api/venice-assets (src/data/osm-poi.json)'
   },
   {
     id: 'wifi_hotspots',
@@ -572,14 +576,14 @@ const LAYER_CATALOG: LayerDocItem[] = [
     group: 'city',
     regime: 'static',
     acquisition: 'local',
-    institution: 'Comune di Venezia & Gestori E-Mobility',
-    portalUrl: 'https://www.comune.venezia.it',
-    portalName: 'comune.venezia.it',
-    descriptionIt: 'Stazioni di ricarica per veicoli elettrici dislocate nei nodi di interscambio automobilistico (Piazzale Roma, Tronchetto, Mestre).',
-    descriptionEn: 'Electric vehicle charging hubs located at primary road interchange gateways (Piazzale Roma, Tronchetto, Mestre).',
-    technicalNotesIt: 'Anagrafica delle postazioni di ricarica con numero prese disponibili e tipologia erogazione.',
-    technicalNotesEn: 'Registry of EV charging stations with socket counts and connector specifications.',
-    endpointOrFile: 'urbanAssetsVeniceData.ts'
+    institution: 'OpenStreetMap contributors (ODbL)',
+    portalUrl: 'https://www.openstreetmap.org',
+    portalName: 'openstreetmap.org (amenity=charging_station)',
+    descriptionIt: 'Stazioni di ricarica per veicoli elettrici mappate su OpenStreetMap nel territorio comunale, più alcune voci curate senza riscontro in OSM.',
+    descriptionEn: 'EV charging stations mapped on OpenStreetMap across the municipality, plus a few curated entries with no OSM match.',
+    technicalNotesIt: 'Import con pipeline/import_osm_poi.py (amenity=charging_station, ODbL). Prese, potenza e tipi di connettore solo se dichiarati in OSM. La disponibilità in tempo reale non è pubblicata dai gestori.',
+    technicalNotesEn: 'Imported with pipeline/import_osm_poi.py (amenity=charging_station, ODbL). Sockets, power and connector types only when tagged in OSM. Live availability is not published by operators.',
+    endpointOrFile: '/api/venice-assets (src/data/osm-poi.json)'
   },
   {
     id: 'qualita_aria',
@@ -602,15 +606,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Varchi Smart Control Room & Contributo di Accesso (CDA)',
     nameEn: 'Smart Control Room Gates & Venice Access Fee (CDA)',
     group: 'city',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'api',
-    institution: 'Comune di Venezia - Smart Control Room Tronchetto',
+    institution: 'Elenco curato del progetto · rif. Comune di Venezia – Smart Control Room, cda.ve.it',
     portalUrl: 'https://cda.ve.it',
     portalName: 'cda.ve.it & comune.venezia.it',
     descriptionIt: '8 varchi pedonali storici monitorati dai sensori ottico/termici della Smart Control Room del Tronchetto e regolamento comunale Contributo di Accesso.',
     descriptionEn: '8 historic pedestrian gateway corridors monitored by Tronchetto Smart Control Room and official Access Fee regulations.',
-    technicalNotesIt: 'Mappatura dei varchi fisici con sensori stereoscopici ottico/termici e delibera CDA n. 51/2023. Per tutela della privacy e GDPR, la SCR non diffonde numeri orari istantanei aperti; la piattaforma esclude stime numeriche sintetiche.',
-    technicalNotesEn: 'Mapping of physical sensor gates and municipal Access Fee regulation. For privacy/GDPR reasons, SCR does not publish live open headcounts; the platform strictly excludes synthetic numbers.',
+    technicalNotesIt: 'Varchi e quadro del Contributo di Accesso riassunti dal sito del Comune (fa fede cda.ve.it). La Smart Control Room non pubblica conteggi aperti: nessun valore di flusso viene mostrato. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Gates and the Access Fee framework summarised from the City website (cda.ve.it prevails). The Smart Control Room does not publish open counts: no flow values are shown. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: '/api/pedestrian-flows'
   },
   {
@@ -620,7 +624,7 @@ const LAYER_CATALOG: LayerDocItem[] = [
     group: 'city',
     regime: 'realtime',
     acquisition: 'api',
-    institution: 'ESA (Copernicus Space Component) & ASI (COSMO-SkyMed)',
+    institution: 'CelesTrak (elementi orbitali) – satelliti ESA / ASI',
     portalUrl: 'https://dataspace.copernicus.eu',
     portalName: 'dataspace.copernicus.eu & asi.it',
     descriptionIt: 'Tracciamento orbitale al secondo e fasce di scansione radar/ottiche dei satelliti di osservazione terrestre (Sentinel-1/2, COSMO-SkyMed, ISS).',
@@ -634,15 +638,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Nizioleti & Toponomastica Storica',
     nameEn: 'Nizioleti Traditional Street Signs',
     group: 'city',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Comune di Venezia - Servizio Toponomastica',
+    institution: 'Elenco curato del progetto · rif. Comune di Venezia – toponomastica',
     portalUrl: 'https://dati.venezia.it',
     portalName: 'dati.venezia.it',
     descriptionIt: 'I tradizionali cartelli stradali veneziani dipinti a intonaco bianco ("lenzuolino") con calli, campielli e numerazione civica per sestiere.',
     descriptionEn: 'Traditional painted Venetian street signs and unique sestiere-based continuous civic house numbering.',
-    technicalNotesIt: 'Open Data geografico ufficiale con etimologia dialettale, sestiere, parrocchia storica e numero civico.',
-    technicalNotesEn: 'Official geographic Open Data capturing Venetian dialect etymology, sestiere boundary, and historical parish.',
+    technicalNotesIt: 'Testi, etimologie e civici indicativi. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Texts, etymologies and house numbers are indicative. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'open-data-catalog.ts (OPEN_NIZIOLETI_CIVICI)'
   },
   {
@@ -650,31 +654,31 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Vere da Pozzo Storiche',
     nameEn: 'Vere da Pozzo Historic Cistern Wells',
     group: 'city',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Soprintendenza Archeologia, Belle Arti e Paesaggio di Venezia',
+    institution: 'Elenco curato del progetto + OpenStreetMap (ODbL)',
     portalUrl: 'https://dati.venezia.it',
     portalName: 'dati.venezia.it',
-    descriptionIt: '16 cisterne storiche per la raccolta dell\'acqua piovana attraverso la sabbia nei campielli, scolpite in pietra d\'Istria o marmo rosso veronese (San Polo, San Bartolomeo, Sant\'Elena, Santa Marina, San Zan Degola, San Giacomo, Santa Margherita, San Barnaba, Santo Stefano, Sant\'Angelo, Formosa, San Zanipolo, Ghetto, Madonna dell\'Orto, Ca\' d\'Oro, San Trovaso).',
-    descriptionEn: '16 historic stone rainwater cistern wells located in Venetian squares, carved from Istrian stone or Verona marble across all six historic sestieri.',
-    technicalNotesIt: 'Censimento artistico e monumentale con epoca storica, materiale scultoreo, stile architettonico (gotico, rinascimentale, veneto-bizantino) e profondità della canna cisterna.',
-    technicalNotesEn: 'Artistic and monumental heritage census documenting construction century, stone material, style (Gothic, Renaissance, Venetian-Byzantine), and cistern depth.',
-    endpointOrFile: 'open-data-catalog.ts (OPEN_VENICE_WELLS)'
+    descriptionIt: 'Vere da pozzo storiche con epoca, materiale e stile da un elenco curato, più i pozzi mappati su OpenStreetMap nel centro storico e nelle isole.',
+    descriptionEn: 'Historic wellheads with period, material and style from a curated list, plus wells mapped on OpenStreetMap in the historic centre and islands.',
+    technicalNotesIt: 'Import con pipeline/import_osm_poi.py (man_made=water_well, ODbL). Ogni voce curata indica se la posizione coincide con un pozzo OSM entro 25 m; epoca, materiale e stile restano da verificare.',
+    technicalNotesEn: 'Imported with pipeline/import_osm_poi.py (man_made=water_well, ODbL). Each curated entry shows whether its position matches an OSM well within 25 m; period, material and style remain to be verified.',
+    endpointOrFile: '/api/heritage (open-data-catalog.ts + src/data/osm-poi.json)'
   },
   {
     id: 'campanili_pendenti',
     nameIt: 'Campanili & Torri Pendenti',
     nameEn: 'Historic & Leaning Bell Towers',
     group: 'city',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Patriarcato di Venezia & UniPD Ingegneria Geotecnica',
+    institution: 'Elenco curato del progetto · rif. Patriarcato di Venezia, studi pubblicati',
     portalUrl: 'https://dati.venezia.it',
     portalName: 'dati.venezia.it',
     descriptionIt: '10 torri campanarie storiche di Venezia e laguna (San Marco, Santo Stefano, San Giorgio dei Greci, Burano, Frari, Torcello, San Pietro di Castello, San Giorgio Maggiore, Madonna dell\'Orto, San Francesco della Vigna) con dettaglio di altezza e inclinazione.',
     descriptionEn: '10 historic bell towers across Venice and lagoon islands with structural height, construction year, and tilt angle records resulting from soft subsoil.',
-    technicalNotesIt: 'Rilievi geodetici e monitoraggi inclinometrici strutturali (es. Santo Stefano 2.0°, San Giorgio dei Greci 1.8°, Burano 2.8° con 1.83m di fuori piombo).',
-    technicalNotesEn: 'Geodetic structural monitoring records documenting tilt angles (Santo Stefano 2.0°, San Giorgio dei Greci 1.8°, Burano 2.8° with 1.83m top deviation).',
+    technicalNotesIt: 'Altezze e inclinazioni indicative, da letteratura non verificata voce per voce. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Heights and tilts are indicative, from literature not checked entry by entry. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'open-data-catalog.ts (OPEN_BELL_TOWERS)'
   },
   {
@@ -682,63 +686,63 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Pontili Idroambulanze SUEM 118',
     nameEn: 'SUEM 118 Water Ambulance Docks',
     group: 'city',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Azienda ULSS 3 Serenissima - Dipartimento Emergenza Urgenza',
+    institution: 'Elenco curato del progetto (non ufficiale)',
     portalUrl: 'https://www.aulss3.veneto.it',
     portalName: 'aulss3.veneto.it (SUEM 118)',
     descriptionIt: '8 basi operative e pontili riservati d\'imbarco immediato dei natanti di soccorso idroambulanza (Ospedale Civile SS. Giovanni e Paolo, San Marco Giardinetti, Tronchetto Interscambio, Lido San Camillo, Fondamente Nove, Presidio Giustinian Dorsoduro, Burano PPI, Lido Ospedale al Mare).',
     descriptionEn: '8 emergency water ambulance boat docks and rapid hospital landing stages (SS. Giovanni e Paolo, San Marco, Tronchetto, Lido San Camillo, Fondamente Nove, Giustinian, Burano, Lido San Nicolò).',
-    technicalNotesIt: 'Rete geolocalizzata dei presidi di pronto soccorso acqueo operativi H24 con codice pontile e presenza rampa barellabile.',
-    technicalNotesEn: 'Geocoded 24/7 emergency water ambulance stations with hospital ramp indications and direct emergency dispatch.',
+    technicalNotesIt: 'Elenco curato del progetto: non esiste un dataset aperto degli approdi SUEM 118. Posizioni, codici e dotazioni sono da verificare; non usarlo per decisioni in emergenza (chiamare il 118).',
+    technicalNotesEn: 'Project-curated list: no open dataset of SUEM 118 docks exists. Locations, codes and equipment are unverified; do not rely on it in an emergency (call 118/112).',
     endpointOrFile: 'open-data-catalog.ts (OPEN_EMERGENCY_WATER_DOCKS)'
   },
   {
     id: 'dae_pubblici',
-    nameIt: 'Defibrillatori Pubblici DAE H24',
-    nameEn: 'Public 24/7 Defibrillators (AED)',
+    nameIt: 'Defibrillatori (DAE)',
+    nameEn: 'Defibrillators (AED)',
     group: 'city',
     regime: 'static',
     acquisition: 'local',
-    institution: 'Azienda Zero Regione Veneto & Progetto "Venezia Cuore"',
-    portalUrl: 'https://www.regione.veneto.it',
-    portalName: 'regione.veneto.it / Azienda Zero',
-    descriptionIt: '16 dispositivi salvavita DAE (Defibrillatore Automatico Esterno) installati in teche protette ad accesso libero 24 ore su 24 nei nodi strategici urbani (San Marco, Santa Lucia FS, Piazzale Roma, Rialto, Zattere, Arsenale, Murano, Burano, Giudecca, Tronchetto, Mestre FS).',
-    descriptionEn: '16 publicly accessible 24/7 automated external defibrillators (AED) installed in high-traffic squares and multimodal transit hubs.',
-    technicalNotesIt: 'Registro sanitario ufficiale dei dispositivi accreditati con codice DAE, operatore di riferimento e data di ultima verifica periodica.',
-    technicalNotesEn: 'Official health registry documenting public access defibrillator codes, maintenance operators, and inspection dates.',
-    endpointOrFile: 'open-data-catalog.ts (OPEN_PUBLIC_DAE)'
+    institution: 'OpenStreetMap contributors (ODbL)',
+    portalUrl: 'https://wiki.openstreetmap.org/wiki/Tag:emergency%3Ddefibrillator',
+    portalName: 'openstreetmap.org (emergency=defibrillator)',
+    descriptionIt: 'Defibrillatori mappati su OpenStreetMap nell\'area della laguna e di Mestre, più alcune voci di un elenco curato del progetto non ancora confermate (segnalate come "da verificare").',
+    descriptionEn: 'Defibrillators mapped on OpenStreetMap across the lagoon and Mestre, plus a few entries from a project-curated list not yet confirmed (marked "to verify").',
+    technicalNotesIt: 'Non esiste un dataset aperto ufficiale dei DAE per Venezia (verificato su dati.gov.it, dati.veneto.it, dati.venezia.it). Import con pipeline/import_osm_defibrillators.py. Orari H24 solo se dichiarati in OSM (opening_hours=24/7). Le statistiche usano solo i DAE OSM.',
+    technicalNotesEn: 'No official open AED dataset exists for Venice (checked dati.gov.it, dati.veneto.it, dati.venezia.it). Imported with pipeline/import_osm_defibrillators.py. 24/7 only when declared in OSM (opening_hours=24/7). Statistics use OSM AEDs only.',
+    endpointOrFile: 'src/data/osm-defibrillators.json + open-data-catalog.ts (CURATED_PUBLIC_DAE)'
   },
   {
     id: 'farmacie_turno',
-    nameIt: 'Farmacie Territoriali Storiche',
-    nameEn: 'Licensed Neighborhood Pharmacies',
+    nameIt: 'Farmacie',
+    nameEn: 'Pharmacies',
     group: 'city',
     regime: 'static',
     acquisition: 'local',
-    institution: 'Ordine dei Farmacisti di Venezia & Federfarma Veneto',
-    portalUrl: 'https://www.ordinefarmacistivenezia.it',
-    portalName: 'ordinefarmacistivenezia.it',
-    descriptionIt: '12 presidi farmaceutici territoriali storici accreditati nei sestieri e isole per il servizio di assistenza farmaceutica continuativa.',
-    descriptionEn: '12 licensed neighborhood pharmacies accredited across sestieri and islands for continuous community healthcare.',
-    technicalNotesIt: 'Registro sanitario ufficiale dei presidi territoriali con codice farmacia, indirizzo, recapiti telefonici e orari di guardia.',
-    technicalNotesEn: 'Official health registry detailing pharmacy license codes, street addresses, emergency phone lines, and service shifts.',
-    endpointOrFile: 'open-data-catalog.ts (OPEN_PHARMACY_DUTY)'
+    institution: 'OpenStreetMap contributors (ODbL)',
+    portalUrl: 'https://www.aulss3.veneto.it/Farmacie-di-turno',
+    portalName: 'openstreetmap.org · turni: aulss3.veneto.it',
+    descriptionIt: 'Farmacie mappate su OpenStreetMap (escluse le parafarmacie), più alcune voci di un elenco curato non ancora confermate. I turni non sono open data: la scheda rimanda alla pagina ufficiale ULSS 3.',
+    descriptionEn: 'Pharmacies mapped on OpenStreetMap (drugstores excluded), plus a few unconfirmed entries from a curated list. Duty rotas are not open data: the detail card links to the official ULSS 3 page.',
+    technicalNotesIt: 'Import con pipeline/import_osm_pharmacies.py. Telefono e orari solo se presenti in OSM. Le statistiche usano solo le farmacie OSM.',
+    technicalNotesEn: 'Imported with pipeline/import_osm_pharmacies.py. Phone and hours only when present in OSM. Statistics use OSM pharmacies only.',
+    endpointOrFile: 'src/data/osm-pharmacies.json + open-data-catalog.ts (CURATED_PHARMACIES)'
   },
   {
     id: 'isole_calore',
     nameIt: 'Isole di Calore Superficiale (LST Satellitare)',
     nameEn: 'Surface Urban Heat Islands (LST)',
     group: 'city',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'NASA / USGS Landsat-9 TIRS-2 & Copernicus Sentinel-3',
+    institution: 'Elenco curato del progetto · rif. Landsat TIRS / Sentinel-3 SLSTR',
     portalUrl: 'https://landsat.gsfc.nasa.gov',
     portalName: 'landsat.gsfc.nasa.gov',
-    descriptionIt: '10 zone radiometriche satellitari della temperatura di superficie urbana (LST) con quantificazione delle anomalie termiche (°C) e dell\'effetto mitigante dell\'acqua e del verde.',
-    descriptionEn: '10 satellite land surface temperature (LST) zones quantifying surface temperature anomalies (°C) and the cooling effects of water channels and tree canopy.',
-    technicalNotesIt: 'Rilievo satellitare all\'infrarosso termico (Landsat TIRS-2 / Sentinel-3 SLSTR) calibrato su pavimentazioni in masegni, asfalti, tetti in laterizio e canali idrici.',
-    technicalNotesEn: 'Thermal infrared satellite radiometry (Landsat TIRS-2 / Sentinel-3 SLSTR) calibrated across stone paving, asphalt, clay tiles, and water cooling corridors.',
+    descriptionIt: 'Zone di esempio con temperatura di superficie (LST) e anomalia termica, per illustrare l\'effetto di acqua e verde.',
+    descriptionEn: 'Example zones with land surface temperature (LST) and thermal anomaly, illustrating the effect of water and greenery.',
+    technicalNotesIt: 'Le temperature non sono scaricate da Landsat o Sentinel-3. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Temperatures are not downloaded from Landsat or Sentinel-3. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'open-data-catalog.ts (OPEN_HEAT_ISLAND_LST)'
   },
   {
@@ -746,15 +750,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Pressione Turistica & Alloggi Registrati',
     nameEn: 'Tourism Density & Registered Lodging',
     group: 'city',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'local',
-    institution: 'Regione Veneto - Osservatorio del Turismo',
+    institution: 'Elenco curato del progetto · rif. Regione Veneto – Osservatorio del Turismo',
     portalUrl: 'https://dati.veneto.it',
     portalName: 'dati.veneto.it (Open Data Regione Veneto)',
-    descriptionIt: 'Censimento ufficiale delle strutture alberghiere, B&B e locazioni turistiche con calcolo del rapporto turisti/residenti.',
-    descriptionEn: 'Official census of registered hotels, B&Bs, and vacation rentals with tourist-to-resident density ratios.',
-    technicalNotesIt: 'Open Data ufficiale della Regione Veneto: aggregazione dei posti letto autorizzati e incrocio spaziale con la popolazione anagrafica per sestiere.',
-    technicalNotesEn: 'Official Veneto Regional Open Data: authorized bed counts joined with residential population census per sestiere.',
+    descriptionIt: 'Strutture ricettive e posti letto per zona con rapporto turisti/residenti (valori indicativi).',
+    descriptionEn: 'Accommodation and beds per area with tourist/resident ratio (indicative values).',
+    technicalNotesIt: 'Conteggi indicativi: per i dati ufficiali consultare l\'Osservatorio del Turismo della Regione Veneto. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Indicative counts: see the Veneto Region Tourism Observatory for official figures. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'regionalVenetoData.ts (REGIONAL_TOURIST_ACCOMMODATIONS)'
   },
   {
@@ -762,15 +766,15 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Bollettino Pollini ARPAV',
     nameEn: 'ARPAV Airborne Pollen Bulletin',
     group: 'city',
-    regime: 'static',
+    regime: 'curated',
     acquisition: 'api',
-    institution: 'ARPAV - Rete Monitoraggio Aerobiologico Veneto',
+    institution: 'Elenco curato del progetto · rif. ARPAV – rete aerobiologica',
     portalUrl: 'https://www.arpa.veneto.it',
     portalName: 'arpa.veneto.it & dati.veneto.it',
-    descriptionIt: '4 stazioni di campionamento aerobiologico (Venezia Centro, Mestre Bissuola, Chioggia Sottomarina, San Donà di Piave) con conteggio dei granuli pollinici allergenici.',
-    descriptionEn: '4 aerobiological pollen capture stations (Venice Center, Mestre Bissuola, Chioggia Sottomarina, San Donà) measuring airborne pollen concentrations.',
-    technicalNotesIt: 'Bollettino settimanale ufficiale ARPAV: valori misurati in granuli/m³ e livello di concentrazione sintetico per famiglie botaniche (Graminacee, Parietaria, Betulacee, Oleacee, Pinacee).',
-    technicalNotesEn: 'Official weekly ARPAV aerobiological bulletin: grains/m³ counts and synthetic allergen index by botanical families (Gramineae, Parietaria, Betulaceae, Oleaceae, Pinaceae).',
+    descriptionIt: 'Stazioni aerobiologiche con concentrazioni di pollini di esempio per famiglia botanica.',
+    descriptionEn: 'Aerobiological stations with example pollen concentrations by plant family.',
+    technicalNotesIt: 'Le concentrazioni non vengono dal bollettino ARPAV: per i valori della settimana consultare arpa.veneto.it. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Concentrations do not come from the ARPAV bulletin: see arpa.veneto.it for this week\'s values. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: '/api/regional-data'
   }
 ];
@@ -787,6 +791,8 @@ export default function LayersDocumentationPage() {
   const realtimeLayers = LAYER_CATALOG.filter((l) => l.regime === 'realtime').length;
   const simulatedLayers = LAYER_CATALOG.filter((l) => l.regime === 'simulated').length;
   const staticLayers = LAYER_CATALOG.filter((l) => l.regime === 'static').length;
+  const curatedLayers = LAYER_CATALOG.filter((l) => l.regime === 'curated').length;
+  const layersNav = t('ui.metricsPage.navLayers', { n: totalLayers });
 
   // Filtered layers
   const filteredLayers = useMemo(() => {
@@ -821,53 +827,83 @@ export default function LayersDocumentationPage() {
   }, [selectedGroup, selectedRegime, selectedAcquisition, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-[var(--ground)] text-[var(--ink)] flex flex-col">
+    <div className="min-h-screen bg-[var(--ground)] text-[var(--ink)] flex flex-col justify-between selection:bg-cyan-500/30">
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-40 w-full border-b border-[var(--rule)] bg-[var(--ground)]/90 backdrop-blur-md px-4 sm:px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="p-2 rounded-xl bg-[var(--rule)]/60 hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] transition-all flex items-center gap-1.5 text-xs font-mono font-medium active:scale-95 cursor-pointer shadow-sm"
-          >
-            <ArrowLeft className="w-4 h-4 text-cyan-400" />
-            <span className="hidden sm:inline">
-              {t('ui.layersPage.tornaAllaMappa')}
+      <header className="border-b border-[var(--rule)] bg-[var(--ground)]/90 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-6 py-3">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* Left: Brand + Subtitle + Badge */}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="flex items-center gap-2.5 group cursor-pointer"
+            >
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
+                <Compass className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <span className="font-bold text-base tracking-tight block text-[var(--ink)]">
+                  VOD – Venice Open Data
+                </span>
+                <span className="text-[10px] font-mono text-[var(--ink-3)] block -mt-0.5">
+                  {t('ui.layersPage.tracciamentoFontiIstituzionaliApiLive')}
+                </span>
+              </div>
+            </Link>
+
+            <span className="hidden sm:inline-block text-[11px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-semibold">
+              /layers
             </span>
-          </Link>
-
-          <div className="h-5 w-px bg-[var(--rule)]" />
-
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-md">
-              <Compass className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h1 className="text-sm sm:text-base font-bold tracking-tight text-[var(--ink)]">
-                VOD · {t('ui.layersPage.catalogoLivelliTrasparenzaDati')}
-              </h1>
-              <p className="text-[10px] text-[var(--ink-3)] font-mono hidden md:block">
-                {t('ui.layersPage.tracciamentoFontiIstituzionaliApiLive')}
-              </p>
-            </div>
           </div>
-        </div>
 
-        {/* Right tools */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={toggleLanguage}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-[var(--rule)]/60 hover:bg-[var(--rule)] text-[var(--ink)] border border-[var(--rule)] transition-all cursor-pointer shadow-sm"
-            title="Switch Language (IT / EN)"
-          >
-            <Globe className="w-3.5 h-3.5 text-cyan-400" />
-            <span>{language.toUpperCase()}</span>
-          </button>
+          {/* Navigation links & Actions */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-[var(--ink-2)] hover:text-[var(--ink)] bg-[var(--rule)]/60 hover:bg-[var(--rule)] transition-all cursor-pointer border border-[var(--rule)]"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-cyan-400" />
+              <span>{t('ui.metricsPage.navMap')}</span>
+            </Link>
+
+            <Link
+              href="/layers"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold transition-all cursor-pointer shadow-sm"
+            >
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              <span>{layersNav}</span>
+            </Link>
+
+            <Link
+              href="/metrics"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-[var(--ink-2)] hover:text-[var(--ink)] bg-[var(--rule)]/60 hover:bg-[var(--rule)] transition-all cursor-pointer border border-[var(--rule)]"
+            >
+              <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
+              <span>{t('ui.metricsPage.navMetrics')}</span>
+            </Link>
+
+            <Link
+              href="/sources"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-[var(--ink-2)] hover:text-[var(--ink)] bg-[var(--rule)]/60 hover:bg-[var(--rule)] transition-all cursor-pointer border border-[var(--rule)]"
+            >
+              <Activity className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{t('ui.metricsPage.navSources')}</span>
+            </Link>
+
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold bg-[var(--rule)]/60 hover:bg-[var(--rule)] text-[var(--ink)] border border-[var(--rule)] transition-all cursor-pointer"
+              title="Switch Language (IT / EN)"
+            >
+              <Globe className="w-3.5 h-3.5 text-cyan-400" />
+              <span>{language.toUpperCase()}</span>
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 md:p-8 flex flex-col gap-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6">
         {/* Hero Explanation Banner */}
         <section className="glass-panel rounded-3xl p-5 sm:p-6 border border-cyan-500/20 shadow-xl flex flex-col md:flex-row gap-6 items-start justify-between">
           <div className="flex flex-col gap-2 max-w-3xl">
@@ -879,20 +915,12 @@ export default function LayersDocumentationPage() {
               {t('ui.layersPage.comeFunzionanoIDatiGeospaziali')}
             </h2>
             <p className="text-xs sm:text-sm text-[var(--ink-2)] leading-relaxed">
-              {language === 'it' ? (
-                <>
-                  In VOD ogni elemento visualizzato sulla mappa ha una provenienza chiara e tracciabile. Per garantire la massima trasparenza scientifica verso cittadini, ricercatori e tecnici, distinguiamo rigorosamente tra <strong>misure strumentali in tempo reale</strong>, <strong>modelli matematici deterministici (Digital Twin)</strong> e <strong>censimenti geografici amministrativi ufficiali</strong>.
-                </>
-              ) : (
-                <>
-                  In VOD, every layer mapped has an explicit and auditable lineage. To ensure scientific rigor for citizens, researchers, and public officers, we clearly differentiate between <strong>genuine real-time sensor telemetry</strong>, <strong>deterministic Digital Twin models</strong>, and <strong>official administrative static spatial registries</strong>.
-                </>
-              )}
+              {t('ui.layersPage.heroBody')}
             </p>
           </div>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full md:w-auto shrink-0 font-mono text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 w-full md:w-auto shrink-0 font-mono text-center">
             <div className="p-3 rounded-2xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col">
               <span className="text-2xl font-bold text-[var(--ink)]">{totalLayers}</span>
               <span className="text-[10px] text-[var(--ink-3)] uppercase">{t('ui.layersPage.livelliTotali')}</span>
@@ -909,14 +937,18 @@ export default function LayersDocumentationPage() {
               <span className="text-2xl font-bold text-sky-400">{staticLayers}</span>
               <span className="text-[10px] text-sky-300 uppercase">{t('ui.layersPage.censimento')}</span>
             </div>
+            <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/30 flex flex-col">
+              <span className="text-2xl font-bold text-orange-400">{curatedLayers}</span>
+              <span className="text-[10px] text-orange-300 uppercase">{t('ui.layersPage.curato')}</span>
+            </div>
           </div>
         </section>
 
         {/* Legend Guide Cards */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
           <div className="glass-panel p-4 rounded-2xl border border-emerald-500/30 flex flex-col gap-1.5">
             <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase font-mono">
-              <Radio className="w-4 h-4 shrink-0 animate-pulse" />
+              <Radio className="w-4 h-4 shrink-0 motion-safe:animate-pulse" />
               <span>{t('ui.layersPage.tempoRealeGenuinoSensori')}</span>
             </div>
             <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">
@@ -941,6 +973,16 @@ export default function LayersDocumentationPage() {
             </div>
             <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">
               {t('ui.layersPage.registriCartograficiPatrimonialiCertific')}
+            </p>
+          </div>
+
+          <div className="glass-panel p-4 rounded-2xl border border-orange-500/30 flex flex-col gap-1.5">
+            <div className="flex items-center gap-2 text-orange-400 font-bold text-xs uppercase font-mono">
+              <Info className="w-4 h-4 shrink-0" />
+              <span>{t('ui.layersPage.curatoLegendTitle')}</span>
+            </div>
+            <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">
+              {t('ui.layersPage.curatoLegendBody')}
             </p>
           </div>
         </section>
@@ -1005,7 +1047,8 @@ export default function LayersDocumentationPage() {
                 { key: 'all', label: t('ui.layersPage.tutti') },
                 { key: 'realtime', label: t('ui.layersPage.tempoReale2') },
                 { key: 'simulated', label: t('ui.layersPage.digitalTwin') },
-                { key: 'static', label: t('ui.layersPage.censimento') }
+                { key: 'static', label: t('ui.layersPage.censimento') },
+                { key: 'curated', label: t('ui.layersPage.curato') }
               ].map((r) => (
                 <button
                   key={r.key}
@@ -1028,7 +1071,7 @@ export default function LayersDocumentationPage() {
               </span>
               {[
                 { key: 'all', label: t('ui.layersPage.tutte') },
-                { key: 'api', label: 'API Live' },
+                { key: 'api', label: t('ui.layersPage.acqApi') },
                 { key: 'local', label: t('ui.layersPage.localeCache') }
               ].map((a) => (
                 <button
@@ -1091,7 +1134,7 @@ export default function LayersDocumentationPage() {
                         {language === 'it' ? layer.nameIt : layer.nameEn}
                       </h3>
                       <span className="text-[11px] font-mono text-[var(--ink-3)]">
-                        {getGroupLabel(layer.group, language)}
+                        {t(`ui.layersPage.group_${layer.group}`)}
                       </span>
                     </div>
                   </div>
@@ -1103,18 +1146,22 @@ export default function LayersDocumentationPage() {
                         ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
                         : layer.regime === 'simulated'
                           ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-                          : 'bg-sky-500/15 text-sky-300 border-sky-500/30'
+                          : layer.regime === 'curated'
+                            ? 'bg-orange-500/15 text-orange-300 border-orange-500/30'
+                            : 'bg-sky-500/15 text-sky-300 border-sky-500/30'
                         }`}
                     >
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${layer.regime === 'realtime'
-                          ? 'bg-emerald-400 animate-pulse'
+                          ? 'bg-emerald-400 motion-safe:animate-pulse'
                           : layer.regime === 'simulated'
                             ? 'bg-amber-400'
-                            : 'bg-sky-400'
+                            : layer.regime === 'curated'
+                              ? 'bg-orange-400'
+                              : 'bg-sky-400'
                           }`}
                       />
-                      {getRegimeName(layer.regime, language)}
+                      {t(`ui.layersPage.regime_${layer.regime}`)}
                     </span>
 
                     {/* Acquisition Badge */}
@@ -1122,7 +1169,7 @@ export default function LayersDocumentationPage() {
                       {layer.acquisition === 'api' ? (
                         <>
                           <Radio className="w-3 h-3 text-cyan-400" />
-                          <span>API Live</span>
+                          <span>{t('ui.layersPage.acqApi')}</span>
                         </>
                       ) : (
                         <>
@@ -1150,6 +1197,15 @@ export default function LayersDocumentationPage() {
                   </p>
                 </div>
 
+                {/* Provenienza e aggiornamento */}
+                <div className="p-3 rounded-xl bg-[var(--ground)]/60 border border-[var(--rule)] flex flex-col gap-1 text-[11px]">
+                  <span className="font-mono text-[10px] text-cyan-400 uppercase font-bold flex items-center gap-1.5">
+                    <Gauge className="w-3.5 h-3.5" />
+                    {t('ui.layersPage.aggiornamento')}
+                  </span>
+                  <p className="text-[var(--ink-2)] leading-relaxed">{t(`ui.layersPage.prov_${layer.regime}`)}</p>
+                </div>
+
                 {/* Footer: Source link & Endpoint */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-[var(--rule)]/60 text-xs">
                   <div className="flex items-center gap-2">
@@ -1166,7 +1222,7 @@ export default function LayersDocumentationPage() {
                   </div>
 
                   <div className="flex items-center gap-1.5 text-[10px] font-mono text-[var(--ink-3)]">
-                    <span>Target:</span>
+                    <span>{t('ui.layersPage.target')}</span>
                     <span className="px-1.5 py-0.5 rounded bg-[var(--rule)] text-[var(--ink-2)]">
                       {layer.endpointOrFile}
                     </span>
@@ -1180,31 +1236,16 @@ export default function LayersDocumentationPage() {
 
       {/* Footer */}
       <footer className="border-t border-[var(--rule)] bg-[var(--ground)] py-6 px-4 text-center text-xs text-[var(--ink-3)] font-mono">
-        <p>
-          Venice Open Data (VOD) · Piattaforma Cartografica Trasparente & Open Source per Venezia e Laguna
-        </p>
+        <div className="max-w-7xl w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <p>{t('ui.metricsPage.footer')}</p>
+          <div className="flex items-center gap-4 text-[11px] flex-wrap justify-center">
+            <Link href="/" className="hover:text-cyan-400 transition-colors">{t('ui.metricsPage.navMap')}</Link>
+            <Link href="/layers" className="hover:text-cyan-400 transition-colors">{layersNav}</Link>
+            <Link href="/metrics" className="hover:text-cyan-400 transition-colors">{t('ui.metricsPage.navMetrics')}</Link>
+            <Link href="/sources" className="hover:text-cyan-400 transition-colors">{t('ui.metricsPage.navSources')}</Link>
+          </div>
+        </div>
       </footer>
     </div>
   );
-}
-
-// Helpers
-function getGroupLabel(group: 'mobility' | 'lagoon' | 'city', lang: string) {
-  if (group === 'mobility') {
-    return lang === 'it' ? 'Mobilità Acquea, Aerea & Ferroviaria' : 'Water, Air & Rail Mobility';
-  }
-  if (group === 'lagoon') {
-    return lang === 'it' ? 'Laguna, Idrografia & Difesa Mare' : 'Lagoon, Hydrography & Sea Defense';
-  }
-  return lang === 'it' ? 'Città Storica, Patrimonio & Servizi' : 'Historic City, Heritage & Services';
-}
-
-function getRegimeName(regime: 'realtime' | 'simulated' | 'static', lang: string) {
-  if (regime === 'realtime') {
-    return lang === 'it' ? 'Tempo Reale Genuino' : 'Live Telemetry';
-  }
-  if (regime === 'simulated') {
-    return lang === 'it' ? 'Simulato / Digital Twin' : 'Digital Twin Schedule';
-  }
-  return lang === 'it' ? 'Censimento Open Data' : 'Official Open Data';
 }

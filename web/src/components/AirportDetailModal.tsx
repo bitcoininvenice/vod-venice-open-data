@@ -67,7 +67,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
                   {t('airportModal.iataIcao')}
                 </span>
                 <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> {t('airportModal.active')}
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 motion-safe:animate-pulse" /> {t('airportModal.active')}
                 </span>
               </div>
               <h3 id="airport-modal-title" className="text-lg font-bold text-[var(--ink)] leading-snug">

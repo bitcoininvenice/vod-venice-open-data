@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import {
-  OPEN_EMERGENCY_WATER_DOCKS,
-  OPEN_PUBLIC_DAE,
-  OPEN_PHARMACY_DUTY
+  OPEN_EMERGENCY_WATER_DOCKS
 } from '@/lib/open-data-catalog';
+import { OPEN_PHARMACIES, PHARMACY_DUTY_URL } from '@/lib/pharmacies-data';
+import { OPEN_PUBLIC_DAE, OSM_DAE_META } from '@/lib/dae-data';
 
 export const revalidate = 86400;
 
@@ -13,13 +13,15 @@ export async function GET() {
     data: {
       emergencyDocks: OPEN_EMERGENCY_WATER_DOCKS,
       dae: OPEN_PUBLIC_DAE,
-      pharmacies: OPEN_PHARMACY_DUTY
+      pharmacies: OPEN_PHARMACIES
     },
     meta: {
-      source: 'SUEM 118, Azienda ULSS 3 Serenissima, Regione Veneto Sanità Open Data',
+      source: 'DAE e farmacie: OpenStreetMap (ODbL) + elenchi curati da verificare; approdi idroambulanze: elenco curato',
+      daeOsmGeneratedAt: OSM_DAE_META.generatedAt,
       countEmergencyDocks: OPEN_EMERGENCY_WATER_DOCKS.length,
       countDae: OPEN_PUBLIC_DAE.length,
-      countPharmacies: OPEN_PHARMACY_DUTY.length,
+      countPharmacies: OPEN_PHARMACIES.length,
+      pharmacyDutyUrl: PHARMACY_DUTY_URL,
     }
   });
 }

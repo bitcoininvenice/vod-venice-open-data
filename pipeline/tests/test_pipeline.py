@@ -11,6 +11,10 @@ import export_simulation_data as sim  # noqa: E402
 import import_arpav_air as arpav  # noqa: E402
 import import_opere_pubbliche as opere  # noqa: E402
 import import_osm_surveillance as osm  # noqa: E402
+import import_osm_defibrillators as osm_dae  # noqa: E402
+import import_osm_pharmacies as osm_pharm  # noqa: E402
+import import_osm_poi as osm_poi  # noqa: E402
+import import_alilaguna_gtfs as ali  # noqa: E402
 from download_gtfs import safe_extract  # noqa: E402
 from vod_common import redact  # noqa: E402
 
@@ -79,6 +83,65 @@ def test_osm_camera_mapping():
     assert cam["bearingDeg"] == 90
     assert cam["sourceUrl"].endswith("/node/1")
     assert cam["operator"] == "Non indicato"
+
+
+def test_osm_defibrillator_mapping():
+    node = {"id": 42, "lat": 45.4341234, "lon": 12.3398765,
+            "tags": {"emergency": "defibrillator", "opening_hours": "24/7", "operator": "Comune",
+                     "defibrillator:location:it": "Sotto il portico", "check_date": "2025-03-01"}}
+    d = osm_dae.to_dae(node)
+    assert d["id"] == "osm_42"
+    assert d["accessType"] == "PUBBLICO_H24"
+    assert d["location"] == "Sotto il portico"
+    assert d["checkDate"] == "2025-03-01"
+    assert d["sourceUrl"].endswith("/node/42")
+    # senza orari dichiarati non si assume H24
+    bare = osm_dae.to_dae({"id": 1, "lat": 45.4, "lon": 12.3, "tags": {"emergency": "defibrillator"}})
+    assert bare["accessType"] == "NON_INDICATO"
+    assert bare["operator"] == "Non indicato"
+
+
+def test_osm_pharmacy_mapping():
+    way = {"type": "way", "id": 7, "center": {"lat": 45.43, "lon": 12.33},
+           "tags": {"amenity": "pharmacy", "name": "Farmacia X", "addr:street": "Calle Larga",
+                    "addr:housenumber": "12", "phone": "+39 041 000000"}}
+    p = osm_pharm.to_pharmacy(way)
+    assert p["id"] == "osm_way_7"
+    assert p["address"] == "Calle Larga 12"
+    assert p["phone"] == "+39 041 000000"
+    assert "dispensing" not in p
+    para = osm_pharm.to_pharmacy({"type": "node", "id": 8, "lat": 45.4, "lon": 12.3,
+                                  "tags": {"amenity": "pharmacy", "dispensing": "no"}})
+    assert para["dispensing"] is False
+    assert osm_pharm.to_pharmacy({"type": "way", "id": 9, "tags": {}}) is None
+
+
+def test_osm_poi_helpers():
+    assert osm_poi.to_int("120 posti") == 120 and osm_poi.to_int(None) is None
+    assert osm_poi.to_float("3,5 m") == 3.5
+    assert osm_poi.power_kw({"socket:type2:output": "22 kW", "maxpower": "50000"}) == 50
+    assert osm_poi.zone(45.437, 12.33) == "Venezia centro storico"
+    assert osm_poi.zone(45.47, 12.50) == "Cavallino-Treporti / litorale"
+    assert osm_poi.zone(45.50, 12.34) == "Tessera / Aeroporto"
+    assert osm_poi.zone(45.49, 12.24) == "Mestre"
+
+
+def test_osm_poi_ev_mapping():
+    el = {"type": "node", "id": 7, "lat": 45.44, "lon": 12.32}
+    tags = {"amenity": "charging_station", "operator": "Enel X", "capacity": "2", "socket:type2": "2", "socket:type2:output": "22 kW"}
+    item = osm_poi.ev(el, tags, 45.44, 12.32)
+    assert item["id"] == "osm_node_7" and item["sourceUrl"].endswith("/node/7")
+    assert item["totalSockets"] == 2 and item["powerKw"] == 22 and item["socketTypes"] == ["Type 2"]
+
+
+def test_alilaguna_gtfs_helpers():
+    assert ali.gtfs_seconds("25:10:30") == 25 * 3600 + 10 * 60 + 30
+    shape = [[12.0, 45.0], [12.01, 45.0], [12.02, 45.0]]
+    cum = ali.cumulative(shape)
+    assert cum[0] == 0 and cum[1] < cum[2]
+    first = ali.project_on_shape(shape, cum, 12.0, 45.0, 0)
+    last = ali.project_on_shape(shape, cum, 12.0, 45.0, cum[1])  # non torna indietro lungo il percorso
+    assert first == 0 and last >= cum[1]
 
 
 def test_safe_extract_rejects_path_traversal(tmp_path):

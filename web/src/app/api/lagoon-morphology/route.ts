@@ -14,7 +14,8 @@ export async function GET() {
       lagoonMorphology: OPEN_LAGOON_MORPHOLOGY
     },
     meta: {
-      source: 'Copernicus EGMS (European Ground Motion Service), CNR-ISMAR',
+      kind: 'curated-reference',
+      source: 'Elenco curato del progetto con valori di esempio, da verificare (riferimenti: Copernicus EGMS, CNR-ISMAR). Non sono misure scaricate da EGMS.',
       countSubsidence: OPEN_SUBSIDENCE_INSAR.length,
       countMorphology: OPEN_LAGOON_MORPHOLOGY.length,
     }

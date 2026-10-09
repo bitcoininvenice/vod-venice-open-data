@@ -9,7 +9,7 @@ import {
   CheckCircle2,
   Ship,
   Waves,
-  Satellite,
+  Landmark,
   ChevronRight,
   ChevronLeft,
   Sparkles,
@@ -222,24 +222,24 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
               </span>
             </button>
 
-            {/* Option 4: Space & Earth Observation */}
+            {/* Option 4: City & Public Heritage */}
             <button
               type="button"
-              onClick={() => setSelectedPreset('satellites')}
+              onClick={() => setSelectedPreset('city')}
               className={`p-3 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
-                selectedPreset === 'satellites'
-                  ? 'bg-purple-500/15 border-purple-500 text-[var(--ink)] shadow-md shadow-purple-500/10'
+                selectedPreset === 'city'
+                  ? 'bg-emerald-500/15 border-emerald-500 text-[var(--ink)] shadow-md shadow-emerald-500/10'
                   : 'bg-[var(--rule)]/20 border-[var(--rule)] text-[var(--ink-2)] hover:border-[var(--ink-3)]'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-purple-400 flex items-center gap-1.5">
-                  <Satellite className="w-3.5 h-3.5" /> {t('layers.presetSatellites')}
+                <span className="font-bold text-xs text-emerald-400 flex items-center gap-1.5">
+                  <Landmark className="w-3.5 h-3.5" /> {t('layers.presetCity')}
                 </span>
-                {selectedPreset === 'satellites' && <CheckCircle2 className="w-4 h-4 text-purple-400" />}
+                {selectedPreset === 'city' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
               </div>
               <span className="text-[11px] leading-tight text-[var(--ink-2)]">
-                {t('ui.onboarding.tracceOrbitaliSentinel12')}
+                {t('ui.onboarding.serviziCittadiniPatrimonio')}
               </span>
             </button>
           </div>
@@ -260,7 +260,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
           <div className="space-y-2 text-[11px]">
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex items-center justify-between">
               <span className="text-[var(--ink)] flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-red-500 motion-safe:animate-pulse" />
                 <strong>{t('ui.onboarding.modalitaOraLive')}</strong>
               </span>
               <span className="text-cyan-400 font-mono">{t('ui.onboarding.n11OrarioRealeVenezia')}</span>

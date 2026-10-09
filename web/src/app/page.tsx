@@ -5,11 +5,12 @@ import { Header } from '@/components/Header';
 import { MapEngine } from '@/components/MapEngine';
 import { TimelineControls } from '@/components/TimelineControls';
 import { LayerPanel } from '@/components/LayerPanel';
-import { parseLayerParams, buildLayersParam, buildShareUrl, LayerKey, ALL_LAYER_KEYS } from '@/lib/urlLayers';
+import { buildLayersParam, buildShareUrl } from '@/lib/urlLayers';
+import { allLayers, countActiveLayers, initialLayersFromSearch, makeLayerSetters, presetLayers, type LayerVisibility } from '@/lib/layerState';
+import { copyToClipboard } from '@/lib/dataExport';
 import { StopDetailModal } from '@/components/StopDetailModal';
 import { CantiereDetailModal } from '@/components/CantiereDetailModal';
 import { SpatialAnalysisModal } from '@/components/SpatialAnalysisModal';
-import { StatsModal } from '@/components/StatsModal';
 import { AirportDetailModal } from '@/components/AirportDetailModal';
 import { ShipDetailModal } from '@/components/ShipDetailModal';
 import { MoseDetailModal } from '@/components/MoseDetailModal';
@@ -18,7 +19,10 @@ import { SatelliteDetailModal } from '@/components/SatelliteDetailModal';
 import { CameraDetailModal } from '@/components/CameraDetailModal';
 import { VeniceFeatureDetailModal, VeniceFeatureSelected } from '@/components/VeniceFeatureDetailModal';
 import { OnboardingTutorialModal, MapPresetType } from '@/components/OnboardingTutorialModal';
-import { Layers } from 'lucide-react';
+import { GlobalSearchModal, SearchResultItem } from '@/components/GlobalSearchModal';
+import { TideFloodModal } from '@/components/TideFloodModal';
+import { DataExportModal } from '@/components/DataExportModal';
+import { Layers, Waves, X } from 'lucide-react';
 import {
   CameraViewPreset,
   PaletteTheme,
@@ -58,7 +62,7 @@ import {
   LagoonFortressIslandItem,
   EmergencyWaterDockItem,
   PublicDaeItem,
-  PharmacyDutyItem,
+  PharmacyItem,
   HeatIslandSurfaceTempItem,
   LagoonWaterQualityItem,
   TouristAccommodationItem,
@@ -86,23 +90,22 @@ import {
   OPEN_LIVE_TRAINS,
   OPEN_VERITAS_WASTE_BOATS,
   OPEN_NIZIOLETI_CIVICI,
-  OPEN_VENICE_WELLS,
   OPEN_BELL_TOWERS,
   OPEN_LAGOON_FORTRESS_ISLANDS,
   OPEN_EMERGENCY_WATER_DOCKS,
-  OPEN_PUBLIC_DAE,
-  OPEN_PHARMACY_DUTY,
   OPEN_HEAT_ISLAND_LST
 } from '@/lib/open-data-catalog';
 import { CANTIERI_REFERENCE, ACTV_STOPS_REFERENCE } from '@/lib/db';
+import { OPEN_PUBLIC_DAE } from '@/lib/dae-data';
+import { OPEN_PHARMACIES } from '@/lib/pharmacies-data';
 import { VENICE_CAMERAS } from '@/lib/cameras-data';
 import { NOTTE, CARTA, getDynamicPalette } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { useTranslation } from '@/lib/i18n';
-import { romeDayType, romeSecondsOfDay } from '@/lib/time';
+import { romeDayType, romeSecondsOfDay, formatSignedCm } from '@/lib/time';
 import { activeTripsAt, dayActivity } from '@/lib/gtfsActivity';
 import { simClock } from '@/lib/simClock';
-import { usePreference, writePreference } from '@/lib/localPreference';
+import { usePreference, writePreference, THEME_PREFERENCE_KEY } from '@/lib/localPreference';
 
 const ONBOARDING_KEY = 'vod_onboarding_completed';
 import type { TideResponse, TideStation, TideForecast, TideTrend, TideCategory } from '@/lib/contracts/tide';
@@ -132,66 +135,30 @@ export default function HomePage() {
     setIsLiveSynced(true);
   };
 
-  // Theme & Views
-  const [paletteTheme, setPaletteTheme] = useState<PaletteTheme>('notte');
+  // Theme & Views: persistenza del tema in localStorage per ricaricamenti successivi
+  const savedPalette = usePreference(THEME_PREFERENCE_KEY, 'notte');
+  const paletteTheme: PaletteTheme =
+    savedPalette === 'carta' || savedPalette === 'dynamic' || savedPalette === 'notte'
+      ? (savedPalette as PaletteTheme)
+      : 'notte';
+  const handleSelectPalette = useCallback((theme: PaletteTheme) => {
+    writePreference(THEME_PREFERENCE_KEY, theme);
+  }, []);
   const [currentView, setCurrentView] = useState<CameraViewPreset>('lagoon');
 
   // Layer toggles (Default to false on clean map startup)
-  const [showRoutes, setShowRoutes] = useState<boolean>(false);
-  const [showStops, setShowStops] = useState<boolean>(false);
-  const [showVehicles, setShowVehicles] = useState<boolean>(false);
-  const [showCantieri, setShowCantieri] = useState<boolean>(false);
-  const [showSpatialBuffer, setShowSpatialBuffer] = useState<boolean>(false);
-  const [showFlights, setShowFlights] = useState<boolean>(false);
-  const [showShips, setShowShips] = useState<boolean>(false);
-  const [showShipRoutes, setShowShipRoutes] = useState<boolean>(false);
-  const [showMose, setShowMose] = useState<boolean>(false);
-  const [showCityAssets, setShowCityAssets] = useState<boolean>(false);
-  const [showParkings, setShowParkings] = useState<boolean>(false);
-  const [showAirQuality, setShowAirQuality] = useState<boolean>(false);
-  const [showPedestrianFlows, setShowPedestrianFlows] = useState<boolean>(false);
-  const [showAlilaguna, setShowAlilaguna] = useState<boolean>(false);
-  const [showSatellites, setShowSatellites] = useState<boolean>(false);
-  const [showPasserelle, setShowPasserelle] = useState<boolean>(false);
-  const [showMarineSignals, setShowMarineSignals] = useState<boolean>(false);
-  const [showOceanStations, setShowOceanStations] = useState<boolean>(false);
-  const [showBathingWaters, setShowBathingWaters] = useState<boolean>(false);
-  const [showTrees, setShowTrees] = useState<boolean>(false);
-  const [showWifiHotspots, setShowWifiHotspots] = useState<boolean>(false);
-  const [showEvCharging, setShowEvCharging] = useState<boolean>(false);
-  const [showCameras, setShowCameras] = useState<boolean>(false);
-  const [showRealtimeVehicles, setShowRealtimeVehicles] = useState<boolean>(false);
+  const [layers, setLayers] = useState<LayerVisibility>(() => allLayers(false));
+  const { showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri, showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose, showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries } = layers;
+  const { setShowRoutes, setShowStops, setShowVehicles, setShowRealtimeVehicles, setShowCantieri, setShowSpatialBuffer, setShowFlights, setShowShips, setShowShipRoutes, setShowMose, setShowCityAssets, setShowParkings, setShowAirQuality, setShowPedestrianFlows, setShowAlilaguna, setShowSatellites, setShowPasserelle, setShowMarineSignals, setShowOceanStations, setShowBathingWaters, setShowTrees, setShowWifiHotspots, setShowEvCharging, setShowCameras, setShowCanalLimits, setShowBridges, setShowGondolas, setShowDocks, setShowSubsidence, setShowMorphology, setShowMarineWind, setShowTrains, setShowWasteBoats, setShowNizioleti, setShowWells, setShowBellTowers, setShowFortresses, setShowEmergencyDocks, setShowDae, setShowPharmacies, setShowHeatIslands, setShowLagoonWater, setShowAccommodations, setShowBikeRoutes, setShowPollenStations, setShowTributaries } = useMemo(() => makeLayerSetters(setLayers), []);
   const [realtimeVehicles, setRealtimeVehicles] = useState<RealtimeVehicleDto[]>([]);
 
   // 1. Viabilità Acquea & Canali
-  const [showCanalLimits, setShowCanalLimits] = useState<boolean>(false);
-  const [showBridges, setShowBridges] = useState<boolean>(false);
-  const [showGondolas, setShowGondolas] = useState<boolean>(false);
-  const [showDocks, setShowDocks] = useState<boolean>(false);
   // 2. Idrografia, Subsidenza & Morfologia
-  const [showSubsidence, setShowSubsidence] = useState<boolean>(false);
-  const [showMorphology, setShowMorphology] = useState<boolean>(false);
-  const [showMarineWind, setShowMarineWind] = useState<boolean>(false);
   // 3. Ferrovia & Logistica
-  const [showTrains, setShowTrains] = useState<boolean>(false);
-  const [showWasteBoats, setShowWasteBoats] = useState<boolean>(false);
   // 4. Patrimonio Storico & Nizioleti
-  const [showNizioleti, setShowNizioleti] = useState<boolean>(false);
-  const [showWells, setShowWells] = useState<boolean>(false);
-  const [showBellTowers, setShowBellTowers] = useState<boolean>(false);
-  const [showFortresses, setShowFortresses] = useState<boolean>(false);
   // 5. Salute Pubblica & SUEM 118
-  const [showEmergencyDocks, setShowEmergencyDocks] = useState<boolean>(false);
-  const [showDae, setShowDae] = useState<boolean>(false);
-  const [showPharmacies, setShowPharmacies] = useState<boolean>(false);
   // 6. Microclima & Isole Calore
-  const [showHeatIslands, setShowHeatIslands] = useState<boolean>(false);
   // 7. Open Data Regione Veneto (dati.veneto.it)
-  const [showLagoonWater, setShowLagoonWater] = useState<boolean>(false);
-  const [showAccommodations, setShowAccommodations] = useState<boolean>(false);
-  const [showBikeRoutes, setShowBikeRoutes] = useState<boolean>(false);
-  const [showPollenStations, setShowPollenStations] = useState<boolean>(false);
-  const [showTributaries, setShowTributaries] = useState<boolean>(false);
 
   const [bufferRadiusMeters, setBufferRadiusMeters] = useState<number>(200);
   const [selectedCategory, setSelectedCategory] = useState<TransportModeCategory | 'all'>('all');
@@ -239,12 +206,12 @@ export default function HomePage() {
   const [liveTrains, setLiveTrains] = useState<TrainLiveItem[]>(OPEN_LIVE_TRAINS);
   const [wasteBoats, setWasteBoats] = useState<VeritasWasteBoatItem[]>(OPEN_VERITAS_WASTE_BOATS);
   const [nizioleti, setNizioleti] = useState<NizioletoCivicoItem[]>(OPEN_NIZIOLETI_CIVICI);
-  const [wells, setWells] = useState<VeniceWellItem[]>(OPEN_VENICE_WELLS);
+  const [wells, setWells] = useState<VeniceWellItem[]>([]);
   const [bellTowers, setBellTowers] = useState<BellTowerItem[]>(OPEN_BELL_TOWERS);
   const [fortressIslands, setFortressIslands] = useState<LagoonFortressIslandItem[]>(OPEN_LAGOON_FORTRESS_ISLANDS);
   const [emergencyDocks, setEmergencyDocks] = useState<EmergencyWaterDockItem[]>(OPEN_EMERGENCY_WATER_DOCKS);
   const [daeList, setDaeList] = useState<PublicDaeItem[]>(OPEN_PUBLIC_DAE);
-  const [pharmacies, setPharmacies] = useState<PharmacyDutyItem[]>(OPEN_PHARMACY_DUTY);
+  const [pharmacies, setPharmacies] = useState<PharmacyItem[]>(OPEN_PHARMACIES);
   const [heatIslands, setHeatIslands] = useState<HeatIslandSurfaceTempItem[]>(OPEN_HEAT_ISLAND_LST);
 
   // 5 Open Data Regione Veneto collections (dati.veneto.it)
@@ -273,10 +240,47 @@ export default function HomePage() {
   const [isMoseModalOpen, setIsMoseModalOpen] = useState<boolean>(false);
   const [isAlilagunaModalOpen, setIsAlilagunaModalOpen] = useState<boolean>(false);
   const [isSpatialModalOpen, setIsSpatialModalOpen] = useState<boolean>(false);
-  const [isStatsModalOpen, setIsStatsModalOpen] = useState<boolean>(false);
   const [isAirportModalOpen, setIsAirportModalOpen] = useState<boolean>(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState<boolean>(false);
+  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+  const [isTideModalOpen, setIsTideModalOpen] = useState<boolean>(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [focusedCoordinates, setFocusedCoordinates] = useState<{ lat: number; lon: number } | null>(null);
+  const [simulatedTideLevel, setSimulatedTideLevel] = useState<number | null>(null);
+
+  // Global Keyboard Shortcut: Cmd+K / Ctrl+K for Global Search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Center camera and focus element from search results
+  const handleSelectSearchResult = useCallback((item: SearchResultItem) => {
+    setFocusedCoordinates({ lat: item.lat, lon: item.lon });
+
+    // Accende il layer del risultato (senza toccare gli altri)
+    const key = item.layerKey;
+    if (key) setLayers((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
+
+    if (item.type === 'stop') setSelectedStop(item.rawItem);
+    else if (item.type === 'cantiere') setSelectedCantiere(item.rawItem);
+    else if (item.type === 'camera') setSelectedCamera(item.rawItem);
+    else if (item.type === 'mose') setIsMoseModalOpen(true);
+    else if (item.type === 'nizioleto') setSelectedFeature({ type: 'nizioleto', data: item.rawItem });
+    else if (item.type === 'well') setSelectedFeature({ type: 'veniceWell', data: item.rawItem });
+    else if (item.type === 'bell_tower') setSelectedFeature({ type: 'bellTower', data: item.rawItem });
+    else if (item.type === 'pharmacy') setSelectedFeature({ type: 'pharmacy', data: item.rawItem });
+    else if (item.type === 'dae') setSelectedFeature({ type: 'publicDae', data: item.rawItem });
+    else if (item.type === 'emergency_dock') setSelectedFeature({ type: 'emergencyDock', data: item.rawItem });
+    else if (item.type === 'fountain') setSelectedFeature({ type: 'fountain', data: item.rawItem });
+    else if (item.type === 'parking') setSelectedFeature({ type: 'parking', data: item.rawItem });
+  }, []);
 
   // Tutorial mostrato alla prima visita: lato server si assume già visto per evitare un flash
   const onboardingDone = usePreference(ONBOARDING_KEY, 'true') !== null;
@@ -306,376 +310,46 @@ export default function HomePage() {
     };
   }, [showRealtimeVehicles]);
 
-  const turnAllLayers = useCallback((active: boolean) => {
-    setShowRoutes(active);
-    setShowStops(active);
-    setShowVehicles(active);
-    setShowRealtimeVehicles(active);
-    setShowCantieri(active);
-    setShowSpatialBuffer(active);
-    setShowFlights(active);
-    setShowShips(active);
-    setShowShipRoutes(active);
-    setShowMose(active);
-    setShowCityAssets(active);
-    setShowParkings(active);
-    setShowAirQuality(active);
-    setShowPedestrianFlows(active);
-    setShowAlilaguna(active);
-    setShowSatellites(active);
-    setShowPasserelle(active);
-    setShowMarineSignals(active);
-    setShowOceanStations(active);
-    setShowBathingWaters(active);
-    setShowTrees(active);
-    setShowWifiHotspots(active);
-    setShowEvCharging(active);
-    setShowCameras(active);
-    // 1. Viabilità Acquea & Canali
-    setShowCanalLimits(active);
-    setShowBridges(active);
-    setShowGondolas(active);
-    setShowDocks(active);
-    // 2. Idrografia, Subsidenza & Morfologia
-    setShowSubsidence(active);
-    setShowMorphology(active);
-    setShowMarineWind(active);
-    // 3. Ferrovia & Logistica
-    setShowTrains(active);
-    setShowWasteBoats(active);
-    // 4. Patrimonio Storico & Nizioleti
-    setShowNizioleti(active);
-    setShowWells(active);
-    setShowBellTowers(active);
-    setShowFortresses(active);
-    // 5. Salute Pubblica & SUEM 118
-    setShowEmergencyDocks(active);
-    setShowDae(active);
-    setShowPharmacies(active);
-    // 6. Microclima & Isole Calore
-    setShowHeatIslands(active);
-    // 7. Open Data Regione Veneto (dati.veneto.it)
-    setShowLagoonWater(active);
-    setShowAccommodations(active);
-    setShowBikeRoutes(active);
-    setShowPollenStations(active);
-    setShowTributaries(active);
-  }, []);
+  const turnAllLayers = useCallback((active: boolean) => setLayers(allLayers(active)), []);
 
   const applyPreset = useCallback((preset: MapPresetType) => {
-    // Reset all layers first to ensure a crisp, dedicated preset
-    turnAllLayers(false);
-
-    if (preset === 'clean') {
-      return;
-    }
-    if (preset === 'all') {
-      turnAllLayers(true);
-      return;
-    }
-    if (preset === 'mobility') {
-      setShowRoutes(true);
-      setShowStops(true);
-      setShowVehicles(true);
-      setShowAlilaguna(true);
-      setShowShips(true);
-      setShowShipRoutes(true);
-      setShowFlights(true);
-      setShowCanalLimits(true);
-      setShowBridges(true);
-      setShowGondolas(true);
-      setShowDocks(true);
-      setShowTrains(true);
-      setShowWasteBoats(true);
-      setShowBikeRoutes(true);
-      setShowEvCharging(true);
-      setShowCameras(true);
-    } else if (preset === 'lagoon') {
-      setShowMose(true);
-      setShowPasserelle(true);
-      setShowMarineSignals(true);
-      setShowOceanStations(true);
-      setShowBathingWaters(true);
-      setShowSubsidence(true);
-      setShowMorphology(true);
-      setShowMarineWind(true);
-      setShowFortresses(true);
-      setShowLagoonWater(true);
-      setShowTributaries(true);
-    } else if (preset === 'city') {
-      setShowCityAssets(true);
-      setShowTrees(true);
-      setShowWifiHotspots(true);
-      setShowEvCharging(true);
-      setShowCameras(true);
-      setShowParkings(true);
-      setShowCantieri(true);
-      setShowAirQuality(true);
-      setShowPedestrianFlows(true);
-      setShowNizioleti(true);
-      setShowWells(true);
-      setShowBellTowers(true);
-      setShowEmergencyDocks(true);
-      setShowDae(true);
-      setShowPharmacies(true);
-      setShowHeatIslands(true);
-      setShowAccommodations(true);
-      setShowPollenStations(true);
-    } else if (preset === 'satellites') {
-      setShowSatellites(true);
-      setShowSubsidence(true);
-      setShowHeatIslands(true);
-    } else if (preset === 'regional') {
-      setShowLagoonWater(true);
-      setShowAccommodations(true);
-      setShowBikeRoutes(true);
-      setShowPollenStations(true);
-      setShowTributaries(true);
-      setCurrentView('lagoon');
-    }
-  }, [turnAllLayers]);
-
-  // Activate specific layers mapped from query params
-  const applyLayerKeyMap = useCallback((activeLayers: Partial<Record<LayerKey, boolean>>) => {
-    if (ALL_LAYER_KEYS.every((k) => activeLayers[k])) {
-      turnAllLayers(true);
-      return;
-    }
-    turnAllLayers(false);
-    if (activeLayers.showRoutes) setShowRoutes(true);
-    if (activeLayers.showStops) setShowStops(true);
-    if (activeLayers.showVehicles) setShowVehicles(true);
-    if (activeLayers.showRealtimeVehicles) setShowRealtimeVehicles(true);
-    if (activeLayers.showCantieri) setShowCantieri(true);
-    if (activeLayers.showSpatialBuffer) setShowSpatialBuffer(true);
-    if (activeLayers.showFlights) setShowFlights(true);
-    if (activeLayers.showShips) setShowShips(true);
-    if (activeLayers.showShipRoutes) setShowShipRoutes(true);
-    if (activeLayers.showMose) setShowMose(true);
-    if (activeLayers.showCityAssets) setShowCityAssets(true);
-    if (activeLayers.showParkings) setShowParkings(true);
-    if (activeLayers.showAirQuality) setShowAirQuality(true);
-    if (activeLayers.showPedestrianFlows) setShowPedestrianFlows(true);
-    if (activeLayers.showAlilaguna) setShowAlilaguna(true);
-    if (activeLayers.showSatellites) setShowSatellites(true);
-    if (activeLayers.showPasserelle) setShowPasserelle(true);
-    if (activeLayers.showMarineSignals) setShowMarineSignals(true);
-    if (activeLayers.showOceanStations) setShowOceanStations(true);
-    if (activeLayers.showBathingWaters) setShowBathingWaters(true);
-    if (activeLayers.showTrees) setShowTrees(true);
-    if (activeLayers.showWifiHotspots) setShowWifiHotspots(true);
-    if (activeLayers.showEvCharging) setShowEvCharging(true);
-    if (activeLayers.showCameras) setShowCameras(true);
-    if (activeLayers.showCanalLimits) setShowCanalLimits(true);
-    if (activeLayers.showBridges) setShowBridges(true);
-    if (activeLayers.showGondolas) setShowGondolas(true);
-    if (activeLayers.showDocks) setShowDocks(true);
-    if (activeLayers.showSubsidence) setShowSubsidence(true);
-    if (activeLayers.showMorphology) setShowMorphology(true);
-    if (activeLayers.showMarineWind) setShowMarineWind(true);
-    if (activeLayers.showTrains) setShowTrains(true);
-    if (activeLayers.showWasteBoats) setShowWasteBoats(true);
-    if (activeLayers.showNizioleti) setShowNizioleti(true);
-    if (activeLayers.showWells) setShowWells(true);
-    if (activeLayers.showBellTowers) setShowBellTowers(true);
-    if (activeLayers.showFortresses) setShowFortresses(true);
-    if (activeLayers.showEmergencyDocks) setShowEmergencyDocks(true);
-    if (activeLayers.showDae) setShowDae(true);
-    if (activeLayers.showPharmacies) setShowPharmacies(true);
-    if (activeLayers.showHeatIslands) setShowHeatIslands(true);
-    if (activeLayers.showLagoonWater) setShowLagoonWater(true);
-    if (activeLayers.showAccommodations) setShowAccommodations(true);
-    if (activeLayers.showBikeRoutes) setShowBikeRoutes(true);
-    if (activeLayers.showPollenStations) setShowPollenStations(true);
-    if (activeLayers.showTributaries) setShowTributaries(true);
-  }, [turnAllLayers]);
+    setLayers(presetLayers(preset));
+    if (preset === 'regional') setCurrentView('lagoon');
+  }, []);
 
   // Track initial mount load from URL
   const hasLoadedUrlParamsRef = useRef(false);
 
-  // Load initial layer state or preset from URL query params
+  // Stato iniziale dei layer dall'URL: ?layers= ha la precedenza su ?preset=
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const search = window.location.search;
-    if (search) {
-      const parsed = parseLayerParams(search);
-      if (parsed.preset) {
-        applyPreset(parsed.preset as MapPresetType);
-      } else if (parsed.hasLayerParams) {
-        applyLayerKeyMap(parsed.activeLayers);
-      }
+    const initial = initialLayersFromSearch(window.location.search);
+    if (initial?.preset) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- lettura una tantum dell'URL dopo l'idratazione
+      applyPreset(initial.preset);
+    } else if (initial) {
+      setLayers(initial.layers);
     }
     hasLoadedUrlParamsRef.current = true;
-  }, [applyPreset, applyLayerKeyMap]);
+  }, [applyPreset]);
 
-  // Synchronize active layers to URL search params in address bar (clean GIS history replaceState)
+  // Sincronizza i layer attivi nell'URL (replaceState, senza voci di cronologia)
   useEffect(() => {
-    if (!hasLoadedUrlParamsRef.current || typeof window === 'undefined') return;
-    const currentMap: Partial<Record<LayerKey, boolean>> = {
-      showRoutes,
-      showStops,
-      showVehicles,
-      showRealtimeVehicles,
-      showCantieri,
-      showSpatialBuffer,
-      showFlights,
-      showShips,
-      showShipRoutes,
-      showMose,
-      showCityAssets,
-      showParkings,
-      showAirQuality,
-      showPedestrianFlows,
-      showAlilaguna,
-      showSatellites,
-      showPasserelle,
-      showMarineSignals,
-      showOceanStations,
-      showBathingWaters,
-      showTrees,
-      showWifiHotspots,
-      showEvCharging,
-      showCameras,
-      showCanalLimits,
-      showBridges,
-      showGondolas,
-      showDocks,
-      showSubsidence,
-      showMorphology,
-      showMarineWind,
-      showTrains,
-      showWasteBoats,
-      showNizioleti,
-      showWells,
-      showBellTowers,
-      showFortresses,
-      showEmergencyDocks,
-      showDae,
-      showPharmacies,
-      showHeatIslands,
-      showLagoonWater,
-      showAccommodations,
-      showBikeRoutes,
-      showPollenStations,
-      showTributaries,
-    };
-    const slugs = buildLayersParam(currentMap);
+    if (!hasLoadedUrlParamsRef.current) return;
+    const slugs = buildLayersParam(layers);
     const url = new URL(window.location.href);
-    if (slugs) {
-      url.searchParams.set('layers', slugs);
-    } else {
-      url.searchParams.delete('layers');
-    }
+    if (slugs) url.searchParams.set('layers', slugs);
+    else url.searchParams.delete('layers');
+    // Il preset è già tradotto in layer: lasciarlo nell'URL farebbe perdere le modifiche al reload
     url.searchParams.delete('layer');
-    window.history.replaceState(null, '', url.pathname + url.search);
-  }, [
-    showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri,
-    showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose,
-    showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna,
-    showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters,
-    showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits,
-    showBridges, showGondolas, showDocks, showSubsidence, showMorphology,
-    showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells,
-    showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies,
-    showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations,
-    showTributaries
-  ]);
+    url.searchParams.delete('preset');
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+  }, [layers]);
 
-  // Share active layers URL (copia ESCLUSIVAMENTE l'URL negli appunti)
-  const handleShare = useCallback(async () => {
-    if (typeof window === 'undefined') return;
-    const currentMap: Partial<Record<LayerKey, boolean>> = {
-      showRoutes,
-      showStops,
-      showVehicles,
-      showRealtimeVehicles,
-      showCantieri,
-      showSpatialBuffer,
-      showFlights,
-      showShips,
-      showShipRoutes,
-      showMose,
-      showCityAssets,
-      showParkings,
-      showAirQuality,
-      showPedestrianFlows,
-      showAlilaguna,
-      showSatellites,
-      showPasserelle,
-      showMarineSignals,
-      showOceanStations,
-      showBathingWaters,
-      showTrees,
-      showWifiHotspots,
-      showEvCharging,
-      showCameras,
-      showCanalLimits,
-      showBridges,
-      showGondolas,
-      showDocks,
-      showSubsidence,
-      showMorphology,
-      showMarineWind,
-      showTrains,
-      showWasteBoats,
-      showNizioleti,
-      showWells,
-      showBellTowers,
-      showFortresses,
-      showEmergencyDocks,
-      showDae,
-      showPharmacies,
-      showHeatIslands,
-      showLagoonWater,
-      showAccommodations,
-      showBikeRoutes,
-      showPollenStations,
-      showTributaries,
-    };
-    const shareUrl = buildShareUrl(currentMap);
-
-    if (navigator.clipboard) {
-      await navigator.clipboard.writeText(shareUrl);
-    }
-  }, [
-    showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri,
-    showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose,
-    showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna,
-    showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters,
-    showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits,
-    showBridges, showGondolas, showDocks, showSubsidence, showMorphology,
-    showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells,
-    showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies,
-    showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations,
-    showTributaries
-  ]);
+  // Copia negli appunti l'URL con i layer attivi; l'esito è mostrato dal pulsante
+  const handleShare = useCallback(() => copyToClipboard(buildShareUrl(layers)), [layers]);
 
   // Conteggio dei layer attualmente attivi per abilitare il bottone di condivisione
-  const activeLayersCount = useMemo(() => {
-    return [
-      showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri,
-      showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose,
-      showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna,
-      showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters,
-      showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits,
-      showBridges, showGondolas, showDocks, showSubsidence, showMorphology,
-      showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells,
-      showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies,
-      showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations,
-      showTributaries
-    ].filter(Boolean).length;
-  }, [
-    showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri,
-    showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose,
-    showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna,
-    showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters,
-    showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits,
-    showBridges, showGondolas, showDocks, showSubsidence, showMorphology,
-    showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells,
-    showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies,
-    showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations,
-    showTributaries
-  ]);
+  const activeLayersCount = useMemo(() => countActiveLayers(layers), [layers]);
 
   // Fetch initial data from APIs (including Flights, Ships, City Assets, Tide, Environment, Flows)
   useEffect(() => {
@@ -1031,19 +705,20 @@ export default function HomePage() {
           setFocusedCoordinates(null);
         }}
         palette={paletteTheme}
-        onSelectPalette={setPaletteTheme}
+        onSelectPalette={handleSelectPalette}
         onOpenSpatialModal={() => setIsSpatialModalOpen(true)}
-        onOpenStatsModal={() => setIsStatsModalOpen(true)}
         onOpenLayers={() => {
           setIsLayerPanelOpenMobile(true);
           setIsDesktopLayerPanelOpen(true);
         }}
         onOpenTutorial={() => setIsTutorialOpen(true)}
+        onOpenSearch={() => setIsSearchOpen(true)}
+        onOpenTideModal={() => setIsTideModalOpen(true)}
+        onOpenExportModal={() => setIsExportModalOpen(true)}
         activeCantieriCount={locatedCantieri.length}
         tideLevel={tideLevel}
         tideObservedAt={tideInfo.observedAt}
-        activeShipsCount={ships.length}
-        activeSatellitesCount={satellites.length}
+        tideTrend={tideInfo.trend}
       />
 
       {/* Main Map Canvas Area */}
@@ -1164,8 +839,38 @@ export default function HomePage() {
           showTributaries={showTributaries}
           lagoonTributaryRivers={lagoonTributaryRivers}
           tideLevel={tideLevel ?? 0}
+          simulatedTideLevel={simulatedTideLevel}
           isDesktopLayerPanelOpen={isDesktopLayerPanelOpen}
         />
+
+        {/* Floating Simulated Tide Alert Pill on Map */}
+        {simulatedTideLevel !== null && (
+          <div className="absolute top-4 right-4 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-slate-950/85 backdrop-blur-md border border-cyan-500/40 text-xs font-mono shadow-2xl">
+              <Waves className="w-4 h-4 text-cyan-400 motion-safe:animate-pulse" />
+              <span className="text-slate-300">
+                {t('ui.floodModal.simPill')}: <strong className={simulatedTideLevel >= 110 ? 'text-rose-400' : 'text-cyan-300'}>{formatSignedCm(simulatedTideLevel)}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsTideModalOpen(true)}
+                className="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 transition-colors cursor-pointer"
+                title={t('ui.floodModal.simAdjustTitle')}
+              >
+                {t('ui.floodModal.simAdjust')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSimulatedTideLevel(null)}
+                className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                title={t('ui.floodModal.simReset')}
+                aria-label={t('ui.floodModal.simReset')}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Floating Left: Desktop Layer & Filter Panel or Minimized Toggle */}
         {isDesktopLayerPanelOpen ? (
@@ -1530,13 +1235,13 @@ export default function HomePage() {
             alilagunaBoatsCount={alilagunaBoats.length}
             peakCount={dayActivity(selectedDay).peakCount}
             peakTime={dayActivity(selectedDay).peakTime}
-            totalActiveVehicles={activeTripsAt(selectedDay, currentTimeSeconds)}
             showTide={showMose || showPasserelle}
             tideLevel={tideLevel}
             onSyncLiveTime={handleSyncLiveTime}
             isLiveSynced={isLiveSynced}
             onShare={handleShare}
             hasActiveLayers={activeLayersCount > 0}
+            onOpenTideModal={() => setIsTideModalOpen(true)}
           />
         </div>
       </div>
@@ -1604,15 +1309,59 @@ export default function HomePage() {
         onFocusLocation={(lat, lon) => setFocusedCoordinates({ lat, lon })}
       />
 
-      <StatsModal
-        isOpen={isStatsModalOpen}
-        onClose={() => setIsStatsModalOpen(false)}
-      />
-
       <OnboardingTutorialModal
         isOpen={showTutorial}
         onClose={closeTutorial}
         onSelectPreset={applyPreset}
+      />
+
+      <GlobalSearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onSelectResult={handleSelectSearchResult}
+        stops={stops}
+        pharmacies={pharmacies}
+        daeList={daeList}
+        emergencyDocks={emergencyDocks}
+        fountains={fountains}
+        cantieri={locatedCantieri}
+        cameras={cameras}
+        parkings={parkings}
+        nizioleti={nizioleti}
+        wells={wells}
+        bellTowers={bellTowers}
+        moseGates={moseGates}
+        oceanStations={oceanStations}
+      />
+
+      <TideFloodModal
+        isOpen={isTideModalOpen}
+        onClose={() => setIsTideModalOpen(false)}
+        liveTideLevel={tideLevel}
+        onActivatePasserelle={() => setShowPasserelle(true)}
+        simulatedTideLevel={simulatedTideLevel}
+        onSimulatedTideChange={setSimulatedTideLevel}
+        forecast={tideInfo.forecast}
+        marineWindStations={marineWindStations}
+      />
+
+      <DataExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        stops={stops}
+        pharmacies={pharmacies}
+        daeList={daeList}
+        emergencyDocks={emergencyDocks}
+        fountains={fountains}
+        cantieri={locatedCantieri}
+        cameras={cameras}
+        parkings={parkings}
+        nizioleti={nizioleti}
+        wells={wells}
+        bellTowers={bellTowers}
+        moseGates={moseGates}
+        oceanStations={oceanStations}
+        briccole={briccole}
       />
     </main>
   );

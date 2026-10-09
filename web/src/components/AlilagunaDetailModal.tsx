@@ -5,6 +5,7 @@ import { X, Plane, Waves, ExternalLink, Ship, Clock, Compass, ShieldCheck } from
 import { AlilagunaRoute, AlilagunaStop, AlilagunaBoat } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { useDialogA11y } from '@/components/ui/useDialogA11y';
+import { ALILAGUNA_FEED_META } from '@/lib/alilaguna-schedule';
 
 interface AlilagunaDetailModalProps {
   isOpen: boolean;
@@ -20,7 +21,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
   routes,
   boats
 }) => {
-  const { language, t } = useTranslation();
+  const { t } = useTranslation();
   const panelRef = useDialogA11y(isOpen, onClose);
   if (!isOpen) return null;
 
@@ -52,8 +53,8 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
                 >
                   Transitland: f-u20f-alilagunaspa <ExternalLink className="w-2.5 h-2.5" />
                 </a>
-                <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> GTFS LIVE
+                <span className="text-[10px] font-mono text-amber-400 font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" /> {t('ui.alilaguna.badgeSimulated')}
                 </span>
               </div>
               <h3 id="alilaguna-modal-title" className="text-lg font-bold text-[var(--ink)] leading-snug">
@@ -147,7 +148,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
               <Waves className="w-4 h-4 text-blue-400" /> {t('ui.alilaguna.flottaAlilagunaNavigazione')} ({boats.length} {t('ui.alilaguna.battelliAttivi')})
             </span>
             <span className="text-[10px] font-mono text-cyan-400 font-bold">
-              168 {t('ui.alilaguna.corseGiornoOrario')}
+              {ALILAGUNA_FEED_META.dailyTrips} {t('ui.alilaguna.corseGiornoOrario')}
             </span>
           </div>
 
@@ -187,7 +188,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
                   )}
                   <div className="flex justify-between items-center text-[10px] font-mono pt-1 border-t border-[var(--rule)] text-[var(--ink-3)]">
                     <span>{b.speedKmh} km/h</span>
-                    <span className="text-emerald-400 font-semibold">{b.passengersOnBoard} pax</span>
+                    <span>{t('ui.alilaguna.fromTimetable')}</span>
                   </div>
                 </div>
               ))}
@@ -206,11 +207,11 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
             </span>
           </div>
           <p className="text-[11px] leading-relaxed text-[var(--ink-2)]">
-            {language === 'it' ? (
-              <>Le posizioni della flotta Alilaguna sono <strong>simulate dall&apos;orario</strong>: per ognuna delle 168 corse giornaliere (Linee Blu, Arancio, Rossa, Verde) la barca viene collocata lungo il percorso in base all&apos;orario di partenza. Non si tratta di un tracciamento GPS: ritardi e variazioni di servizio non sono rappresentati.</>
-            ) : (
-              <>Alilaguna fleet positions are <strong>simulated from the timetable</strong>: for each of the 168 daily trips (Blu, Arancio, Rossa, Verde lines) the boat is placed along its route based on the scheduled departure. This is not GPS tracking: delays and service changes are not shown.</>
-            )}
+            {t('ui.alilaguna.simulationNote', {
+              trips: ALILAGUNA_FEED_META.dailyTrips,
+              from: `${ALILAGUNA_FEED_META.validFrom.slice(6, 8)}/${ALILAGUNA_FEED_META.validFrom.slice(4, 6)}/${ALILAGUNA_FEED_META.validFrom.slice(0, 4)}`,
+              to: `${ALILAGUNA_FEED_META.validTo.slice(6, 8)}/${ALILAGUNA_FEED_META.validTo.slice(4, 6)}/${ALILAGUNA_FEED_META.validTo.slice(0, 4)}`,
+            })}
           </p>
         </div>
 

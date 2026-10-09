@@ -3,7 +3,9 @@ import {
   ALILAGUNA_ROUTES,
   ALILAGUNA_STOPS,
   getScheduledAlilagunaBoats,
-  formatTimeSeconds
+  formatTimeSeconds,
+  isAlilagunaTimetableValid,
+  ALILAGUNA_FEED_META
 } from '@/lib/alilaguna-schedule';
 
 export const revalidate = 60;
@@ -18,7 +20,7 @@ export async function GET() {
   const [h, m, s] = romeTimeStr.split(':').map(Number);
   const nowSeconds = (h || 0) * 3600 + (m || 0) * 60 + (s || 0);
 
-  const activeBoats = getScheduledAlilagunaBoats(nowSeconds);
+  const activeBoats = getScheduledAlilagunaBoats(nowSeconds, now);
 
   return NextResponse.json({
     success: true,
@@ -26,16 +28,21 @@ export async function GET() {
     transitlandFeed: {
       onestopId: 'f-u20f-alilagunaspa',
       url: 'https://www.transit.land/feeds/f-u20f-alilagunaspa',
-      type: 'GTFS Static Open Data'
+      type: 'GTFS'
     },
     metadata: {
       kind: 'schedule-simulation',
-      source: 'Transitland Registry (Feed f-u20f-alilagunaspa) / Orari Ufficiali Alilaguna S.p.A.',
-      totalDailyTrips: 168,
-      lines: ['BLU (76 corse/gg)', 'ARANCIO (66 corse/gg)', 'ROSSA (20 corse/gg)', 'VERDE (6 corse/gg)'],
+      source: ALILAGUNA_FEED_META.source,
+      sourceUrl: ALILAGUNA_FEED_META.sourceUrl,
+      license: ALILAGUNA_FEED_META.license,
+      feedVersion: ALILAGUNA_FEED_META.feedVersion,
+      validFrom: ALILAGUNA_FEED_META.validFrom,
+      validTo: ALILAGUNA_FEED_META.validTo,
+      timetableValidToday: isAlilagunaTimetableValid(now),
+      totalDailyTrips: ALILAGUNA_FEED_META.dailyTrips,
       currentTimeRome: formatTimeSeconds(nowSeconds),
       currentTimeSeconds: nowSeconds,
-      notes: 'Simulazione da orario: le barche in navigazione sono calcolate dagli orari di partenza delle 168 corse giornaliere e interpolate lungo i percorsi dei canali. Non è un tracciamento GPS dei mezzi.'
+      notes: 'Simulazione da orario: posizioni interpolate dalle corse del GTFS ufficiale Alilaguna lungo i percorsi pubblicati. Non è un tracciamento GPS delle barche.'
     },
     routesCount: ALILAGUNA_ROUTES.length,
     stopsCount: ALILAGUNA_STOPS.length,

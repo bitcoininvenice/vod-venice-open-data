@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { PHARMACY_DUTY_URL } from '@/lib/pharmacies-data';
 import {
   X,
   ShieldAlert,
@@ -48,7 +49,7 @@ import {
   LagoonFortressIslandItem,
   EmergencyWaterDockItem,
   PublicDaeItem,
-  PharmacyDutyItem,
+  PharmacyItem,
   HeatIslandSurfaceTempItem,
   LagoonWaterQualityItem,
   TouristAccommodationItem,
@@ -85,7 +86,7 @@ export type VeniceFeatureSelected =
   | { type: 'fortressIsland'; data: LagoonFortressIslandItem }
   | { type: 'emergencyDock'; data: EmergencyWaterDockItem }
   | { type: 'publicDae'; data: PublicDaeItem }
-  | { type: 'pharmacy'; data: PharmacyDutyItem }
+  | { type: 'pharmacy'; data: PharmacyItem }
   | { type: 'heatIsland'; data: HeatIslandSurfaceTempItem }
   | { type: 'lagoonWater'; data: LagoonWaterQualityItem }
   | { type: 'accommodation'; data: TouristAccommodationItem }
@@ -264,7 +265,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'pollenStation' && `${t('ui.feature.rischioAllergico')}: ${feature.data.overallAllergyRisk} · ${feature.data.locationName}`}
                 {feature.type === 'tributaryRiver' && `${t('ui.feature.portata')}: ${feature.data.avgFlowM3s} m³/s · ${feature.data.mouthZone}`}
                 {feature.type === 'parking' && `${feature.data.location} · ${feature.data.operator}`}
-                {feature.type === 'fountain' && `${feature.data.sestiere} · Acqua Potabile Veritas · Venice Tap Water`}
+                {feature.type === 'fountain' && `${feature.data.sestiere} · ${t('ui.feature.fountainSubtitle')}`}
               </span>
             </div>
           </div>
@@ -555,44 +556,38 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             </>
           )}
 
-          {/* CERTIFIED PARKING INFRASTRUCTURE */}
+          {/* PARKING */}
           {feature.type === 'parking' && (
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.capienzaCertificata')}</span>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.capienzaDichiarata')}</span>
                   <p className="text-2xl font-bold font-mono text-cyan-400">
-                    {feature.data.totalSpots} <span className="text-xs text-[var(--ink-2)] font-normal">{t('ui.feature.posti')}</span>
+                    {feature.data.totalSpots ?? 'n.d.'} {feature.data.totalSpots !== null && <span className="text-xs text-[var(--ink-2)] font-normal">{t('ui.feature.posti')}</span>}
                   </p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.ambitoTerritoriale')}</span>
-                  <p className="text-lg font-bold font-mono text-emerald-400 truncate">
-                    {feature.data.location === 'Piazzale Roma' || feature.data.location === 'Tronchetto' ? (t('ui.feature.veneziaInsulare')) : (t('ui.feature.terrafermaMestre'))}
-                  </p>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.zonaIndicativa')}</span>
+                  <p className="text-sm font-bold font-mono text-emerald-400 mt-1">{feature.data.location}</p>
                 </div>
               </div>
 
               <div className="space-y-2">
+                {feature.data.rateHourly && (
+                  <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
+                    <span className="text-[var(--ink-2)]">{t('ui.feature.tariffaIndicativa')}</span>
+                    <span className="font-semibold text-[var(--ink)]">{feature.data.rateHourly}</span>
+                  </div>
+                )}
                 <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
-                  <span className="text-[var(--ink-2)]">{t('ui.feature.tariffaUfficialeOraria')}</span>
-                  <span className="font-semibold text-[var(--ink)]">{feature.data.rateHourly}</span>
-                </div>
-                <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
-                  <span className="text-[var(--ink-2)]">{t('ui.feature.gestoreIstituzionale')}</span>
+                  <span className="text-[var(--ink-2)]">{t('ui.feature.gestore')}</span>
                   <span className="font-semibold text-[var(--ink)]">{feature.data.operator}</span>
-                </div>
-                <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
-                  <span className="text-[var(--ink-2)]">{t('ui.feature.localitaNodo')}</span>
-                  <span className="font-semibold text-[var(--ink)]">{feature.data.location}</span>
                 </div>
               </div>
 
               <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-300 leading-relaxed flex items-start gap-2">
                 <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                <span>
-                  {t('ui.feature.datoIstituzionaleVerificatoAvmS')}
-                </span>
+                <span>{t('ui.feature.parkingNote')}</span>
               </div>
             </>
           )}
@@ -617,16 +612,14 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.epocaStorica')}</span>
-                  <p className="text-xl font-bold font-mono text-amber-400">{feature.data.century}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.profonditaCisterna')}</span>
-                  <p className="text-2xl font-bold font-mono text-cyan-400">{feature.data.cisternaDepthMeters} m</p>
+                  <p className="text-xl font-bold font-mono text-amber-400">{feature.data.century ?? '–'}</p>
                 </div>
               </div>
-              <p className="text-[var(--ink-2)]">
-                {t('ui.feature.materiale')}: <strong>{feature.data.material.replace(/_/g, ' ')}</strong> · {t('ui.feature.stile')}: <strong>{feature.data.style}</strong>
-              </p>
+              {feature.data.material && (
+                <p className="text-[var(--ink-2)]">
+                  {t('ui.feature.materiale')}: <strong>{feature.data.material.replace(/_/g, ' ')}</strong> · {t('ui.feature.stile')}: <strong>{feature.data.style}</strong>
+                </p>
+              )}
             </>
           )}
 
@@ -658,6 +651,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               </div>
               <p className="text-[var(--ink-2)]">{t('ui.feature.ospedaleRiferimento')} <b>{feature.data.hospital}</b></p>
               <p className="text-[var(--ink-2)]">{t('ui.feature.rampaDirettaOspedale')} <b>{feature.data.hasDirectHospitalRamp ? (t('ui.feature.presente')) : (t('ui.feature.nonPresente'))}</b></p>
+              <span className="text-[11px] font-mono text-amber-400">{t('ui.feature.emergencyDockToVerify')}</span>
             </>
           )}
 
@@ -747,13 +741,17 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.altezza')}</span>
-                  <p className="text-2xl font-bold font-mono text-green-400">{feature.data.heightMeters} m</p>
+                  <p className="text-2xl font-bold font-mono text-green-400">{feature.data.heightMeters !== null ? `${feature.data.heightMeters} m` : 'n.d.'}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.co2AssorbitaAnno')}</span>
-                  <p className="text-2xl font-bold font-mono text-emerald-400">{feature.data.co2AbsorbedKgYear} kg</p>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">MASAF</span>
+                  <p className="text-sm font-bold font-mono text-emerald-400">{feature.data.masafRef ?? '–'}</p>
                 </div>
               </div>
+              <p className="text-[var(--ink-2)]">
+                {feature.data.location}
+                {feature.data.circumferenceMeters ? <> · {t('ui.feature.circonferenza')} <b>{feature.data.circumferenceMeters} m</b></> : null}
+              </p>
             </>
           )}
 
@@ -761,11 +759,22 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {feature.type === 'evCharging' && (
             <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
               <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.prese')}</span>
-              <p className="text-2xl font-bold font-mono text-yellow-400">{feature.data.totalSockets}</p>
+              <p className="text-2xl font-bold font-mono text-yellow-400">{feature.data.totalSockets ?? 'n.d.'}</p>
               <span className="text-[11px] text-[var(--ink-3)] block">
                 {t('ui.feature.disponibilitaTempoRealeNonPubblicata')}
               </span>
-              <span className="text-xs text-[var(--ink-2)]">{t('ui.feature.potenza')} {feature.data.powerKw} kW</span>
+              {feature.data.powerKw !== null && (
+                <span className="text-xs text-[var(--ink-2)] block">{t('ui.feature.potenza')} {feature.data.powerKw} kW</span>
+              )}
+              {feature.data.socketTypes.length > 0 && (
+                <span className="text-xs text-[var(--ink-2)] block">{feature.data.socketTypes.join(' · ')}</span>
+              )}
+              <span className="text-xs text-[var(--ink-2)] block">
+                {t('ui.feature.gestore')} <b>{feature.data.operator}</b> · {feature.data.location}
+              </span>
+              {feature.data.openingHours && (
+                <span className="text-[11px] text-[var(--ink-3)] font-mono block">{feature.data.openingHours}</span>
+              )}
             </div>
           )}
 
@@ -804,21 +813,56 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 <b>{t('ui.feature.defibrillatoreSalvavitaPubblicoDae')}</b>
                 <p className="text-xs text-[var(--ink-2)] mt-1">{t('ui.feature.accessoImmediato')} {feature.data.accessType.replace(/_/g, ' ')}</p>
               </div>
+              {feature.data.openingHours && (
+                <span className="text-[11px] text-[var(--ink-3)] font-mono">{feature.data.openingHours}</span>
+              )}
               <span className="text-[11px] text-[var(--ink-3)]">
-                {t('ui.feature.gestore')} <b>{feature.data.operator}</b> · {t('ui.feature.ultimaIspezione')} <b>{feature.data.lastInspected}</b>
+                {t('ui.feature.gestore')} <b>{feature.data.operator}</b>
+                {feature.data.checkDate && (
+                  <> · {t('ui.feature.ultimaIspezione')} <b>{feature.data.checkDate}</b></>
+                )}
               </span>
+              {feature.data.source === 'ELENCO_CURATO' ? (
+                <span className="text-[11px] font-mono text-amber-400">{t('ui.feature.daeToVerify')}</span>
+              ) : (
+                <a
+                  href={feature.data.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] font-mono text-cyan-400 hover:underline"
+                >
+                  © OpenStreetMap contributors (ODbL)
+                </a>
+              )}
             </div>
           )}
 
           {feature.type === 'pharmacy' && (
             <div className="flex flex-col gap-2">
-              <div className={`p-3 rounded-xl border ${feature.data.isOnDutyNow ? 'bg-green-500/10 border-green-500/30 text-green-300' : 'bg-black/20 border-[var(--rule)]'}`}>
-                <b>{feature.data.isOnDutyNow ? (t('ui.feature.apertaTurno')) : (t('ui.feature.apertaOrariOrdinari'))}</b>
-                {feature.data.isNightShift && <span className="block text-xs text-amber-300 mt-1">{t('ui.feature.servizioNotturnoAttivo')}</span>}
-              </div>
+              <a
+                href={PHARMACY_DUTY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-xl border bg-green-500/10 border-green-500/30 text-green-300 text-xs hover:underline"
+              >
+                {t('ui.feature.pharmacyDutyLink')}
+              </a>
+              {feature.data.openingHours && (
+                <span className="text-[11px] text-[var(--ink-3)] font-mono">{feature.data.openingHours}</span>
+              )}
               <span className="text-[11px] text-[var(--ink-3)]">
-                {t('ui.feature.indirizzo')} <b>{feature.data.address}</b> · {t('ui.feature.telefono')} <b>{feature.data.phone}</b>
+                {t('ui.feature.indirizzo')} <b>{feature.data.address}</b>
+                {feature.data.phone && (
+                  <> · {t('ui.feature.telefono')} <b>{feature.data.phone}</b></>
+                )}
               </span>
+              {feature.data.source === 'ELENCO_CURATO' ? (
+                <span className="text-[11px] font-mono text-amber-400">{t('ui.feature.pharmacyToVerify')}</span>
+              ) : (
+                <a href={feature.data.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline">
+                  © OpenStreetMap contributors (ODbL)
+                </a>
+              )}
             </div>
           )}
 
@@ -872,7 +916,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               </div>
 
               <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                {t('ui.feature.fonte')} <b>{feature.data.officialSource}</b>
+                {t('ui.feature.riferimento')} <b>{feature.data.officialSource}</b>
               </span>
             </div>
           )}
@@ -914,7 +958,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               </div>
 
               <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                {t('ui.feature.fonte')} <b>{feature.data.officialSource}</b>
+                {t('ui.feature.riferimento')} <b>{feature.data.officialSource}</b>
               </span>
             </div>
           )}
@@ -944,7 +988,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <p className="text-xs text-[var(--ink-2)] leading-relaxed">{feature.data.description}</p>
 
               <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                {t('ui.feature.fonte')} <b>{feature.data.officialSource}</b>
+                {t('ui.feature.riferimento')} <b>{feature.data.officialSource}</b>
               </span>
             </div>
           )}
@@ -981,7 +1025,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               </div>
 
               <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                {t('ui.feature.fonte')} <b>{feature.data.officialSource}</b>
+                {t('ui.feature.riferimento')} <b>{feature.data.officialSource}</b>
               </span>
             </div>
           )}
@@ -1010,57 +1054,100 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               </div>
 
               <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                {t('ui.feature.fonte')} <b>{feature.data.officialSource}</b>
+                {t('ui.feature.riferimento')} <b>{feature.data.officialSource}</b>
               </span>
             </div>
           )}
 
           {feature.type === 'fountain' && (
             <div className="flex flex-col gap-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
-                  <span className="text-[10px] text-cyan-400 uppercase font-mono font-bold">Stato Rete Idrica</span>
-                  <p className="text-sm font-bold text-cyan-300">Potabile H24</p>
-                  <span className="text-[10px] text-[var(--ink-3)] block mt-0.5">Acquedotto Civico Veritas</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
-                  <span className="text-[10px] text-emerald-400 uppercase font-mono font-bold">Campagna Ecologica</span>
-                  <p className="text-sm font-bold text-emerald-300">Venice Tap Water</p>
-                  <span className="text-[10px] text-[var(--ink-3)] block mt-0.5">Ricarica borracce plastic-free</span>
-                </div>
-              </div>
-
               <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex flex-col gap-1.5 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase">Tipologia Manufatto</span>
-                  <span className="font-mono text-[var(--ink-2)] text-right">{feature.data.typology || 'Colonnina in ghisa / pietra'}</span>
-                </div>
+                {feature.data.typology && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase">{t('ui.feature.tipologia')}</span>
+                    <span className="font-mono text-[var(--ink-2)] text-right">{feature.data.typology}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between border-t border-[var(--rule)] pt-1.5">
-                  <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase">Sestiere / Zona</span>
+                  <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase">{t('ui.feature.zonaIndicativa')}</span>
                   <span className="font-bold text-[var(--ink)]">{feature.data.sestiere}</span>
                 </div>
-                <div className="flex items-center justify-between border-t border-[var(--rule)] pt-1.5">
-                  <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase">Gestore Servizio</span>
-                  <span className="text-[var(--ink-2)]">{feature.data.operator || 'Veritas S.p.A. / Comune di Venezia'}</span>
-                </div>
+                {feature.data.operator && (
+                  <div className="flex items-center justify-between border-t border-[var(--rule)] pt-1.5">
+                    <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase">{t('ui.feature.gestore')}</span>
+                    <span className="text-[var(--ink-2)]">{feature.data.operator}</span>
+                  </div>
+                )}
               </div>
 
-              <div className="p-3 rounded-xl bg-cyan-950/20 border border-cyan-500/20 text-xs text-[var(--ink-2)] leading-relaxed">
-                {feature.data.details}
-              </div>
+              {feature.data.details && (
+                <div className="p-3 rounded-xl bg-cyan-950/20 border border-cyan-500/20 text-xs text-[var(--ink-2)] leading-relaxed">
+                  {feature.data.details}
+                </div>
+              )}
+
+              <p className="text-[11px] text-[var(--ink-3)]">{t('ui.feature.fountainNote')}</p>
 
               <div className="flex items-center justify-between text-[11px] font-mono text-[var(--ink-3)] bg-black/20 p-2 rounded-lg border border-[var(--rule)]">
-                <span>Coordinate:</span>
+                <span>{t('ui.feature.coordinate')}</span>
                 <span className="text-[var(--ink)]">{feature.data.lat.toFixed(5)}, {feature.data.lon.toFixed(5)}</span>
-              </div>
-
-              <div className="flex flex-col gap-1 text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                <span>Fonti Ufficiali: <b>Veritas S.p.A.</b> · <b>Venice Tap Water</b> · <b>Conoscere Venezia</b> · <b>OpenStreetMap</b> (ODbL)</span>
               </div>
             </div>
           )}
+
+          <FeatureProvenance feature={feature} />
         </div>
       </div>
     </div>
   );
+};
+
+/** Tipi che vengono da elenchi compilati nel progetto, senza un campo `source` per voce. */
+const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
+  'passerella', 'briccola', 'bathingWater', 'speedLimit', 'bridgeClearance', 'gondolaStation', 'publicDock',
+  'subsidence', 'lagoonMorphology', 'trainLive', 'wasteBoat', 'nizioleto', 'bellTower', 'fortressIsland',
+  'heatIsland', 'lagoonWater', 'accommodation', 'bikeRoute', 'pollenStation', 'tributaryRiver',
+]);
+
+/** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot']);
+
+/** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
+const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {
+  const { t } = useTranslation();
+  if (OWN_PROVENANCE.has(feature.type)) return null;
+  const data = feature.data as { source?: string; sourceUrl?: string; positionConfirmed?: boolean };
+
+  if (CURATED_TYPES.has(feature.type)) {
+    return (
+      <p className="text-[11px] font-mono text-amber-400 border-t border-[var(--rule)] pt-2">
+        {t('ui.feature.curatedExampleValues')}
+      </p>
+    );
+  }
+  if (data.source === 'OPENSTREETMAP' && data.sourceUrl) {
+    return (
+      <a
+        href={data.sourceUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2"
+      >
+        © OpenStreetMap contributors (ODbL)
+      </a>
+    );
+  }
+  if (data.source === 'ELENCO_CURATO') {
+    return (
+      <div className="flex flex-col gap-1 border-t border-[var(--rule)] pt-2 text-[11px] font-mono">
+        <span className="text-amber-400">{t('ui.feature.curatedToVerify')}</span>
+        {feature.type === 'veniceWell' && data.positionConfirmed !== undefined && (
+          <span className={data.positionConfirmed ? 'text-emerald-400' : 'text-[var(--ink-3)]'}>
+            {data.positionConfirmed ? t('ui.feature.wellPositionConfirmed') : t('ui.feature.wellPositionUnconfirmed')}
+          </span>
+        )}
+      </div>
+    );
+  }
+  return null;
 };

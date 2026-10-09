@@ -9,7 +9,12 @@
 import { CantiereItem, StopItem, StopNearCantiere, PlatformMetrics, isLocated } from './types';
 import operePubbliche from '@/data/opere-pubbliche.json';
 import fountainsDataset from '@/data/fountains.json';
-import { WIFI_HOTSPOTS_DATA } from './urbanAssetsVeniceData';
+import { WIFI_HOTSPOTS_DATA, BATHING_WATERS_DATA } from './urbanAssetsVeniceData';
+import { OPEN_EV_CHARGING } from './osmPoi';
+import { BRICCOLE_SIGNALS_DATA, OCEAN_STATIONS_DATA } from './marineSensorsData';
+import { ALILAGUNA_ROUTES, ALILAGUNA_STOPS } from './alilaguna-schedule';
+import { OPEN_VERITAS_WASTE_BOATS } from './open-data-catalog';
+import { SATELLITES_DATA } from './satellitesData';
 import { ARPAV_AIR_STATIONS } from './airQuality';
 
 const averageOf = (values: (number | null)[]): number | null => {
@@ -191,6 +196,8 @@ export interface PlatformMetricsInputs {
   satellitesCount: number;
   passerelleTotalMeters: number;
   passerelleMountedCount: number;
+  /** Stazioni CPSM con misura di livello nel file corrente (null se la fonte non risponde) */
+  cpsmStationsCount: number | null;
   /** Piattaforma "Acqua Alta": misure CPSM correnti (null se non disponibili) */
   cnrWaveHeightMeters: number | null;
   cnrWaterTempC: number | null;
@@ -198,7 +205,8 @@ export interface PlatformMetricsInputs {
 
 /**
  * Indicatori aggregati della piattaforma.
- * I conteggi derivano dai dataset inclusi nel progetto; le misure senza fonte in tempo reale sono null.
+ * I conteggi derivano dai dataset inclusi nel progetto; i valori senza una fonte sono null
+ * (mostrati come "n.d."), mai numeri scritti a mano.
  */
 export async function fetchPlatformMetrics(inputs: PlatformMetricsInputs): Promise<PlatformMetrics> {
   const cantieri = await fetchCantieri();
@@ -216,15 +224,15 @@ export async function fetchPlatformMetrics(inputs: PlatformMetricsInputs): Promi
     activeVehiclesInService: null,
 
     // Alilaguna (simulazione da orario)
-    alilagunaRoutesCount: 4,
-    alilagunaStopsCount: 21,
+    alilagunaRoutesCount: ALILAGUNA_ROUTES.length,
+    alilagunaStopsCount: ALILAGUNA_STOPS.length,
     alilagunaBoatsCount: inputs.alilagunaBoatsNow,
 
     // Maree & MOSE (CPSM)
     tideLevelCm: inputs.tideLevelCm,
     moseStatus: null,
-    moseGatesCount: 78,
-    cpsmStationsCount: 14,
+    moseGatesCount: 78, // 78 paratoie in 4 schiere alle 3 bocche di porto (Consorzio Venezia Nuova)
+    cpsmStationsCount: inputs.cpsmStationsCount,
     floodingPercentage: null,
 
     // Qualità dell'aria: nessun feed ARPAV collegato
@@ -237,8 +245,8 @@ export async function fetchPlatformMetrics(inputs: PlatformMetricsInputs): Promi
     // Traffico marittimo (anagrafica banchine)
     activeShipsCount: inputs.shipsCount,
     totalGrossTonnage: inputs.shipsGrossTonnage,
-    maritimeChannelsCount: 4,
-    restrictedLagoonVesselsCount: 4,
+    maritimeChannelsCount: null,
+    restrictedLagoonVesselsCount: null,
 
     // Voli (OpenSky)
     activeFlightsCount: inputs.activeFlightsCount,
@@ -246,41 +254,41 @@ export async function fetchPlatformMetrics(inputs: PlatformMetricsInputs): Promi
     averageFlightAltitudeMeters: 0,
 
     // Flussi pedonali: la Smart Control Room non pubblica conteggi aperti
-    pedestrianSensorsCount: 8,
+    pedestrianSensorsCount: null,
     totalHourlyPedestrians: null,
     peakPedestrianSensor: null,
 
     // Parcheggi: nessuna API pubblica di disponibilità posti
-    totalParkingSpaces: 10149,
+    totalParkingSpaces: null,
     freeParkingSpots: null,
     parkingOccupancyRate: null,
 
     // Satelliti
     activeSatellitesCount: inputs.satellitesCount,
-    copernicusSentinelsCount: 2,
-    radarEarthObservationSwathKm: 250,
+    copernicusSentinelsCount: SATELLITES_DATA.filter((s) => /sentinel/i.test(s.name)).length,
+    radarEarthObservationSwathKm: 250, // larghezza di ripresa Sentinel-1 in modalità IW (ESA)
     nextOrbitalPassMinutes: null,
 
     // Patrimonio & opere pubbliche
     activeCantieri: cantieri.filter(isLocated).length,
     totalInvestmentCantieri: totalInv,
-    occupazioniAttive: 14,
+    occupazioniAttive: null,
     stopsNearWorksites200m: near.length,
     drinkingFountainsCount: fountainsDataset.data.length,
-    accessibleBridgesCount: 48,
-    veritasServicePointsCount: 18,
+    accessibleBridgesCount: null, // manca un elenco aperto dei ponti attrezzati
+    veritasServicePointsCount: OPEN_VERITAS_WASTE_BOATS.length,
 
     // Laguna, ambiente & servizi
     passerelleTotalMeters: inputs.passerelleTotalMeters,
     passerelleMountedCount: inputs.passerelleMountedCount,
-    briccoleCount: 8,
-    marineLightsCount: 5,
-    oceanStationsCount: 4,
+    briccoleCount: BRICCOLE_SIGNALS_DATA.length,
+    marineLightsCount: null,
+    oceanStationsCount: OCEAN_STATIONS_DATA.length,
     cnrWaveHeightMeters: inputs.cnrWaveHeightMeters,
     cnrWaterTempC: inputs.cnrWaterTempC,
-    bathingWaterStationsCount: 5,
-    monumentalTreesCount: 6,
-    evChargingStationsCount: 4,
+    bathingWaterStationsCount: BATHING_WATERS_DATA.length,
+    monumentalTreesCount: null,
+    evChargingStationsCount: OPEN_EV_CHARGING.length,
     wifiHotspotsCount: WIFI_HOTSPOTS_DATA.length
   };
 }

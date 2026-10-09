@@ -10,6 +10,11 @@ import "@fontsource/dm-mono/latin-500.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/apple-touch-icon.png"
+  },
   title: {
     default: "VOD – Venice Open Data | Cruscotto Geospaziale & Digital Twin di Venezia",
     template: "%s | VOD – Venice Open Data"
@@ -155,6 +160,7 @@ export const viewport: Viewport = {
 };
 
 import { LanguageProvider } from "@/lib/i18n";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
 export default function RootLayout({
   children,
@@ -163,8 +169,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('vod_theme_preference');if(t==='carta'){document.documentElement.dataset.theme='carta';document.documentElement.style.colorScheme='light';}else{document.documentElement.dataset.theme='notte';document.documentElement.style.colorScheme='dark';}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-screen flex flex-col bg-[var(--ground)] text-[var(--ink)] antialiased select-none">
         <LanguageProvider>
+          <ServiceWorkerRegister />
           {children}
         </LanguageProvider>
       </body>

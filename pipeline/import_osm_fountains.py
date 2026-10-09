@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 VOD - Venice Open Data
-Pipeline: fontanelle di acqua potabile pubblica da OpenStreetMap (amenity=drinking_water)
-incrociate con il censimento toponomastico di Conoscere Venezia e Venice Tap Water (Veritas S.p.A.).
+Pipeline: fontanelle di acqua potabile pubblica da OpenStreetMap (amenity=drinking_water).
+Dopo l'import, enrich_fountains.py aggiunge un toponimo di prossimità ai punti senza nome.
 
 Licenza dati OSM: ODbL 1.0 - © OpenStreetMap contributors.
 Output: web/src/data/fountains.json
@@ -12,6 +12,7 @@ import json
 import logging
 import os
 import urllib.parse
+import time
 import urllib.request
 from datetime import datetime, timezone
 
@@ -21,9 +22,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "fountains.json")
 
 OVERPASS_URLS = [
-    "https://lz4.overpass-api.de/api/interpreter",
-    "https://overpass-api.de/api/interpreter",
-    "https://overpass.kumi.systems/api/interpreter"
+    u for u in [
+        os.environ.get("OVERPASS_URL"),
+        "https://overpass-api.de/api/interpreter",
+        "https://overpass.private.coffee/api/interpreter",
+        "https://overpass.kumi.systems/api/interpreter",
+    ] if u
 ]
 
 # Bounding box Laguna di Venezia & Centro Storico (ottimizzato e concentrato)
@@ -86,7 +90,10 @@ def main():
     data = None
     last_err = None
     
-    for url in OVERPASS_URLS:
+    # Due giri sulle istanze: Overpass risponde spesso 504 quando è sovraccarico
+    for url in OVERPASS_URLS * 2:
+        if data:
+            break
         try:
             logging.info(f"Tentativo con endpoint {url}...")
             req = urllib.request.Request(
@@ -96,13 +103,14 @@ def main():
                     "User-Agent": "VOD-Venice/1.0"
                 }
             )
-            with urllib.request.urlopen(req, timeout=30) as res:
+            with urllib.request.urlopen(req, timeout=120) as res:
                 data = json.loads(res.read().decode("utf-8"))
                 logging.info(f"Ricevuta risposta valida da {url}")
                 break
         except Exception as e:
             logging.warning(f"Errore su {url}: {e}")
             last_err = e
+            time.sleep(10)
             
     if not data or "elements" not in data:
         logging.error(f"Impossibile scaricare dati fontanelle: {last_err}")
@@ -145,14 +153,10 @@ def main():
         elif material == "stone" or "istria" in tags.get("description", "").lower():
             typology = "Colonna in pietra d'Istria con vaschetta"
         else:
-            typology = "Colonnina pubblica potabile a getto continuo / pulsante"
-            
-        details = (
-            f"Acqua potabile H24 dall'acquedotto Veritas S.p.A. (falda artesiana profonda). "
-            f"Punto idrico per ricarica borracce promosso da Venice Tap Water (plastic-free)."
-        )
-        if tags.get("description"):
-            details += f" {tags['description']}."
+            typology = "Fontanella pubblica (tipologia non indicata in OSM)"
+
+        # Solo ciò che riporta OSM: orari, potabilità certificata e campagne non sono attribuiti al singolo punto
+        details = tags.get("description", "")
             
         fountains.append({
             "id": f"fnt-{osm_id}",
@@ -164,8 +168,8 @@ def main():
             "details": details,
             "typology": typology,
             "osmId": osm_id,
-            "operator": tags.get("operator", "Veritas S.p.A. / Comune di Venezia"),
-            "waterSource": "Acquedotto Civico Veritas S.p.A. (Falda artesiana profonda di terraferma)",
+            "operator": tags.get("operator", "Non indicato (OSM)"),
+            "waterSource": "Acquedotto civico (gestore Veritas S.p.A.)",
             "potable": True
         })
         
@@ -176,14 +180,13 @@ def main():
     
     payload = {
         "metadata": {
-            "source": "OpenStreetMap contributors (ODbL 1.0), Venice Tap Water, Veritas S.p.A., Conoscere Venezia",
+            "source": "OpenStreetMap contributors (ODbL 1.0) - amenity=drinking_water",
             "extractedAt": datetime.now(timezone.utc).isoformat(),
             "totalFountains": len(fountains),
             "distributionByZone": counter_by_sestiere,
             "notes": (
-                "Rete idrica delle fontanelle pubbliche potabili di Venezia centro storico e isole. "
-                "Incrocio dei dati georeferenziati OSM con il censimento toponomastico di Conoscere Venezia "
-                "e le campagne plastic-free di Venice Tap Water / Veritas S.p.A."
+                "Fontanelle pubbliche mappate su OpenStreetMap nel centro storico e nelle isole. "
+                "Escluse quelle con drinking_water=no. Funzionamento dei singoli punti non verificato."
             )
         },
         "data": fountains

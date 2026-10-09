@@ -18,7 +18,7 @@ import {
   Check
 } from 'lucide-react';
 import { DayType } from '@/lib/types';
-import { formatTime, getSolarPhase } from '@/lib/solar';
+import { formatTimeParts, getSolarPhase } from '@/lib/solar';
 import { useTranslation } from '@/lib/i18n';
 
 export interface TimelineControlsProps {
@@ -37,7 +37,6 @@ export interface TimelineControlsProps {
   alilagunaBoatsCount?: number;
   peakCount?: number;
   peakTime?: string;
-  totalActiveVehicles?: number;
   // Contextual Tide Props
   showTide?: boolean;
   tideLevel?: number | null;
@@ -47,6 +46,7 @@ export interface TimelineControlsProps {
   // Share
   onShare?: () => Promise<boolean | void> | void;
   hasActiveLayers?: boolean;
+  onOpenTideModal?: () => void;
 }
 
 export const TimelineControls: React.FC<TimelineControlsProps> = ({
@@ -64,36 +64,39 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
   alilagunaBoatsCount,
   peakCount,
   peakTime,
-  totalActiveVehicles,
   showTide = false,
   tideLevel,
   onSyncLiveTime,
   isLiveSynced,
   onShare,
-  hasActiveLayers = false
+  hasActiveLayers = false,
+  onOpenTideModal
 }) => {
   const { t } = useTranslation();
   const [isExpandedMobile, setIsExpandedMobile] = useState<boolean>(false);
-  const [copied, setCopied] = useState<boolean>(false);
+  const [shareState, setShareState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const copied = shareState === 'copied';
   const sliderValue = Math.floor(currentTimeSeconds / 60);
 
   const handleShareClick = async () => {
     if (!onShare) return;
+    let ok = false;
     try {
-      await onShare();
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      ok = (await onShare()) !== false;
     } catch (err) {
       console.error('Share action failed:', err);
     }
+    setShareState(ok ? 'copied' : 'failed');
+    setTimeout(() => setShareState('idle'), 2500);
   };
 
   // Solar Phase & Astronomical Ephemeris for Venice
   const solarPhase = getSolarPhase(currentTimeSeconds);
+  const timeParts = formatTimeParts(currentTimeSeconds);
 
   // Contextual calculations
   const isTransitActive = Boolean(showVehicles || showAlilaguna);
-  const effectiveActv = actvTripsCount ?? totalActiveVehicles ?? 0;
+  const effectiveActv = actvTripsCount ?? 0;
   const effectiveAli = alilagunaBoatsCount ?? 0;
   const isTideActive = Boolean(showTide);
 
@@ -134,9 +137,14 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
           {/* Digital Clock */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 shrink-0" />
-            <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight tabular text-[var(--ink)]">
-              {formatTime(currentTimeSeconds)}
-            </span>
+            <div className="flex items-baseline font-mono tracking-tight tabular text-[var(--ink)]">
+              <span className="text-xl sm:text-2xl font-bold">
+                {timeParts.hoursMinutes}
+              </span>
+              <span className="text-xs sm:text-sm font-semibold text-[var(--ink-2)] ml-0.5 sm:ml-1">
+                :{timeParts.seconds}
+              </span>
+            </div>
           </div>
 
           {/* ORA LIVE Sync Button */}
@@ -153,7 +161,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
             >
               <span className="relative flex h-2 w-2 shrink-0">
                 {isLiveSynced && (
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="motion-safe:animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 )}
                 <span className={`relative inline-flex rounded-full h-2 w-2 ${isLiveSynced ? 'bg-emerald-400' : 'bg-[var(--ink-3)]'}`} />
               </span>
@@ -178,9 +186,11 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
 
           {/* Contextual Tide Badge (Visible only when Tide / MOSE layer is active) */}
           {isTideActive && (
-            <div
-              className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-mono bg-blue-500/10 border border-blue-500/25 text-[var(--ink-2)] shrink-0 animate-in fade-in duration-150"
-              title="Centro Previsioni e Segnalazioni Maree (CPSM) - Punta della Salute"
+            <button
+              type="button"
+              onClick={onOpenTideModal}
+              className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-mono bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/25 text-[var(--ink-2)] shrink-0 animate-in fade-in duration-150 cursor-pointer transition-all"
+              title="Centro Previsioni e Segnalazioni Maree (CPSM) - Punta della Salute (Clicca per simulatore)"
             >
               <Waves className="w-3.5 h-3.5 text-blue-400 shrink-0" />
               <span className="text-[var(--ink-3)]">{t('ui.timeline.mareaPuntaSalute')}:</span>
@@ -191,7 +201,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
               ) : (
                 <span className="text-[var(--ink-3)] font-mono">{t('ui.timeline.mareaNonDisponibile')}</span>
               )}
-            </div>
+            </button>
           )}
 
           {/* Contextual Transit Badge (Visible only when ACTV or Alilaguna layers are active) */}
@@ -237,7 +247,8 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
                   ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-sm'
                   : 'bg-[var(--rule)]/70 text-[var(--ink-2)] hover:text-[var(--ink)] border-[var(--rule)] hover:bg-[var(--rule)]'
               }`}
-              title={copied ? t('timeline.shareSuccess') : t('timeline.share')}
+              title={copied ? t('timeline.shareSuccess') : shareState === 'failed' ? t('timeline.shareFailed') : t('timeline.share')}
+              aria-live="polite"
             >
               {copied ? (
                 <>
@@ -248,9 +259,9 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
                 </>
               ) : (
                 <>
-                  <Share2 className="w-3.5 h-3.5 text-cyan-400" />
+                  <Share2 className={`w-3.5 h-3.5 ${shareState === 'failed' ? 'text-rose-400' : 'text-cyan-400'}`} />
                   <span className="hidden sm:inline">
-                    {t('timeline.share')}
+                    {shareState === 'failed' ? t('timeline.shareFailed') : t('timeline.share')}
                   </span>
                 </>
               )}

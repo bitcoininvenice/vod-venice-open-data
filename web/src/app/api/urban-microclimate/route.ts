@@ -12,7 +12,8 @@ export async function GET() {
       heatIslands: OPEN_HEAT_ISLAND_LST
     },
     meta: {
-      source: 'Copernicus Land Monitoring Service (LST), Sentinel-3 SLSTR, Landsat-9 TIRS',
+      kind: 'curated-reference',
+      source: 'Elenco curato del progetto con temperature di esempio, da verificare (riferimenti: Copernicus LST, Sentinel-3 SLSTR, Landsat TIRS). Non sono misure satellitari scaricate.',
       countHeatZones: OPEN_HEAT_ISLAND_LST.length,
     }
   });

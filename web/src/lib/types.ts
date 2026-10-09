@@ -162,7 +162,7 @@ export interface PlatformMetrics {
   tideLevelCm: number | null;
   moseStatus: string | null;
   moseGatesCount: number;
-  cpsmStationsCount: number;
+  cpsmStationsCount: number | null;
   floodingPercentage: number | null;
 
   // Qualità dell'Aria & Ambiente (ARPAV)
@@ -175,8 +175,8 @@ export interface PlatformMetrics {
   // Traffico Marittimo AIS & Canali (VTS / Crociere)
   activeShipsCount: number;
   totalGrossTonnage: number;
-  maritimeChannelsCount: number;
-  restrictedLagoonVesselsCount: number;
+  maritimeChannelsCount: number | null;
+  restrictedLagoonVesselsCount: number | null;
 
   // Voli & Aeroporto VCE (ENAV / OpenSky)
   activeFlightsCount: number | null;
@@ -184,12 +184,12 @@ export interface PlatformMetrics {
   averageFlightAltitudeMeters: number;
 
   // Flussi Pedonali (Smart Control Room)
-  pedestrianSensorsCount: number;
+  pedestrianSensorsCount: number | null;
   totalHourlyPedestrians: number | null;
   peakPedestrianSensor: string | null;
 
   // Mobilità Terraferma & Parcheggi AVM
-  totalParkingSpaces: number;
+  totalParkingSpaces: number | null;
   freeParkingSpots: number | null;
   parkingOccupancyRate: number | null;
 
@@ -202,22 +202,22 @@ export interface PlatformMetrics {
   // Patrimonio & Opere Pubbliche
   activeCantieri: number;
   totalInvestmentCantieri: number;
-  occupazioniAttive: number;
+  occupazioniAttive: number | null;
   stopsNearWorksites200m: number;
   drinkingFountainsCount: number;
-  accessibleBridgesCount: number;
-  veritasServicePointsCount: number;
+  accessibleBridgesCount: number | null;
+  veritasServicePointsCount: number | null;
 
   // Nuovi Open Data Venezia: Emergenza, Laguna, Ambiente & Servizi
   passerelleTotalMeters: number;
   passerelleMountedCount: number;
   briccoleCount: number;
-  marineLightsCount: number;
+  marineLightsCount: number | null;
   oceanStationsCount: number;
   cnrWaveHeightMeters: number | null;
   cnrWaterTempC: number | null;
   bathingWaterStationsCount: number;
-  monumentalTreesCount: number;
+  monumentalTreesCount: number | null;
   evChargingStationsCount: number;
   wifiHotspotsCount: number;
 }
@@ -291,18 +291,23 @@ export interface CityAssetItem {
   campaign?: string;
   toponomasticSource?: string;
   potable?: boolean;
+  source?: PointSource;
+  sourceUrl?: string;
 }
 
 export interface ParkingItem {
   id: string;
   name: string;
-  location: 'Piazzale Roma' | 'Tronchetto' | 'Mestre';
-  totalSpots: number;
+  location: string;
+  totalSpots: number | null;
   freeSpots?: number;
   lat: number;
   lon: number;
-  rateHourly: string;
+  /** Tariffa riportata nell'elenco curato (non verificata); assente per i dati OSM */
+  rateHourly?: string;
   operator: string;
+  source: PointSource;
+  sourceUrl?: string;
 }
 
 /** Stazione ARPAV con le medie annue validate (µg/m³) dell'anno più recente pubblicato. */
@@ -372,7 +377,6 @@ export interface AlilagunaBoat {
   speedKmh: number;
   nextStop: string;
   destination: string;
-  passengersOnBoard: number;
   scheduledDeparture?: string;
   scheduledArrival?: string;
   tripProgress?: number;
@@ -502,42 +506,44 @@ export interface BathingWaterItem {
   lat: number;
   lon: number;
   qualityClass: 'ECCELLENTE' | 'BUONO' | 'SUFFICIENTE' | 'VIETATA';
-  waterTempC: number;
-  escherichiaColiUfc: number; // < 100 ufc/100ml
-  enterococchiUfc: number; // < 100 ufc/100ml
   blueFlag: boolean;
-  samplingDate: string;
   officialSource: string;
 }
 
 export interface UrbanTreeItem {
   id: string;
-  code: string;
-  species: string; // es. "Platanus acerifolia", "Pinus pinea", "Celtis australis"
-  commonName: string; // es. "Platano comune", "Pino domestico", "Bagolaro"
-  location: string; // es. "Giardini Reali", "Sant'Elena", "Giardini della Biennale"
+  species: string;
+  commonName: string;
+  location: string;
   lat: number;
   lon: number;
-  heightMeters: number;
-  canopyDiameterMeters: number;
-  ageClass: 'MONUMENTALE' | 'ADULTO' | 'GIOVANE';
-  co2AbsorbedKgYear: number;
-  district: string;
+  heightMeters: number | null;
+  circumferenceMeters?: number | null;
+  /** Codice dell'Elenco nazionale degli alberi monumentali (MASAF), se riportato */
+  masafRef?: string | null;
+  source: PointSource;
+  sourceUrl?: string;
 }
+
+/** Origine di un punto: OpenStreetMap (ODbL) o elenco compilato nel progetto, da verificare. */
+export type PointSource = 'OPENSTREETMAP' | 'ELENCO_CURATO';
 
 export interface EvChargingItem {
   id: string;
   name: string;
-  operator: string; // 'AVM / Comune di Venezia' | 'Enel X Way' | 'Be Charge'
+  operator: string;
   location: string;
   lat: number;
   lon: number;
-  totalSockets: number;
+  /** Prese dichiarate (null se la fonte non lo indica) */
+  totalSockets: number | null;
   /** Disponibilità in tempo reale: non pubblicata dai gestori, quindi null */
   availableSockets: number | null;
-  powerKw: number; // es. 22kW, 50kW, 150kW Ultra-Fast
-  socketTypes: string[]; // ['Type 2', 'CCS Combo 2']
-  isOperational: boolean;
+  powerKw: number | null;
+  socketTypes: string[];
+  openingHours?: string | null;
+  source: PointSource;
+  sourceUrl?: string;
 }
 
 /** Hotspot WiFi pubblico del Comune di Venezia (dati.venezia.it, CC BY). */
@@ -696,11 +702,7 @@ export interface TrainLiveItem {
   currentLocation: string;
   lat: number;
   lon: number;
-  delayMinutes: number;
-  speedKmh: number;
   platform: string;
-  status: 'IN_ORARIO' | 'IN_RITARDO' | 'IN_ARRIVO';
-  routeProgress: number; // 0..1 lungo il Ponte della Libertà
 }
 
 export interface VeritasWasteBoatItem {
@@ -713,7 +715,6 @@ export interface VeritasWasteBoatItem {
   collectionType: 'INDIFFERENZIATO' | 'CARTA_CARTONE' | 'PLASTICA_VETRO_LATTINE';
   scheduleHours: string;
   capacityKg: number;
-  isOperatingNow: boolean;
 }
 
 // ==========================================
@@ -733,14 +734,17 @@ export interface NizioletoCivicoItem {
 export interface VeniceWellItem {
   id: string;
   name: string;
-  century: string;
-  material: 'PIETRA_D_ISTRIA' | 'ROSSO_DI_VERONA' | 'MARMO_GRECO';
-  style: 'GOTICO' | 'RINASCIMENTALE' | 'VENETO_BIZANTINO';
-  campo: string;
+  /** Campi descrittivi presenti solo nell'elenco curato (da verificare) */
+  century?: string;
+  material?: 'PIETRA_D_ISTRIA' | 'ROSSO_DI_VERONA' | 'MARMO_GRECO';
+  style?: 'GOTICO' | 'RINASCIMENTALE' | 'VENETO_BIZANTINO';
+  campo?: string;
   lat: number;
   lon: number;
-  conservationState: 'OTTIMO' | 'BUONO' | 'RESTAURATO';
-  cisternaDepthMeters: number;
+  source: PointSource;
+  sourceUrl?: string;
+  /** true se la posizione dell'elenco curato coincide con un pozzo mappato in OSM */
+  positionConfirmed?: boolean;
 }
 
 export interface BellTowerItem {
@@ -779,6 +783,8 @@ export interface EmergencyWaterDockItem {
   is24hOperative: boolean;
   phone: string;
   hasDirectHospitalRamp: boolean;
+  /** Nessun dataset aperto degli approdi SUEM 118: tutte le voci sono di un elenco curato da verificare */
+  source: 'ELENCO_CURATO';
 }
 
 export interface PublicDaeItem {
@@ -787,20 +793,33 @@ export interface PublicDaeItem {
   location: string;
   lat: number;
   lon: number;
-  accessType: 'PUBBLICO_H24' | 'ORARIO_DIURNO';
+  /** H24 solo se dichiarato dalla fonte; NON_INDICATO quando la fonte non riporta gli orari */
+  accessType: 'PUBBLICO_H24' | 'ORARIO_DIURNO' | 'ORARIO_LIMITATO' | 'NON_INDICATO';
   operator: string;
-  lastInspected: string;
+  /** OPENSTREETMAP (ODbL) oppure ELENCO_CURATO: voce del progetto non ancora confermata da una fonte aperta */
+  source: 'OPENSTREETMAP' | 'ELENCO_CURATO';
+  sourceUrl?: string;
+  openingHours?: string;
+  indoor?: boolean;
+  /** Data dell'ultimo controllo riportata dalla fonte (OSM check_date), se presente */
+  checkDate?: string;
 }
 
-export interface PharmacyDutyItem {
+/**
+ * Farmacia. I turni cambiano ogni giorno e non sono open data: nessun campo "di turno"
+ * (l'interfaccia rimanda alla pagina ufficiale ULSS 3).
+ */
+export interface PharmacyItem {
   id: string;
   name: string;
   address: string;
   lat: number;
   lon: number;
-  isOnDutyNow: boolean;
-  isNightShift: boolean;
-  phone: string;
+  phone?: string;
+  openingHours?: string;
+  /** OPENSTREETMAP (ODbL) oppure ELENCO_CURATO: voce del progetto non confermata da una fonte aperta */
+  source: 'OPENSTREETMAP' | 'ELENCO_CURATO';
+  sourceUrl?: string;
 }
 
 // ==========================================

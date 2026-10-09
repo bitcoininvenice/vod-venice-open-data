@@ -109,10 +109,11 @@ export async function GET() {
   ];
 
   const accessFeeData = {
-    regolamento: 'Delibera Consiglio Comunale Venezia n. 51/2023 - Regolamento CDA',
+    verifica: 'Quadro riassuntivo da verificare: date, importi ed esenzioni cambiano ogni anno, fa fede https://cda.ve.it',
+    regolamento: 'Regolamento comunale del Contributo di Accesso (CDA)',
     importoTicket: '€ 5,00 (ordinario) / € 10,00 (prenotazione last-minute)',
     fasciaOraria: '08:30 - 16:30',
-    calendarioApplicazione: '29 giornate pilota nei periodi di massimo afflusso turistico',
+    calendarioApplicazione: 'Giornate di massimo afflusso stabilite ogni anno dal Comune (29 nella sperimentazione 2024)',
     esenzioniAttive: 'Residenti nel Veneto, lavoratori, studenti universitari, ospiti strutture ricettive comunali con imposta di soggiorno assolta, under 14',
     sanzioni: 'Da € 50 a € 300 oltre al recupero del contributo ex L. 145/2018',
     portalePrenotazione: 'https://cda.ve.it'
@@ -122,7 +123,7 @@ export async function GET() {
     success: true,
     meta: {
       kind: 'static-reference',
-      source: 'Comune di Venezia - Smart Control Room Tronchetto & Portale CDA',
+      source: 'Elenco curato del progetto, da verificare (riferimenti: Smart Control Room del Comune di Venezia, portale CDA)',
       note: 'Anagrafica dei varchi e quadro normativo del CDA. La Smart Control Room non pubblica conteggi orari aperti in tempo reale: nessun valore di flusso viene mostrato.'
     },
     data: {

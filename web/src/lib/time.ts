@@ -55,3 +55,22 @@ export function formatLocalStamp(local: string | null | undefined): string {
   const m = local.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
   return m ? `${m[3]}/${m[2]}/${m[1]} ${m[4]}:${m[5]}` : local;
 }
+
+/**
+ * Converte "YYYY-MM-DD HH:mm:ss" in ora locale di Venezia in un istante UTC.
+ * Il Comune pubblica orari locali senza offset: l'offset (CET/CEST) viene ricavato con Intl.
+ */
+export function romeLocalToDate(local: string): Date {
+  const [d, t = '00:00:00'] = local.trim().split(' ');
+  const asUtc = new Date(`${d}T${t}Z`);
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Rome',
+    hourCycle: 'h23',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  }).formatToParts(asUtc);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  const romeWallClockAsUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'));
+  const offsetMs = romeWallClockAsUtc - asUtc.getTime();
+  return new Date(asUtc.getTime() - offsetMs);
+}

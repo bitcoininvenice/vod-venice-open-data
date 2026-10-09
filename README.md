@@ -45,6 +45,12 @@ vod-venice-open-data/
 │   ├── import_wifi_hotspots.py     # Hotspot WiFi del Comune
 │   ├── import_arpav_air.py         # Qualità dell'aria ARPAV (medie annue validate)
 │   ├── import_osm_surveillance.py  # Telecamere da OpenStreetMap
+│   ├── import_osm_defibrillators.py # Defibrillatori (DAE) da OpenStreetMap
+│   ├── import_osm_pharmacies.py    # Farmacie da OpenStreetMap (i turni non sono open data)
+│   ├── import_osm_fountains.py     # Fontanelle da OpenStreetMap
+│   ├── import_osm_poi.py           # Colonnine, parcheggi, vere da pozzo, alberi monumentali (OSM)
+│   ├── import_alilaguna_gtfs.py    # Orario ufficiale Alilaguna (GTFS dell'operatore)
+│   ├── enrich_fountains.py         # Toponimo di prossimità per le fontanelle senza nome
 │   └── tests/                      # Test pytest
 ├── web/                            # Applicazione Next.js 16 (App Router)
 │   ├── package.json
@@ -116,6 +122,11 @@ python import_opere_pubbliche.py            # Elenco Annuale dei Lavori (dati.ve
 python import_wifi_hotspots.py              # Hotspot WiFi del Comune
 python import_arpav_air.py                  # Medie annue validate ARPAV
 python import_osm_surveillance.py           # Telecamere da OpenStreetMap
+python import_osm_defibrillators.py         # Defibrillatori da OpenStreetMap (non esiste un dataset ufficiale aperto)
+python import_osm_pharmacies.py             # Farmacie da OpenStreetMap
+python import_osm_fountains.py && python enrich_fountains.py  # Fontanelle da OpenStreetMap
+python import_osm_poi.py                    # Colonnine, parcheggi ≥100 posti, vere da pozzo, alberi monumentali (OSM)
+python import_alilaguna_gtfs.py             # Orario Alilaguna (simulazione delle barche dall'orario)
 
 # Test della pipeline
 python -m pytest -q tests

@@ -9,8 +9,8 @@ export async function GET() {
     totalShips: SHIPS_REFERENCE.length,
     regulationNotice: "Decreto Legge 103/2021: navi passeggeri >25.000 GT instradate a Marghera via Canale dei Petroli; navi <25.000 GT e traghetti autorizzati a Tronchetto / San Basilio.",
     meta: {
-      kind: 'static-reference',
-      source: 'Anagrafica canali marittimi e banchine (AdSP Mare Adriatico Settentrionale)',
+      kind: 'curated-reference',
+      source: 'Elenco curato del progetto, da verificare (riferimento: AdSP Mare Adriatico Settentrionale)',
       note: 'Le navi indicate sono un elenco di riferimento con banchina assegnata, non posizioni AIS in tempo reale.',
     },
     routes: MARITIME_ROUTES,

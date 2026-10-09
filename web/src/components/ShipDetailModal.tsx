@@ -40,7 +40,7 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
                   {ship.shipType} · {ship.flag}
                 </span>
                 <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> AIS LIVE
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 motion-safe:animate-pulse" /> AIS LIVE
                 </span>
               </div>
               <h3 id="ship-modal-title" className="text-lg font-bold text-[var(--ink)] leading-snug">

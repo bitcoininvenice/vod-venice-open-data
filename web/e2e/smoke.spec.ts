@@ -62,18 +62,80 @@ test('il pannello livelli si apre e mostra i gruppi', async ({ page, isMobile })
   await expect(page.getByText(/laguna, idrografia/i).filter({ visible: true }).first()).toBeVisible();
 });
 
-test('la modale statistiche si apre e si chiude', async ({ page, isMobile }) => {
+test('il menu porta alla pagina delle metriche', async ({ page, isMobile }) => {
   await page.goto('/');
   if (isMobile) {
     await page.getByRole('button', { name: /altre azioni/i }).click();
-    await page.getByRole('menuitem', { name: /metriche/i }).click();
   } else {
-    await page.getByRole('button', { name: /metriche/i }).click();
+    await page.getByRole('button', { name: /menu strumenti/i }).click();
   }
-  const dialog = page.getByRole('dialog', { name: /statistiche/i });
-  await expect(dialog).toBeVisible();
+  await page.getByRole('menuitem', { name: /metriche/i }).first().click();
+  await expect(page).toHaveURL(/\/metrics$/);
+  await expect(page.getByRole('heading', { level: 1, name: /metriche/i })).toBeVisible();
+});
+
+test('il menu strumenti si usa da tastiera', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'solo desktop');
+  await page.goto('/');
+  const trigger = page.getByRole('button', { name: /menu strumenti/i });
+  await trigger.focus();
+  await page.keyboard.press('Enter');
+  const items = page.getByRole('menu').getByRole('menuitem');
+  await expect(items.first()).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(items.nth(1)).toBeFocused();
+  await page.keyboard.press('End');
+  await expect(items.last()).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(items.first()).toBeFocused();
   await page.keyboard.press('Escape');
-  await expect(dialog).toBeHidden();
+  await expect(page.getByRole('menu')).toBeHidden();
+  await expect(trigger).toBeFocused();
+});
+
+test('il pannello export si apre, si chiude e si riapre senza errori', async ({ page, isMobile }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/');
+  const open = async () => {
+    if (isMobile) await page.getByRole('button', { name: /altre azioni/i }).click();
+    else await page.getByRole('button', { name: /menu strumenti/i }).click();
+    await page.getByRole('menuitem', { name: /esportazione dati/i }).click();
+  };
+  for (let i = 0; i < 2; i++) {
+    await open();
+    const dialog = page.getByRole('dialog', { name: /esportazione dati/i });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: /chiudi/i }).click();
+    await expect(dialog).toBeHidden();
+  }
+  expect(errors).toEqual([]);
+});
+
+test('i layer attivi finiscono nell\'URL e il preset viene rimosso', async ({ page }) => {
+  await page.goto('/?preset=satellites');
+  await expect(page).toHaveURL(/layers=/);
+  expect(new URL(page.url()).searchParams.get('preset')).toBeNull();
+  // ricaricando si ritrovano gli stessi layer, non il preset
+  const layers = new URL(page.url()).searchParams.get('layers');
+  await page.reload();
+  expect(new URL(page.url()).searchParams.get('layers')).toBe(layers);
+});
+
+test('la pagina delle fonti mostra lo stato', async ({ page }) => {
+  await page.goto('/sources');
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.getByText(/\d+\/\d+ fonti operative/i)).toBeVisible();
+});
+
+test('metriche, fonti e 404 sono tradotte in inglese', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('vod_language', 'en'));
+  await page.goto('/metrics');
+  await expect(page.getByRole('heading', { level: 1, name: /metrics, spatial analysis/i })).toBeVisible();
+  await page.goto('/sources');
+  await expect(page.getByRole('heading', { level: 1, name: /data source status/i })).toBeVisible();
+  await page.goto('/pagina-che-non-esiste');
+  await expect(page.getByRole('heading', { level: 1, name: /lost in the calli/i })).toBeVisible();
 });
 
 test('il catalogo dei layer dichiara la natura dei dati', async ({ page }) => {

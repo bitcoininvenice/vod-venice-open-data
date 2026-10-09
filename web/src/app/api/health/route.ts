@@ -11,6 +11,11 @@ import { OPERE_PUBBLICHE_META } from '@/lib/db';
 import { WIFI_HOTSPOTS_META } from '@/lib/urbanAssetsVeniceData';
 import { ARPAV_AIR_META } from '@/lib/airQuality';
 import { OSM_SURVEILLANCE_META } from '@/lib/cameras-data';
+import { OSM_DAE_META } from '@/lib/dae-data';
+import { OSM_PHARMACIES_META } from '@/lib/pharmacies-data';
+import fountainsDataset from '@/data/fountains.json';
+import { OSM_POI_META } from '@/lib/osmPoi';
+import { ALILAGUNA_FEED_META, isAlilagunaTimetableValid } from '@/lib/alilaguna-schedule';
 
 export const revalidate = 60;
 
@@ -53,6 +58,12 @@ export async function GET() {
     assess('wifi', 'Hotspot WiFi (pipeline)', 'dataset', new Date(WIFI_HOTSPOTS_META.generatedAt), 31 * DAY, now),
     assess('arpav', 'Qualità aria ARPAV (pipeline)', 'dataset', new Date(ARPAV_AIR_META.generatedAt), 120 * DAY, now),
     assess('osm-cameras', 'Telecamere OpenStreetMap (pipeline)', 'dataset', new Date(OSM_SURVEILLANCE_META.generatedAt), 31 * DAY, now),
+    assess('osm-dae', 'Defibrillatori OpenStreetMap (pipeline)', 'dataset', new Date(OSM_DAE_META.generatedAt), 31 * DAY, now),
+    assess('osm-pharmacies', 'Farmacie OpenStreetMap (pipeline)', 'dataset', new Date(OSM_PHARMACIES_META.generatedAt), 31 * DAY, now),
+    assess('osm-fountains', 'Fontanelle OpenStreetMap (pipeline)', 'dataset', new Date(fountainsDataset.metadata.extractedAt), 31 * DAY, now),
+    assess('osm-poi', 'POI OpenStreetMap: colonnine, parcheggi, pozzi, alberi (pipeline)', 'dataset', new Date(OSM_POI_META.generatedAt), 31 * DAY, now),
+    assess('alilaguna-gtfs', 'Orario Alilaguna GTFS (pipeline)', 'dataset', new Date(ALILAGUNA_FEED_META.generatedAt), 31 * DAY, now,
+      isAlilagunaTimetableValid(now) ? undefined : 'orario importato non più valido'),
   ];
 
   const status = sources.some((s) => s.status === 'down') ? 'degraded' : sources.some((s) => s.status === 'stale') ? 'stale' : 'ok';

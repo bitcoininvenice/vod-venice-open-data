@@ -55,7 +55,19 @@ export const itTranslations: Translations = {
     paletteLightTitle: 'Palette Carta (Mappa storica chiara)',
     paletteDynamicTitle: 'Palette Dinamica (Sincronizzata con alba e tramonto di Venezia)',
     spatialTitle: 'Incrocio Spaziale: fermate ACTV entro il raggio dalle opere pubbliche',
-    switchLanguageTitle: 'Cambia lingua / Switch language'
+    switchLanguageTitle: 'Cambia lingua / Switch language',
+    menu: 'Menu',
+    menuTitle: 'Menu strumenti e opzioni',
+    guideHint: 'Tutorial e preset mappa',
+    metricsHint: 'Cruscotto KPI e previsioni',
+    sources: 'Stato fonti',
+    sourcesHint: 'Disponibilità e freschezza dei dati',
+    exportHint: 'GeoJSON, CSV e SHA-256',
+    floodHint: 'Allagamento e previsioni CPSM',
+    language: 'Lingua / Language',
+    tideRising: 'In aumento verso il colmo',
+    tideFalling: 'In calo verso il cavo',
+    tideClickHint: 'Clicca per il simulatore'
   },
   timeline: {
     liveNow: 'ORA LIVE',
@@ -72,7 +84,8 @@ export const itTranslations: Translations = {
     pause: 'Metti in pausa',
     timeScrubber: 'Scorri orario',
     share: 'Condividi',
-    shareSuccess: 'Link copiato!'
+    shareSuccess: 'Link copiato!',
+    shareFailed: 'Copia non riuscita'
   },
   layers: {
     panelTitle: 'Livelli e Filtri Mappa',
@@ -402,7 +415,6 @@ export const itTranslations: Translations = {
     destinationNextStop: 'Destinazione & Scalo Successivo',
     directionLabel: 'Direzione',
     nextStopLabel: 'Prossima fermata',
-    passengersOnBoard: 'Passeggeri a bordo',
     alilagunaDetailsButton: 'Dettagli Linee & GTFS Transitland',
     missionRemoteSensing: 'Missione & Telerilevamento',
     altitudeSpeed: 'Quota & Velocità',

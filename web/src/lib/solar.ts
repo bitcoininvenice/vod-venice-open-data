@@ -143,14 +143,76 @@ export const CREPUSCOLO: ColorScheme = {
   }
 };
 
-export const SUN_HOURS = {
-  nDawn: 6 * 3600 + 13 * 60, // 06:13
-  cDawn: 6 * 3600 + 47 * 60, // 06:47
-  rise: 7 * 3600 + 18 * 60,  // 07:18
-  set: 18 * 3600 + 38 * 60,  // 18:38
-  cDusk: 19 * 3600 + 8 * 60, // 19:08
-  nDusk: 19 * 3600 + 42 * 60 // 19:42
-};
+export interface SunHours {
+  /** Inizio del crepuscolo nautico (sole a -12°), secondi dalla mezzanotte di Venezia */
+  nDawn: number;
+  /** Inizio del crepuscolo civile (-6°) */
+  cDawn: number;
+  /** Alba (-0.833°, rifrazione inclusa) */
+  rise: number;
+  set: number;
+  cDusk: number;
+  nDusk: number;
+}
+
+const VENICE_LAT = 45.437;
+const VENICE_LON = 12.335;
+const RAD = Math.PI / 180;
+
+/** Scarto in minuti tra ora di Venezia e UTC per il giorno dato (CET/CEST). */
+function romeOffsetMinutes(date: Date): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Rome', hourCycle: 'h23',
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+  }).formatToParts(date);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  const wall = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'));
+  return Math.round((wall - Math.floor(date.getTime() / 60000) * 60000) / 60000);
+}
+
+/**
+ * Orari di alba, tramonto e crepuscoli a Venezia per il giorno di `date`
+ * (equazioni solari NOAA, precisione di circa un minuto), in secondi dall'inizio del giorno locale.
+ */
+export function sunHoursFor(date: Date): SunHours {
+  const start = Date.UTC(date.getUTCFullYear(), 0, 0);
+  const dayOfYear = Math.floor((date.getTime() - start) / 86400000);
+  const g = ((2 * Math.PI) / 365) * (dayOfYear - 1);
+  const eqTime = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+  const decl =
+    0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) +
+    0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+  const offset = romeOffsetMinutes(date);
+  const lat = VENICE_LAT * RAD;
+
+  const event = (zenithDeg: number, rising: boolean): number => {
+    const cosHa = Math.cos(zenithDeg * RAD) / (Math.cos(lat) * Math.cos(decl)) - Math.tan(lat) * Math.tan(decl);
+    const ha = Math.acos(Math.min(1, Math.max(-1, cosHa))) / RAD;
+    const utcMinutes = 720 - 4 * (VENICE_LON + (rising ? ha : -ha)) - eqTime;
+    return Math.round((utcMinutes + offset) * 60);
+  };
+
+  return {
+    nDawn: event(102, true),
+    cDawn: event(96, true),
+    rise: event(90.833, true),
+    set: event(90.833, false),
+    cDusk: event(96, false),
+    nDusk: event(102, false),
+  };
+}
+
+// Una sola valutazione per giorno: getDynamicPalette è chiamata a ogni frame della mappa
+let cachedDay = '';
+let cachedSun: SunHours | null = null;
+function sunHoursCached(date: Date): SunHours {
+  const key = date.toISOString().slice(0, 10);
+  if (key !== cachedDay || !cachedSun) {
+    cachedDay = key;
+    cachedSun = sunHoursFor(date);
+  }
+  return cachedSun;
+}
 
 function hexToRgb(hex: string): [number, number, number] {
   const n = parseInt(hex.replace('#', ''), 16);
@@ -166,7 +228,8 @@ function mixColor(c1: string, c2: string, f: number): string {
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }
 
-export function getDynamicPalette(timeSeconds: number): ColorScheme {
+export function getDynamicPalette(timeSeconds: number, date: Date = new Date()): ColorScheme {
+  const SUN_HOURS = sunHoursCached(date);
   const DYN: [number, ColorScheme][] = [
     [SUN_HOURS.nDawn, NOTTE],
     [SUN_HOURS.cDawn, ORA_BLU],
@@ -219,6 +282,17 @@ export function formatTime(seconds: number): string {
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 }
 
+export function formatTimeParts(seconds: number): { hoursMinutes: string; seconds: string } {
+  const s = ((Math.floor(seconds) % 86400) + 86400) % 86400;
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return {
+    hoursMinutes: `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
+    seconds: sec.toString().padStart(2, '0')
+  };
+}
+
 export type SolarIconType = 'sun' | 'moon' | 'sunrise' | 'sunset';
 
 export interface SolarPhaseInfo {
@@ -229,7 +303,8 @@ export interface SolarPhaseInfo {
   targetLabelKey: string;
 }
 
-export function getSolarPhase(seconds: number): SolarPhaseInfo {
+export function getSolarPhase(seconds: number, date: Date = new Date()): SolarPhaseInfo {
+  const SUN_HOURS = sunHoursCached(date);
   const s = ((seconds % 86400) + 86400) % 86400;
 
   // Notte fonda prima del primo barlume civile
@@ -243,7 +318,7 @@ export function getSolarPhase(seconds: number): SolarPhaseInfo {
     };
   }
 
-  // Alba / Crepuscolo mattutino (06:47 - 07:48)
+  // Alba / Crepuscolo mattutino
   if (s < SUN_HOURS.rise + 1800) {
     return {
       phaseKey: 'alba',
@@ -254,7 +329,7 @@ export function getSolarPhase(seconds: number): SolarPhaseInfo {
     };
   }
 
-  // Giorno pieno (07:48 - 17:38)
+  // Giorno pieno
   if (s < SUN_HOURS.set - 3600) {
     return {
       phaseKey: 'giorno',
@@ -265,7 +340,7 @@ export function getSolarPhase(seconds: number): SolarPhaseInfo {
     };
   }
 
-  // Golden hour / Tramonto (17:38 - 18:38)
+  // Golden hour / Tramonto
   if (s < SUN_HOURS.set) {
     return {
       phaseKey: 'goldenHour',
@@ -276,7 +351,7 @@ export function getSolarPhase(seconds: number): SolarPhaseInfo {
     };
   }
 
-  // Crepuscolo serale / Ora blu (18:38 - 19:42)
+  // Crepuscolo serale / Ora blu
   if (s < SUN_HOURS.nDusk) {
     return {
       phaseKey: 'crepuscolo',
@@ -287,7 +362,7 @@ export function getSolarPhase(seconds: number): SolarPhaseInfo {
     };
   }
 
-  // Notte dopo il crepuscolo nautico (19:42 - 24:00)
+  // Notte dopo il crepuscolo nautico
   return {
     phaseKey: 'notte',
     icon: 'moon',

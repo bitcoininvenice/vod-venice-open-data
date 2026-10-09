@@ -51,7 +51,7 @@ export const SatelliteDetailModal: React.FC<SatelliteDetailModalProps> = ({
         <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-fuchsia-500/20 text-fuchsia-400 flex items-center justify-center border border-fuchsia-500/40 shadow-lg shadow-fuchsia-500/10">
-              <Satellite className="w-6 h-6 animate-pulse" />
+              <Satellite className="w-6 h-6 motion-safe:animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
