@@ -9,6 +9,8 @@ const Query = z.object({
   lat: z.coerce.number().min(LAT0).max(LAT1),
   lon: z.coerce.number().min(LON0).max(LON1),
   radius: z.coerce.number().int().min(30).max(300).default(150),
+  /** codici GTFS della fermata (separati da virgola): più precisi della ricerca per distanza */
+  stops: z.string().regex(/^[\w-]{1,20}(,[\w-]{1,20}){0,30}$/).optional(),
 });
 
 /**
@@ -17,10 +19,15 @@ const Query = z.object({
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const q = Query.safeParse({ lat: searchParams.get('lat'), lon: searchParams.get('lon'), radius: searchParams.get('radius') ?? undefined });
+  const q = Query.safeParse({
+    lat: searchParams.get('lat'),
+    lon: searchParams.get('lon'),
+    radius: searchParams.get('radius') ?? undefined,
+    stops: searchParams.get('stops') ?? undefined,
+  });
   if (!q.success) return NextResponse.json({ success: false, error: 'invalid_query' }, { status: 400 });
   const { trips, ok } = await fetchTripDelays();
-  const data = arrivalsNear(trips.values(), q.data.lat, q.data.lon, { radius: q.data.radius });
+  const data = arrivalsNear(trips.values(), q.data.lat, q.data.lon, { radius: q.data.radius, stopIds: q.data.stops?.split(',') });
   return NextResponse.json(
     {
       success: ok,

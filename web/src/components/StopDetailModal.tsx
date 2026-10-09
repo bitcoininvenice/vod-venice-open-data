@@ -20,7 +20,7 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
   const { t } = useTranslation();
   if (!stop) return null;
 
-  const sampleLines = stop.lines && stop.lines.length > 0 ? stop.lines : ['1', '2'];
+  const lines = stop.lines ?? [];
 
   return (
     <InfoPanel open={stop !== null} onClose={onClose} labelledBy="stop-modal-title" layer="showStops" accent="border-cyan-500/30">
@@ -62,16 +62,19 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
             <Accessibility className="w-4 h-4 text-emerald-400" />
             <div>
               <span className="text-[10px] text-[var(--ink-3)] block">{t('stopModal.accessibility')}</span>
-              <span className="text-emerald-400 font-medium">{t('stopModal.accessible')}</span>
+              <span className={stop.wheelchair === undefined ? 'text-[var(--ink-2)]' : stop.wheelchair ? 'text-emerald-400 font-medium' : 'text-amber-400'}>
+                {stop.wheelchair === undefined ? t('ui.stop.accessNotStated') : stop.wheelchair ? t('stopModal.accessible') : t('ui.stop.accessNo')}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Passing Lines Badges */}
+        {/* Linee che servono la fermata (dal GTFS) */}
+        {lines.length > 0 && (
         <div className="flex flex-col gap-1.5">
           <span className="text-[11px] font-mono uppercase text-[var(--ink-3)]">{t('stopModal.linesServed')}</span>
           <div className="flex flex-wrap gap-1.5">
-            {sampleLines.map((l) => (
+            {lines.map((l) => (
               <span
                 key={l}
                 className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30"
@@ -81,8 +84,9 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
             ))}
           </div>
         </div>
+        )}
 
-        <RealtimeArrivals lat={stop.lat} lon={stop.lon} />
+        <RealtimeArrivals lat={stop.lat} lon={stop.lon} gtfsIds={stop.gtfsIds} />
 
         {/* Institutional Verification Notice */}
         <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 flex flex-col gap-2">
@@ -108,15 +112,16 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
 };
 
 /** Prossimi arrivi con il ritardo stimato da ACTV (GTFS-Realtime), aggiornati ogni 30 s. */
-const RealtimeArrivals: React.FC<{ lat: number; lon: number }> = ({ lat, lon }) => {
+const RealtimeArrivals: React.FC<{ lat: number; lon: number; gtfsIds?: string[] }> = ({ lat, lon, gtfsIds }) => {
   const { t, language } = useTranslation();
   const [state, setState] = useState<{ key: string; arrivals: StopArrival[] | null; failed: boolean }>({ key: '', arrivals: null, failed: false });
-  const key = `${lat},${lon}`;
+  const ids = gtfsIds?.join(',') ?? '';
+  const key = `${lat},${lon},${ids}`;
 
   useEffect(() => {
     let cancelled = false;
     const load = () =>
-      fetch(`/api/realtime/arrivals?lat=${lat}&lon=${lon}`)
+      fetch(`/api/realtime/arrivals?lat=${lat}&lon=${lon}${ids ? `&stops=${ids}` : ''}`)
         .then((r) => r.json())
         .then((j) => !cancelled && setState({ key, arrivals: Array.isArray(j.data) ? j.data : [], failed: !j.success }))
         .catch(() => !cancelled && setState({ key, arrivals: [], failed: true }));
@@ -126,7 +131,7 @@ const RealtimeArrivals: React.FC<{ lat: number; lon: number }> = ({ lat, lon }) 
       cancelled = true;
       clearInterval(id);
     };
-  }, [lat, lon, key]);
+  }, [lat, lon, ids, key]);
 
   const arrivals = state.key === key ? state.arrivals : null;
   const locale = language === 'it' ? 'it-IT' : 'en-GB';

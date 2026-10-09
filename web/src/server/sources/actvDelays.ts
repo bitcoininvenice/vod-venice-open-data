@@ -40,9 +40,10 @@ export function arrivalsNear(
   trips: Iterable<TripDelay>,
   lat: number,
   lon: number,
-  { nowSec = Date.now() / 1000, radius = 150, horizonSec = 90 * 60, limit = 12 } = {}
+  { nowSec = Date.now() / 1000, radius = 150, horizonSec = 90 * 60, limit = 12, stopIds }: { nowSec?: number; radius?: number; horizonSec?: number; limit?: number; stopIds?: string[] } = {}
 ): StopArrival[] {
-  const near = new Set(stopsNear(lat, lon, radius));
+  // Codici GTFS della fermata se noti, altrimenti le fermate GTFS entro il raggio
+  const near = new Set(stopIds && stopIds.length > 0 ? stopIds : stopsNear(lat, lon, radius));
   if (near.size === 0) return [];
   const out: StopArrival[] = [];
   for (const trip of trips) {

@@ -334,7 +334,9 @@ export const itUi = {
     linea: "Linea",
     datoIstituzionaleGtfsActv: "Dato Istituzionale GTFS ACTV",
     approdoCensitoNelCatalogoOpen: "Approdo censito nel catalogo open data ufficiale GTFS di ACTV / AVM S.p.A. e Comune di Venezia. Per gli orari ufficiali di passaggio in tempo reale e gli avvisi di linea consulta il portale ufficiale di ACTV o i display di pontile.",
-    orariUfficialiNavigazioneActv: "Orari Ufficiali di Navigazione ACTV"
+    orariUfficialiNavigazioneActv: "Orari Ufficiali di Navigazione ACTV",
+    accessNotStated: "Non indicata nel GTFS ACTV",
+    accessNo: "Non accessibile"
   },
   timeline: {
     n1Reale: "1× Reale",

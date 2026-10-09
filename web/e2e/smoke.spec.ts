@@ -277,6 +277,73 @@ test('i clic sulla legenda dei livelli attivi non arrivano alla mappa sotto', as
   expect(checked, 'nessuna vista con una cella di fibra sotto la legenda').toBe(true);
 });
 
+test('ritardi ACTV: scheda del mezzo e prossimi arrivi alla fermata', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  const RIALTO = { lat: 45.43727, lon: 12.335071 };
+  const now = Math.floor(Date.now() / 1000);
+  // Dati in tempo reale simulati: un vaporetto della linea 2 in ritardo di 4 minuti, fermo a Rialto
+  await page.route('**/api/realtime/vehicles', (route) =>
+    route.fulfill({
+      json: {
+        ok: true,
+        count: 1,
+        meta: {},
+        data: [{
+          id: 'test-1', tripId: 'NAV_ACTV_653_1', routeId: '2_UN', label: null, ...RIALTO, bearing: 0, timestamp: now,
+          network: 'navigazione', line: '2', category: 'vaporetto',
+          delay: { seconds: 240, status: 'late', updatedAt: now - 5, nextStopId: '5038', nextStopName: 'Rialto "A"', nextStopTime: now + 120, estimate: 'predicted' },
+        }],
+      },
+    })
+  );
+  let arrivalsQuery = '';
+  await page.route('**/api/realtime/arrivals?*', (route) => {
+    arrivalsQuery = new URL(route.request().url()).search;
+    return route.fulfill({
+      json: {
+        success: true, count: 1, meta: {},
+        data: [{ line: '2', routeLongName: 'P.le Roma - Rialto', color: null, stopName: 'Rialto "C"', time: now + 300, delaySeconds: 240, status: 'late', estimate: 'predicted', updatedAt: now - 5 }],
+      },
+    });
+  });
+  await page.goto('/?layers=vaporetti_realtime');
+  await page.locator('canvas').waitFor();
+  // la ricerca centra la mappa sulla fermata e ne apre la scheda
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder(/cerca fermate/i).fill('Rialto');
+  await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: /^.*rialto/i }).first().click();
+  const info = page.locator('[data-info-panel]');
+  await expect(info.getByTestId('realtime-arrivals')).toContainText('In ritardo di 4 min');
+  expect(arrivalsQuery).toContain('stops=5038'); // la fermata usa i codici GTFS ufficiali
+  await page.keyboard.press('Escape');
+  // spente le fermate, al centro della mappa resta solo il vaporetto
+  const panel = page.locator('aside').filter({ visible: true }).first();
+  await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('fermate');
+  await panel.locator('[data-layer="showStops"]').click();
+  await expect(panel.locator('[data-layer="showStops"]')).toHaveAttribute('aria-pressed', 'false');
+  const box = (await page.locator('canvas').boundingBox())!;
+  // anello giallo (in ritardo 3-5 min) attorno al vaporetto, a 10 px dal centro
+  await page.waitForTimeout(300);
+  const ringPixels = await page.locator('canvas').evaluate((c: HTMLCanvasElement) => {
+    const ctx = c.getContext('2d')!;
+    const dpr = c.width / c.clientWidth;
+    const cx = c.width / 2, cy = c.height / 2;
+    let amber = 0;
+    for (let a = 0; a < 360; a += 15) {
+      const x = Math.round(cx + Math.cos((a * Math.PI) / 180) * 10 * dpr);
+      const y = Math.round(cy + Math.sin((a * Math.PI) / 180) * 10 * dpr);
+      const [r, g, b] = ctx.getImageData(x, y, 1, 1).data;
+      if (r > 200 && g > 120 && g < 190 && b < 60) amber++;
+    }
+    return amber;
+  });
+  expect(ringPixels).toBeGreaterThan(12);
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(info).toContainText('In ritardo di 4 min');
+  await expect(info).toContainText('Prossima fermata: Rialto');
+  await expect(info).toContainText('stima ACTV');
+});
+
 test('la scheda informativa non copre il pannello livelli e non blocca la mappa', async ({ page, isMobile }) => {
   test.skip(isMobile, 'su mobile la scheda è un cassetto dal basso');
   await page.goto('/');

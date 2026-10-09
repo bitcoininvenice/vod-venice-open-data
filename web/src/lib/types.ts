@@ -55,7 +55,10 @@ export interface StopItem {
   lon: number;
   mode: string;
   lines?: string[];
+  /** accessibilità dichiarata nella fonte; assente se non indicata (il GTFS ACTV non la riporta) */
   wheelchair?: boolean;
+  /** codici delle fermate GTFS (pontili, corsie) che compongono la fermata, per i dati in tempo reale */
+  gtfsIds?: string[];
 }
 
 /** Opera pubblica dall'Elenco Annuale dei Lavori del Comune di Venezia (dati.venezia.it, CC BY). */

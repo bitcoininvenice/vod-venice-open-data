@@ -68,7 +68,7 @@ jobs:
           title: 'Aggiornamento automatico dei dataset'
           body: |
             Dataset rigenerati dalle fonti ufficiali dal workflow `refresh-data`:
-            - simulazione GTFS ACTV e indice corse (`web/public/data/sim-<hash>.json`, `web/src/lib/simulation-data.ts`, `web/src/data/actv-gtfs-index.json`)
+            - simulazione GTFS ACTV e indice corse (`web/public/data/sim-<hash>.json`, `web/src/lib/simulation-data.ts`, `web/src/data/actv-gtfs-index.json`, fermate della mappa `web/src/data/actv-stops.json`)
             - opere pubbliche, hotspot WiFi (dati.venezia.it), qualità dell'aria (ARPAV)
             - orario Alilaguna (GTFS dell'operatore, `web/src/data/alilaguna-gtfs.json`)
             - copertura della rete fissa (AGCOM BroadbandMap, `web/src/data/agcom-fiber.json`)

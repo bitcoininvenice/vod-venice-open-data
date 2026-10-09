@@ -428,3 +428,10 @@ def test_indice_fermate_gtfs():
                  "x": {"stop_name": "senza coordinate", "stop_lat": "", "stop_lon": ""}}
     idx = sim.stops_index([F()])
     assert idx == {"5001": ['Lido S.M.E. "B"', 45.41799, round(12.368725, 5)]}
+
+
+def test_fermate_della_mappa_nomi_e_linee():
+    assert sim.stop_base_name('Lido S.M.E. "B"') == "Lido S.M.E."
+    assert sim.stop_base_name("F.te Nove 'A'") == "F.te Nove"
+    assert sim.stop_base_name("S. Marcuola-Casino'") == "S. Marcuola-Casino'"
+    assert sorted(["N", "10", "2", "4.1", "1", "T1"], key=sim.natural_key) == ["1", "2", "4.1", "10", "N", "T1"]

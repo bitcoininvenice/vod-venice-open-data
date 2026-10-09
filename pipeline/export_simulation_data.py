@@ -35,6 +35,9 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 SIM_FILE = os.path.join(BASE_DIR, "..", "web", "src", "lib", "simulation-data.ts")
 PUBLIC_DATA_DIR = os.path.join(BASE_DIR, "..", "web", "public", "data")
 INDEX_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "actv-gtfs-index.json")
+STOPS_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "actv-stops.json")
+# Fermate bus mostrate in mappa: solo i nodi principali (troppe fermate renderebbero la mappa illeggibile)
+MIN_BUS_LINES = 15
 
 # Griglia virtuale condivisa con le geometrie LAND: non modificare senza rigenerare anche LAND.
 FRAME = (12.135, 12.47, 45.205, 45.555)  # lon0, lon1, lat0, lat1
@@ -374,6 +377,90 @@ def stops_index(feeds: list[Feed]) -> dict[str, list]:
     return dict(sorted(out.items()))
 
 
+def stop_base_name(name: str) -> str:
+    """Nome della fermata senza la lettera del pontile o della corsia (es. 'Lido S.M.E. "B"' -> 'Lido S.M.E.')."""
+    return re.sub(r"\s*[\"'][A-Z0-9/ ]{1,5}[\"']\s*$", "", name.strip())
+
+
+def natural_key(line: str):
+    """Ordine naturale delle linee: 1, 2, 4.1, 10, N, T1 (numeri prima, poi lettere)."""
+    return [(0, int(t), "") if t.isdigit() else (1, 0, t) for t in re.findall(r"\d+|\D+", line)]
+
+
+def map_stops(feeds: list[Feed]) -> list[dict]:
+    """Fermate della mappa dal GTFS ufficiale: tutti i pontili della navigazione e le fermate del tram,
+    più i nodi bus serviti da almeno MIN_BUS_LINES linee. I pontili o le corsie con lo stesso nome
+    (entro 300 m) diventano una sola fermata, con l'elenco dei codici GTFS per i dati in tempo reale."""
+    groups: list[dict] = []
+    for feed in feeds:
+        nav = feed.name == "navigazione"
+        route_of_trip = {tid: t["route_id"] for tid, t in feed.trips.items()}
+        lines: dict[str, set] = {}
+        tram_stops: set = set()
+        for st in read_csv(feed.name, "stop_times.txt"):
+            rid = route_of_trip.get(st["trip_id"])
+            if not rid:
+                continue
+            r = feed.routes.get(rid, {})
+            lines.setdefault(st["stop_id"], set()).add(r.get("route_short_name") or rid)
+            if r.get("route_type") == "0":
+                tram_stops.add(st["stop_id"])
+        for sid, s in feed.stops.items():
+            served = lines.get(sid)
+            if not served:
+                continue
+            if nav:
+                mode = "ferry" if served <= {"17"} else "navigazione"
+            elif sid in tram_stops:
+                mode = "tram"
+            elif len(served) >= MIN_BUS_LINES:
+                mode = "bus"
+            else:
+                continue
+            try:
+                lat, lon = float(s["stop_lat"]), float(s["stop_lon"])
+            except (KeyError, ValueError):
+                continue
+            name = stop_base_name(s["stop_name"])
+            g = next((g for g in groups if g["name"] == name and g["mode"] == mode
+                      and abs(g["lat"] - lat) * 111000 < 300 and abs(g["lon"] - lon) * 78000 < 300), None)
+            if g is None:
+                g = {"name": name, "mode": mode, "lat": lat, "lon": lon, "pts": [], "lines": set(), "gtfsIds": []}
+                groups.append(g)
+            g["pts"].append((lat, lon))
+            g["lines"] |= served
+            g["gtfsIds"].append(sid)
+    out = []
+    for g in groups:
+        lat = sum(p[0] for p in g["pts"]) / len(g["pts"])
+        lon = sum(p[1] for p in g["pts"]) / len(g["pts"])
+        out.append({
+            "id": f"{g['mode']}:{g['gtfsIds'][0]}",
+            "name": g["name"],
+            "lat": round(lat, 6),
+            "lon": round(lon, 6),
+            "mode": g["mode"],
+            "lines": sorted(g["lines"], key=natural_key),
+            "gtfsIds": sorted(g["gtfsIds"]),
+        })
+    out.sort(key=lambda s: (s["mode"], s["name"]))
+    return out
+
+
+def write_map_stops(feeds: list[Feed]) -> None:
+    stops = map_stops(feeds)
+    doc = {
+        "generatedAt": datetime.now(ZoneInfo("Europe/Rome")).isoformat(timespec="seconds"),
+        "source": "ACTV S.p.A. / AVM S.p.A. – GTFS navigazione e automobilistico",
+        "license": "Open Data ACTV (CC BY)",
+        "note": f"Tutti i pontili della navigazione e le fermate del tram; per i bus solo le fermate servite da almeno {MIN_BUS_LINES} linee.",
+        "stops": stops,
+    }
+    with open(STOPS_FILE, "w", encoding="utf-8") as f:
+        json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
+    logging.info("Fermate della mappa: %d (%s)", len(stops), {m: sum(1 for s in stops if s["mode"] == m) for m in ("navigazione", "ferry", "tram", "bus")})
+
+
 def write_stops_only(feeds: list[Feed]) -> None:
     """Aggiorna solo le fermate nell'indice esistente (senza rigenerare la simulazione)."""
     with open(INDEX_FILE, encoding="utf-8") as f:
@@ -382,6 +469,7 @@ def write_stops_only(feeds: list[Feed]) -> None:
     with open(INDEX_FILE, "w", encoding="utf-8") as f:
         json.dump(idx, f, ensure_ascii=False, separators=(",", ":"))
     logging.info("Fermate GTFS nell'indice: %d", len(idx["stops"]))
+    write_map_stops(feeds)
 
 
 def write_index(feeds: list[Feed], trip_route: dict[str, str], generated_for: dict[str, date]) -> None:
@@ -436,6 +524,7 @@ def main() -> int:
     data, trip_route = build(feeds, days)
     write_simulation(data, days)
     write_index(feeds, trip_route, days)
+    write_map_stops(feeds)
     return 0
 
 

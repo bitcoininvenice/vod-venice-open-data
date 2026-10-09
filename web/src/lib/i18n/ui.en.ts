@@ -336,7 +336,9 @@ export const enUi: UiTranslations = {
     linea: "Route",
     datoIstituzionaleGtfsActv: "ACTV Institutional GTFS Data",
     approdoCensitoNelCatalogoOpen: "Official dock catalogued in the ACTV / AVM S.p.A. and Municipality of Venice GTFS open data registry. For official live timetables and service alerts, consult the official ACTV portal or electronic dock displays.",
-    orariUfficialiNavigazioneActv: "Official ACTV Navigation Timetables"
+    orariUfficialiNavigazioneActv: "Official ACTV Navigation Timetables",
+    accessNotStated: "Not stated in the ACTV GTFS",
+    accessNo: "Not accessible"
   },
   timeline: {
     n1Reale: "1× Real",
