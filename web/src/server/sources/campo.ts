@@ -3,10 +3,10 @@ import type { SportPlace } from '@/lib/types';
 /**
  * CAMPO: mappa della comunità degli spazi sportivi di Venezia (soprattutto basket di strada),
  * dati rilasciati con licenza CC BY 4.0 come "segnalazioni di comunità".
- * L'indirizzo dell'API è configurabile (CAMPO_API_URL) per passare al dominio definitivo in HTTPS.
+ * Come per le altre fonti, l'indirizzo è una costante: con il dominio definitivo in HTTPS si cambia solo CAMPO_SITE.
  */
-export const CAMPO_API_URL = process.env.CAMPO_API_URL || 'http://217.160.143.203/api/v1/markers/geojson';
-export const CAMPO_SITE = process.env.CAMPO_SITE_URL || new URL(CAMPO_API_URL).origin;
+export const CAMPO_SITE = 'http://217.160.143.203';
+export const CAMPO_API_URL = `${CAMPO_SITE}/api/v1/markers/geojson`;
 export const CAMPO_ATTRIBUTION = '© CAMPO – segnalazioni di comunità (CC BY 4.0)';
 
 /** Sport di CAMPO nelle stesse chiavi usate da OpenStreetMap (sport=*) */

@@ -3,6 +3,8 @@
  * (stessi id degli slug di LAYER_SLUG_BY_KEY in urlLayers.ts, verificato da layerCatalog.test.ts).
  */
 
+import { CAMPO_SITE } from '@/server/sources/campo';
+
 export interface LayerDocItem {
   id: string;
   nameIt: string;
@@ -504,12 +506,12 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     regime: 'static',
     acquisition: 'api',
     institution: 'Comunità CAMPO (CC BY 4.0) e OpenStreetMap contributors (ODbL)',
-    portalUrl: 'http://217.160.143.203',
+    portalUrl: CAMPO_SITE,
     portalName: 'CAMPO – mappa della comunità degli spazi sportivi',
     descriptionIt: 'Campi da basket, calcio, tennis, pallavolo, spazi fitness all\'aperto, palestre e società sportive. Le segnalazioni della comunità CAMPO aggiungono orari reali, descrizioni e i campi dei patronati; OpenStreetMap completa il resto della città.',
     descriptionEn: 'Basketball, football, tennis and volleyball courts, outdoor fitness spaces, gyms and sports clubs. CAMPO community reports add real schedules, descriptions and parish courts; OpenStreetMap covers the rest of the city.',
-    technicalNotesIt: 'CAMPO letto dalla sua API GeoJSON al massimo una volta all\'ora (indirizzo in CAMPO_API_URL); impianti OSM dalla pipeline settimanale import_osm_poi.py (leisure=pitch, sports_centre, fitness_station, track, stadium, sports_hall). Una segnalazione CAMPO prevale su un impianto OSM dello stesso sport entro 60 m. Gli spazi parrocchiali seguono orari e regole del luogo; orari e condizioni non sono verificati da VOD.',
-    technicalNotesEn: 'CAMPO read from its GeoJSON API at most once an hour (address in CAMPO_API_URL); OSM facilities from the weekly pipeline import_osm_poi.py (leisure=pitch, sports_centre, fitness_station, track, stadium, sports_hall). A CAMPO report prevails over an OSM facility of the same sport within 60 m. Parish spaces follow the place\'s schedule and rules; schedules and conditions are not verified by VOD.',
+    technicalNotesIt: 'CAMPO letto dalla sua API GeoJSON al massimo una volta all\'ora (src/server/sources/campo.ts); impianti OSM dalla pipeline settimanale import_osm_poi.py (leisure=pitch, sports_centre, fitness_station, track, stadium, sports_hall). Una segnalazione CAMPO prevale su un impianto OSM dello stesso sport entro 60 m. Gli spazi parrocchiali seguono orari e regole del luogo; orari e condizioni non sono verificati da VOD.',
+    technicalNotesEn: 'CAMPO read from its GeoJSON API at most once an hour (src/server/sources/campo.ts); OSM facilities from the weekly pipeline import_osm_poi.py (leisure=pitch, sports_centre, fitness_station, track, stadium, sports_hall). A CAMPO report prevails over an OSM facility of the same sport within 60 m. Parish spaces follow the place\'s schedule and rules; schedules and conditions are not verified by VOD.',
     endpointOrFile: '/api/sports'
   },
   {

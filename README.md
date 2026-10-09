@@ -231,7 +231,7 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/satellites` | Satelliti con orbite SGP4 da TLE CelesTrak e prossimo passaggio sopra Venezia. |
 | `GET` | `/api/cantieri` | Opere pubbliche dell'Elenco Annuale dei Lavori 2026 (posizioni approssimate); il campo `bdap` aggiunge, per CUP, fase reale, date, costi e finanziamenti dal Monitoraggio Opere Pubbliche. |
 | `GET` | `/api/city-assets` | Fontanelle, parcheggi, ecocentri, biblioteche e luoghi con Wi-Fi (`wifiVenues`: hotel, bar, biblioteche con tipo di accesso) da OpenStreetMap (ODbL). |
-| `GET` | `/api/sports` | Spazi sportivi: segnalazioni della comunità CAMPO (CC BY 4.0, API in `CAMPO_API_URL`, riletta ogni ora) unite agli impianti OpenStreetMap; CAMPO prevale entro 60 m. |
+| `GET` | `/api/sports` | Spazi sportivi: segnalazioni della comunità CAMPO (CC BY 4.0, indirizzo in `web/src/server/sources/campo.ts`, riletta ogni ora) unite agli impianti OpenStreetMap; CAMPO prevale entro 60 m. |
 | `GET` | `/api/lora-gateways` | Gateway LoRaWAN online della rete comunitaria The Things Network nell'area della mappa (Packet Broker Mapper, cache 10 min): posizione come pubblicata dal proprietario, nessun identificativo né nome. |
 | `GET` | `/api/opere-bdap` | Opere del Comune con lavori in corso dal Monitoraggio Opere Pubbliche (BDAP – Ragioneria Generale dello Stato, CC BY) e riepilogo di tutti i progetti per fase, settore e finanziamento. |
 
