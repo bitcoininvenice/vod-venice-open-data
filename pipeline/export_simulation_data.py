@@ -138,6 +138,16 @@ def active_services(calendar: list[dict], calendar_dates: list[dict], day: date)
     return active
 
 
+def calendar_problems(name: str, calendar: list[dict], calendar_dates: list[dict], trips: dict[str, dict], days: dict[str, date]) -> list[str]:
+    """Giorni di riferimento senza corse attive: segno di un GTFS con calendario scaduto o errato."""
+    problems = []
+    for label, day in days.items():
+        services = active_services(calendar, calendar_dates, day)
+        if not any(t["service_id"] in services for t in trips.values()):
+            problems.append(f"{name}: nessuna corsa attiva il {day.isoformat()} ({label})")
+    return problems
+
+
 def category(feed: str, route: dict, stop_names: list[str]) -> str:
     name = route["route_short_name"]
     if feed == "navigazione":
@@ -359,6 +369,13 @@ def main() -> int:
 
     feeds = [Feed("navigazione"), Feed("automobilistico")]
     days = reference_days(start)
+    # Un GTFS con calendario non valido per i giorni simulati svuoterebbe la mappa: si tengono i dati precedenti
+    problems = [msg for f in feeds for msg in calendar_problems(f.name, f.calendar, f.calendar_dates, f.trips, days)]
+    if problems:
+        for msg in problems:
+            logging.error("Calendario GTFS non valido: %s", msg)
+        logging.error("Simulazione non rigenerata: restano in uso i dati dell'ultimo GTFS valido.")
+        return 1
     data, trip_route = build(feeds, days)
     write_simulation(data, days)
     write_index(feeds, trip_route, days)

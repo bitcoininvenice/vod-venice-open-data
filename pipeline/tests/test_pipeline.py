@@ -47,6 +47,18 @@ def test_active_services_applies_calendar_dates():
     assert sim.active_services(calendar, [], date(2026, 10, 8)) == {"S1"}
 
 
+def test_calendar_problems_flags_days_without_trips():
+    from datetime import date
+    calendar = [{"service_id": "FER", "start_date": "20261005", "end_date": "20261205", "monday": "1", "tuesday": "1",
+                 "wednesday": "1", "thursday": "1", "friday": "1", "saturday": "0", "sunday": "0"}]
+    trips = {"t1": {"service_id": "FER"}}
+    days = {"weekday": date(2026, 10, 9), "sunday": date(2026, 10, 11)}
+    assert sim.calendar_problems("nav", calendar, [], trips, days) == ["nav: nessuna corsa attiva il 2026-10-11 (sunday)"]
+    expired = {"weekday": date(2026, 12, 7)}
+    assert sim.calendar_problems("nav", calendar, [], trips, expired) == ["nav: nessuna corsa attiva il 2026-12-07 (weekday)"]
+    extra = [{"service_id": "FER", "date": "20261011", "exception_type": "1"}]
+    assert sim.calendar_problems("nav", calendar, extra, trips, {"sunday": date(2026, 10, 11)}) == []
+
 def test_category_rules():
     assert sim.category("navigazione", {"route_short_name": "17", "route_type": "4"}, []) == "ferry"
     assert sim.category("navigazione", {"route_short_name": "1", "route_type": "4"}, []) == "vaporetto"

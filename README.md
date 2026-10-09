@@ -115,7 +115,7 @@ pip install -r requirements-dev.txt
 
 # Simulazione dei mezzi dai GTFS ACTV (download + rigenerazione di D e dell'indice corse)
 python download_gtfs.py
-python export_simulation_data.py            # opzionale: --date YYYY-MM-DD
+python export_simulation_data.py            # opzionale: --date YYYY-MM-DD; non scrive nulla se il calendario GTFS non ha corse per i giorni simulati
 
 # Dataset ufficiali (ognuno indipendente dagli altri)
 python import_opere_pubbliche.py            # Elenco Annuale dei Lavori (dati.venezia.it) + geocodifica OSM

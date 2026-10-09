@@ -25,9 +25,9 @@ jobs:
 
       - name: GTFS ACTV e simulazione
         working-directory: pipeline
+        # se il GTFS scaricato non ha corse per i giorni simulati, la simulazione resta quella precedente
         run: |
-          python download_gtfs.py
-          python export_simulation_data.py
+          (python download_gtfs.py && python export_simulation_data.py) || echo "::warning::GTFS ACTV non aggiornato (download fallito o calendario non valido)"
       - name: Opere pubbliche, WiFi, qualità dell'aria, orario Alilaguna, dati OSM (telecamere, DAE, farmacie, fontanelle, POI)
         working-directory: pipeline
         # ogni fonte è indipendente: un errore non blocca l'aggiornamento delle altre
