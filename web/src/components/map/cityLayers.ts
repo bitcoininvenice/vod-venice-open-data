@@ -876,3 +876,49 @@ export function drawLoraGateways(rc: RenderContext): void {
     ctx.restore();
   }
 }
+
+/** Colore del Wi-Fi per tipo di accesso dichiarato su OSM. */
+export const WIFI_ACCESS_COLORS: Record<'free' | 'customers' | 'paid' | 'unknown', string> = {
+  free: '#10b981',
+  customers: '#f59e0b',
+  paid: '#ef4444',
+  unknown: '#64748b',
+};
+
+/** Luoghi con Wi-Fi (OSM): tre archi a ventaglio colorati per tipo di accesso. */
+export function drawWifiVenues(rc: RenderContext): void {
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showWifiVenues, wifiVenues } = rc;
+  if (!showWifiVenues || !wifiVenues || wifiVenues.length === 0) return;
+  for (const w of wifiVenues) {
+    const px = sx(mx(w.lon));
+    const py = sy(my(w.lat));
+    if (px < -30 || px > cw + 30 || py < -30 || py > ch + 30) continue;
+    const color = WIFI_ACCESS_COLORS[w.access];
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(px, py, 6.5, 0, Math.PI * 2);
+    ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.92)';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.2;
+    for (const r of [2.2, 4]) {
+      ctx.beginPath();
+      ctx.arc(px, py + 2.5, r, -Math.PI * 0.75, -Math.PI * 0.25);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.arc(px, py + 2.5, 0.9, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    if (camera.s > 0.04 && w.name) {
+      ctx.font = '600 8px "DM Mono", monospace';
+      ctx.fillStyle = isDark ? '#ccfbf1' : '#134e4a';
+      ctx.textAlign = 'start';
+      ctx.fillText(w.name.slice(0, 28), px + 9, py + 3);
+    }
+    ctx.restore();
+  }
+}

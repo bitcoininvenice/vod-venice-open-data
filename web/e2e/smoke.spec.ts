@@ -503,6 +503,16 @@ test.describe('API', () => {
     expect(body.meta.levels.kind).toBe('live');
   });
 
+  test('city-assets include i luoghi con Wi-Fi da OpenStreetMap, senza password', async ({ request }) => {
+    const body = await (await request.get('/api/city-assets')).json();
+    expect(body.wifiVenues.length).toBeGreaterThan(50);
+    for (const w of body.wifiVenues) {
+      expect(['free', 'customers', 'paid', 'unknown']).toContain(w.access);
+      expect(w.source).toBe('OPENSTREETMAP');
+    }
+    expect(JSON.stringify(body.wifiVenues)).not.toMatch(/password/i);
+  });
+
   test('lora-gateways: solo gateway online e nessun identificativo del proprietario', async ({ request }) => {
     const res = await request.get('/api/lora-gateways');
     expect([200, 503]).toContain(res.status());

@@ -1037,3 +1037,21 @@ export interface LoraGateway {
   /** ultimo aggiornamento di stato ricevuto dal Packet Broker */
   statusUpdatedAt: string | null;
 }
+
+/** Luogo con Wi-Fi mappato su OpenStreetMap (hotel, bar, biblioteche...): mai password. */
+export interface WifiVenue {
+  id: string;
+  name: string | null;
+  /** tipo di luogo (chiave tradotta nell'interfaccia) */
+  kind: string;
+  /** accesso dichiarato su OSM */
+  access: 'free' | 'customers' | 'paid' | 'unknown';
+  ssid: string | null;
+  address: string | null;
+  website: string | null;
+  zone: string;
+  lat: number;
+  lon: number;
+  source: 'OPENSTREETMAP';
+  sourceUrl: string;
+}

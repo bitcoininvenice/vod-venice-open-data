@@ -56,7 +56,7 @@ import {
 import type { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import type { MapObjectSelected } from './MapObjectPanel';
 import type { BdapProject } from '@/lib/bdap';
-import type { LoraGateway } from '@/lib/types';
+import type { LoraGateway, WifiVenue } from '@/lib/types';
 import { GRID, LAND_LO } from '@/lib/simulation-data';
 import { drawBaseMap, isLandHiLoaded, requestLandHi } from './map/baseMap';
 import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
@@ -68,7 +68,7 @@ import type { RenderContext } from './map/renderContext';
 import { drawRoutes, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, drawMarineSignals, drawOceanStations, drawCanalLimits, drawBridges, drawGondolas, drawDocks, drawMarineWind } from './map/lagoonLayers';
-import { bdapRadius, drawBdapWorks, drawLoraGateways, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
+import { bdapRadius, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 import { drawFloodLayer } from './map/floodLayer';
 import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
@@ -187,6 +187,9 @@ export interface MapEngineProps {
   /** Gateway LoRaWAN online (posizione pubblicata dal proprietario) */
   showLoraGateways?: boolean;
   loraGateways?: LoraGateway[];
+  /** Luoghi con Wi-Fi da OpenStreetMap */
+  showWifiVenues?: boolean;
+  wifiVenues?: WifiVenue[];
   /** Briccole, segnalamenti e canali da OpenStreetMap */
   showCanals?: boolean;
   lagoonNetwork?: LagoonNetwork | null;
@@ -319,6 +322,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   bdapWorks = null,
   showLoraGateways = false,
   loraGateways = [],
+  showWifiVenues = false,
+  wifiVenues = [],
   showCanals = false,
   lagoonNetwork = null,
   showTrains = false,
@@ -1287,6 +1292,18 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
     }
 
+    // 1a8. Luoghi con Wi-Fi (OSM)
+    if (showWifiVenues && onSelectFeature) {
+      for (const w of wifiVenues) {
+        const px = (mx(w.lon) - camera.x0) * camera.s;
+        const py = (my(w.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - px, clickY - py) <= 11) {
+          onSelectFeature({ type: 'wifiVenue', data: w });
+          return;
+        }
+      }
+    }
+
     // 1a9. Gateway LoRaWAN
     if (showLoraGateways && onSelectFeature) {
       for (const g of loraGateways) {
@@ -1604,6 +1621,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         bdapWorks,
         showLoraGateways,
         loraGateways,
+        showWifiVenues,
+        wifiVenues,
         showCanals,
         lagoonNetwork,
         moseGates,
@@ -1711,6 +1730,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         drawCivicPois(rc);
         drawBdapWorks(rc);
         drawLoraGateways(rc);
+        drawWifiVenues(rc);
 
         drawParkings(rc);
 
@@ -1873,6 +1893,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     bdapWorks,
     showLoraGateways,
     loraGateways,
+    showWifiVenues,
+    wifiVenues,
     showCanals,
     lagoonNetwork,
     showTrains,

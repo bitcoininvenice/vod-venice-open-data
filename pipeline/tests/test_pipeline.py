@@ -389,3 +389,22 @@ def test_fontanelle_ripiego_senza_rete():
     assert fnt.reverse_zone(45.4466, 12.3485, {}) == "San Michele (cimitero)"  # senza rete
     # valore in cache usato senza richieste
     assert fnt.reverse_zone(45.5, 12.3, {"reverse:45.50000,12.30000": "Campalto"}) == "Campalto"
+
+
+def test_osm_wifi_luoghi():
+    assert osm_poi.has_wifi({"internet_access": "wlan"}) and osm_poi.has_wifi({"wifi": "free"})
+    assert not osm_poi.has_wifi({"internet_access": "terminal"}) and not osm_poi.has_wifi({})
+    assert osm_poi.wifi_access({"internet_access:fee": "no"}) == "free"
+    assert osm_poi.wifi_access({"wifi": "free"}) == "free"
+    assert osm_poi.wifi_access({"internet_access:fee": "customers"}) == "customers"
+    assert osm_poi.wifi_access({"internet_access:fee": "yes"}) == "paid"
+    assert osm_poi.wifi_access({}) == "unknown"
+    assert osm_poi.venue_kind({"tourism": "hotel"}) == "hotel"
+    assert osm_poi.venue_kind({"amenity": "pub"}) == "bar"
+    assert osm_poi.venue_kind({"shop": "books"}) == "shop"
+    el = {"type": "node", "id": 7}
+    tags = {"name": "Caffè X", "amenity": "cafe", "internet_access": "wlan", "internet_access:fee": "customers",
+            "internet_access:ssid": "CaffeX_Guest", "internet_access:password": "segreta"}
+    item = osm_poi.wifi_venue(el, tags, 45.437, 12.33)
+    assert item["kind"] == "cafe" and item["access"] == "customers" and item["ssid"] == "CaffeX_Guest"
+    assert "segreta" not in json.dumps(item)  # le password non vengono mai salvate

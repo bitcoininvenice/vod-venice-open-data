@@ -213,7 +213,7 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
                 <MobileMenuItem
                   icon={<Construction className="w-4 h-4 text-amber-400" />}
-                  label={`${t('header.spatialIntersection')} (${activeCantieriCount})`}
+                  label={activeCantieriCount > 0 ? `${t('header.spatialIntersection')} (${activeCantieriCount})` : t('header.spatialIntersection')}
                   onClick={() => runAndClose(onOpenSpatialModal)}
                 />
                 <Link

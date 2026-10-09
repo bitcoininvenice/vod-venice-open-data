@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import fountainsDataset from '@/data/fountains.json';
-import { OPEN_CITY_ASSETS, OPEN_FOUNTAINS, OPEN_LIBRARIES, OPEN_PARKINGS, OPEN_RECYCLING_CENTRES, OSM_POI_META } from '@/lib/osmPoi';
+import { OPEN_CITY_ASSETS, OPEN_FOUNTAINS, OPEN_LIBRARIES, OPEN_PARKINGS, OPEN_RECYCLING_CENTRES, OPEN_WIFI_VENUES, OSM_POI_META } from '@/lib/osmPoi';
 
 // Fontanelle e parcheggi da OpenStreetMap (ODbL); ponti accessibili e punti Veritas da elenco curato
 export const revalidate = 86400;
@@ -25,6 +25,8 @@ export async function GET() {
     // Ecocentri e biblioteche da OpenStreetMap (ODbL)
     recyclingCentres: OPEN_RECYCLING_CENTRES,
     libraries: OPEN_LIBRARIES,
+    // Luoghi con Wi-Fi mappati su OpenStreetMap (ODbL), con tipo di accesso dichiarato; nessuna password
+    wifiVenues: OPEN_WIFI_VENUES,
     data: {
       assets: OPEN_CITY_ASSETS,
       parkings: OPEN_PARKINGS

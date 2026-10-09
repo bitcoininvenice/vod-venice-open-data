@@ -10,6 +10,8 @@ Pipeline: punti di interesse da OpenStreetMap che sostituiscono elenchi compilat
   dell'Elenco nazionale degli alberi monumentali del Ministero dell'agricoltura)
 - ecocentri per rifiuti ingombranti e differenziati (amenity=recycling + recycling_type=centre)
 - biblioteche (amenity=library)
+- luoghi con Wi-Fi (internet_access=wlan o wifi=yes/free): hotel, bar, ristoranti, biblioteche, musei...
+  con tipo di accesso (gratuito, per i clienti, a pagamento) e nome della rete se mappato; mai password
 
 Licenza dei dati: ODbL 1.0 - © OpenStreetMap contributors.
 Output: web/src/data/osm-poi.json (letto da web/src/lib/osmPoi.ts).
@@ -44,6 +46,8 @@ QUERY = f"""[out:json][timeout:120];
   nwr["amenity"="recycling"]["recycling_type"="centre"]({B});
   nwr["amenity"="waste_transfer_station"]["name"~"[Ee]cocentro"]({B});
   nwr["amenity"="library"]({B});
+  nwr["internet_access"="wlan"]({B});
+  nwr["wifi"~"^(yes|free)$"]({B});
 );
 out tags center;"""
 
@@ -175,6 +179,58 @@ def civic(el, tags, lat, lon, default_name):
     }
 
 
+# Tipo di luogo dai tag OSM principali (chiave tradotta nell'interfaccia)
+VENUE_KINDS = {
+    "hotel": "hotel", "guest_house": "guestHouse", "hostel": "hostel", "apartment": "apartment",
+    "camp_site": "campSite", "caravan_site": "campSite", "museum": "museum", "attraction": "attraction",
+    "restaurant": "restaurant", "cafe": "cafe", "bar": "bar", "pub": "bar", "fast_food": "fastFood",
+    "ice_cream": "iceCream", "library": "library", "university": "university", "college": "university",
+    "school": "school", "townhall": "publicOffice", "community_centre": "publicOffice", "coworking_space": "coworking",
+}
+
+
+def has_wifi(tags: dict) -> bool:
+    return tags.get("internet_access") == "wlan" or tags.get("wifi") in ("yes", "free")
+
+
+def wifi_access(tags: dict) -> str:
+    """Accesso dichiarato su OSM: free (gratuito), customers (solo clienti), paid (a pagamento) o unknown."""
+    fee = (tags.get("internet_access:fee") or "").lower()
+    if fee == "no" or tags.get("wifi") == "free":
+        return "free"
+    if fee == "customers":
+        return "customers"
+    if fee == "yes":
+        return "paid"
+    return "unknown"
+
+
+def venue_kind(tags: dict) -> str:
+    for key in ("tourism", "amenity", "office", "shop"):
+        if tags.get(key) in VENUE_KINDS:
+            return VENUE_KINDS[tags[key]]
+    if tags.get("shop"):
+        return "shop"
+    return "other"
+
+
+def wifi_venue(el, tags, lat, lon):
+    rid, url = osm_ref(el)
+    street = tags.get("addr:street")
+    address = f"{street} {tags.get('addr:housenumber', '')}".strip() if street else None
+    return {
+        "id": rid, "sourceUrl": url, "lat": lat, "lon": lon,
+        "name": tags.get("name") or tags.get("brand"),
+        "kind": venue_kind(tags),
+        "access": wifi_access(tags),
+        # Nome della rete solo se mappato su OSM; le password non vengono mai salvate
+        "ssid": tags.get("internet_access:ssid"),
+        "address": address,
+        "website": tags.get("website") or tags.get("contact:website"),
+        "zone": zone(lat, lon),
+    }
+
+
 def main() -> int:
     try:
         payload = fetch_overpass(QUERY)
@@ -182,7 +238,7 @@ def main() -> int:
         logging.error("%s", e)
         return 1
 
-    out = {"evCharging": [], "parkings": [], "wells": [], "monumentalTrees": [], "recyclingCentres": [], "libraries": []}
+    out = {"evCharging": [], "parkings": [], "wells": [], "monumentalTrees": [], "recyclingCentres": [], "libraries": [], "wifiVenues": []}
     seen = set()
     for el in payload.get("elements", []):
         tags = el.get("tags", {})
@@ -191,6 +247,9 @@ def main() -> int:
             continue
         seen.add((el["type"], el["id"]))
         lat, lon = c
+        # Il Wi-Fi è un attributo: un luogo può essere anche biblioteca, ecc.
+        if has_wifi(tags) and tags.get("internet_access") != "no":
+            out["wifiVenues"].append(wifi_venue(el, tags, lat, lon))
         if tags.get("amenity") == "charging_station":
             out["evCharging"].append(ev(el, tags, lat, lon))
         elif tags.get("amenity") == "parking":

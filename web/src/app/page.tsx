@@ -23,6 +23,7 @@ import {
   DayType,
   TransportModeCategory,
   LoraGateway,
+  WifiVenue,
   StopItem,
   CantiereItem,
   FlightItem,
@@ -91,7 +92,7 @@ import {
   OPEN_EMERGENCY_WATER_DOCKS,
   OPEN_HEAT_ISLAND_LST
 } from '@/lib/open-data-catalog';
-import { CANTIERI_REFERENCE, ACTV_STOPS_REFERENCE } from '@/lib/db';
+import { ACTV_STOPS_REFERENCE } from '@/lib/stopsReference';
 import { OPEN_PUBLIC_DAE } from '@/lib/dae-data';
 import { OPEN_PHARMACIES } from '@/lib/pharmacies-data';
 import { VENICE_CAMERAS } from '@/lib/cameras-data';
@@ -167,7 +168,7 @@ export default function HomePage() {
 
   // Layer toggles (Default to false on clean map startup)
   const [layers, setLayers] = useState<LayerVisibility>(() => allLayers(false));
-  const { showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri, showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose, showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries, showFiber, showRecyclingCentres, showLibraries, showCanals, showBdapWorks, showLoraGateways } = layers;
+  const { showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri, showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose, showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries, showFiber, showRecyclingCentres, showLibraries, showCanals, showBdapWorks, showLoraGateways, showWifiVenues } = layers;
   const { setShowPasserelle } = useMemo(() => makeLayerSetters(setLayers), []);
   const [realtimeVehicles, setRealtimeVehicles] = useState<RealtimeVehicleDto[]>([]);
 
@@ -183,7 +184,8 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<TransportModeCategory | 'all'>('all');
 
   // Data collections
-  const [cantieri, setCantieri] = useState<CantiereItem[]>(CANTIERI_REFERENCE);
+  // Opere pubbliche caricate su richiesta (livello, ricerca, esportazione): non nel bundle della home
+  const [cantieri, setCantieri] = useState<CantiereItem[]>([]);
   const locatedCantieri = useMemo(() => cantieri.filter(isLocated), [cantieri]);
   const [stops, setStops] = useState<StopItem[]>(ACTV_STOPS_REFERENCE);
   const [flights, setFlights] = useState<FlightItem[]>([]);
@@ -233,6 +235,7 @@ export default function HomePage() {
   // Opere in esecuzione dal Monitoraggio Opere Pubbliche (BDAP), caricate solo con il layer acceso
   const [bdapWorks, setBdapWorks] = useState<BdapProject[] | null>(null);
   const [loraGateways, setLoraGateways] = useState<LoraGateway[]>([]);
+  const [wifiVenues, setWifiVenues] = useState<WifiVenue[]>([]);
   const [metarData, setMetarData] = useState<AirportMetarData | null>(null);
   const [liveTrains, setLiveTrains] = useState<TrainLiveItem[]>(OPEN_LIVE_TRAINS);
   const [wasteBoats, setWasteBoats] = useState<VeritasWasteBoatItem[]>(OPEN_VERITAS_WASTE_BOATS);
@@ -502,6 +505,7 @@ export default function HomePage() {
               if (data.parkings) setParkings(data.parkings);
               if (data.recyclingCentres) setRecyclingCentres(data.recyclingCentres);
               if (data.libraries) setLibraries(data.libraries);
+            if (data.wifiVenues) setWifiVenues(data.wifiVenues);
             }
           })
           .catch((err) => console.warn('Using fallback city assets:', err));
@@ -685,7 +689,7 @@ export default function HomePage() {
     return {
       cantieri: showCantieri || showSpatialBuffer || listsForSearch,
       stops: showStops || listsForSearch,
-      cityAssets: showCityAssets || showParkings || showRecyclingCentres || showLibraries || listsForSearch,
+      cityAssets: showCityAssets || showParkings || showRecyclingCentres || showLibraries || showWifiVenues || listsForSearch,
       environment: showAirQuality,
       pedestrianFlows: showPedestrianFlows,
       alilaguna: showAlilaguna || isAlilagunaModalOpen,
@@ -704,7 +708,7 @@ export default function HomePage() {
       regionalData: showLagoonWater || showAccommodations || showBikeRoutes || showPollenStations || showTributaries,
       loraGateways: showLoraGateways,
     };
-  }, [isSearchOpen, isExportModalOpen, isAlilagunaModalOpen, isAirportModalOpen, isTideModalOpen, simulatedTideLevel, showCantieri, showSpatialBuffer, showStops, showCityAssets, showParkings, showRecyclingCentres, showLibraries, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showOceanStations, showMarineSignals, showBathingWaters, showTrees, showEvCharging, showWifiHotspots, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries, showLoraGateways]);
+  }, [isSearchOpen, isExportModalOpen, isAlilagunaModalOpen, isAirportModalOpen, isTideModalOpen, simulatedTideLevel, showCantieri, showSpatialBuffer, showStops, showCityAssets, showParkings, showRecyclingCentres, showLibraries, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showOceanStations, showMarineSignals, showBathingWaters, showTrees, showEvCharging, showWifiHotspots, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries, showLoraGateways, showWifiVenues]);
 
   const startedResources = useRef(new Set<DataResource>());
   useEffect(() => {
@@ -878,6 +882,7 @@ export default function HomePage() {
     showLibraries: libraries.length,
     showBdapWorks: bdapWorks?.filter(isLocatedBdap).length ?? 0,
     showLoraGateways: loraGateways.length,
+    showWifiVenues: wifiVenues.length,
     showCanals: lagoonNetwork?.canals.length ?? 0,
     showWifiHotspots: wifiHotspots.length,
     showEvCharging: evCharging.length,
@@ -908,7 +913,7 @@ export default function HomePage() {
     showBikeRoutes: regionalBikeRoutes.length,
     showPollenStations: pollenMonitoringStations.length,
     showTributaries: lagoonTributaryRivers.length,
-  }), [categoryCounts, realtimeVehicles, stops, alilagunaBoats, cantieri, cameras, flights, ships, moseGates, passerelle, briccole, lagoonNetwork, oceanStations, bathingWaters, trees, recyclingCentres, libraries, bdapWorks, loraGateways, wifiHotspots, evCharging, fountains, parkings, airStations, pedestrianFlows, satellites, canalSpeedLimits, bridges, gondolas, docks, subsidencePoints, lagoonMorphology, marineWindStations, liveTrains, wasteBoats, nizioleti, wells, bellTowers, fortressIslands, emergencyDocks, daeList, pharmacies, heatIslands, lagoonWaterQuality, touristAccommodations, regionalBikeRoutes, pollenMonitoringStations, lagoonTributaryRivers]);
+  }), [categoryCounts, realtimeVehicles, stops, alilagunaBoats, cantieri, cameras, flights, ships, moseGates, passerelle, briccole, lagoonNetwork, oceanStations, bathingWaters, trees, recyclingCentres, libraries, bdapWorks, loraGateways, wifiVenues, wifiHotspots, evCharging, fountains, parkings, airStations, pedestrianFlows, satellites, canalSpeedLimits, bridges, gondolas, docks, subsidencePoints, lagoonMorphology, marineWindStations, liveTrains, wasteBoats, nizioleti, wells, bellTowers, fortressIslands, emergencyDocks, daeList, pharmacies, heatIslands, lagoonWaterQuality, touristAccommodations, regionalBikeRoutes, pollenMonitoringStations, lagoonTributaryRivers]);
   const liveWebcamsCount = useMemo(() => cameras.filter((c) => c.hasLiveFeed).length, [cameras]);
 
   return (
@@ -1034,6 +1039,8 @@ export default function HomePage() {
           bdapWorks={bdapWorks}
           showLoraGateways={showLoraGateways}
           loraGateways={loraGateways}
+          showWifiVenues={showWifiVenues}
+          wifiVenues={wifiVenues}
           showCanals={showCanals}
           lagoonNetwork={lagoonNetwork}
           // 3. Ferrovia & Logistica

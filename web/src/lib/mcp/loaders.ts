@@ -123,6 +123,7 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   drinking_fountains: async () => ({ items: asRows((await read(cityAssetsGET())).fountains) }),
   recycling_centres: async () => ({ items: asRows((await read(cityAssetsGET())).recyclingCentres) }),
   libraries: async () => ({ items: asRows((await read(cityAssetsGET())).libraries) }),
+  wifi_venues: async () => ({ items: asRows((await read(cityAssetsGET())).wifiVenues) }),
   parkings: async () => ({ items: asRows((await read(cityAssetsGET())).parkings) }),
   ev_charging: async () => ({ items: asRows(field((await read(veniceAssetsGET())).data, 'evCharging')) }),
   wifi_hotspots: async () => ({ items: asRows(field((await read(veniceAssetsGET())).data, 'wifiHotspots')) }),

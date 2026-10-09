@@ -121,7 +121,8 @@ export const enUi: UiTranslations = {
     regimeCuratedTitle: "Hand-curated list: to be verified",
     liveWebcams: "{n} live",
     bdapWorks: "Works in progress (BDAP)",
-    loraGateways: "LoRaWAN gateways"
+    loraGateways: "LoRaWAN gateways",
+    wifiVenues: "Wi-Fi in hotels, bars and places (OSM)"
   },
   map: {
     orarioUfficialeActv: "official ACTV timetable",
@@ -1127,7 +1128,7 @@ export const enUi: UiTranslations = {
     methodLicensesBody: "Each dataset keeps its source license (CC BY for the City and ACTV, CC BY 4.0 for ARPAV, ODbL for OpenStreetMap). The ACTV GTFS-RT feed is public but its license still needs confirming with AVM.",
     "name_osm-poi": "OpenStreetMap POIs: chargers, car parks, wells, trees (pipeline)",
     "name_alilaguna-gtfs": "Alilaguna GTFS timetable (pipeline)",
-    "meta_osm-poi": "Replaces hand-compiled lists: curated entries remain only if no nearby OSM match exists and are marked \"to be verified\".",
+    "meta_osm-poi": "Replaces hand-compiled lists: curated entries remain only if no nearby OSM match exists and are marked \"to be verified\". Includes places with Wi-Fi (hotels, bars, libraries) with the declared access type.",
     "meta_alilaguna-gtfs": "The feed declares no licence: the source is credited. Boats are simulated from the timetable, which is valid for a season.",
     detailTimetableExpired: "imported timetable no longer valid",
     "name_open-meteo": "Open-Meteo wind forecast",
@@ -1391,5 +1392,34 @@ export const enUi: UiTranslations = {
     what: "Antenna of The Things Network community radio network: it receives messages from low-power (LoRaWAN) sensors within a few kilometres and forwards them to the Internet. Anyone can install one and extend the coverage.",
     privacy: "Status and location are published by the owner on The Things Network: VOD shows the same position as TTN public maps, without identifiers or names. An owner who makes the location private in the TTN console disappears from VOD within 10 minutes.",
     community: "How to add a gateway to the network"
+  },
+  wifiVenue: {
+    access: "Access",
+    access_free: "Free",
+    access_customers: "Customers only",
+    access_paid: "Paid",
+    access_unknown: "Not stated",
+    network: "Network name",
+    address: "Address",
+    note: "Wi-Fi reported on OpenStreetMap: access and operation are not verified by VOD. Passwords are never shown.",
+    kind_hotel: "Hotel",
+    kind_guestHouse: "Guest house",
+    kind_hostel: "Hostel",
+    kind_apartment: "Holiday apartment",
+    kind_campSite: "Campsite",
+    kind_museum: "Museum",
+    kind_attraction: "Attraction",
+    kind_restaurant: "Restaurant",
+    kind_cafe: "Café",
+    kind_bar: "Bar",
+    kind_fastFood: "Fast food",
+    kind_iceCream: "Ice cream shop",
+    kind_library: "Library",
+    kind_university: "University",
+    kind_school: "School",
+    kind_publicOffice: "Public office",
+    kind_coworking: "Coworking",
+    kind_shop: "Shop",
+    kind_other: "Place with Wi-Fi"
   }
 };

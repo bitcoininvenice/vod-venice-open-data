@@ -1,4 +1,4 @@
-import type { CityAssetItem, CivicPoiItem, EvChargingItem, ParkingItem, UrbanTreeItem, VeniceWellItem } from './types';
+import type { CityAssetItem, CivicPoiItem, EvChargingItem, ParkingItem, UrbanTreeItem, VeniceWellItem, WifiVenue } from './types';
 import osmPoi from '@/data/osm-poi.json';
 import fountainsDataset from '@/data/fountains.json';
 import { calculateDistanceMeters } from './geo';
@@ -128,3 +128,13 @@ export const OPEN_RECYCLING_CENTRES: CivicPoiItem[] = (osmPoi.recyclingCentres a
 
 /** Biblioteche (amenity=library). */
 export const OPEN_LIBRARIES: CivicPoiItem[] = (osmPoi.libraries as RawCivic[]).map(toCivic('library'));
+
+/** Luoghi con Wi-Fi (internet_access=wlan o wifi=yes/free), con tipo di accesso dichiarato. */
+export const OPEN_WIFI_VENUES: WifiVenue[] = (osmPoi.wifiVenues as Omit<WifiVenue, 'source'>[]).map((w) => ({
+  ...w,
+  name: w.name ?? null,
+  ssid: w.ssid ?? null,
+  address: w.address ?? null,
+  website: w.website ?? null,
+  source: 'OPENSTREETMAP',
+}));

@@ -160,6 +160,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
         layers: [
           e('showCityAssets', 'layers.layerCityAssets', 'droplets', 'cyan'),
           e('showWifiHotspots', 'layers.layerWifiHotspots', 'wifi', 'indigo'),
+          e('showWifiVenues', 'ui.layerPanel.wifiVenues', 'wifi', 'teal'),
           e('showFiber', 'ui.layerPanel.fiber', 'cable', 'green'),
           e('showLoraGateways', 'ui.layerPanel.loraGateways', 'radio', 'violet'),
           e('showRecyclingCentres', 'ui.layerPanel.recyclingCentres', 'recycle', 'green'),

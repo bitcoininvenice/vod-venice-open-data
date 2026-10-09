@@ -497,6 +497,22 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     endpointOrFile: '/api/cantieri'
   },
   {
+    id: 'wifi_locali',
+    nameIt: 'Wi-Fi in hotel, bar e luoghi pubblici (OpenStreetMap)',
+    nameEn: 'Wi-Fi in hotels, bars and public places (OpenStreetMap)',
+    group: 'city',
+    regime: 'static',
+    acquisition: 'local',
+    institution: 'OpenStreetMap contributors (ODbL)',
+    portalUrl: 'https://www.openstreetmap.org',
+    portalName: 'openstreetmap.org (internet_access=wlan)',
+    descriptionIt: 'Hotel, ristoranti, bar, biblioteche, musei e altri luoghi che offrono Wi-Fi secondo OpenStreetMap, con il tipo di accesso dichiarato: gratuito, riservato ai clienti o a pagamento. Completa la rete pubblica del Comune.',
+    descriptionEn: 'Hotels, restaurants, bars, libraries, museums and other places offering Wi-Fi according to OpenStreetMap, with the declared access type: free, customers only or paid. Complements the City public network.',
+    technicalNotesIt: 'Import settimanale con pipeline/import_osm_poi.py (internet_access=wlan o wifi=yes/free, ODbL). Il tipo di accesso viene da internet_access:fee; molti luoghi non lo indicano. Il nome della rete compare solo se mappato; le password non vengono mai salvate. Non sono le reti private: VOD non usa dati di wardriving (WiGLE), che ne vietano la ripubblicazione.',
+    technicalNotesEn: 'Weekly import with pipeline/import_osm_poi.py (internet_access=wlan or wifi=yes/free, ODbL). The access type comes from internet_access:fee; many places do not state it. The network name appears only if mapped; passwords are never stored. These are not private networks: VOD does not use wardriving data (WiGLE), whose terms forbid republication.',
+    endpointOrFile: '/api/city-assets (src/data/osm-poi.json)'
+  },
+  {
     id: 'gateway_lora',
     nameIt: 'Gateway LoRaWAN (The Things Network)',
     nameEn: 'LoRaWAN gateways (The Things Network)',

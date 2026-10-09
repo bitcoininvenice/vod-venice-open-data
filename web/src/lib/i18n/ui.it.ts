@@ -119,7 +119,8 @@ export const itUi = {
     regimeCuratedTitle: "Elenco curato a mano: da verificare",
     liveWebcams: "{n} live",
     bdapWorks: "Opere in corso (BDAP)",
-    loraGateways: "Gateway LoRaWAN"
+    loraGateways: "Gateway LoRaWAN",
+    wifiVenues: "Wi-Fi in hotel, bar e luoghi (OSM)"
   },
   map: {
     orarioUfficialeActv: "orario ufficiale ACTV",
@@ -1125,7 +1126,7 @@ export const itUi = {
     methodLicensesBody: "Ogni dato mantiene la licenza della fonte (CC BY per Comune e ACTV, CC BY 4.0 per ARPAV, ODbL per OpenStreetMap). Il feed GTFS-RT ACTV è pubblico ma la licenza è ancora da confermare con AVM.",
     "name_osm-poi": "POI OpenStreetMap: colonnine, parcheggi, pozzi, alberi (pipeline)",
     "name_alilaguna-gtfs": "Orario Alilaguna GTFS (pipeline)",
-    "meta_osm-poi": "Sostituisce gli elenchi compilati a mano: le voci curate restano solo se non hanno un riscontro OSM vicino e sono segnate \"da verificare\".",
+    "meta_osm-poi": "Sostituisce gli elenchi compilati a mano: le voci curate restano solo se non hanno un riscontro OSM vicino e sono segnate \"da verificare\". Include i luoghi con Wi-Fi (hotel, bar, biblioteche) con il tipo di accesso dichiarato.",
     "meta_alilaguna-gtfs": "Il feed non dichiara una licenza: si cita la fonte. Le barche sono simulate dall'orario, che ha una validità stagionale.",
     detailTimetableExpired: "orario importato non più valido",
     "name_open-meteo": "Previsione vento Open-Meteo",
@@ -1389,6 +1390,35 @@ export const itUi = {
     what: "Antenna della rete radio comunitaria The Things Network: riceve i messaggi di sensori a basso consumo (LoRaWAN) nel raggio di alcuni chilometri e li inoltra in Internet. Chiunque può installarne una e allargare la copertura.",
     privacy: "Stato e posizione sono pubblicati dal proprietario sulla rete The Things Network: VOD mostra la stessa posizione delle mappe pubbliche di TTN, senza identificativi né nomi. Il proprietario che rende privata la posizione nella console TTN sparisce da VOD entro 10 minuti.",
     community: "Come aggiungere un gateway alla rete"
+  },
+  wifiVenue: {
+    access: "Accesso",
+    access_free: "Gratuito",
+    access_customers: "Solo per i clienti",
+    access_paid: "A pagamento",
+    access_unknown: "Non indicato",
+    network: "Nome della rete",
+    address: "Indirizzo",
+    note: "Wi-Fi segnalato su OpenStreetMap: accesso e funzionamento non sono verificati da VOD. Le password non vengono mai mostrate.",
+    kind_hotel: "Hotel",
+    kind_guestHouse: "Affittacamere",
+    kind_hostel: "Ostello",
+    kind_apartment: "Appartamento turistico",
+    kind_campSite: "Campeggio",
+    kind_museum: "Museo",
+    kind_attraction: "Attrazione",
+    kind_restaurant: "Ristorante",
+    kind_cafe: "Caffè",
+    kind_bar: "Bar",
+    kind_fastFood: "Fast food",
+    kind_iceCream: "Gelateria",
+    kind_library: "Biblioteca",
+    kind_university: "Università",
+    kind_school: "Scuola",
+    kind_publicOffice: "Ufficio pubblico",
+    kind_coworking: "Coworking",
+    kind_shop: "Negozio",
+    kind_other: "Luogo con Wi-Fi"
   }
 };
 

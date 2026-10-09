@@ -72,7 +72,7 @@ import { useTranslation } from '@/lib/i18n';
 import { InfoClose, InfoPanel } from '@/components/ui/InfoPanel';
 import { BdapWorkDetails } from '@/components/BdapWorkDetails';
 import type { BdapProject } from '@/lib/bdap';
-import type { LoraGateway } from '@/lib/types';
+import type { LoraGateway, WifiVenue } from '@/lib/types';
 import { KeyValues } from '@/components/ui/InfoPanel';
 import type { LayerKey } from '@/lib/urlLayers';
 
@@ -114,7 +114,8 @@ export type VeniceFeatureSelected =
   | { type: 'lagoonMarker'; data: { lon: number; lat: number; kind: MarkerKind; osmId: number } }
   | { type: 'canal'; data: LagoonCanal }
   | { type: 'bdapWork'; data: BdapProject }
-  | { type: 'loraGateway'; data: LoraGateway };
+  | { type: 'loraGateway'; data: LoraGateway }
+  | { type: 'wifiVenue'; data: WifiVenue };
 
 interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
@@ -241,9 +242,13 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="p-2 rounded-xl bg-sky-500/20 text-sky-400"><Waves className="w-5 h-5" /></div>
             )}
             {feature.type === 'loraGateway' && <LoraGatewayBody gateway={feature.data} />}
+          {feature.type === 'wifiVenue' && <WifiVenueBody venue={feature.data} />}
 
           {feature.type === 'bdapWork' && (
               <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400"><Construction className="w-5 h-5" /></div>
+            )}
+            {feature.type === 'wifiVenue' && (
+              <div className="p-2 rounded-xl bg-teal-500/20 text-teal-400"><Wifi className="w-5 h-5" /></div>
             )}
             {feature.type === 'loraGateway' && (
               <div className="p-2 rounded-xl bg-violet-500/20 text-violet-400"><Radio className="w-5 h-5" /></div>
@@ -294,6 +299,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'canal' && (feature.data.name ?? t('ui.feature.canalUnnamed'))}
                 {feature.type === 'bdapWork' && feature.data.object}
                 {feature.type === 'loraGateway' && t('ui.lora.title')}
+                {feature.type === 'wifiVenue' && (feature.data.name ?? t(`ui.wifiVenue.kind_${feature.data.kind}`))}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
                 {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
@@ -317,6 +323,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'fiberCell' && t('ui.feature.fiberSubtitle', { date: feature.data.dataDate.split('-').reverse().join('/') })}
                 {feature.type === 'bdapWork' && (feature.data.place ?? t('ui.bdap.publicWork'))}
                 {feature.type === 'loraGateway' && feature.data.network}
+                {feature.type === 'wifiVenue' && `${t(`ui.wifiVenue.kind_${feature.data.kind}`)} · ${feature.data.zone}`}
               </span>
             </div>
           </div>
@@ -1278,7 +1285,7 @@ const FEATURE_LAYER: Record<Exclude<VeniceFeatureSelected['type'], 'civicPoi'>, 
   pharmacy: 'showPharmacies', heatIsland: 'showHeatIslands', lagoonWater: 'showLagoonWater',
   accommodation: 'showAccommodations', bikeRoute: 'showBikeRoutes', pollenStation: 'showPollenStations',
   tributaryRiver: 'showTributaries', parking: 'showParkings', fountain: 'showCityAssets', fiberCell: 'showFiber',
-  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks', loraGateway: 'showLoraGateways',
+  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks', loraGateway: 'showLoraGateways', wifiVenue: 'showWifiVenues',
 };
 
 function featureLayer(feature: VeniceFeatureSelected): LayerKey {
@@ -1294,7 +1301,7 @@ const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
 ]);
 
 /** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
-const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'bdapWork', 'loraGateway']);
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'bdapWork', 'loraGateway', 'wifiVenue']);
 
 /** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
 const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {
@@ -1485,6 +1492,39 @@ const LoraGatewayBody: React.FC<{ gateway: LoraGateway }> = ({ gateway: g }) => 
       <p className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">{l('privacy')}</p>
       <a href="https://www.thethingsnetwork.org/docs/gateways/" target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline self-start">
         {l('community')}
+      </a>
+    </div>
+  );
+};
+
+const WIFI_ACCESS_CLASS: Record<WifiVenue['access'], string> = {
+  free: 'text-emerald-400',
+  customers: 'text-amber-400',
+  paid: 'text-rose-400',
+  unknown: 'text-[var(--ink-2)]',
+};
+
+/** Scheda di un luogo con Wi-Fi (OpenStreetMap): accesso dichiarato, nome della rete se mappato. */
+const WifiVenueBody: React.FC<{ venue: WifiVenue }> = ({ venue: v }) => {
+  const { t } = useTranslation();
+  const w = (key: string) => t(`ui.wifiVenue.${key}`);
+  return (
+    <div className="flex flex-col gap-3">
+      <KeyValues
+        items={[
+          [w('access'), w(`access_${v.access}`), WIFI_ACCESS_CLASS[v.access]],
+          [w('network'), v.ssid],
+          [w('address'), v.address],
+        ]}
+      />
+      {v.website && (
+        <a href={v.website} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline break-all">
+          {v.website}
+        </a>
+      )}
+      <p className="text-[11px] text-[var(--ink-3)]">{w('note')}</p>
+      <a href={v.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2">
+        © OpenStreetMap contributors (ODbL)
       </a>
     </div>
   );
