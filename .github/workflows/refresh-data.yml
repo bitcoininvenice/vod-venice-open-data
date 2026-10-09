@@ -42,6 +42,7 @@ jobs:
           python import_osm_poi.py || echo "::warning::POI OSM (colonnine, parcheggi, pozzi, alberi, ecocentri, biblioteche) non aggiornati"
           python import_osm_waterways.py || echo "::warning::briccole e canali OSM non aggiornati"
           python import_arpav_pollen.py || echo "::warning::pollini misurati ARPAV non aggiornati"
+          python import_arpav_lagoon.py || echo "::warning::sonde ARPAV della laguna non aggiornate"
           python import_cciaa_turismo.py || echo "::warning::turismo e popolazione non aggiornati"
           python import_alilaguna_gtfs.py || echo "::warning::orario Alilaguna non aggiornato"
           python import_agcom_fiber.py || echo "::warning::copertura fibra AGCOM non aggiornata"
@@ -69,7 +70,7 @@ jobs:
             - opere pubbliche, hotspot WiFi (dati.venezia.it), qualità dell'aria (ARPAV)
             - orario Alilaguna (GTFS dell'operatore, `web/src/data/alilaguna-gtfs.json`)
             - copertura della rete fissa (AGCOM BroadbandMap, `web/src/data/agcom-fiber.json`)
-            - pollini misurati ARPAV a Venezia, turismo e popolazione dei comuni della laguna (Camera di Commercio)
+            - pollini misurati ARPAV a Venezia, sonde ARPAV della laguna e riepilogo balneazione, turismo e popolazione dei comuni della laguna (Camera di Commercio)
             - OpenStreetMap: telecamere, DAE, farmacie, fontanelle, colonnine, parcheggi, vere da pozzo, alberi monumentali, ecocentri, biblioteche, briccole e canali
 
             Typecheck, test e build sono passati sui nuovi dati. Controllare il diff prima del merge.

@@ -908,22 +908,24 @@ export interface HeatIslandSurfaceTempItem {
 // ==========================================
 // 7. OPEN DATA REGIONE VENETO (dati.veneto.it / ARPAV / Direzione Turismo)
 // ==========================================
+/** Stazione di monitoraggio ARPAV della laguna: ultimo campionamento dell'anno, al punto più vicino alla superficie. */
 export interface LagoonWaterQualityItem {
   id: string;
   stationName: string;
-  subBasin: 'LAGUNA_NORD' | 'LAGUNA_CENTRO' | 'LAGUNA_SUD';
   lat: number;
   lon: number;
-  waterTempCelsius: number;
-  salinityPsu: number; // Salinità in Practical Salinity Units
-  dissolvedOxygenPercent: number; // % saturazione ossigeno disciolto
-  dissolvedOxygenMgL: number; // mg/L
-  ph: number;
-  turbidityNtu: number; // Torbidità NTU
-  conductivityMsCm: number; // Conducibilità mS/cm
-  trophicState: 'BUONO' | 'ELEVATO' | 'SUFFICIENTE' | 'CRITICO';
-  monitoringDepthMeters: number;
-  officialSource: string;
+  /** data del campionamento (AAAA-MM-GG) */
+  sampledAt: string;
+  time: string | null;
+  depthMeters: number;
+  samplingDays: number;
+  waterTempCelsius: number | null;
+  conductivityMsCm: number | null;
+  salinityPsu: number | null;
+  dissolvedOxygenPercent: number | null;
+  dissolvedOxygenMgL: number | null;
+  ph: number | null;
+  chlorophyllUgL: number | null;
 }
 
 export interface TouristAccommodationItem {

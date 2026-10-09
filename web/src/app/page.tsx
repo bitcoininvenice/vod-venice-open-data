@@ -76,7 +76,6 @@ import {
 } from '@/lib/types';
 import { isLocated } from '@/lib/types';
 import {
-  REGIONAL_LAGOON_WATER_QUALITY,
   REGIONAL_TOURIST_ACCOMMODATIONS,
   REGIONAL_BIKE_ROUTES,
   REGIONAL_POLLEN_STATIONS,
@@ -228,7 +227,7 @@ export default function HomePage() {
   const [heatIslands, setHeatIslands] = useState<HeatIslandSurfaceTempItem[]>(OPEN_HEAT_ISLAND_LST);
 
   // 5 Open Data Regione Veneto collections (dati.veneto.it)
-  const [lagoonWaterQuality, setLagoonWaterQuality] = useState<LagoonWaterQualityItem[]>(REGIONAL_LAGOON_WATER_QUALITY);
+  const [lagoonWaterQuality, setLagoonWaterQuality] = useState<LagoonWaterQualityItem[]>([]);
   const [touristAccommodations, setTouristAccommodations] = useState<TouristAccommodationItem[]>(REGIONAL_TOURIST_ACCOMMODATIONS);
   const [regionalBikeRoutes, setRegionalBikeRoutes] = useState<RegionalBikeRouteItem[]>(REGIONAL_BIKE_ROUTES);
   const [pollenMonitoringStations, setPollenMonitoringStations] = useState<PollenMonitoringStationItem[]>(REGIONAL_POLLEN_STATIONS);

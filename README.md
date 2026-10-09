@@ -52,6 +52,7 @@ vod-venice-open-data/
 │   ├── import_alilaguna_gtfs.py    # Orario ufficiale Alilaguna (GTFS dell'operatore)
 │   ├── import_osm_waterways.py     # Briccole, segnalamenti e canali della laguna (OSM)
 │   ├── import_arpav_pollen.py      # Pollini misurati da ARPAV a Venezia (calendario mensile)
+│   ├── import_arpav_lagoon.py      # Sonde ARPAV della laguna (ultimo campionamento) e riepilogo balneazione
 │   ├── import_cciaa_turismo.py     # Arrivi, presenze e residenti dei comuni della laguna (CCIAA, CC BY)
 │   ├── import_agcom_fiber.py       # Copertura rete fissa FTTH/FTTC/ADSL (AGCOM BroadbandMap, CC BY 4.0)
 │   ├── enrich_fountains.py         # Toponimo di prossimità per le fontanelle senza nome
@@ -134,6 +135,7 @@ python import_alilaguna_gtfs.py             # Orario Alilaguna (simulazione dell
 python import_agcom_fiber.py                # Copertura fibra AGCOM su celle di ~100 m
 python import_osm_waterways.py              # Briccole, segnalamenti e canali della laguna (OSM)
 python import_arpav_pollen.py               # Pollini misurati ARPAV a Venezia
+python import_arpav_lagoon.py               # Sonde ARPAV della laguna e balneazione (anche --probe-file/--year/--bathing-file per file locali)
 python import_cciaa_turismo.py              # Turismo e popolazione dei comuni della laguna
 
 # Test della pipeline

@@ -19,6 +19,7 @@ import import_agcom_fiber as fiber  # noqa: E402
 import import_osm_waterways as waterways  # noqa: E402
 import import_arpav_pollen as arpav_pollen  # noqa: E402
 import import_cciaa_turismo as cciaa  # noqa: E402
+import import_arpav_lagoon as arpav_lagoon  # noqa: E402
 from download_gtfs import safe_extract  # noqa: E402
 from vod_common import redact  # noqa: E402
 
@@ -230,6 +231,32 @@ def test_cciaa_turismo_build():
     assert d["tourismYear"] == 2024 and d["populationDate"] == "2024-01-01"
     ve = d["comuni"][0]
     assert ve["name"] == "Venezia" and ve["presencesPerResident"] == 5.0 and ve["avgStayNights"] == 2.5
+
+
+def test_arpav_lagoon_latest_surface_and_links():
+    header = "Stazione,Laguna,GBO X,GBO Y,Data,Orario,Profondita' (m),Temperatura acqua (gradi C.),Conducibilità (mS/cm),Salinità (psu),Ossigeno disciolto (%),Ossigeno disciolto (ppm),pH,\"Clorofilla \"\"a\"\" (µg/l)\""
+    rows = [
+        "S1,Venezia,1755000,5034000,10/02/2026,10:00,-0.1,9,40,25,90,8,7.9,2",
+        "S1,Venezia,1755000,5034000,15/05/2026,10:00,-1.5,18,45,30,95,8,8.0,3",
+        "S1,Venezia,1755000,5034000,15/05/2026,10:00,-0.2,19,46,31,99,8.5,8.1,4",
+    ]
+    import csv as _csv, io as _io
+    st = arpav_lagoon.latest_surface(list(_csv.DictReader(_io.StringIO(header + "\n" + "\n".join(rows)))))
+    assert len(st) == 1
+    s = st[0]
+    assert s["sampledAt"] == "2026-05-15" and s["depthMeters"] == 0.2 and s["waterTempCelsius"] == 19
+    assert s["chlorophyllUgL"] == 4 and s["samplingDays"] == 2
+    assert 12.2 < s["lon"] < 12.5 and 45.3 < s["lat"] < 45.6
+    html = 'href="/dati-ambientali/open-data/file-e-allegati/soaml/laguna-di-venezia/dati-sonda/sonda_venezia_2022.csv/@@download/file" ' \
+           'href="/dati-ambientali/open-data/file-e-allegati/soaml/laguna-di-venezia/dati-sonda/sonda-venezia-2026.pdf/@@download/file"'
+    assert max(arpav_lagoon.files_by_year(html)) == 2026
+
+
+def test_arpav_bathing_summary_takes_last_year():
+    text = ("Anno,variabile,Regione_Veneto,mare_Adriatico\n2024,N° PUNTI TOTALI,170,94\n"
+            "2025,N° PUNTI TOTALI,174,95\n2025,% punti Idonei,100,100\n2025,% in classe eccellente,93.7,88.4\n")
+    b = arpav_lagoon.bathing_summary(text)
+    assert b["year"] == 2025 and b["points"] == 95 and b["excellentPercent"] == 88.4
 
 
 def test_safe_extract_rejects_path_traversal(tmp_path):

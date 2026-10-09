@@ -299,7 +299,7 @@ export function drawLagoonWater(rc: RenderContext): void {
       if (camera.s > 0.02) {
         ctx.font = 'bold 8px "DM Mono", monospace';
         ctx.fillStyle = isDark ? '#22d3ee' : '#0369a1';
-        ctx.fillText(`${wq.salinityPsu} PSU · ${wq.waterTempCelsius}°C`, wx + 8, wy + 3);
+        ctx.fillText(`${wq.salinityPsu ?? 'n.d.'} PSU · ${wq.waterTempCelsius ?? 'n.d.'}°C`, wx + 8, wy + 3);
       }
       ctx.restore();
     }

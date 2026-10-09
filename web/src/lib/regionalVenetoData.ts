@@ -1,5 +1,4 @@
 import {
-  LagoonWaterQualityItem,
   TouristAccommodationItem,
   RegionalBikeRouteItem,
   PollenMonitoringStationItem,
@@ -7,113 +6,10 @@ import {
 } from './types';
 
 // ==========================================
-// 1. QUALITÀ ACQUE DI TRANSIZIONE & DATI SONDA ARPAV (Laguna di Venezia)
-// Fonte: ARPAV - Dipartimento Regionale Qualità dell'Acqua / dati.veneto.it
+// 1. QUALITÀ DELLE ACQUE LAGUNARI
+// I valori di esempio sono stati sostituiti dalle misure reali delle sonde ARPAV
+// (pipeline/import_arpav_lagoon.py -> src/data/arpav-lagoon.json, servite da /api/regional-data).
 // ==========================================
-export const REGIONAL_LAGOON_WATER_QUALITY: LagoonWaterQualityItem[] = [
-  {
-    id: 'WQ_SAN_MARCO',
-    stationName: 'Stazione Bacino San Marco (Sonda Multiparametrica)',
-    subBasin: 'LAGUNA_CENTRO',
-    lat: 45.4332,
-    lon: 12.3418,
-    waterTempCelsius: 16.8,
-    salinityPsu: 31.4,
-    dissolvedOxygenPercent: 96.5,
-    dissolvedOxygenMgL: 8.4,
-    ph: 8.18,
-    turbidityNtu: 4.2,
-    conductivityMsCm: 47.8,
-    trophicState: 'BUONO',
-    monitoringDepthMeters: 1.5,
-    officialSource: 'ARPAV - Monitoraggio Acque di Transizione Laguna di Venezia (dati.veneto.it)'
-  },
-  {
-    id: 'WQ_PETROLI_MALAMOCCO',
-    stationName: 'Stazione Bocca di Malamocco - Canale dei Petroli',
-    subBasin: 'LAGUNA_CENTRO',
-    lat: 45.3340,
-    lon: 12.2980,
-    waterTempCelsius: 16.2,
-    salinityPsu: 33.8,
-    dissolvedOxygenPercent: 101.2,
-    dissolvedOxygenMgL: 8.9,
-    ph: 8.24,
-    turbidityNtu: 3.1,
-    conductivityMsCm: 50.6,
-    trophicState: 'ELEVATO',
-    monitoringDepthMeters: 3.0,
-    officialSource: 'ARPAV - Dati Sonda Marino-Costieri (dati.veneto.it)'
-  },
-  {
-    id: 'WQ_BURANO_TORCELLO',
-    stationName: 'Stazione Laguna Nord - Canale dei Bari (Burano)',
-    subBasin: 'LAGUNA_NORD',
-    lat: 45.4855,
-    lon: 12.4180,
-    waterTempCelsius: 17.4,
-    salinityPsu: 28.2,
-    dissolvedOxygenPercent: 92.0,
-    dissolvedOxygenMgL: 7.9,
-    ph: 8.12,
-    turbidityNtu: 6.8,
-    conductivityMsCm: 43.1,
-    trophicState: 'BUONO',
-    monitoringDepthMeters: 1.2,
-    officialSource: 'ARPAV - Acque di Transizione Laguna Nord (dati.veneto.it)'
-  },
-  {
-    id: 'WQ_CHIOGGIA_VIGO',
-    stationName: 'Stazione Bacino di Chioggia - Canale Vigo',
-    subBasin: 'LAGUNA_SUD',
-    lat: 45.2215,
-    lon: 12.2810,
-    waterTempCelsius: 16.9,
-    salinityPsu: 32.6,
-    dissolvedOxygenPercent: 98.4,
-    dissolvedOxygenMgL: 8.6,
-    ph: 8.21,
-    turbidityNtu: 5.4,
-    conductivityMsCm: 49.0,
-    trophicState: 'BUONO',
-    monitoringDepthMeters: 2.0,
-    officialSource: 'ARPAV - Monitoraggio Acque Laguna Sud (dati.veneto.it)'
-  },
-  {
-    id: 'WQ_PALUDE_MAGGIORE',
-    stationName: 'Stazione Palude Maggiore & Barene Salmastre',
-    subBasin: 'LAGUNA_NORD',
-    lat: 45.5120,
-    lon: 12.4620,
-    waterTempCelsius: 18.1,
-    salinityPsu: 26.5,
-    dissolvedOxygenPercent: 88.5,
-    dissolvedOxygenMgL: 7.4,
-    ph: 8.08,
-    turbidityNtu: 8.2,
-    conductivityMsCm: 40.8,
-    trophicState: 'SUFFICIENTE',
-    monitoringDepthMeters: 0.8,
-    officialSource: 'ARPAV - Ecosistemi di Barena e Palude (dati.veneto.it)'
-  },
-  {
-    id: 'WQ_FUSINA_CANALACCI',
-    stationName: 'Stazione Gronda Lagunare Ovest - Foce Fusina',
-    subBasin: 'LAGUNA_CENTRO',
-    lat: 45.4190,
-    lon: 12.2570,
-    waterTempCelsius: 17.6,
-    salinityPsu: 27.9,
-    dissolvedOxygenPercent: 89.2,
-    dissolvedOxygenMgL: 7.6,
-    ph: 8.10,
-    turbidityNtu: 9.5,
-    conductivityMsCm: 42.4,
-    trophicState: 'SUFFICIENTE',
-    monitoringDepthMeters: 1.8,
-    officialSource: 'ARPAV - Acque di Transizione Gronda Lagunare (dati.veneto.it)'
-  }
-];
 
 // ==========================================
 // 2. STRUTTURE RICETTIVE & OVERTOURISM (Regione del Veneto)

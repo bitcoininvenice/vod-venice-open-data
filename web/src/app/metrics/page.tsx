@@ -36,6 +36,10 @@ import {
   Users
 } from 'lucide-react';
 import tourismData from '@/data/turismo-comuni.json';
+import arpavLagoon from '@/data/arpav-lagoon.json';
+
+/** Riepilogo ARPAV della balneazione sul mare Adriatico veneto (ultimo anno pubblicato) */
+const BATHING = arpavLagoon.bathing;
 
 /** Arrivi e presenze dell'ultimo anno pubblicato (Camera di Commercio, CC BY 4.0) */
 const VENICE_TOURISM = tourismData.comuni.find((c) => c.code === '027042');
@@ -127,7 +131,11 @@ const PLATFORM_CARDS: PlatformCard[] = [
   { id: 'cnr', sector: 'laguna_scienza', keywords: 'cnr ismar onde waves acqua alta platform', icon: Waves, color: 'indigo', badge: 'CPSM / CNR', value: (m) => (m?.cnrWaveHeightMeters === null || m?.cnrWaveHeightMeters === undefined ? null : `${m.cnrWaveHeightMeters} m`) },
   { id: 'passerelle', sector: 'laguna_scienza', keywords: 'passerelle walkways acqua alta', icon: Footprints, color: 'amber', badge: 'VOD', value: (m) => m?.passerelleTotalMeters, noteParams: (m, f) => ({ mounted: f(m?.passerelleMountedCount) }) },
   { id: 'briccole', sector: 'laguna_scienza', keywords: 'briccole segnalamenti channel markers', icon: Compass, color: 'cyan', badge: 'VOD', value: (m) => m?.briccoleCount },
-  { id: 'bathing', sector: 'laguna_scienza', keywords: 'balneazione bathing litorali beaches arpav', icon: LifeBuoy, color: 'teal', badge: 'ARPAV', value: (m) => m?.bathingWaterStationsCount },
+  {
+    id: 'bathing', sector: 'laguna_scienza', keywords: 'balneazione bathing litorali beaches arpav eccellente', icon: LifeBuoy, color: 'teal', badge: 'ARPAV',
+    value: () => (BATHING?.excellentPercent != null ? `${BATHING.excellentPercent}%` : null),
+    noteParams: (_m, f) => ({ year: String(BATHING?.year ?? 'n.d.'), points: f(BATHING?.points), suitable: String(BATHING?.suitablePercent ?? 'n.d.') }),
+  },
   // Marittimo
   { id: 'ships', sector: 'marittimo', keywords: 'navi ships porto port', icon: Ship, color: 'blue', badge: 'VOD', value: (m) => m?.activeShipsCount },
   { id: 'channels', sector: 'marittimo', keywords: 'canali channels marittimi petroli', icon: Compass, color: 'cyan', badge: 'n.d.', value: (m) => m?.maritimeChannelsCount },

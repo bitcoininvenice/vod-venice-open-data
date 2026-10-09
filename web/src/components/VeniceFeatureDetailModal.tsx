@@ -292,7 +292,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'nizioleto' && `${t('ui.feature.sestiere')} ${feature.data.sestiere} · ${t('ui.feature.civico')} ${feature.data.civicNumber}`}
                 {feature.type === 'emergencyDock' && `SUEM 118 · ${feature.data.hospital}`}
                 {feature.type === 'heatIsland' && `${t('ui.feature.tempSuperficiale')}: ${feature.data.surfaceTempCelsius}°C`}
-                {feature.type === 'lagoonWater' && `${t('ui.feature.bacino')} ${feature.data.subBasin.replace(/_/g, ' ')} · ${t('ui.feature.statoTrofico')}: ${feature.data.trophicState}`}
+                {feature.type === 'lagoonWater' && t('ui.feature.lagoonSampled', { date: feature.data.sampledAt.split('-').reverse().join('/'), depth: feature.data.depthMeters })}
                 {feature.type === 'accommodation' && `${t('ui.feature.densita')}: ${feature.data.densityCategory} · ${feature.data.bedsPerResidentRatio} ${t('ui.feature.postiLettoResidente')}`}
                 {feature.type === 'bikeRoute' && `${t('ui.feature.lunghezza')}: ${feature.data.lengthKm} km · ${feature.data.section}`}
                 {feature.type === 'pollenStation' && t('ui.feature.pollenSubtitle')}
@@ -945,47 +945,27 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
 
           {feature.type === 'lagoonWater' && (
             <div className="flex flex-col gap-3">
-              <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] uppercase font-mono text-cyan-400 font-bold">{t('ui.feature.statoTroficoLagunare')}</span>
-                  <p className="text-lg font-bold text-[var(--ink)]">{feature.data.trophicState}</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] uppercase font-mono text-[var(--ink-3)]">{t('ui.feature.profonditaSonda')}</span>
-                  <p className="text-sm font-mono font-bold text-cyan-300">-{feature.data.monitoringDepthMeters} m</p>
-                </div>
-              </div>
-
               <div className="grid grid-cols-3 gap-2">
-                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.salinita')}</span>
-                  <p className="text-base font-bold font-mono text-cyan-400">{feature.data.salinityPsu} <span className="text-xs">PSU</span></p>
-                </div>
-                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.tempAcqua')}</span>
-                  <p className="text-base font-bold font-mono text-amber-400">{feature.data.waterTempCelsius}°C</p>
-                </div>
-                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">pH</span>
-                  <p className="text-base font-bold font-mono text-emerald-400">{feature.data.ph}</p>
-                </div>
-                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.ossigenoO2')}</span>
-                  <p className="text-base font-bold font-mono text-blue-400">{feature.data.dissolvedOxygenPercent}%</p>
-                </div>
-                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.torbidita')}</span>
-                  <p className="text-base font-bold font-mono text-slate-300">{feature.data.turbidityNtu} <span className="text-xs">NTU</span></p>
-                </div>
-                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.conducibilita')}</span>
-                  <p className="text-base font-bold font-mono text-purple-400">{feature.data.conductivityMsCm} <span className="text-xs">mS/cm</span></p>
-                </div>
+                {([
+                  ['tempAcqua', feature.data.waterTempCelsius, '°C', 'text-amber-400'],
+                  ['salinita', feature.data.salinityPsu, 'PSU', 'text-cyan-400'],
+                  ['ossigenoO2', feature.data.dissolvedOxygenPercent, '%', 'text-blue-400'],
+                  ['ossigenoMgL', feature.data.dissolvedOxygenMgL, 'mg/l', 'text-sky-400'],
+                  ['ph', feature.data.ph, '', 'text-emerald-400'],
+                  ['clorofilla', feature.data.chlorophyllUgL, 'µg/l', 'text-lime-400'],
+                ] as const).map(([key, value, unit, cls]) => (
+                  <div key={key} className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                    <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t(`ui.feature.lagoonParam_${key}`)}</span>
+                    <p className={`text-base font-bold font-mono ${cls}`}>{value ?? 'n.d.'} <span className="text-xs">{value !== null ? unit : ''}</span></p>
+                  </div>
+                ))}
               </div>
-
-              <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                {t('ui.feature.riferimento')} <b>{feature.data.officialSource}</b>
+              <span className="text-[11px] text-[var(--ink-3)]">
+                {t('ui.feature.conducibilita')}: <b>{feature.data.conductivityMsCm ?? 'n.d.'} mS/cm</b> · {t('ui.feature.lagoonSamplingDays', { n: feature.data.samplingDays })}
               </span>
+              <a href="https://www.arpa.veneto.it/dati-ambientali/open-data/file-e-allegati/soaml/laguna-di-venezia/dati-sonda" target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2">
+                {t('ui.feature.lagoonSourceNote')}
+              </a>
             </div>
           )}
 
@@ -1261,11 +1241,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
 const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
   'passerella', 'briccola', 'bathingWater', 'speedLimit', 'bridgeClearance', 'gondolaStation', 'publicDock',
   'subsidence', 'lagoonMorphology', 'trainLive', 'wasteBoat', 'nizioleto', 'bellTower', 'fortressIsland',
-  'heatIsland', 'lagoonWater', 'accommodation', 'bikeRoute', 'tributaryRiver',
+  'heatIsland', 'accommodation', 'bikeRoute', 'tributaryRiver',
 ]);
 
 /** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
-const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal']);
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater']);
 
 /** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
 const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {

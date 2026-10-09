@@ -155,6 +155,13 @@ test('il catalogo dei layer dichiara la natura dei dati', async ({ page }) => {
 });
 
 test.describe('API', () => {
+  test('le sonde della laguna sono misure ARPAV con data di campionamento', async ({ request }) => {
+    const body = await (await request.get('/api/regional-data')).json();
+    expect(body.data.waterQuality.length).toBeGreaterThan(50);
+    for (const st of body.data.waterQuality) expect(st.sampledAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(body.waterQualitySource.license).toBe('CC BY 4.0');
+  });
+
   test('il punto pollini di Venezia include il calendario misurato da ARPAV', async ({ request }) => {
     const body = await (await request.get('/api/regional-data')).json();
     const ve = body.data.pollenStations.find((s: { id: string }) => s.id === 'POL_VENEZIA');

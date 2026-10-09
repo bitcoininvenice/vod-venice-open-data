@@ -369,8 +369,8 @@ const LAYER_CATALOG: LayerDocItem[] = [
     portalName: 'arpa.veneto.it (Portale Acque)',
     descriptionIt: 'Punti di campionamento microbiologico e idoneità alla balneazione sui litorali di Lido, Pellestrina e Cavallino.',
     descriptionEn: 'Microbiological sampling stations and bathing water quality classifications on coastal beaches.',
-    technicalNotesIt: 'Punti e classi indicativi: per idoneità e campionamenti aggiornati consultare il Portale Acque del Ministero della Salute o ARPAV. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
-    technicalNotesEn: 'Points and classes are indicative: check the Ministry of Health bathing-water portal or ARPAV for current status and samples. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
+    technicalNotesIt: 'Punti e classi indicativi: per idoneità e campionamenti aggiornati consultare il Portale Acque del Ministero della Salute o ARPAV. La pagina Metriche riporta invece il riepilogo reale ARPAV dell\'ultima stagione (punti sul mare, percentuale idonei ed eccellenti). Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'Points and classes are indicative: check the Ministry of Health bathing-water portal or ARPAV for current status and samples. The Metrics page shows instead the real ARPAV summary of the latest season (sea points, share suitable and excellent). Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'marineSensorsData.ts'
   },
   {
@@ -455,19 +455,19 @@ const LAYER_CATALOG: LayerDocItem[] = [
   },
   {
     id: 'sonde_arpav',
-    nameIt: 'Sonde Qualità Acque Lagunari ARPAV',
-    nameEn: 'ARPAV Lagoon Water Quality Probes',
+    nameIt: 'Sonde ARPAV della Laguna (misure)',
+    nameEn: 'ARPAV Lagoon Probes (measurements)',
     group: 'lagoon',
-    regime: 'curated',
+    regime: 'static',
     acquisition: 'api',
-    institution: 'Elenco curato del progetto · rif. ARPAV',
-    portalUrl: 'https://dati.veneto.it',
-    portalName: 'dati.veneto.it (Open Data Regione Veneto)',
-    descriptionIt: 'Stazioni di esempio con parametri chimico-fisici delle acque lagunari.',
-    descriptionEn: 'Example stations with physico-chemical lagoon water parameters.',
-    technicalNotesIt: 'Ossigeno, salinità, temperatura e conducibilità sono valori di esempio, non telemetria ARPAV. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
-    technicalNotesEn: 'Oxygen, salinity, temperature and conductivity are example values, not ARPAV telemetry. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
-    endpointOrFile: '/api/regional-data'
+    institution: 'ARPAV – monitoraggio ecologico della laguna (CC BY 4.0)',
+    portalUrl: 'https://www.arpa.veneto.it/dati-ambientali/open-data/file-e-allegati/soaml/laguna-di-venezia/dati-sonda',
+    portalName: 'arpa.veneto.it (open data, dati sonda)',
+    descriptionIt: 'Oltre cento stazioni di monitoraggio ecologico della laguna con le misure dell\'ultimo campionamento: temperatura, salinità, ossigeno, pH e clorofilla.',
+    descriptionEn: 'Over one hundred lagoon ecological monitoring stations with the latest sampling: temperature, salinity, oxygen, pH and chlorophyll.',
+    technicalNotesIt: 'Import con pipeline/import_arpav_lagoon.py dal file sonda dell\'anno più recente pubblicato da ARPAV (profili verticali, coordinate Gauss-Boaga convertite in WGS84). Per ogni stazione si mostra l\'ultimo campionamento, al punto più vicino alla superficie. Sono misure periodiche, non in tempo reale. Sostituisce i valori di esempio usati in precedenza.',
+    technicalNotesEn: 'Imported with pipeline/import_arpav_lagoon.py from the latest yearly probe file published by ARPAV (vertical profiles, Gauss-Boaga coordinates converted to WGS84). Each station shows its latest sampling, at the point closest to the surface. These are periodic measurements, not real time. It replaces the example values used before.',
+    endpointOrFile: '/api/regional-data (src/data/arpav-lagoon.json)'
   },
   {
     id: 'fiumi_tributari',

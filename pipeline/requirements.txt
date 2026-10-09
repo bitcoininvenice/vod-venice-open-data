@@ -2,3 +2,4 @@ requests>=2.32.3
 psycopg2-binary>=2.9.10
 protobuf>=5.29.0
 gtfs-realtime-bindings>=1.0.0
+pyproj>=3.6
