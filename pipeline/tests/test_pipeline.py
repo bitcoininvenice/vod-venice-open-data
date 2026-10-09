@@ -15,6 +15,7 @@ import import_osm_defibrillators as osm_dae  # noqa: E402
 import import_osm_pharmacies as osm_pharm  # noqa: E402
 import import_osm_poi as osm_poi  # noqa: E402
 import import_alilaguna_gtfs as ali  # noqa: E402
+import import_agcom_fiber as fiber  # noqa: E402
 from download_gtfs import safe_extract  # noqa: E402
 from vod_common import redact  # noqa: E402
 
@@ -154,6 +155,32 @@ def test_alilaguna_gtfs_helpers():
     first = ali.project_on_shape(shape, cum, 12.0, 45.0, 0)
     last = ali.project_on_shape(shape, cum, 12.0, 45.0, cum[1])  # non torna indietro lungo il percorso
     assert first == 0 and last >= cum[1]
+
+
+def test_agcom_fiber_parsing():
+    assert fiber.tech_class("300 - 2500 [FTTH]") == 3
+    assert fiber.tech_class("50 - 100 [FTTC-200]") == 2
+    assert fiber.tech_class("2 - 10 [ADSL]") == 1
+    assert fiber.tech_class(None) == 0
+    assert fiber.operator_mask("TIM Wholesale;Open Fiber") == 3
+    assert fiber.operator_mask("Fibersurf") == 4
+    assert fiber.operator_mask(None) == 0
+
+
+def test_agcom_latest_service_skips_dynamic_layers():
+    folders = ["Grid20", "Grid20_2025", "Grid20_2026", "Grid100_2026"]
+    services = {
+        "Grid20_2025": ["Grid20_2025/grid20_speed_down_20251003"],
+        "Grid20_2026": ["Grid20_2026/grid20_speed_down_20260706", "Grid20_2026/grid20_speed_down_dyn_20261231"],
+    }
+    assert fiber.latest_service(folders, services) == "Grid20_2026/grid20_speed_down_20260706"
+
+
+def test_agcom_aggregate_keeps_best_technology():
+    lon, lat = fiber.FRAME[0] + 0.0001, fiber.FRAME[1] + 0.0001
+    cells = fiber.aggregate([(lon, lat, 1, 0), (lon + 0.0002, lat, 3, 1), (lon, lat + 0.0003, 2, 2)])
+    assert cells == {(0, 0): (3, 1, 3)}  # operatori FTTH solo dalle celle FTTH
+    assert fiber.ring_centroid([[[0, 0], [2, 0], [2, 2], [0, 2], [0, 0]]]) == (1, 1)
 
 
 def test_safe_extract_rejects_path_traversal(tmp_path):

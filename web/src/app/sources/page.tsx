@@ -67,6 +67,7 @@ const SOURCES_METADATA: Record<string, SourceMetadata> = {
   'osm-pharmacies': { institution: 'OpenStreetMap contributors', portalUrl: 'https://www.openstreetmap.org', portalName: 'openstreetmap.org', license: 'ODbL 1.0', format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
   'osm-fountains': { institution: 'OpenStreetMap contributors', portalUrl: 'https://www.openstreetmap.org', portalName: 'openstreetmap.org', license: 'ODbL 1.0', format: 'Overpass JSON', refresh: 'weekly' },
   'osm-poi': { institution: 'OpenStreetMap contributors', portalUrl: 'https://www.openstreetmap.org', portalName: 'openstreetmap.org', license: 'ODbL 1.0', format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
+  'agcom-fiber': { institution: 'AGCOM – BroadbandMap', portalUrl: 'https://maps.agcom.it', portalName: 'maps.agcom.it', license: 'CC BY 4.0', format: 'ArcGIS REST (griglia 20 m)', refresh: 'weekly', hasNote: true },
   'alilaguna-gtfs': { institution: 'Alilaguna S.p.A.', portalUrl: 'https://www.alilaguna.it', portalName: 'alilaguna.it (GTFS)', license: '—', format: 'GTFS', refresh: 'weekly', hasNote: true },
 };
 

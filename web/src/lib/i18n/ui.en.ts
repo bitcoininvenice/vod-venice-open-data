@@ -95,7 +95,8 @@ export const enUi: UiTranslations = {
     bufferSpazialeCantieri: "Worksite Spatial Buffer",
     raggioImpatto: "Impact radius:",
     flottaActvTipo: "ACTV Fleet by Vessel Type",
-    mostraTuttiITipi: "Show all types"
+    mostraTuttiITipi: "Show all types",
+    fiber: "Fibre coverage (AGCOM)"
   },
   map: {
     orarioUfficialeActv: "official ACTV timetable",
@@ -479,7 +480,18 @@ export const enUi: UiTranslations = {
     wellPositionConfirmed: "Position confirmed: an OpenStreetMap well lies within 25 m.",
     wellPositionUnconfirmed: "Position not confirmed by OpenStreetMap.",
     cpsmMeasuredAt: "CPSM reading at {time} (local time)",
-    noOpenMeasures: "readings not published as open data"
+    noOpenMeasures: "readings not published as open data",
+    fiberTitle: "Fixed network coverage",
+    fiberSubtitle: "AGCOM Broadband Map · data as of {date}",
+    fiber_ftth: "Fibre to the home (FTTH)",
+    fiber_fttc: "Fibre to the cabinet (FTTC)",
+    fiber_adsl: "Copper only (ADSL)",
+    fiberSpeed_ftth: "Expected maximum speed: 300 – 2500 Mbit/s",
+    fiberSpeed_fttc: "Expected maximum speed: up to 300 Mbit/s, depending on distance from the cabinet",
+    fiberSpeed_adsl: "Expected maximum speed: up to 30 Mbit/s",
+    fiberOperators: "FTTH infrastructure:",
+    fiberNote: "Best technology in an area of about 100 m, derived from AGCOM 20 m cells. It shows where the network reaches, not that a service is active: check the Broadband Map for a single address.",
+    fiberAttribution: "BroadbandMap by Agcom - Italian Communications Authority is distributed under a Creative Commons Attribution 4.0 International licence"
   },
   layersPage: {
     tornaAllaMappa: "Back to Map",
@@ -994,7 +1006,9 @@ export const enUi: UiTranslations = {
     detailTimetableExpired: "imported timetable no longer valid",
     "name_open-meteo": "Open-Meteo wind forecast",
     "meta_open-meteo": "Model forecast on a ~4 km grid for the wind animation, not a measurement. Free for non-commercial use.",
-    refresh_r30min: "refreshed every 30 min"
+    refresh_r30min: "refreshed every 30 min",
+    "name_agcom-fiber": "AGCOM fixed network coverage (pipeline)",
+    "meta_agcom-fiber": "20 m cells aggregated to ~100 m. Network coverage, not active services. AGCOM publishes updates every 2-3 months."
   },
   notFound: {
     subtitle: "Page not found",
@@ -1028,7 +1042,12 @@ export const enUi: UiTranslations = {
     freightDock: "Freight dock ({min} min)",
     windTitle: "Forecast wind at 10 m",
     windValidAt: "valid at {time}",
-    windSource: "Model forecast (ICON / ECMWF via Open-Meteo, CC BY 4.0), not a measurement. The dots are the real CPSM and METAR stations."
+    windSource: "Model forecast (ICON / ECMWF via Open-Meteo, CC BY 4.0), not a measurement. The dots are the real CPSM and METAR stations.",
+    fiberTitle: "Fixed network coverage",
+    fiber_3: "FTTH",
+    fiber_2: "FTTC",
+    fiber_1: "ADSL only",
+    fiberAttribution: "BroadbandMap by Agcom (Italian Communications Authority), CC BY 4.0. Network coverage, not active services."
   },
   provenance: {
     live: "Live data",

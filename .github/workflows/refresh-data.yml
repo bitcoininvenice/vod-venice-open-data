@@ -28,7 +28,7 @@ jobs:
         # se il GTFS scaricato non ha corse per i giorni simulati, la simulazione resta quella precedente
         run: |
           (python download_gtfs.py && python export_simulation_data.py) || echo "::warning::GTFS ACTV non aggiornato (download fallito o calendario non valido)"
-      - name: Opere pubbliche, WiFi, qualità dell'aria, orario Alilaguna, dati OSM (telecamere, DAE, farmacie, fontanelle, POI)
+      - name: Opere pubbliche, WiFi, qualità dell'aria, orario Alilaguna, dati OSM (telecamere, DAE, farmacie, fontanelle, POI), fibra AGCOM
         working-directory: pipeline
         # ogni fonte è indipendente: un errore non blocca l'aggiornamento delle altre
         run: |
@@ -41,6 +41,7 @@ jobs:
           (python import_osm_fountains.py && python enrich_fountains.py) || echo "::warning::fontanelle OSM non aggiornate"
           python import_osm_poi.py || echo "::warning::POI OSM (colonnine, parcheggi, pozzi, alberi) non aggiornati"
           python import_alilaguna_gtfs.py || echo "::warning::orario Alilaguna non aggiornato"
+          python import_agcom_fiber.py || echo "::warning::copertura fibra AGCOM non aggiornata"
 
       - uses: actions/setup-node@v4
         with:
@@ -64,6 +65,7 @@ jobs:
             - simulazione GTFS ACTV e indice corse (`web/src/lib/simulation-data.ts`, `web/src/data/actv-gtfs-index.json`)
             - opere pubbliche, hotspot WiFi (dati.venezia.it), qualità dell'aria (ARPAV)
             - orario Alilaguna (GTFS dell'operatore, `web/src/data/alilaguna-gtfs.json`)
+            - copertura della rete fissa (AGCOM BroadbandMap, `web/src/data/agcom-fiber.json`)
             - OpenStreetMap: telecamere, DAE, farmacie, fontanelle, colonnine, parcheggi, vere da pozzo, alberi monumentali
 
             Typecheck, test e build sono passati sui nuovi dati. Controllare il diff prima del merge.

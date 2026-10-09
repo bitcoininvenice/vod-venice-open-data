@@ -144,6 +144,15 @@ test('il catalogo dei layer dichiara la natura dei dati', async ({ page }) => {
 });
 
 test.describe('API', () => {
+  test('fiber restituisce le celle con attribuzione AGCOM', async ({ request }) => {
+    const res = await request.get('/api/fiber');
+    expect(res.ok()).toBe(true);
+    const body = await res.json();
+    expect(body.data.license).toBe('CC BY 4.0');
+    expect(body.meta.attribution).toMatch(/BroadbandMap di Agcom/);
+    expect(body.data.cells.length).toBeGreaterThan(1000);
+  });
+
   test('wind-field restituisce una griglia completa o un errore esplicito', async ({ request }) => {
     const res = await request.get('/api/wind-field');
     expect(res.ok()).toBe(true);

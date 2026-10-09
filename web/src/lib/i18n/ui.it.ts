@@ -93,7 +93,8 @@ export const itUi = {
     bufferSpazialeCantieri: "Buffer Spaziale Cantieri",
     raggioImpatto: "Raggio impatto:",
     flottaActvTipo: "Flotta ACTV per Tipo",
-    mostraTuttiITipi: "Mostra tutti i tipi"
+    mostraTuttiITipi: "Mostra tutti i tipi",
+    fiber: "Copertura fibra (AGCOM)"
   },
   map: {
     orarioUfficialeActv: "orario ufficiale ACTV",
@@ -477,7 +478,18 @@ export const itUi = {
     wellPositionConfirmed: "Posizione confermata: c'è un pozzo mappato su OpenStreetMap entro 25 m.",
     wellPositionUnconfirmed: "Posizione non confermata da OpenStreetMap.",
     cpsmMeasuredAt: "misura CPSM delle {time} (ora locale)",
-    noOpenMeasures: "misure non pubblicate come open data"
+    noOpenMeasures: "misure non pubblicate come open data",
+    fiberTitle: "Copertura della rete fissa",
+    fiberSubtitle: "Broadband Map AGCOM · dati al {date}",
+    fiber_ftth: "Fibra fino a casa (FTTH)",
+    fiber_fttc: "Fibra fino all'armadio (FTTC)",
+    fiber_adsl: "Solo rame (ADSL)",
+    fiberSpeed_ftth: "Velocità massima attesa: 300 – 2500 Mbit/s",
+    fiberSpeed_fttc: "Velocità massima attesa: fino a 300 Mbit/s, in base alla distanza dall'armadio",
+    fiberSpeed_adsl: "Velocità massima attesa: fino a 30 Mbit/s",
+    fiberOperators: "Infrastruttura FTTH:",
+    fiberNote: "Tecnologia migliore presente in un riquadro di circa 100 m, ricavata dalle celle da 20 m di AGCOM. Indica dove arriva la rete, non che un servizio sia attivo: per il singolo indirizzo verificare sulla Broadband Map.",
+    fiberAttribution: "BroadbandMap di Agcom - Autorità per le garanzie nelle comunicazioni è distribuito con Licenza Creative Commons Attribuzione 4.0 Internazionale"
   },
   layersPage: {
     tornaAllaMappa: "Torna alla Mappa",
@@ -992,7 +1004,9 @@ export const itUi = {
     detailTimetableExpired: "orario importato non più valido",
     "name_open-meteo": "Previsione vento Open-Meteo",
     "meta_open-meteo": "Previsione di modello su griglia di circa 4 km per l'animazione del vento, non una misura. Uso gratuito per scopi non commerciali.",
-    refresh_r30min: "riletto ogni 30 min"
+    refresh_r30min: "riletto ogni 30 min",
+    "name_agcom-fiber": "Copertura rete fissa AGCOM (pipeline)",
+    "meta_agcom-fiber": "Celle da 20 m aggregate a ~100 m. Copertura della rete, non servizi attivi. AGCOM pubblica aggiornamenti ogni 2-3 mesi."
   },
   notFound: {
     subtitle: "Pagina non trovata",
@@ -1026,7 +1040,12 @@ export const itUi = {
     freightDock: "Riva merci ({min} min)",
     windTitle: "Vento previsto a 10 m",
     windValidAt: "valido alle {time}",
-    windSource: "Previsione di modello (ICON / ECMWF via Open-Meteo, CC BY 4.0), non una misura. I punti sono le stazioni reali CPSM e METAR."
+    windSource: "Previsione di modello (ICON / ECMWF via Open-Meteo, CC BY 4.0), non una misura. I punti sono le stazioni reali CPSM e METAR.",
+    fiberTitle: "Copertura rete fissa",
+    fiber_3: "FTTH",
+    fiber_2: "FTTC",
+    fiber_1: "solo ADSL",
+    fiberAttribution: "BroadbandMap di Agcom - Autorità per le garanzie nelle comunicazioni, CC BY 4.0. Copertura della rete, non servizi attivi."
   },
   provenance: {
     live: "Dato live",

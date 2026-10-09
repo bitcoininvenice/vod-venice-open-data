@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { X, Plane, Ship, Satellite, Plus, Minus, Maximize2, Box } from 'lucide-react';
 import {
   CameraViewPreset,
@@ -67,6 +67,8 @@ import { drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, draw
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 import { drawFloodLayer } from './map/floodLayer';
 import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
+import { drawFiber } from './map/fiberLayer';
+import { FIBER_COLORS, fiberCellAt, indexFiberCells, type FiberDataset } from '@/lib/fiber';
 import { MAP_3D_CSS_TRANSFORM, unprojectFrom3D } from '@/lib/map3d';
 
 
@@ -155,6 +157,9 @@ export interface MapEngineProps {
   marineWindStations?: MeteoMarineWindItem[];
   /** Campo di vento previsto (Open-Meteo) per le particelle animate del layer vento */
   windField?: WindField | null;
+  /** Copertura della rete fissa (AGCOM) */
+  showFiber?: boolean;
+  fiberData?: FiberDataset | null;
   showTrains?: boolean;
   liveTrains?: TrainLiveItem[];
   showWasteBoats?: boolean;
@@ -270,6 +275,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   showMarineWind = false,
   marineWindStations = [],
   windField = null,
+  showFiber = false,
+  fiberData = null,
   showTrains = false,
   liveTrains = [],
   showWasteBoats = false,
@@ -319,6 +326,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
   const mx = useCallback((lon: number) => (lon - LON0) * KX, [LON0, KX]);
   const my = useCallback((lat: number) => (LAT1 - lat) * KY, [LAT1, KY]);
+  const fiberIndex = useMemo(() => (fiberData ? indexFiberCells(fiberData) : null), [fiberData]);
 
   // View Camera State (x0, y0, scale)
   const [camera, setCamera] = useState({ x0: 0, y0: 0, s: 0.02 });
@@ -1539,6 +1547,21 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
     }
 
+    // Copertura fibra: ultima priorità, si apre la scheda della cella sotto il clic
+    if (showFiber && fiberData && fiberIndex && onSelectFeature) {
+      const lon = LON0 + (clickX / camera.s + camera.x0) / KX;
+      const lat = LAT1 - (clickY / camera.s + camera.y0) / KY;
+      const cell = fiberCellAt(fiberData, fiberIndex, lon, lat);
+      if (cell) {
+        onSelectFeature({ type: 'fiberCell', data: { cell, dataDate: fiberData.dataDate } });
+        setSelectedVehicle(null);
+        setSelectedFlight(null);
+        setSelectedShipOnMap(null);
+        setSelectedAlilagunaBoat(null);
+        return;
+      }
+    }
+
     // Dismiss tooltips on empty click
     setSelectedVehicle(null);
     setSelectedFlight(null);
@@ -1567,7 +1590,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     // con layer animati a ogni frame.
     const hasAnimatedLayers =
       showVehicles || showFlights || showShips || showAlilaguna || showSatellites ||
-      showCameras || showMarineSignals || showOceanStations || showLagoonWater;
+      showCameras || showMarineSignals || showOceanStations || showLagoonWater ||
+      (showMarineWind && windField !== null);
     let lastDraw = -Infinity;
 
     const render = () => {
@@ -1692,6 +1716,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         liveTrains,
         marineWindStations,
         windField,
+        showFiber,
+        fiberData,
         moseGates,
         nizioleti,
         oceanStations,
@@ -1766,6 +1792,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
       // Vento animato sotto tutti gli altri layer, come sfondo
       drawWindFlow(rc);
+      drawFiber(rc);
       drawRoutes(rc);
 
       drawSpatialBuffer(rc);
@@ -1941,6 +1968,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     showMarineWind,
     marineWindStations,
     windField,
+    showFiber,
+    fiberData,
     showTrains,
     liveTrains,
     showWasteBoats,
@@ -2004,9 +2033,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         }}
       />
 
+      {/* Legende dei layer a campo (vento, fibra), impilate in alto al centro */}
+      {((showMarineWind && windField) || (showFiber && fiberData)) && (
+      <div className="absolute left-1/2 -translate-x-1/2 top-3 z-20 flex flex-col gap-2 w-[min(20rem,calc(100vw-7rem))]">
       {/* Legenda del vento animato: scala in km/h, fonte e ora di validità della previsione */}
       {showMarineWind && windField && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-3 z-20 pointer-events-none glass-panel rounded-xl border border-[var(--rule)] px-3 py-2 flex flex-col gap-1 w-[min(20rem,calc(100vw-7rem))] shadow-lg">
+        <div className="pointer-events-none glass-panel rounded-xl border border-[var(--rule)] px-3 py-2 flex flex-col gap-1 shadow-lg">
           <div className="flex items-center justify-between gap-2 text-[10px] font-mono">
             <span className="font-bold text-[var(--ink)] uppercase">{tr('ui.mapLabels.windTitle')}</span>
             <span className="text-[var(--ink-3)]">{tr('ui.mapLabels.windValidAt', { time: windField.validTime.slice(11, 16) })}</span>
@@ -2028,6 +2060,35 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           </div>
           <span className="text-[9px] text-[var(--ink-3)]">{tr('ui.mapLabels.windSource')}</span>
         </div>
+      )}
+      {/* Legenda della copertura fibra (AGCOM, CC BY 4.0: attribuzione e logo obbligatori) */}
+      {showFiber && fiberData && (
+        <div className="glass-panel rounded-xl border border-[var(--rule)] px-3 py-2 flex flex-col gap-1.5 shadow-lg">
+          <div className="flex items-center justify-between gap-2 text-[10px] font-mono">
+            <span className="font-bold text-[var(--ink)] uppercase">{tr('ui.mapLabels.fiberTitle')}</span>
+            <span className="text-[var(--ink-3)]">{fiberData.dataDate.split('-').reverse().join('/')}</span>
+          </div>
+          <div className="flex items-center gap-3 text-[10px] font-mono text-[var(--ink-2)]">
+            {([3, 2, 1] as const).map((cls) => (
+              <span key={cls} className="flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-sm" style={{ background: FIBER_COLORS[cls] }} />
+                {tr(`ui.mapLabels.fiber_${cls}`)}
+              </span>
+            ))}
+          </div>
+          <a
+            href="https://maps.agcom.it"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-[9px] text-[var(--ink-3)] hover:text-cyan-400"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/cc-by-88x31.png" alt="CC BY 4.0" width={44} height={15} />
+            <span>{tr('ui.mapLabels.fiberAttribution')}</span>
+          </a>
+        </div>
+      )}
+      </div>
       )}
 
       {/* Floating map hint (desktop only to prevent clutter on mobile) */}

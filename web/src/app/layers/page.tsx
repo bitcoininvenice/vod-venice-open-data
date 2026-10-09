@@ -776,6 +776,22 @@ const LAYER_CATALOG: LayerDocItem[] = [
     technicalNotesIt: 'Le concentrazioni non vengono dal bollettino ARPAV: per i valori della settimana consultare arpa.veneto.it. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
     technicalNotesEn: 'Concentrations do not come from the ARPAV bulletin: see arpa.veneto.it for this week\'s values. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: '/api/regional-data'
+  },
+  {
+    id: 'copertura_fibra',
+    nameIt: 'Copertura Rete Fissa (Fibra FTTH / FTTC)',
+    nameEn: 'Fixed Network Coverage (FTTH / FTTC Fibre)',
+    group: 'city',
+    regime: 'static',
+    acquisition: 'local',
+    institution: 'AGCOM – BroadbandMap (CC BY 4.0)',
+    portalUrl: 'https://maps.agcom.it',
+    portalName: 'maps.agcom.it',
+    descriptionIt: 'Dove arriva la fibra fino a casa (FTTH), la fibra fino all\'armadio (FTTC) o solo il rame (ADSL), su riquadri di circa 100 m in tutta l\'area della mappa, con gli operatori dell\'infrastruttura FTTH.',
+    descriptionEn: 'Where fibre to the home (FTTH), fibre to the cabinet (FTTC) or copper only (ADSL) reaches, on areas of about 100 m across the whole map, with the FTTH infrastructure operators.',
+    technicalNotesIt: 'Import con pipeline/import_agcom_fiber.py dalla pubblicazione più recente della Broadband Map AGCOM (celle da 20 m con velocità massima attesa, tecnologia e operatori), aggregate a ~100 m tenendo la tecnologia migliore. Indica la copertura della rete, non i servizi attivi. Licenza CC BY 4.0 con attribuzione e logo.',
+    technicalNotesEn: 'Imported with pipeline/import_agcom_fiber.py from the latest AGCOM Broadband Map release (20 m cells with expected maximum speed, technology and operators), aggregated to ~100 m keeping the best technology. It shows network coverage, not active services. CC BY 4.0 licence with attribution and logo.',
+    endpointOrFile: '/api/fiber (src/data/agcom-fiber.json)'
   }
 ];
 

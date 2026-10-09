@@ -102,6 +102,7 @@ import { OPEN_PHARMACIES } from '@/lib/pharmacies-data';
 import { VENICE_CAMERAS } from '@/lib/cameras-data';
 import { NOTTE, CARTA, getDynamicPalette } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
+import type { FiberDataset } from '@/lib/fiber';
 import { useTranslation } from '@/lib/i18n';
 import { romeDayType, romeSecondsOfDay, formatSignedCm } from '@/lib/time';
 import { activeTripsAt, dayActivity } from '@/lib/gtfsActivity';
@@ -149,8 +150,8 @@ export default function HomePage() {
 
   // Layer toggles (Default to false on clean map startup)
   const [layers, setLayers] = useState<LayerVisibility>(() => allLayers(false));
-  const { showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri, showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose, showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries } = layers;
-  const { setShowRoutes, setShowStops, setShowVehicles, setShowRealtimeVehicles, setShowCantieri, setShowSpatialBuffer, setShowFlights, setShowShips, setShowShipRoutes, setShowMose, setShowCityAssets, setShowParkings, setShowAirQuality, setShowPedestrianFlows, setShowAlilaguna, setShowSatellites, setShowPasserelle, setShowMarineSignals, setShowOceanStations, setShowBathingWaters, setShowTrees, setShowWifiHotspots, setShowEvCharging, setShowCameras, setShowCanalLimits, setShowBridges, setShowGondolas, setShowDocks, setShowSubsidence, setShowMorphology, setShowMarineWind, setShowTrains, setShowWasteBoats, setShowNizioleti, setShowWells, setShowBellTowers, setShowFortresses, setShowEmergencyDocks, setShowDae, setShowPharmacies, setShowHeatIslands, setShowLagoonWater, setShowAccommodations, setShowBikeRoutes, setShowPollenStations, setShowTributaries } = useMemo(() => makeLayerSetters(setLayers), []);
+  const { showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri, showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose, showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries, showFiber } = layers;
+  const { setShowRoutes, setShowStops, setShowVehicles, setShowRealtimeVehicles, setShowCantieri, setShowSpatialBuffer, setShowFlights, setShowShips, setShowShipRoutes, setShowMose, setShowCityAssets, setShowParkings, setShowAirQuality, setShowPedestrianFlows, setShowAlilaguna, setShowSatellites, setShowPasserelle, setShowMarineSignals, setShowOceanStations, setShowBathingWaters, setShowTrees, setShowWifiHotspots, setShowEvCharging, setShowCameras, setShowCanalLimits, setShowBridges, setShowGondolas, setShowDocks, setShowSubsidence, setShowMorphology, setShowMarineWind, setShowTrains, setShowWasteBoats, setShowNizioleti, setShowWells, setShowBellTowers, setShowFortresses, setShowEmergencyDocks, setShowDae, setShowPharmacies, setShowHeatIslands, setShowLagoonWater, setShowAccommodations, setShowBikeRoutes, setShowPollenStations, setShowTributaries, setShowFiber } = useMemo(() => makeLayerSetters(setLayers), []);
   const [realtimeVehicles, setRealtimeVehicles] = useState<RealtimeVehicleDto[]>([]);
 
   // 1. Viabilità Acquea & Canali
@@ -205,6 +206,8 @@ export default function HomePage() {
   const [marineWindStations, setMarineWindStations] = useState<MeteoMarineWindItem[]>([]);
   // Campo di vento previsto (Open-Meteo) per l'animazione del layer vento: caricato solo quando serve
   const [windField, setWindField] = useState<WindField | null>(null);
+  // Copertura della rete fissa (AGCOM): ~150 KB, caricata solo alla prima attivazione del layer
+  const [fiberData, setFiberData] = useState<FiberDataset | null>(null);
   const [metarData, setMetarData] = useState<AirportMetarData | null>(null);
   const [liveTrains, setLiveTrains] = useState<TrainLiveItem[]>(OPEN_LIVE_TRAINS);
   const [wasteBoats, setWasteBoats] = useState<VeritasWasteBoatItem[]>(OPEN_VERITAS_WASTE_BOATS);
@@ -252,6 +255,16 @@ export default function HomePage() {
   const [simulatedTideLevel, setSimulatedTideLevel] = useState<number | null>(null);
 
   // Global Keyboard Shortcut: Cmd+K / Ctrl+K for Global Search
+  useEffect(() => {
+    if (!showFiber || fiberData) return;
+    fetch('/api/fiber')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) setFiberData(json.data as FiberDataset);
+      })
+      .catch((err) => console.warn('Copertura fibra non disponibile:', err));
+  }, [showFiber, fiberData]);
+
   useEffect(() => {
     if (!showMarineWind) return;
     const load = () =>
@@ -821,6 +834,8 @@ export default function HomePage() {
           showMarineWind={showMarineWind}
           marineWindStations={marineWindStations}
           windField={windField}
+          showFiber={showFiber}
+          fiberData={fiberData}
           // 3. Ferrovia & Logistica
           showTrains={showTrains}
           liveTrains={liveTrains}
@@ -945,6 +960,8 @@ export default function HomePage() {
               treesCount={trees.length}
               showWifiHotspots={showWifiHotspots}
               onToggleWifiHotspots={() => setShowWifiHotspots((p) => !p)}
+              showFiber={showFiber}
+              onToggleFiber={() => setShowFiber((p) => !p)}
               wifiHotspotsCount={wifiHotspots.length}
               showEvCharging={showEvCharging}
               onToggleEvCharging={() => setShowEvCharging((p) => !p)}
@@ -1120,6 +1137,8 @@ export default function HomePage() {
                 treesCount={trees.length}
                 showWifiHotspots={showWifiHotspots}
                 onToggleWifiHotspots={() => setShowWifiHotspots((p) => !p)}
+              showFiber={showFiber}
+              onToggleFiber={() => setShowFiber((p) => !p)}
                 wifiHotspotsCount={wifiHotspots.length}
                 showEvCharging={showEvCharging}
                 onToggleEvCharging={() => setShowEvCharging((p) => !p)}

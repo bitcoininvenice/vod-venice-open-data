@@ -44,7 +44,8 @@ export type LayerKey =
   | 'showAccommodations'
   | 'showBikeRoutes'
   | 'showPollenStations'
-  | 'showTributaries';
+  | 'showTributaries'
+  | 'showFiber';
 
 /**
  * Mapping from LayerKey to canonical Open Data catalog slug (matching /layers page IDs)
@@ -96,6 +97,7 @@ export const LAYER_SLUG_BY_KEY: Record<LayerKey, string> = {
   showBikeRoutes: 'ciclovie_veneto',
   showPollenStations: 'pollini_arpav',
   showTributaries: 'fiumi_tributari',
+  showFiber: 'copertura_fibra',
 };
 
 /**
@@ -149,6 +151,7 @@ export const SLUG_TO_LAYER_KEY: Record<string, LayerKey> = {
   ciclovie_veneto: 'showBikeRoutes',
   pollini_arpav: 'showPollenStations',
   fiumi_tributari: 'showTributaries',
+  copertura_fibra: 'showFiber',
 
   // Convenient aliases
   fountains: 'showCityAssets',
@@ -202,6 +205,9 @@ export const SLUG_TO_LAYER_KEY: Record<string, LayerKey> = {
   bici: 'showBikeRoutes',
   tributaries: 'showTributaries',
   tributari: 'showTributaries',
+  fibra: 'showFiber',
+  fiber: 'showFiber',
+  ftth: 'showFiber',
   suem: 'showEmergencyDocks',
 };
 

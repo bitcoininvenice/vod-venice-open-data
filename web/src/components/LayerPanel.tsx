@@ -26,6 +26,7 @@ import {
   ChevronRight,
   Trees,
   Wifi,
+  Cable,
   Zap,
   LifeBuoy,
   ShieldAlert,
@@ -98,6 +99,8 @@ interface LayerPanelProps {
   treesCount?: number;
   showWifiHotspots?: boolean;
   onToggleWifiHotspots?: () => void;
+  showFiber?: boolean;
+  onToggleFiber?: () => void;
   wifiHotspotsCount?: number;
   showEvCharging?: boolean;
   onToggleEvCharging?: () => void;
@@ -264,6 +267,8 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   treesCount = 0,
   showWifiHotspots = true,
   onToggleWifiHotspots,
+  showFiber = false,
+  onToggleFiber,
   wifiHotspotsCount = 0,
   showEvCharging = true,
   onToggleEvCharging,
@@ -1334,7 +1339,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           </span>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-mono text-[var(--ink-3)] lowercase">
-              {[showCantieri, showCameras, showCityAssets, showTrees, showWifiHotspots, showEvCharging, showAirQuality, showPedestrianFlows, showSatellites, showNizioleti, showWells, showBellTowers, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showAccommodations, showPollenStations].filter(Boolean).length}/18
+              {[showCantieri, showCameras, showCityAssets, showTrees, showWifiHotspots, showEvCharging, showAirQuality, showPedestrianFlows, showSatellites, showNizioleti, showWells, showBellTowers, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showAccommodations, showPollenStations, showFiber].filter(Boolean).length}/19
             </span>
             {sectionOpen.city ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </div>
@@ -1468,6 +1473,24 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                   )}
                   {showWifiHotspots ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 </div>
+              </button>
+            )}
+
+            {/* Copertura rete fissa (AGCOM) */}
+            {onToggleFiber && (
+              <button
+                type="button"
+                onClick={onToggleFiber}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showFiber
+                    ? 'bg-green-500/15 text-green-300 border-green-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Cable className="w-3.5 h-3.5 text-green-400" />
+                  <span>{t('ui.layerPanel.fiber')}</span>
+                </div>
+                {showFiber ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
               </button>
             )}
 
