@@ -100,7 +100,7 @@ import { CANTIERI_REFERENCE, ACTV_STOPS_REFERENCE } from '@/lib/db';
 import { OPEN_PUBLIC_DAE } from '@/lib/dae-data';
 import { OPEN_PHARMACIES } from '@/lib/pharmacies-data';
 import { VENICE_CAMERAS } from '@/lib/cameras-data';
-import { NOTTE, CARTA, getDynamicPalette } from '@/lib/solar';
+import { NOTTE, CARTA, getDynamicPalette, isDaylightTheme } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import type { FiberDataset } from '@/lib/fiber';
 import type { LagoonNetwork } from '@/lib/lagoonNetwork';
@@ -139,11 +139,12 @@ export default function HomePage() {
   };
 
   // Theme & Views: persistenza del tema in localStorage per ricaricamenti successivi
-  const savedPalette = usePreference(THEME_PREFERENCE_KEY, 'notte');
+  // Predefinito: tema dinamico che segue alba e tramonto a Venezia
+  const savedPalette = usePreference(THEME_PREFERENCE_KEY, 'dynamic');
   const paletteTheme: PaletteTheme =
     savedPalette === 'carta' || savedPalette === 'dynamic' || savedPalette === 'notte'
       ? (savedPalette as PaletteTheme)
-      : 'notte';
+      : 'dynamic';
   const handleSelectPalette = useCallback((theme: PaletteTheme) => {
     writePreference(THEME_PREFERENCE_KEY, theme);
   }, []);
@@ -662,7 +663,7 @@ export default function HomePage() {
       isLight = true;
     } else if (paletteTheme === 'dynamic') {
       pal = getDynamicPalette(currentTimeSeconds);
-      isLight = pal.ground === CARTA.ground;
+      isLight = isDaylightTheme(currentTimeSeconds);
     }
 
     const root = document.documentElement;

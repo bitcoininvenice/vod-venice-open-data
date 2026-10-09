@@ -159,6 +159,7 @@ export const viewport: Viewport = {
   ]
 };
 
+import { THEME_BOOT_SCRIPT } from '@/lib/themeBoot';
 import { LanguageProvider } from "@/lib/i18n";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
@@ -172,7 +173,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('vod_theme_preference');if(t==='carta'){document.documentElement.dataset.theme='carta';document.documentElement.style.colorScheme='light';}else{document.documentElement.dataset.theme='notte';document.documentElement.style.colorScheme='dark';}}catch(e){}})();`,
+            __html: THEME_BOOT_SCRIPT,
           }}
         />
       </head>

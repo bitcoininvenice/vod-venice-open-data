@@ -84,3 +84,14 @@ describe('solar ephemeris and dynamic lighting', () => {
     expect(getDynamicPalette(20.5 * 3600, new Date('2026-12-21T12:00:00Z'))).toBe(NOTTE);
   });
 });
+
+describe('cambio dell’ora', () => {
+  it('nel giorno del passaggio all’ora legale alba e tramonto usano l’ora legale', () => {
+    const before = sunHoursFor(new Date('2026-03-29T00:30:00Z')); // prima del cambio (01:00 UTC)
+    const after = sunHoursFor(new Date('2026-03-29T10:00:00Z'));
+    expect(before).toEqual(after);
+    // alba a Venezia il 29 marzo 2026 intorno alle 06:55 CEST
+    expect(after.rise).toBeGreaterThan(6 * 3600 + 40 * 60);
+    expect(after.rise).toBeLessThan(7 * 3600 + 10 * 60);
+  });
+});

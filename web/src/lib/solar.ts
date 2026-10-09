@@ -182,7 +182,8 @@ export function sunHoursFor(date: Date): SunHours {
   const decl =
     0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) +
     0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
-  const offset = romeOffsetMinutes(date);
+  // Scarto orario di mezzogiorno UTC: alba e tramonto cadono dopo il cambio dell'ora (che avviene alle 01:00 UTC)
+  const offset = romeOffsetMinutes(new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 12)));
   const lat = VENICE_LAT * RAD;
 
   const event = (zenithDeg: number, rising: boolean): number => {
@@ -226,6 +227,15 @@ function mixColor(c1: string, c2: string, f: number): string {
   const g = Math.round(rgb1[1] + (rgb2[1] - rgb1[1]) * f);
   const b = Math.round(rgb1[2] + (rgb2[2] - rgb1[2]) * f);
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+}
+
+/**
+ * Il tema dinamico usa l'interfaccia chiara tra un'ora dopo l'alba e un'ora prima del tramonto a Venezia.
+ * Stessa regola dello script iniziale in themeBoot.ts (un test verifica che coincidano).
+ */
+export function isDaylightTheme(timeSeconds: number, date: Date = new Date()): boolean {
+  const h = sunHoursCached(date);
+  return timeSeconds >= h.rise + 3600 && timeSeconds <= h.set - 3600;
 }
 
 export function getDynamicPalette(timeSeconds: number, date: Date = new Date()): ColorScheme {
