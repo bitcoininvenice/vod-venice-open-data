@@ -499,6 +499,22 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     endpointOrFile: '/api/cantieri'
   },
   {
+    id: 'nautica',
+    nameIt: 'Nautica e ormeggi (OpenStreetMap)',
+    nameEn: 'Boating and moorings (OpenStreetMap)',
+    group: 'mobility',
+    regime: 'static',
+    acquisition: 'local',
+    institution: 'OpenStreetMap contributors (ODbL)',
+    portalUrl: 'https://www.openstreetmap.org',
+    portalName: 'openstreetmap.org (marina, fuel, slipway, mooring)',
+    descriptionIt: 'Marine e darsene, distributori di carburante per barche, scivoli di alaggio, cantieri nautici, noleggi e i punti di ormeggio con l\'accesso dichiarato (consentito, privato, vietato).',
+    descriptionEn: 'Marinas, boat fuel stations, slipways, boatyards, boat rentals and mooring spots with the declared access (allowed, private, forbidden).',
+    technicalNotesIt: 'Import settimanale con pipeline/import_osm_poi.py (ODbL). Gli ormeggi compaiono solo a zoom ravvicinato. Non sono le concessioni comunali né le soste a tempo: quei dati esistono solo nel Geoportale del Comune (Servizio Concessioni Acquee) e non sono pubblicati come open data. L\'accesso agli ormeggi è quello dichiarato su OSM, non verificato.',
+    technicalNotesEn: 'Weekly import with pipeline/import_osm_poi.py (ODbL). Moorings appear only when zoomed in. These are not the City concessions or time-limited berths: that data exists only in the City Geoportal (Water Concessions Office) and is not published as open data. Mooring access is as declared on OSM, not verified.',
+    endpointOrFile: '/api/nautical (src/data/osm-poi.json)'
+  },
+  {
     id: 'sport',
     nameIt: 'Sport e spazi per allenarsi (CAMPO + OpenStreetMap)',
     nameEn: 'Sport and training spaces (CAMPO + OpenStreetMap)',

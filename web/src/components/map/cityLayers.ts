@@ -960,3 +960,89 @@ export function drawSports(rc: RenderContext): void {
     ctx.restore();
   }
 }
+
+/** Zoom oltre il quale si mostrano gli ormeggi (sono centinaia e molto fitti). */
+export const MOORINGS_MIN_SCALE = 0.04;
+
+export const NAUTICAL_COLORS: Record<string, string> = {
+  marina: '#2563eb',
+  fuel: '#dc2626',
+  slipway: '#0d9488',
+  boatyard: '#a16207',
+  rental: '#7c3aed',
+};
+
+export const MOORING_COLORS: Record<string, string> = {
+  allowed: '#16a34a',
+  guest: '#16a34a',
+  private: '#64748b',
+  commercial: '#64748b',
+  permit: '#64748b',
+  no: '#dc2626',
+};
+
+/** Nautica (OSM): simboli per marine, carburante, scivoli, cantieri, noleggi; ormeggi solo da vicino. */
+export function drawNautical(rc: RenderContext): void {
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showNautical, nauticalPlaces } = rc;
+  if (!showNautical || !nauticalPlaces || nauticalPlaces.length === 0) return;
+  const zoomedIn = camera.s > MOORINGS_MIN_SCALE;
+  const stroke = isDark ? '#ffffff' : '#0f172a';
+  for (const p of nauticalPlaces) {
+    if (p.kind === 'mooring' && !zoomedIn) continue;
+    const px = sx(mx(p.lon));
+    const py = sy(my(p.lat));
+    if (px < -30 || px > cw + 30 || py < -30 || py > ch + 30) continue;
+    ctx.save();
+    if (p.kind === 'mooring') {
+      ctx.beginPath();
+      ctx.arc(px, py, 3, 0, Math.PI * 2);
+      ctx.fillStyle = MOORING_COLORS[p.access ?? ''] ?? '#94a3b8';
+      ctx.fill();
+      ctx.restore();
+      continue;
+    }
+    const color = NAUTICAL_COLORS[p.kind];
+    ctx.fillStyle = color;
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    if (p.kind === 'marina' || p.kind === 'boatyard') {
+      // rect e non roundRect: la guardia delle etichette tratta i roundRect piccoli come sfondi di etichette
+      ctx.rect(px - 6, py - 6, 12, 12);
+    } else if (p.kind === 'slipway') {
+      ctx.moveTo(px, py - 7);
+      ctx.lineTo(px + 7, py + 5);
+      ctx.lineTo(px - 7, py + 5);
+      ctx.closePath();
+    } else {
+      ctx.arc(px, py, 6, 0, Math.PI * 2);
+    }
+    ctx.fill();
+    ctx.stroke();
+    // Glifo: àncora stilizzata per le marine, goccia per il carburante
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.3;
+    if (p.kind === 'marina') {
+      ctx.beginPath();
+      ctx.moveTo(px, py - 3.5);
+      ctx.lineTo(px, py + 3.5);
+      ctx.moveTo(px - 3, py + 1);
+      ctx.quadraticCurveTo(px, py + 5, px + 3, py + 1);
+      ctx.stroke();
+    } else if (p.kind === 'fuel') {
+      ctx.beginPath();
+      ctx.moveTo(px, py - 3.5);
+      ctx.quadraticCurveTo(px + 3.5, py + 1, px, py + 3.2);
+      ctx.quadraticCurveTo(px - 3.5, py + 1, px, py - 3.5);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+    }
+    if (camera.s > 0.03 && p.name) {
+      ctx.font = '600 8px "DM Mono", monospace';
+      ctx.fillStyle = isDark ? '#dbeafe' : '#1e3a8a';
+      ctx.textAlign = 'start';
+      ctx.fillText(p.name.slice(0, 30), px + 9, py + 3);
+    }
+    ctx.restore();
+  }
+}

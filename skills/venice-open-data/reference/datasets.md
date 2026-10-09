@@ -17,6 +17,7 @@ Run `python scripts/vod.py datasets` (or the MCP tool `list_datasets`) for the l
 | Canals and channel markers | `canals`, `channel_markers` | not for navigation |
 | Public works | `public_works` | positions are approximate; field `bdap` adds actual stage, dates, cost and funding when the CUP is in the State monitoring |
 | Works under construction, public spending on works | `public_works_bdap` | State Public Works Monitoring (BDAP); `meta.summary` has all City projects by stage, sector and funding |
+| Marinas, boat fuel, slipways, moorings | `nautical` | OpenStreetMap; City concessions and time-limited berths are not open data |
 | Sport courts, outdoor fitness, clubs | `sports` | CAMPO community reports (hours, parish courts) + OpenStreetMap; cite “Dati forniti dalla comunità di CAMPO Venezia” (CC BY 4.0) for `source=CAMPO` |
 | Wi-Fi in hotels, bars, libraries (not the City network) | `wifi_venues` | OpenStreetMap; `access`: free, customers, paid or unknown |
 | LoRaWAN radio network (The Things Network) | `lora_gateways` | online gateways only, position as published by the owner, no owner identifiers |

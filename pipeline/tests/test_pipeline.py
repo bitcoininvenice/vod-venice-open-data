@@ -435,3 +435,16 @@ def test_fermate_della_mappa_nomi_e_linee():
     assert sim.stop_base_name("F.te Nove 'A'") == "F.te Nove"
     assert sim.stop_base_name("S. Marcuola-Casino'") == "S. Marcuola-Casino'"
     assert sorted(["N", "10", "2", "4.1", "1", "T1"], key=sim.natural_key) == ["1", "2", "4.1", "10", "N", "T1"]
+
+
+def test_osm_nautica():
+    assert osm_poi.nautical_kind({"leisure": "marina", "mooring": "yes"}) == "marina"
+    assert osm_poi.nautical_kind({"waterway": "fuel"}) == "fuel"
+    assert osm_poi.nautical_kind({"amenity": "fuel", "boat": "yes"}) == "fuel"
+    assert osm_poi.nautical_kind({"amenity": "fuel"}) is None  # distributore per auto
+    assert osm_poi.nautical_kind({"mooring": "private"}) == "mooring"
+    assert osm_poi.mooring_access("yes") == "allowed" and osm_poi.mooring_access("guest") == "guest"
+    assert osm_poi.mooring_access("private") == "private" and osm_poi.mooring_access("no") == "no"
+    assert osm_poi.mooring_access(None) is None
+    item = osm_poi.nautical({"type": "way", "id": 5}, {"mooring": "guest", "name": "Riva X"}, 45.43, 12.33, "mooring")
+    assert item["access"] == "guest" and item["kind"] == "mooring" and item["name"] == "Riva X"

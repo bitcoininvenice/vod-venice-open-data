@@ -125,7 +125,8 @@ export const enUi: UiTranslations = {
     wifiVenues: "Wi-Fi in hotels, bars and places (OSM)",
     sports: "Sport and training spaces",
     subSport: "Sport and leisure",
-    sportFilter: "Filter by sport"
+    sportFilter: "Filter by sport",
+    nautical: "Boating and moorings (OSM)"
   },
   map: {
     orarioUfficialeActv: "official ACTV timetable",
@@ -1509,5 +1510,25 @@ export const enUi: UiTranslations = {
     noArrivals: "No arrivals expected in the next 90 minutes among the trips tracked in real time by ACTV.",
     unavailable: "ACTV real-time data unavailable right now.",
     arrivalsNote: "Expected times and delays estimated by ACTV (GTFS-Realtime), updated every 30 s. Only trips tracked in real time: the others run to the official timetable."
+  },
+  nautical: {
+    kind_marina: "Marina",
+    kind_fuel: "Boat fuel",
+    kind_slipway: "Slipway",
+    kind_boatyard: "Boatyard",
+    kind_rental: "Boat rental",
+    kind_mooring: "Mooring",
+    access: "Mooring",
+    access_allowed: "Allowed",
+    access_guest: "Guests / transit",
+    access_private: "Private",
+    access_commercial: "Commercial only",
+    access_permit: "With permit",
+    access_no: "Forbidden",
+    capacity: "Berths",
+    berths: "{n} berths",
+    operator: "Operator",
+    hours: "Hours",
+    note: "OpenStreetMap data, not verified. City concessions and time-limited berths are not published as open data: see the City Geoportal (Water Concessions Office)."
   }
 };

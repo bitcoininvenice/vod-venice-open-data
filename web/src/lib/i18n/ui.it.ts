@@ -123,7 +123,8 @@ export const itUi = {
     wifiVenues: "Wi-Fi in hotel, bar e luoghi (OSM)",
     sports: "Sport e spazi per allenarsi",
     subSport: "Sport e tempo libero",
-    sportFilter: "Filtra per sport"
+    sportFilter: "Filtra per sport",
+    nautical: "Nautica e ormeggi (OSM)"
   },
   map: {
     orarioUfficialeActv: "orario ufficiale ACTV",
@@ -1507,6 +1508,26 @@ export const itUi = {
     noArrivals: "Nessun arrivo previsto nei prossimi 90 minuti tra le corse seguite in tempo reale da ACTV.",
     unavailable: "Dati in tempo reale di ACTV non disponibili in questo momento.",
     arrivalsNote: "Orari previsti e ritardi stimati da ACTV (GTFS-Realtime), aggiornati ogni 30 s. Solo le corse seguite in tempo reale: le altre partono secondo l’orario ufficiale."
+  },
+  nautical: {
+    kind_marina: "Marina / darsena",
+    kind_fuel: "Carburante per barche",
+    kind_slipway: "Scivolo di alaggio",
+    kind_boatyard: "Cantiere nautico",
+    kind_rental: "Noleggio barche",
+    kind_mooring: "Ormeggio",
+    access: "Ormeggio",
+    access_allowed: "Consentito",
+    access_guest: "Per ospiti / transito",
+    access_private: "Privato",
+    access_commercial: "Solo uso commerciale",
+    access_permit: "Con permesso",
+    access_no: "Vietato",
+    capacity: "Posti barca",
+    berths: "{n} posti",
+    operator: "Gestore",
+    hours: "Orari",
+    note: "Dati di OpenStreetMap, non verificati. Le concessioni del Comune e le soste a tempo non sono pubblicate come open data: per quelle vale il Geoportale comunale (Servizio Concessioni Acquee)."
   }
 };
 

@@ -1086,3 +1086,20 @@ export interface SportPlace {
   /** ultimo aggiornamento della segnalazione (ISO 8601) */
   updatedAt?: string | null;
 }
+
+/** Luogo nautico da OpenStreetMap: marina, carburante, scivolo, cantiere, noleggio o ormeggio. */
+export interface NauticalPlace {
+  id: string;
+  kind: 'marina' | 'fuel' | 'slipway' | 'boatyard' | 'rental' | 'mooring';
+  name: string | null;
+  /** solo per gli ormeggi: allowed (consentito), guest (ospiti), private, commercial, permit, no (vietato) */
+  access: 'allowed' | 'guest' | 'private' | 'commercial' | 'permit' | 'no' | null;
+  capacity: number | null;
+  operator: string | null;
+  openingHours: string | null;
+  website: string | null;
+  zone: string;
+  lat: number;
+  lon: number;
+  sourceUrl: string;
+}

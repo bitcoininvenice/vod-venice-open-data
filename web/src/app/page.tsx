@@ -26,6 +26,7 @@ import {
   LoraGateway,
   WifiVenue,
   SportPlace,
+  NauticalPlace,
   StopItem,
   CantiereItem,
   FlightItem,
@@ -128,7 +129,7 @@ const ONBOARDING_KEY = 'vod_onboarding_completed';
 type DataResource =
   | 'cantieri' | 'stops' | 'cityAssets' | 'environment' | 'pedestrianFlows' | 'alilaguna' | 'satellites'
   | 'passerelle' | 'marineSensors' | 'veniceAssets' | 'cameras' | 'waterways' | 'lagoonMorphology' | 'weather'
-  | 'railLogistics' | 'heritage' | 'emergencyHealth' | 'urbanMicroclimate' | 'regionalData' | 'loraGateways' | 'sports';
+  | 'railLogistics' | 'heritage' | 'emergencyHealth' | 'urbanMicroclimate' | 'regionalData' | 'loraGateways' | 'sports' | 'nautical';
 import type { TideResponse, TideStation, TideForecast, TideTrend, TideCategory } from '@/lib/contracts/tide';
 import type { RealtimeVehicleDto } from '@/lib/contracts/realtime';
 
@@ -170,7 +171,7 @@ export default function HomePage() {
 
   // Layer toggles (Default to false on clean map startup)
   const [layers, setLayers] = useState<LayerVisibility>(() => allLayers(false));
-  const { showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri, showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose, showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries, showFiber, showRecyclingCentres, showLibraries, showCanals, showBdapWorks, showLoraGateways, showWifiVenues, showSports } = layers;
+  const { showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri, showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose, showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries, showFiber, showRecyclingCentres, showLibraries, showCanals, showBdapWorks, showLoraGateways, showWifiVenues, showSports, showNautical } = layers;
   const { setShowPasserelle } = useMemo(() => makeLayerSetters(setLayers), []);
   const [realtimeVehicles, setRealtimeVehicles] = useState<RealtimeVehicleDto[]>([]);
 
@@ -239,6 +240,7 @@ export default function HomePage() {
   const [loraGateways, setLoraGateways] = useState<LoraGateway[]>([]);
   const [wifiVenues, setWifiVenues] = useState<WifiVenue[]>([]);
   const [sportPlaces, setSportPlaces] = useState<SportPlace[]>([]);
+  const [nauticalPlaces, setNauticalPlaces] = useState<NauticalPlace[]>([]);
   const [sportFilter, setSportFilter] = useState<SportFilter>('all');
   const [metarData, setMetarData] = useState<AirportMetarData | null>(null);
   const [liveTrains, setLiveTrains] = useState<TrainLiveItem[]>(OPEN_LIVE_TRAINS);
@@ -474,6 +476,14 @@ export default function HomePage() {
   // schede) e una sola volta per sessione. Prima tutte le 21 API partivano all'avvio.
   const loadResource = useCallback((key: DataResource) => {
     switch (key) {
+      case 'nautical':
+        fetch('/api/nautical')
+          .then((res) => res.json())
+          .then((data) => {
+            if (Array.isArray(data.data)) setNauticalPlaces(data.data);
+          })
+          .catch((err) => console.warn('Nautica non disponibile:', err));
+        break;
       case 'sports':
         fetch('/api/sports')
           .then((res) => res.json())
@@ -720,8 +730,9 @@ export default function HomePage() {
       regionalData: showLagoonWater || showAccommodations || showBikeRoutes || showPollenStations || showTributaries,
       loraGateways: showLoraGateways,
       sports: showSports,
+      nautical: showNautical,
     };
-  }, [isSearchOpen, isExportModalOpen, isAlilagunaModalOpen, isAirportModalOpen, isTideModalOpen, simulatedTideLevel, showCantieri, showSpatialBuffer, showStops, showCityAssets, showParkings, showRecyclingCentres, showLibraries, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showOceanStations, showMarineSignals, showBathingWaters, showTrees, showEvCharging, showWifiHotspots, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries, showLoraGateways, showWifiVenues, showSports]);
+  }, [isSearchOpen, isExportModalOpen, isAlilagunaModalOpen, isAirportModalOpen, isTideModalOpen, simulatedTideLevel, showCantieri, showSpatialBuffer, showStops, showCityAssets, showParkings, showRecyclingCentres, showLibraries, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showOceanStations, showMarineSignals, showBathingWaters, showTrees, showEvCharging, showWifiHotspots, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries, showLoraGateways, showWifiVenues, showSports, showNautical]);
 
   const startedResources = useRef(new Set<DataResource>());
   useEffect(() => {
@@ -897,6 +908,7 @@ export default function HomePage() {
     showLoraGateways: loraGateways.length,
     showWifiVenues: wifiVenues.length,
     showSports: sportPlaces.length,
+    showNautical: nauticalPlaces.length,
     showCanals: lagoonNetwork?.canals.length ?? 0,
     showWifiHotspots: wifiHotspots.length,
     showEvCharging: evCharging.length,
@@ -927,7 +939,7 @@ export default function HomePage() {
     showBikeRoutes: regionalBikeRoutes.length,
     showPollenStations: pollenMonitoringStations.length,
     showTributaries: lagoonTributaryRivers.length,
-  }), [categoryCounts, realtimeVehicles, stops, alilagunaBoats, cantieri, cameras, flights, ships, moseGates, passerelle, briccole, lagoonNetwork, oceanStations, bathingWaters, trees, recyclingCentres, libraries, bdapWorks, loraGateways, wifiVenues, sportPlaces, wifiHotspots, evCharging, fountains, parkings, airStations, pedestrianFlows, satellites, canalSpeedLimits, bridges, gondolas, docks, subsidencePoints, lagoonMorphology, marineWindStations, liveTrains, wasteBoats, nizioleti, wells, bellTowers, fortressIslands, emergencyDocks, daeList, pharmacies, heatIslands, lagoonWaterQuality, touristAccommodations, regionalBikeRoutes, pollenMonitoringStations, lagoonTributaryRivers]);
+  }), [categoryCounts, realtimeVehicles, stops, alilagunaBoats, cantieri, cameras, flights, ships, moseGates, passerelle, briccole, lagoonNetwork, oceanStations, bathingWaters, trees, recyclingCentres, libraries, bdapWorks, loraGateways, wifiVenues, sportPlaces, nauticalPlaces, wifiHotspots, evCharging, fountains, parkings, airStations, pedestrianFlows, satellites, canalSpeedLimits, bridges, gondolas, docks, subsidencePoints, lagoonMorphology, marineWindStations, liveTrains, wasteBoats, nizioleti, wells, bellTowers, fortressIslands, emergencyDocks, daeList, pharmacies, heatIslands, lagoonWaterQuality, touristAccommodations, regionalBikeRoutes, pollenMonitoringStations, lagoonTributaryRivers]);
   const liveWebcamsCount = useMemo(() => cameras.filter((c) => c.hasLiveFeed).length, [cameras]);
 
   return (
@@ -1058,6 +1070,8 @@ export default function HomePage() {
           showSports={showSports}
           sportPlaces={sportPlaces}
           sportFilter={sportFilter}
+          showNautical={showNautical}
+          nauticalPlaces={nauticalPlaces}
           showCanals={showCanals}
           lagoonNetwork={lagoonNetwork}
           // 3. Ferrovia & Logistica

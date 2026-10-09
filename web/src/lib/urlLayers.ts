@@ -52,7 +52,8 @@ export type LayerKey =
   | 'showBdapWorks'
   | 'showLoraGateways'
   | 'showWifiVenues'
-  | 'showSports';
+  | 'showSports'
+  | 'showNautical';
 
 /**
  * Mapping from LayerKey to canonical Open Data catalog slug (matching /layers page IDs)
@@ -112,6 +113,7 @@ export const LAYER_SLUG_BY_KEY: Record<LayerKey, string> = {
   showLoraGateways: 'gateway_lora',
   showWifiVenues: 'wifi_locali',
   showSports: 'sport',
+  showNautical: 'nautica',
 };
 
 /**
@@ -173,12 +175,16 @@ export const SLUG_TO_LAYER_KEY: Record<string, LayerKey> = {
   gateway_lora: 'showLoraGateways',
   wifi_locali: 'showWifiVenues',
   sport: 'showSports',
+  nautica: 'showNautical',
 
   // Convenient aliases
   bdap: 'showBdapWorks',
   lora: 'showLoraGateways',
   wifi_osm: 'showWifiVenues',
   campi: 'showSports',
+  ormeggi: 'showNautical',
+  marine: 'showNautical',
+  darsene: 'showNautical',
   campo: 'showSports',
   sports: 'showSports',
   lorawan: 'showLoraGateways',

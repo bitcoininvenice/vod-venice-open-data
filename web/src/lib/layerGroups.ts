@@ -72,6 +72,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
           e('showBridges', 'layers.layerBridgeClearance', 'navigation', 'cyan'),
           e('showGondolas', 'layers.layerGondolas', 'waves', 'purple'),
           e('showDocks', 'layers.layerPublicDocks', 'anchor', 'blue'),
+          e('showNautical', 'ui.layerPanel.nautical', 'anchor', 'sky'),
         ],
       },
       {

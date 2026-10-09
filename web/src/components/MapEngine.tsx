@@ -56,7 +56,7 @@ import {
 import type { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import type { MapObjectSelected } from './MapObjectPanel';
 import type { BdapProject } from '@/lib/bdap';
-import type { LoraGateway, SportPlace, WifiVenue } from '@/lib/types';
+import type { LoraGateway, NauticalPlace, SportPlace, WifiVenue } from '@/lib/types';
 import { matchesSportFilter, type SportFilter } from '@/lib/sports';
 import { GRID, LAND_LO } from '@/lib/simulation-data';
 import { drawBaseMap, isLandHiLoaded, requestLandHi } from './map/baseMap';
@@ -69,7 +69,7 @@ import type { RenderContext } from './map/renderContext';
 import { drawRoutes, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, drawMarineSignals, drawOceanStations, drawCanalLimits, drawBridges, drawGondolas, drawDocks, drawMarineWind } from './map/lagoonLayers';
-import { bdapRadius, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
+import { bdapRadius, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 import { drawFloodLayer } from './map/floodLayer';
 import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
@@ -195,6 +195,9 @@ export interface MapEngineProps {
   showSports?: boolean;
   sportPlaces?: SportPlace[];
   sportFilter?: SportFilter;
+  /** Nautica da OpenStreetMap (ormeggi visibili solo da vicino) */
+  showNautical?: boolean;
+  nauticalPlaces?: NauticalPlace[];
   /** Briccole, segnalamenti e canali da OpenStreetMap */
   showCanals?: boolean;
   lagoonNetwork?: LagoonNetwork | null;
@@ -332,6 +335,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   showSports = false,
   sportPlaces = [],
   sportFilter = 'all',
+  showNautical = false,
+  nauticalPlaces = [],
   showCanals = false,
   lagoonNetwork = null,
   showTrains = false,
@@ -1300,6 +1305,19 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
     }
 
+    // 1a6. Nautica (gli ormeggi solo quando sono disegnati, cioè da vicino)
+    if (showNautical && onSelectFeature) {
+      for (const p of nauticalPlaces) {
+        if (p.kind === 'mooring' && camera.s <= MOORINGS_MIN_SCALE) continue;
+        const px = (mx(p.lon) - camera.x0) * camera.s;
+        const py = (my(p.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - px, clickY - py) <= (p.kind === 'mooring' ? 7 : 12)) {
+          onSelectFeature({ type: 'nauticalPlace', data: p });
+          return;
+        }
+      }
+    }
+
     // 1a7. Spazi sportivi (le segnalazioni CAMPO hanno la precedenza perché sono le prime dell'elenco)
     if (showSports && onSelectFeature) {
       for (const p of sportPlaces) {
@@ -1648,6 +1666,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         showSports,
         sportPlaces,
         sportFilter,
+        showNautical,
+        nauticalPlaces,
         showCanals,
         lagoonNetwork,
         moseGates,
@@ -1757,6 +1777,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         drawLoraGateways(rc);
         drawWifiVenues(rc);
         drawSports(rc);
+        drawNautical(rc);
 
         drawParkings(rc);
 
@@ -1924,6 +1945,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     showSports,
     sportPlaces,
     sportFilter,
+    showNautical,
+    nauticalPlaces,
     showCanals,
     lagoonNetwork,
     showTrains,

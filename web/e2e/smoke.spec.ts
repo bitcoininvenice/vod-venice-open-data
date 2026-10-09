@@ -344,6 +344,35 @@ test('ritardi ACTV: scheda del mezzo e prossimi arrivi alla fermata', async ({ p
   await expect(info).toContainText('stima ACTV');
 });
 
+test('nautica: il clic su una marina apre la sua scheda', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  const RIALTO = { lat: 45.43727, lon: 12.335071 };
+  await page.route('**/api/nautical', (route) =>
+    route.fulfill({
+      json: {
+        success: true, count: 1, meta: {},
+        data: [{ id: 'node/1', kind: 'marina', name: 'Marina di prova', access: null, capacity: 120, operator: 'Comune', openingHours: null, website: null, zone: 'Venezia centro storico', ...RIALTO, sourceUrl: 'https://www.openstreetmap.org/node/1' }],
+      },
+    })
+  );
+  await page.goto('/?layers=nautica');
+  await page.locator('canvas').waitFor();
+  // centra la mappa sulle coordinate della marina passando dalla ricerca, poi spegne le fermate
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder(/cerca fermate/i).fill('Rialto');
+  await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: /rialto/i }).first().click();
+  await page.keyboard.press('Escape');
+  const panel = page.locator('aside').filter({ visible: true }).first();
+  await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('fermate');
+  await panel.locator('[data-layer="showStops"]').click();
+  const box = (await page.locator('canvas').boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  const info = page.locator('[data-info-panel]');
+  await expect(info).toContainText('Marina di prova');
+  await expect(info).toContainText('120 posti');
+  await expect(info).toContainText('OpenStreetMap');
+});
+
 test('la scheda informativa non copre il pannello livelli e non blocca la mappa', async ({ page, isMobile }) => {
   test.skip(isMobile, 'su mobile la scheda è un cassetto dal basso');
   await page.goto('/');
@@ -568,6 +597,16 @@ test.describe('API', () => {
     expect([200, 503]).toContain(res.status());
     expect(body.data.moseGates).toHaveLength(4);
     expect(body.meta.levels.kind).toBe('live');
+  });
+
+  test('nautical: marine, carburante e ormeggi da OpenStreetMap', async ({ request }) => {
+    const body = await (await request.get('/api/nautical')).json();
+    const kinds = new Set(body.data.map((p: { kind: string }) => p.kind));
+    for (const k of ['marina', 'fuel', 'slipway', 'mooring']) expect(kinds.has(k)).toBe(true);
+    expect(body.meta.attribution).toMatch(/OpenStreetMap/);
+    for (const p of body.data.filter((x: { kind: string }) => x.kind === 'mooring')) {
+      expect([null, 'allowed', 'guest', 'private', 'commercial', 'permit', 'no']).toContain(p.access);
+    }
   });
 
   test('sports unisce CAMPO e OpenStreetMap con fonti e licenze dichiarate', async ({ request }) => {

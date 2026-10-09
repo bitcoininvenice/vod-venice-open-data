@@ -20,6 +20,7 @@ import { GET as cantieriGET } from '@/app/api/cantieri/route';
 import { GET as bdapGET } from '@/app/api/opere-bdap/route';
 import { GET as loraGET } from '@/app/api/lora-gateways/route';
 import { GET as sportsGET } from '@/app/api/sports/route';
+import { GET as nauticalGET } from '@/app/api/nautical/route';
 import { GET as healthGET } from '@/app/api/health/route';
 import tourism from '@/data/turismo-comuni.json';
 import cruscotto from '@/data/cruscotto-comuni.json';
@@ -161,6 +162,10 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   },
   public_works: async () => {
     const j = await read(cantieriGET());
+    return { items: asRows(j.data), meta: j.meta as Row };
+  },
+  nautical: async () => {
+    const j = await read(nauticalGET());
     return { items: asRows(j.data), meta: j.meta as Row };
   },
   sports: async () => {

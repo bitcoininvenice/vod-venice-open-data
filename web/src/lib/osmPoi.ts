@@ -1,4 +1,4 @@
-import type { CityAssetItem, CivicPoiItem, EvChargingItem, ParkingItem, UrbanTreeItem, VeniceWellItem, WifiVenue, SportPlace } from './types';
+import type { CityAssetItem, CivicPoiItem, EvChargingItem, ParkingItem, UrbanTreeItem, VeniceWellItem, WifiVenue, SportPlace, NauticalPlace } from './types';
 import osmPoi from '@/data/osm-poi.json';
 import fountainsDataset from '@/data/fountains.json';
 import { calculateDistanceMeters } from './geo';
@@ -163,4 +163,20 @@ export const OPEN_SPORT_PLACES: SportPlace[] = (osmPoi.sportPlaces as RawSport[]
   lit: s.lit ?? null,
   operator: s.operator ?? null,
   sourceUrl: s.sourceUrl,
+}));
+
+/** Nautica: marine, carburante per barche, scivoli, cantieri, noleggi e ormeggi (con accesso dichiarato). */
+export const OPEN_NAUTICAL: NauticalPlace[] = (osmPoi.nautical as Partial<NauticalPlace>[]).map((n) => ({
+  id: n.id as string,
+  kind: n.kind as NauticalPlace['kind'],
+  name: n.name ?? null,
+  access: n.access ?? null,
+  capacity: n.capacity ?? null,
+  operator: n.operator ?? null,
+  openingHours: n.openingHours ?? null,
+  website: n.website ?? null,
+  zone: n.zone as string,
+  lat: n.lat as number,
+  lon: n.lon as number,
+  sourceUrl: n.sourceUrl as string,
 }));

@@ -73,7 +73,7 @@ import { useTranslation } from '@/lib/i18n';
 import { InfoClose, InfoPanel } from '@/components/ui/InfoPanel';
 import { BdapWorkDetails } from '@/components/BdapWorkDetails';
 import type { BdapProject } from '@/lib/bdap';
-import type { LoraGateway, SportPlace, WifiVenue } from '@/lib/types';
+import type { LoraGateway, NauticalPlace, SportPlace, WifiVenue } from '@/lib/types';
 import { sportColor } from '@/lib/sports';
 import { CAMPO_LICENSE_PAGE } from '@/server/sources/campo';
 import { KeyValues } from '@/components/ui/InfoPanel';
@@ -119,7 +119,8 @@ export type VeniceFeatureSelected =
   | { type: 'bdapWork'; data: BdapProject }
   | { type: 'loraGateway'; data: LoraGateway }
   | { type: 'wifiVenue'; data: WifiVenue }
-  | { type: 'sportPlace'; data: SportPlace };
+  | { type: 'sportPlace'; data: SportPlace }
+  | { type: 'nauticalPlace'; data: NauticalPlace };
 
 interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
@@ -248,9 +249,13 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             {feature.type === 'loraGateway' && <LoraGatewayBody gateway={feature.data} />}
           {feature.type === 'wifiVenue' && <WifiVenueBody venue={feature.data} />}
           {feature.type === 'sportPlace' && <SportPlaceBody place={feature.data} />}
+          {feature.type === 'nauticalPlace' && <NauticalBody place={feature.data} />}
 
           {feature.type === 'bdapWork' && (
               <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400"><Construction className="w-5 h-5" /></div>
+            )}
+            {feature.type === 'nauticalPlace' && (
+              <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400"><Anchor className="w-5 h-5" /></div>
             )}
             {feature.type === 'sportPlace' && (
               <div className="p-2 rounded-xl text-white" style={{ background: sportColor(feature.data) }}><Dumbbell className="w-5 h-5" /></div>
@@ -309,6 +314,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'loraGateway' && t('ui.lora.title')}
                 {feature.type === 'wifiVenue' && (feature.data.name ?? t(`ui.wifiVenue.kind_${feature.data.kind}`))}
                 {feature.type === 'sportPlace' && (feature.data.name ?? t(`ui.sport.kind_${feature.data.kind}`))}
+                {feature.type === 'nauticalPlace' && (feature.data.name ?? t(`ui.nautical.kind_${feature.data.kind}`))}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
                 {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
@@ -334,6 +340,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'loraGateway' && feature.data.network}
                 {feature.type === 'wifiVenue' && `${t(`ui.wifiVenue.kind_${feature.data.kind}`)} · ${feature.data.zone}`}
                 {feature.type === 'sportPlace' && [sportNames(feature.data.sports, t), feature.data.area].filter(Boolean).join(' · ')}
+                {feature.type === 'nauticalPlace' && `${t(`ui.nautical.kind_${feature.data.kind}`)} · ${feature.data.zone}`}
               </span>
             </div>
           </div>
@@ -1295,7 +1302,7 @@ const FEATURE_LAYER: Record<Exclude<VeniceFeatureSelected['type'], 'civicPoi'>, 
   pharmacy: 'showPharmacies', heatIsland: 'showHeatIslands', lagoonWater: 'showLagoonWater',
   accommodation: 'showAccommodations', bikeRoute: 'showBikeRoutes', pollenStation: 'showPollenStations',
   tributaryRiver: 'showTributaries', parking: 'showParkings', fountain: 'showCityAssets', fiberCell: 'showFiber',
-  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks', loraGateway: 'showLoraGateways', wifiVenue: 'showWifiVenues', sportPlace: 'showSports',
+  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks', loraGateway: 'showLoraGateways', wifiVenue: 'showWifiVenues', sportPlace: 'showSports', nauticalPlace: 'showNautical',
 };
 
 function featureLayer(feature: VeniceFeatureSelected): LayerKey {
@@ -1311,7 +1318,7 @@ const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
 ]);
 
 /** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
-const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace']);
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace']);
 
 /** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
 const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {
@@ -1600,6 +1607,38 @@ const SportPlaceBody: React.FC<{ place: SportPlace }> = ({ place: p }) => {
           )}
         </div>
       )}
+    </div>
+  );
+};
+
+const MOORING_ACCESS_CLASS: Record<string, string> = {
+  allowed: 'text-emerald-400', guest: 'text-emerald-400', private: 'text-[var(--ink-2)]',
+  commercial: 'text-[var(--ink-2)]', permit: 'text-amber-400', no: 'text-rose-400',
+};
+
+/** Scheda di un luogo nautico (OpenStreetMap). */
+const NauticalBody: React.FC<{ place: NauticalPlace }> = ({ place: p }) => {
+  const { t } = useTranslation();
+  const n = (key: string, params?: Record<string, string | number>) => t(`ui.nautical.${key}`, params);
+  return (
+    <div className="flex flex-col gap-3">
+      <KeyValues
+        items={[
+          [n('access'), p.access ? n(`access_${p.access}`) : null, p.access ? MOORING_ACCESS_CLASS[p.access] : undefined],
+          [n('capacity'), p.capacity !== null ? n('berths', { n: p.capacity }) : null],
+          [n('operator'), p.operator],
+          [n('hours'), p.openingHours],
+        ]}
+      />
+      {p.website && (
+        <a href={p.website} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline break-all">
+          {p.website}
+        </a>
+      )}
+      <p className="text-[11px] text-[var(--ink-3)]">{n('note')}</p>
+      <a href={p.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2">
+        © OpenStreetMap contributors (ODbL)
+      </a>
     </div>
   );
 };

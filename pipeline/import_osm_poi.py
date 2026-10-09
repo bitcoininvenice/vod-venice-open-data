@@ -14,6 +14,8 @@ Pipeline: punti di interesse da OpenStreetMap che sostituiscono elenchi compilat
   con tipo di accesso (gratuito, per i clienti, a pagamento) e nome della rete se mappato; mai password
 - impianti e spazi sportivi (leisure=pitch, sports_centre, fitness_station, track, stadium, sports_hall):
   base del livello Sport, a cui VOD aggiunge le segnalazioni della comunità CAMPO
+- nautica: marine e darsene, distributori di carburante per barche, scivoli di alaggio, cantieri nautici,
+  noleggi e ormeggi con il tipo di accesso (consentito, ospiti, privato, vietato...)
 
 Licenza dei dati: ODbL 1.0 - © OpenStreetMap contributors.
 Output: web/src/data/osm-poi.json (letto da web/src/lib/osmPoi.ts).
@@ -51,6 +53,11 @@ QUERY = f"""[out:json][timeout:120];
   nwr["internet_access"="wlan"]({B});
   nwr["wifi"~"^(yes|free)$"]({B});
   nwr["leisure"~"^(pitch|sports_centre|fitness_station|track|stadium|sports_hall)$"]({B});
+  nwr["leisure"~"^(marina|slipway)$"]({B});
+  nwr["waterway"~"^(fuel|boatyard)$"]({B});
+  nwr["amenity"="fuel"]["boat"="yes"]({B});
+  nwr["amenity"="boat_rental"]({B});
+  nwr["mooring"]({B});
 );
 out tags center;"""
 
@@ -269,6 +276,52 @@ def sport_place(el, tags, lat, lon):
     }
 
 
+def nautical_kind(tags: dict) -> str | None:
+    """Tipo nautico con precedenza: marina, carburante, scivolo, cantiere, noleggio, ormeggio."""
+    if tags.get("leisure") == "marina":
+        return "marina"
+    if tags.get("waterway") == "fuel" or (tags.get("amenity") == "fuel" and tags.get("boat") == "yes"):
+        return "fuel"
+    if tags.get("leisure") == "slipway":
+        return "slipway"
+    if tags.get("waterway") == "boatyard":
+        return "boatyard"
+    if tags.get("amenity") == "boat_rental":
+        return "rental"
+    if tags.get("mooring"):
+        return "mooring"
+    return None
+
+
+def mooring_access(value: str | None) -> str | None:
+    """Accesso all'ormeggio: allowed, guest, private, commercial, permit, no (altri valori: tipo di ormeggio)."""
+    v = (value or "").lower()
+    if not v:
+        return None
+    if v in ("yes", "public"):
+        return "allowed"
+    if v in ("guest", "visitor"):
+        return "guest"
+    if v in ("private", "commercial", "permit", "no"):
+        return v
+    return "allowed" if v in ("pier", "pile", "ring", "bollard") else None
+
+
+def nautical(el, tags, lat, lon, kind):
+    rid, url = osm_ref(el)
+    return {
+        "id": rid, "sourceUrl": url, "lat": lat, "lon": lon,
+        "kind": kind,
+        "name": tags.get("name"),
+        "access": mooring_access(tags.get("mooring")) if kind == "mooring" else None,
+        "capacity": to_int(tags.get("capacity")),
+        "operator": tags.get("operator"),
+        "openingHours": tags.get("opening_hours"),
+        "website": tags.get("website") or tags.get("contact:website"),
+        "zone": zone(lat, lon),
+    }
+
+
 def main() -> int:
     try:
         payload = fetch_overpass(QUERY)
@@ -276,7 +329,7 @@ def main() -> int:
         logging.error("%s", e)
         return 1
 
-    out = {"evCharging": [], "parkings": [], "wells": [], "monumentalTrees": [], "recyclingCentres": [], "libraries": [], "wifiVenues": [], "sportPlaces": []}
+    out = {"evCharging": [], "parkings": [], "wells": [], "monumentalTrees": [], "recyclingCentres": [], "libraries": [], "wifiVenues": [], "sportPlaces": [], "nautical": []}
     seen = set()
     for el in payload.get("elements", []):
         tags = el.get("tags", {})
@@ -288,6 +341,9 @@ def main() -> int:
         # Il Wi-Fi è un attributo: un luogo può essere anche biblioteca, ecc.
         if has_wifi(tags) and tags.get("internet_access") != "no":
             out["wifiVenues"].append(wifi_venue(el, tags, lat, lon))
+        nk = nautical_kind(tags)
+        if nk:
+            out["nautical"].append(nautical(el, tags, lat, lon, nk))
         if tags.get("leisure") in SPORT_KINDS:
             out["sportPlaces"].append(sport_place(el, tags, lat, lon))
         if tags.get("amenity") == "charging_station":
