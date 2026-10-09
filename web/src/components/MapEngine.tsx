@@ -495,6 +495,18 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   }, [currentView, updateCameraToPreset]);
 
   // Manual Zoom & Centering handlers (+ / - / Reset)
+  // Interfaccia sovrapposta alla mappa (legende, controlli): clic, pressioni, rotella e tocchi restano lì e
+  // non arrivano alla mappa sotto (altrimenti si aprirebbe la scheda del punto coperto o partirebbe un trascinamento).
+  // Il rilascio del mouse non viene fermato, così un trascinamento iniziato sulla mappa finisce sempre.
+  const stopMapGestures = {
+    onMouseDown: (e: React.SyntheticEvent) => e.stopPropagation(),
+    onClick: (e: React.SyntheticEvent) => e.stopPropagation(),
+    onWheel: (e: React.SyntheticEvent) => e.stopPropagation(),
+    onTouchStart: (e: React.SyntheticEvent) => e.stopPropagation(),
+    onTouchMove: (e: React.SyntheticEvent) => e.stopPropagation(),
+    onTouchEnd: (e: React.SyntheticEvent) => e.stopPropagation(),
+  };
+
   const handleZoomIn = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!containerRef.current) return;
@@ -1906,7 +1918,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
       {/* Legende impilate in alto al centro: livelli attivi, poi i layer a campo (vento, fibra) */}
       {(legend || (showMarineWind && windField) || (showFiber && fiberData)) && (
-      <div className="absolute left-1/2 -translate-x-1/2 top-3 z-20 flex flex-col gap-2 w-[min(20rem,calc(100vw-7rem))]">
+      <div {...stopMapGestures} className="absolute left-1/2 -translate-x-1/2 top-3 z-20 flex flex-col gap-2 w-[min(20rem,calc(100vw-7rem))]">
       {/* Legenda unica dei livelli accesi */}
       {legend}
       {/* Legenda del vento animato: scala in km/h, fonte e ora di validità della previsione */}
@@ -1971,7 +1983,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       </div> */}
 
       {/* On-Map Zoom & Centering Controls (+ / - / Centra / 3D): top-3 on mobile to avoid TimelineControls, bottom-28 on desktop */}
-      <div className="absolute right-3 sm:right-5 top-3 sm:top-4 xl:top-auto xl:bottom-36 z-30 flex flex-col items-center gap-1.5 shadow-2xl">
+      <div {...stopMapGestures} className="absolute right-3 sm:right-5 top-3 sm:top-4 xl:top-auto xl:bottom-36 z-30 flex flex-col items-center gap-1.5 shadow-2xl">
         <button
           type="button"
           onClick={handleZoomIn}

@@ -240,6 +240,43 @@ test('consumi: all\'avvio a mappa pulita parte solo la marea, le altre API con i
   await expect.poll(() => data.some((d) => /^\/data\/sim-[0-9a-f]{12}\.json$/.test(d))).toBe(true);
 });
 
+test('i clic sulla legenda dei livelli attivi non arrivano alla mappa sotto', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  // La copertura fibra riempie le zone abitate: un clic che arriva alla mappa apre la scheda di una cella.
+  const fiber = page.waitForResponse((r) => r.url().includes('/api/fiber'));
+  await page.goto('/?layers=copertura_fibra');
+  await fiber;
+  const legend = page.getByRole('button', { name: /mostra i livelli attivi/i });
+  await expect(legend).toBeVisible();
+  const info = page.locator('[data-info-panel]');
+  let checked = false;
+  for (const view of [/^mestre$/i, /^venezia$/i]) {
+    await page.getByRole('button', { name: view }).first().click();
+    await page.waitForTimeout(800);
+    const box = (await legend.boundingBox())!;
+    const y = box.y + box.height / 2;
+    // controllo positivo: senza legenda, in un punto della sua fascia la mappa apre la scheda di una cella
+    const hide = await page.addStyleTag({ content: 'div:has(> div > [aria-label="Mostra i livelli attivi"]){display:none}' });
+    let hitX: number | null = null;
+    for (let x = box.x + 20; x < box.x + box.width - 10 && hitX === null; x += 40) {
+      await page.mouse.click(x, y);
+      await page.waitForTimeout(150);
+      if (await info.count()) hitX = x;
+    }
+    await hide.evaluate((el) => (el as Element).remove());
+    if (hitX === null) continue;
+    await page.keyboard.press('Escape');
+    await expect(info).toHaveCount(0);
+    // con la legenda visibile lo stesso clic resta alla legenda
+    await page.mouse.click(hitX, y);
+    await page.waitForTimeout(300);
+    await expect(info).toHaveCount(0);
+    checked = true;
+    break;
+  }
+  expect(checked, 'nessuna vista con una cella di fibra sotto la legenda').toBe(true);
+});
+
 test('la scheda informativa non copre il pannello livelli e non blocca la mappa', async ({ page, isMobile }) => {
   test.skip(isMobile, 'su mobile la scheda è un cassetto dal basso');
   await page.goto('/');
