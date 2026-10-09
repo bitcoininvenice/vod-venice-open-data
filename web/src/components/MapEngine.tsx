@@ -1464,6 +1464,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               headsign: v.line ? `${tr('ui.mapLabels.line', { line: v.line })} · ${tr(v.network === 'navigazione' ? 'ui.mapLabels.networkNav' : 'ui.mapLabels.networkBus')}` : tr('ui.mapLabels.unknownLine', { id: v.label || v.id }),
               source: 'gps',
               updatedAt: v.timestamp,
+              delay: v.delay ?? null,
             },
           });
           return;

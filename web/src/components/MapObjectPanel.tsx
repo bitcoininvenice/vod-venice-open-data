@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ExternalLink, Navigation, Plane, Radio, Ship } from 'lucide-react';
 import type { AlilagunaBoat, FlightItem, ShipItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { InfoHeader, InfoPanel, KeyValues, MoreDetails } from '@/components/ui/InfoPanel';
+import { DELAY_COLORS, delayMinutes, type VehicleDelay } from '@/lib/realtimeDelay';
 
 /** Mezzo ACTV selezionato: posizione simulata dall'orario o reale (GTFS-RT). */
 export interface VehicleSelection {
@@ -16,6 +17,8 @@ export interface VehicleSelection {
   source: 'gps' | 'schedule';
   /** secondi Unix dell'ultima posizione GPS */
   updatedAt?: number | null;
+  /** ritardo stimato da ACTV (solo mezzi GPS che indicano la corsa) */
+  delay?: VehicleDelay | null;
 }
 
 /** Oggetti in movimento cliccati sulla mappa (le schede dei punti fissi sono in VeniceFeatureDetailModal). */
@@ -167,12 +170,14 @@ export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose,
           subtitle={v.headsign}
           onClose={onClose}
         />
+        {gps && v.delay && <DelayBox delay={v.delay} />}
         <KeyValues
           items={[
             [t('map.estimatedSpeed'), !gps && v.speedKmh !== null ? `${v.speedKmh} km/h` : null, 'text-emerald-400'],
             [t('ui.map.fonte'), gps ? t('ui.map.posizioneGpsRealeGtfsRt') : t('ui.map.simulatoOrario'), gps ? 'text-emerald-400' : 'text-sky-400'],
           ]}
         />
+        {gps && !v.delay && <p className="text-[11px] text-[var(--ink-3)]">{t('ui.delay.noDelay')}</p>}
       </InfoPanel>
     );
   }
@@ -217,3 +222,40 @@ export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose,
     </InfoPanel>
   );
 };
+
+/** Ritardo del mezzo: valore attuale (quasi misurato) e arrivo stimato alla prossima fermata. */
+const DelayBox: React.FC<{ delay: VehicleDelay }> = ({ delay: d }) => {
+  const { t, language } = useTranslation();
+  const locale = language === 'it' ? 'it-IT' : 'en-GB';
+  const min = delayMinutes(d.seconds);
+  const label =
+    d.status === 'onTime' ? t('ui.delay.onTime') : d.status === 'early' ? t('ui.delay.early', { min: Math.abs(min) }) : t('ui.delay.late', { min });
+  const now = useNow(5000);
+  const ago = Math.max(0, Math.round(now / 1000 - d.updatedAt));
+  const eta = d.nextStopTime ? new Date(d.nextStopTime * 1000).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' }) : null;
+  return (
+    <div className="flex flex-col gap-1.5 p-3 rounded-xl border" style={{ borderColor: `${DELAY_COLORS[d.status]}66`, background: `${DELAY_COLORS[d.status]}14` }}>
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-sm font-bold" style={{ color: DELAY_COLORS[d.status] }}>{label}</span>
+        <span className="text-[10px] font-mono text-[var(--ink-3)]">{t('ui.delay.measuredAgo', { s: ago })}</span>
+      </div>
+      {d.nextStopName && (
+        <span className="text-[11px] text-[var(--ink-2)]">
+          {t('ui.delay.nextStop', { stop: d.nextStopName })}
+          {eta && <> · <strong className="text-[var(--ink)]">{eta}</strong> <span className="text-[var(--ink-3)]">({t('ui.delay.estimateActv')})</span></>}
+        </span>
+      )}
+      {d.estimate === 'constant' && <span className="text-[10px] text-[var(--ink-3)]">{t('ui.delay.constantNote')}</span>}
+    </div>
+  );
+};
+
+/** Ora corrente aggiornata a intervalli (per i conteggi "N s fa" senza leggere l'orologio nel rendering). */
+function useNow(intervalMs: number): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+  return now;
+}

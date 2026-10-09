@@ -361,6 +361,29 @@ def write_simulation(data: dict, days: dict[str, date]) -> None:
     logging.info("Simulazione in %s (%d KB); aggiornato %s", url, len(json.dumps(data, separators=(",", ":"))) // 1024, os.path.relpath(SIM_FILE, BASE_DIR))
 
 
+def stops_index(feeds: list[Feed]) -> dict[str, list]:
+    """Fermate GTFS (codice -> [nome, lat, lon]) per abbinare i ritardi GTFS-RT, che citano i codici
+    delle fermate, alle fermate della mappa. I codici di navigazione e automobilistico non si sovrappongono."""
+    out: dict[str, list] = {}
+    for feed in feeds:
+        for sid, s in feed.stops.items():
+            try:
+                out[sid] = [s["stop_name"].strip(), round(float(s["stop_lat"]), 5), round(float(s["stop_lon"]), 5)]
+            except (KeyError, ValueError):
+                continue
+    return dict(sorted(out.items()))
+
+
+def write_stops_only(feeds: list[Feed]) -> None:
+    """Aggiorna solo le fermate nell'indice esistente (senza rigenerare la simulazione)."""
+    with open(INDEX_FILE, encoding="utf-8") as f:
+        idx = json.load(f)
+    idx["stops"] = stops_index(feeds)
+    with open(INDEX_FILE, "w", encoding="utf-8") as f:
+        json.dump(idx, f, ensure_ascii=False, separators=(",", ":"))
+    logging.info("Fermate GTFS nell'indice: %d", len(idx["stops"]))
+
+
 def write_index(feeds: list[Feed], trip_route: dict[str, str], generated_for: dict[str, date]) -> None:
     # Le corse GTFS-RT usano lo stesso suffisso numerico del GTFS statico ma a volte un prefisso diverso
     # (es. statico NAV_ACTV_653_5134, realtime AUT_ACTV_653_5134): l'indice usa il suffisso "653_5134".
@@ -383,6 +406,7 @@ def write_index(feeds: list[Feed], trip_route: dict[str, str], generated_for: di
         "license": "Open Data ACTV (CC BY) - fonte: ACTV S.p.A. / AVM S.p.A.",
         "routes": routes,
         "trips": dict(sorted(trips.items())),
+        "stops": stops_index(feeds),
     }
     os.makedirs(os.path.dirname(INDEX_FILE), exist_ok=True)
     with open(INDEX_FILE, "w", encoding="utf-8") as f:
@@ -393,7 +417,11 @@ def write_index(feeds: list[Feed], trip_route: dict[str, str], generated_for: di
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--date", help="Data di riferimento YYYY-MM-DD (default: oggi a Venezia)")
+    parser.add_argument("--stops-only", action="store_true", help="aggiorna solo le fermate nell'indice delle corse")
     args = parser.parse_args()
+    if args.stops_only:
+        write_stops_only([Feed("navigazione"), Feed("automobilistico")])
+        return 0
     start = date.fromisoformat(args.date) if args.date else datetime.now(ZoneInfo("Europe/Rome")).date()
 
     feeds = [Feed("navigazione"), Feed("automobilistico")]

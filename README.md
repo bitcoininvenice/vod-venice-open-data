@@ -214,7 +214,8 @@ Apri il browser su: **`http://localhost:3000`**
 | :--- | :--- | :--- |
 | `GET` | `/api/stops` | Fermate e pontili ACTV con filtro opzionale `?mode=navigazione`. |
 | `GET` | `/api/spatial/stops-near-cantieri?radius=200` | Query spaziale: fermate entro il raggio indicato da cantieri attivi. |
-| `GET` | `/api/realtime/vehicles` | Posizioni reali dei mezzi ACTV dal feed GTFS-RT (cache 20 s). |
+| `GET` | `/api/realtime/vehicles` | Posizioni reali dei mezzi ACTV dal feed GTFS-RT (cache 20 s), con il ritardo stimato da ACTV (`delay`, feed TripUpdates) quando il mezzo indica la corsa e l'aggiornamento ha meno di 2 minuti. |
+| `GET` | `/api/realtime/arrivals?lat=&lon=` | Prossimi arrivi previsti alle fermate ACTV vicine al punto (raggio 150 m, 90 minuti), con ritardo e tipo di stima. |
 | `GET` | `/api/tide` | Livelli di marea reali, previsione CPSM con data di emissione, anagrafica MOSE. |
 | `GET` | `/api/weather` | METAR LIPZ reale e stazioni vento di riferimento. |
 | `GET` | `/api/ships` | Navi nell'area di Venezia via AIS (aisstream.io, chiave in `AISSTREAM_API_KEY`): collegamento di 15 s al massimo una volta al minuto, navi sentite negli ultimi 30 minuti. Senza chiave restituisce un elenco vuoto con `meta.kind: not-configured`. |

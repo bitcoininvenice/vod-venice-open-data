@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Anchor, Accessibility, MapPin, ExternalLink, ShieldCheck } from 'lucide-react';
 import { StopItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { InfoPanel } from '@/components/ui/InfoPanel';
+import { DELAY_COLORS, delayMinutes, type StopArrival } from '@/lib/realtimeDelay';
 
 interface StopDetailModalProps {
   stop: StopItem | null;
@@ -81,6 +82,8 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
           </div>
         </div>
 
+        <RealtimeArrivals lat={stop.lat} lon={stop.lon} />
+
         {/* Institutional Verification Notice */}
         <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 flex flex-col gap-2">
           <div className="flex items-center gap-2 text-xs text-blue-300 font-semibold">
@@ -101,5 +104,69 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
           </a>
         </div>
     </InfoPanel>
+  );
+};
+
+/** Prossimi arrivi con il ritardo stimato da ACTV (GTFS-Realtime), aggiornati ogni 30 s. */
+const RealtimeArrivals: React.FC<{ lat: number; lon: number }> = ({ lat, lon }) => {
+  const { t, language } = useTranslation();
+  const [state, setState] = useState<{ key: string; arrivals: StopArrival[] | null; failed: boolean }>({ key: '', arrivals: null, failed: false });
+  const key = `${lat},${lon}`;
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = () =>
+      fetch(`/api/realtime/arrivals?lat=${lat}&lon=${lon}`)
+        .then((r) => r.json())
+        .then((j) => !cancelled && setState({ key, arrivals: Array.isArray(j.data) ? j.data : [], failed: !j.success }))
+        .catch(() => !cancelled && setState({ key, arrivals: [], failed: true }));
+    load();
+    const id = setInterval(load, 30_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [lat, lon, key]);
+
+  const arrivals = state.key === key ? state.arrivals : null;
+  const locale = language === 'it' ? 'it-IT' : 'en-GB';
+  const hhmm = (s: number) => new Date(s * 1000).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
+
+  return (
+    <section className="flex flex-col gap-1.5" aria-label={t('ui.delay.arrivalsTitle')}>
+      <span className="text-[11px] font-mono uppercase text-[var(--ink-3)] flex items-center gap-1.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 motion-safe:animate-pulse" aria-hidden />
+        {t('ui.delay.arrivalsTitle')}
+      </span>
+      {arrivals === null && <div className="h-10 rounded-xl bg-[var(--rule)]/30 animate-pulse" aria-busy="true" />}
+      {arrivals !== null && arrivals.length === 0 && (
+        <p className="text-[11px] text-[var(--ink-3)]">{state.failed ? t('ui.delay.unavailable') : t('ui.delay.noArrivals')}</p>
+      )}
+      {arrivals !== null && arrivals.length > 0 && (
+        <ul className="flex flex-col divide-y divide-[var(--rule)] text-xs" data-testid="realtime-arrivals">
+          {arrivals.map((a, i) => {
+            const min = delayMinutes(a.delaySeconds);
+            const label =
+              a.status === 'onTime' ? t('ui.delay.onTime') : a.status === 'early' ? t('ui.delay.early', { min: Math.abs(min) }) : t('ui.delay.late', { min });
+            return (
+              <li key={`${a.line}-${a.time}-${i}`} className="py-1.5 flex items-center gap-2">
+                <span
+                  className="px-1.5 py-0.5 rounded-md font-mono font-bold text-[11px] min-w-[2.2rem] text-center border border-[var(--rule)]"
+                  style={a.color && a.color !== '#FFFFFF' ? { background: a.color, color: '#fff' } : undefined}
+                >
+                  {a.line ?? '?'}
+                </span>
+                <span className="flex-1 min-w-0 truncate text-[var(--ink-2)]" title={a.routeLongName ?? undefined}>
+                  {a.routeLongName ?? a.stopName}
+                </span>
+                <span className="font-mono font-bold text-[var(--ink)]">{hhmm(a.time)}</span>
+                <span className="font-mono text-[10px] w-20 text-right" style={{ color: DELAY_COLORS[a.status] }}>{label}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <p className="text-[10px] text-[var(--ink-3)]">{t('ui.delay.arrivalsNote')}</p>
+    </section>
   );
 };

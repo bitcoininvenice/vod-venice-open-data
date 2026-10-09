@@ -563,6 +563,28 @@ test.describe('API', () => {
     expect(JSON.stringify(body)).toContain('summary');
   });
 
+  test('arrivi in tempo reale: validazione e formato', async ({ request }) => {
+    expect((await request.get('/api/realtime/arrivals?lat=40&lon=12')).status()).toBe(400);
+    const res = await request.get('/api/realtime/arrivals?lat=45.4378&lon=12.3358');
+    expect([200, 503]).toContain(res.status());
+    const body = await res.json();
+    expect(body.meta.source).toMatch(/TripUpdates/);
+    for (const a of body.data) {
+      expect(['early', 'onTime', 'late', 'veryLate']).toContain(a.status);
+      expect(['constant', 'predicted']).toContain(a.estimate);
+      expect(typeof a.time).toBe('number');
+    }
+  });
+
+  test('mezzi in tempo reale: il ritardo, se presente, è recente e completo', async ({ request }) => {
+    const body = await (await request.get('/api/realtime/vehicles')).json();
+    const now = Date.now() / 1000;
+    for (const v of body.data.filter((x: { delay: unknown }) => x.delay)) {
+      expect(now - v.delay.updatedAt).toBeLessThan(180);
+      expect(typeof v.delay.seconds).toBe('number');
+    }
+  });
+
   test('radius non valido restituisce 400', async ({ request }) => {
     const res = await request.get('/api/spatial/stops-near-cantieri?radius=999999');
     expect(res.status()).toBe(400);

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { fetchUpstream } from '@/server/upstream';
 import { ACTV_GTFS_RT_FEEDS, parseVehiclePositions, type RealtimeVehicle } from '@/server/sources/gtfsRt';
 import { lookupRoute, lookupTrip, type RealtimeCategory } from '@/server/sources/gtfsIndex';
+import { fetchTripDelays, findTrip, vehicleDelay } from '@/server/sources/actvDelays';
+import type { VehicleDelay } from '@/lib/realtimeDelay';
 
 export const revalidate = 20;
 
@@ -12,6 +14,8 @@ export interface RealtimeVehicleOut extends RealtimeVehicle {
   network: 'navigazione' | 'automobilistico';
   line: string | null;
   category: RealtimeCategory | null;
+  /** ritardo rispetto all'orario (feed TripUpdates di ACTV), solo se aggiornato da meno di 2 minuti */
+  delay: VehicleDelay | null;
 }
 
 /**
@@ -26,9 +30,10 @@ export async function GET() {
       responseType: 'arrayBuffer',
     });
 
-  const [nav, aut] = await Promise.all([
+  const [nav, aut, delays] = await Promise.all([
     fetchFeed(ACTV_GTFS_RT_FEEDS.navigazione),
     fetchFeed(ACTV_GTFS_RT_FEEDS.automobilistico),
+    fetchTripDelays(),
   ]);
 
   const nowSec = Date.now() / 1000;
@@ -43,6 +48,7 @@ export async function GET() {
           network,
           line: trip?.line ?? route?.line ?? null,
           category: trip?.category ?? (network === 'navigazione' ? 'vaporetto' : 'bus'),
+          delay: vehicleDelay(findTrip(delays.trips, v.tripId), nowSec),
         };
       });
 
@@ -60,8 +66,9 @@ export async function GET() {
       source: 'ACTV / AVM – GTFS-Realtime VehiclePositions',
       sourceUrl: 'https://tpl.actv.it',
       fetchedAt: nav.ok ? nav.fetchedAt : aut.ok ? aut.fetchedAt : undefined,
-      feeds: { navigazione: nav.ok, automobilistico: aut.ok },
-      note: 'Posizioni GPS reali dei mezzi. Licenza del feed realtime da confermare con AVM S.p.A.',
+      feeds: { navigazione: nav.ok, automobilistico: aut.ok, ritardi: delays.ok },
+      withDelay: vehicles.filter((v) => v.delay).length,
+      note: 'Posizioni GPS reali dei mezzi. Il ritardo (campo delay) è quello stimato da ACTV alla prossima fermata, mostrato solo se aggiornato da meno di 2 minuti; solo i mezzi che indicano la corsa possono averlo. Licenza del feed realtime da confermare con AVM S.p.A.',
     },
   });
 }

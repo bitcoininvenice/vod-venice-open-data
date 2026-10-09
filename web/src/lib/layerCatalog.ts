@@ -52,10 +52,10 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     institution: 'ACTV / AVM S.p.A. (GTFS-Realtime)',
     portalUrl: 'https://actv.avmspa.it',
     portalName: 'tpl.actv.it (feed GTFS-RT)',
-    descriptionIt: 'Posizioni GPS di vaporetti, autobus e tram trasmesse da ACTV, quando il feed è disponibile, distinte dalla simulazione da orario.',
-    descriptionEn: 'GPS positions of waterbuses, buses and trams broadcast by ACTV, when the feed is available, kept separate from the timetable simulation.',
-    technicalNotesIt: 'Feed GTFS-Realtime VehiclePositions di ACTV per navigazione e automobilistico, letti da /api/realtime/vehicles con cache di 20 secondi. È un endpoint pubblico ma non documentato come open data: la licenza va confermata con AVM.',
-    technicalNotesEn: 'ACTV GTFS-Realtime VehiclePositions feeds for waterbus and bus networks, read by /api/realtime/vehicles with a 20-second cache. It is a public endpoint but not documented as open data: the licence must be confirmed with AVM.',
+    descriptionIt: 'Posizioni GPS di vaporetti, autobus e tram trasmesse da ACTV, quando il feed è disponibile, distinte dalla simulazione da orario. Per i mezzi che indicano la corsa: ritardo rispetto all\'orario (anello colorato) e arrivo stimato alla prossima fermata; nella scheda della fermata, i prossimi arrivi in tempo reale.',
+    descriptionEn: 'GPS positions of waterbuses, buses and trams broadcast by ACTV, when the feed is available, kept separate from the timetable simulation. For vehicles reporting their trip: delay against the timetable (coloured ring) and estimated arrival at the next stop; in the stop card, the next arrivals in real time.',
+    technicalNotesIt: 'Ritardi dal feed TripUpdates (stessa cache): il ritardo attuale deriva dal GPS, gli orari alle fermate successive sono stime di ACTV, e nessun ritardo viene mostrato se l\'aggiornamento ha più di 2 minuti. Feed GTFS-Realtime VehiclePositions di ACTV per navigazione e automobilistico, letti da /api/realtime/vehicles con cache di 20 secondi. È un endpoint pubblico ma non documentato come open data: la licenza va confermata con AVM.',
+    technicalNotesEn: 'Delays from the TripUpdates feed (same cache): the current delay comes from GPS, times at later stops are ACTV estimates, and no delay is shown if the update is older than 2 minutes. ACTV GTFS-Realtime VehiclePositions feeds for waterbus and bus networks, read by /api/realtime/vehicles with a 20-second cache. It is a public endpoint but not documented as open data: the licence must be confirmed with AVM.',
     endpointOrFile: '/api/realtime/vehicles'
   },
   {

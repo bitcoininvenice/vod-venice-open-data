@@ -1,6 +1,7 @@
 // Layer di disegno della mappa estratti da MapEngine (transitLayers). Ogni funzione riceve il contesto del frame.
 import type { RenderContext } from './renderContext';
 import { distAt, getSimulation, pointAt } from '@/lib/simulationModel';
+import { DELAY_COLORS, isFresh } from '@/lib/realtimeDelay';
 
 export function drawRoutes(rc: RenderContext): void {
   const { ctx, cw, pal, sx, sy, camera, W, showRoutes } = rc;
@@ -126,6 +127,14 @@ export function drawRealtimeVehicles(rc: RenderContext): void {
       ctx.fillRect(-4.5, -4.5, 9, 9);
       ctx.strokeRect(-4.5, -4.5, 9, 9);
       ctx.restore();
+      // Anello del ritardo stimato da ACTV (solo se recente): verde in orario, giallo 3-5 min, rosso oltre
+      if (v.delay && isFresh(v.delay.updatedAt)) {
+        ctx.beginPath();
+        ctx.arc(vx, vy, 10, 0, Math.PI * 2);
+        ctx.strokeStyle = DELAY_COLORS[v.delay.status];
+        ctx.lineWidth = 2.2;
+        ctx.stroke();
+      }
       if (camera.s > 0.03 && v.line) {
         ctx.font = '700 9px "DM Mono", monospace';
         ctx.fillStyle = isDark ? '#ffffff' : '#0f172a';

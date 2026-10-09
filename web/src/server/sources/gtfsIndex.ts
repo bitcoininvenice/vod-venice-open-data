@@ -8,9 +8,11 @@ interface GtfsIndex {
   routes: Record<string, { n: string; long: string; color: string | null }>;
   /** suffisso numerico della corsa (es. "653_5134") -> "linea|categoria" */
   trips: Record<string, string>;
+  /** codice fermata GTFS -> [nome, lat, lon] */
+  stops?: Record<string, [string, number, number]>;
 }
 
-const IDX = index as GtfsIndex;
+const IDX = index as unknown as GtfsIndex;
 
 /**
  * Linea e categoria di una corsa GTFS-RT.
@@ -33,3 +35,23 @@ export function lookupRoute(routeId: string | null): { line: string } | null {
 }
 
 export const GTFS_INDEX_GENERATED_AT = IDX.generatedAt;
+
+export function stopName(stopId: string | null): string | null {
+  return (stopId && IDX.stops?.[stopId]?.[0]) || null;
+}
+
+/** Linea, descrizione e colore di una linea GTFS (route_id). */
+export function routeInfo(routeId: string | null): { line: string; long: string; color: string | null } | null {
+  const r = routeId ? IDX.routes[routeId] : undefined;
+  return r ? { line: r.n, long: r.long, color: r.color } : null;
+}
+
+/** Codici delle fermate GTFS entro `radius` metri (una fermata della mappa ha spesso più pontili o lati). */
+export function stopsNear(lat: number, lon: number, radius = 150): string[] {
+  const out: string[] = [];
+  const kx = 111_000 * Math.cos((lat * Math.PI) / 180);
+  for (const [id, [, slat, slon]] of Object.entries(IDX.stops ?? {})) {
+    if (Math.hypot((slat - lat) * 111_000, (slon - lon) * kx) <= radius) out.push(id);
+  }
+  return out;
+}

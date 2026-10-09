@@ -37,3 +37,47 @@ export function parseVehiclePositions(buffer: ArrayBuffer): RealtimeVehicle[] {
     }];
   });
 }
+
+/** Feed dei ritardi (GTFS-Realtime TripUpdates): ACTV stima il ritardo fermata per fermata. */
+export const ACTV_GTFS_RT_TRIP_UPDATES = {
+  navigazione: 'https://tpl.actv.it/nav/GTFSRT/tripUpdates',
+  automobilistico: 'https://tpl.actv.it/aut/GTFSRT/tripUpdates',
+} as const;
+
+export interface StopDelay {
+  seq: number | null;
+  stopId: string;
+  /** ritardo in secondi (negativo = in anticipo) */
+  delay: number;
+  /** orario previsto (epoch seconds), se indicato */
+  time: number | null;
+}
+
+export interface TripDelay {
+  tripId: string;
+  routeId: string | null;
+  /** epoch seconds dell'ultimo aggiornamento della corsa */
+  timestamp: number | null;
+  stops: StopDelay[];
+}
+
+export function parseTripUpdates(buffer: ArrayBuffer): TripDelay[] {
+  const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(new Uint8Array(buffer));
+  return feed.entity.flatMap((entity) => {
+    const u = entity.tripUpdate;
+    const tripId = u?.trip?.tripId;
+    if (!u || !tripId) return [];
+    const stops: StopDelay[] = (u.stopTimeUpdate ?? []).flatMap((s) => {
+      const ev = s.arrival ?? s.departure;
+      if (!s.stopId || ev?.delay == null) return [];
+      return [{
+        seq: s.stopSequence ?? null,
+        stopId: s.stopId,
+        delay: Number(ev.delay),
+        time: ev.time != null ? Number(ev.time) : null,
+      }];
+    });
+    if (stops.length === 0) return [];
+    return [{ tripId, routeId: u.trip?.routeId || null, timestamp: u.timestamp != null ? Number(u.timestamp) : null, stops }];
+  });
+}

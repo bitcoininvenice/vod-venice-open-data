@@ -34,12 +34,12 @@ Grazie per l'attenzione,
 
 ## 2. AVM S.p.A. – feed GTFS-Realtime ACTV
 
-**Oggetto:** Licenza d'uso del feed GTFS-Realtime ACTV (VehiclePositions)
+**Oggetto:** Licenza d'uso dei feed GTFS-Realtime ACTV (VehiclePositions e TripUpdates)
 
 Buongiorno,
 
 il progetto non commerciale VOD – Venice Open Data utilizza già i GTFS statici ACTV pubblicati come open data, con citazione della fonte. Vorremmo mostrare anche le posizioni in tempo reale dei mezzi leggendo gli endpoint
-`https://tpl.actv.it/nav/GTFSRT/vehiclePositions` e `https://tpl.actv.it/aut/GTFSRT/vehiclePositions`, con una lettura ogni 20 secondi dal nostro server (non dai browser degli utenti).
+`https://tpl.actv.it/nav/GTFSRT/vehiclePositions` e `https://tpl.actv.it/aut/GTFSRT/vehiclePositions`, e i ritardi stimati dagli endpoint `https://tpl.actv.it/nav/GTFSRT/tripUpdates` e `https://tpl.actv.it/aut/GTFSRT/tripUpdates`, con una lettura ogni 20 secondi dal nostro server (non dai browser degli utenti). I ritardi vengono mostrati per singolo mezzo e alle fermate, indicando che si tratta di stime ACTV; non pubblichiamo statistiche aggregate di puntualità senza il vostro consenso.
 
 Vi chiediamo di confermare:
 1. se l'uso pubblico di questi dati è consentito e con quale licenza;

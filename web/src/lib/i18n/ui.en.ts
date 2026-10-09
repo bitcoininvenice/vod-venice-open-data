@@ -1493,5 +1493,19 @@ export const enUi: UiTranslations = {
     notice_parish: "Parish or religious institute space: access during the set hours and following the rules of the place.",
     notice_school: "School facility: access is reserved for students and authorised activities.",
     notice_institution: "University or institutional facility: access is regulated by the managing body."
+  },
+  delay: {
+    onTime: "On time",
+    late: "{min} min late",
+    early: "{min} min early",
+    measuredAgo: "measured {s} s ago",
+    nextStop: "Next stop: {stop}",
+    estimateActv: "ACTV estimate",
+    constantNote: "For later stops ACTV repeats the current delay: a simple estimate.",
+    noDelay: "Delay not available: the vehicle does not report its trip or the update is older than 2 minutes.",
+    arrivalsTitle: "Next arrivals in real time",
+    noArrivals: "No arrivals expected in the next 90 minutes among the trips tracked in real time by ACTV.",
+    unavailable: "ACTV real-time data unavailable right now.",
+    arrivalsNote: "Expected times and delays estimated by ACTV (GTFS-Realtime), updated every 30 s. Only trips tracked in real time: the others run to the official timetable."
   }
 };

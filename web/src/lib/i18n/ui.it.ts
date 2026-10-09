@@ -1491,6 +1491,20 @@ export const itUi = {
     notice_parish: "Spazio parrocchiale o di un istituto religioso: si accede negli orari stabiliti e rispettando le regole del luogo.",
     notice_school: "Struttura scolastica: l’accesso è riservato agli studenti e alle attività autorizzate.",
     notice_institution: "Struttura universitaria o istituzionale: l’accesso è regolato dall’ente che la gestisce."
+  },
+  delay: {
+    onTime: "In orario",
+    late: "In ritardo di {min} min",
+    early: "In anticipo di {min} min",
+    measuredAgo: "rilevato {s} s fa",
+    nextStop: "Prossima fermata: {stop}",
+    estimateActv: "stima ACTV",
+    constantNote: "Per le fermate successive ACTV ripete il ritardo attuale: è una stima semplice.",
+    noDelay: "Ritardo non disponibile: il mezzo non indica la corsa o l’aggiornamento ha più di 2 minuti.",
+    arrivalsTitle: "Prossimi arrivi in tempo reale",
+    noArrivals: "Nessun arrivo previsto nei prossimi 90 minuti tra le corse seguite in tempo reale da ACTV.",
+    unavailable: "Dati in tempo reale di ACTV non disponibili in questo momento.",
+    arrivalsNote: "Orari previsti e ritardi stimati da ACTV (GTFS-Realtime), aggiornati ogni 30 s. Solo le corse seguite in tempo reale: le altre partono secondo l’orario ufficiale."
   }
 };
 

@@ -420,3 +420,11 @@ def test_osm_impianti_sportivi():
     assert p["kind"] == "pitch" and p["sports"] == ["basketball", "volleyball"] and p["lit"] is True
     assert osm_poi.sport_place(el, {"leisure": "fitness_station"}, 45.43, 12.35)["kind"] == "fitness"
     assert osm_poi.sport_place(el, {"leisure": "pitch", "lit": "maybe"}, 45.43, 12.35)["lit"] is None
+
+
+def test_indice_fermate_gtfs():
+    class F:
+        stops = {"5001": {"stop_name": 'Lido S.M.E. "B" ', "stop_lat": "45.417992", "stop_lon": "12.368725"},
+                 "x": {"stop_name": "senza coordinate", "stop_lat": "", "stop_lon": ""}}
+    idx = sim.stops_index([F()])
+    assert idx == {"5001": ['Lido S.M.E. "B"', 45.41799, round(12.368725, 5)]}
