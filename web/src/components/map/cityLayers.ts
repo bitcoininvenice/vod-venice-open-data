@@ -786,3 +786,49 @@ export function drawCivicPois(rc: RenderContext): void {
     }
   }
 }
+
+/** Raggio del simbolo di un'opera BDAP: cresce con la radice del costo (da 6 a 13 px). */
+export function bdapRadius(costEur: number): number {
+  return Math.min(13, 6 + Math.sqrt(Math.max(0, costEur) / 1e6) * 1.6);
+}
+
+export function drawBdapWorks(rc: RenderContext): void {
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showBdapWorks, bdapWorks } = rc;
+  if (!showBdapWorks || !bdapWorks || bdapWorks.length === 0) return;
+  const now = Date.now();
+  for (const w of bdapWorks) {
+    if (w.lat === null || w.lon === null) continue;
+    const px = sx(mx(w.lon));
+    const py = sy(my(w.lat));
+    if (px < -40 || px > cw + 40 || py < -40 || py > ch + 40) continue;
+    const r = bdapRadius(w.costPlannedEur);
+    const overdue = !!w.executionEndPlanned && Date.parse(w.executionEndPlanned) < now;
+    ctx.save();
+    // Rombo arancione: opera in esecuzione; bordo rosso se la fine prevista è già passata
+    ctx.beginPath();
+    ctx.moveTo(px, py - r);
+    ctx.lineTo(px + r, py);
+    ctx.lineTo(px, py + r);
+    ctx.lineTo(px - r, py);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(249, 115, 22, 0.85)';
+    ctx.fill();
+    ctx.strokeStyle = overdue ? '#ef4444' : isDark ? '#ffffff' : '#0f172a';
+    ctx.lineWidth = overdue ? 2 : 1.2;
+    ctx.stroke();
+    ctx.font = 'bold 8px "DM Sans", sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('€', px, py + 0.5);
+    if (camera.s > 0.025) {
+      ctx.textAlign = 'start';
+      ctx.textBaseline = 'alphabetic';
+      ctx.font = '600 8px "DM Mono", monospace';
+      ctx.fillStyle = isDark ? '#fed7aa' : '#7c2d12';
+      const millions = w.costPlannedEur >= 1e6 ? ` · ${(w.costPlannedEur / 1e6).toFixed(1)} M€` : '';
+      ctx.fillText(`${w.object.slice(0, 28)}${millions}`, px + r + 3, py + 3);
+    }
+    ctx.restore();
+  }
+}

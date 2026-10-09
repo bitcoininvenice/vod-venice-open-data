@@ -13,6 +13,7 @@ import { CantiereDetailModal } from '@/components/CantiereDetailModal';
 import { SpatialAnalysisModal } from '@/components/SpatialAnalysisModal';
 import { AirportDetailModal } from '@/components/AirportDetailModal';
 import { MapObjectPanel, type MapObjectSelected } from '@/components/MapObjectPanel';
+import { isLocatedBdap, type BdapProject } from '@/lib/bdap';
 import { ActiveLayersLegend } from '@/components/ActiveLayersLegend';
 import { MoseDetailModal } from '@/components/MoseDetailModal';
 import { AlilagunaDetailModal } from '@/components/AlilagunaDetailModal';
@@ -153,7 +154,7 @@ export default function HomePage() {
 
   // Layer toggles (Default to false on clean map startup)
   const [layers, setLayers] = useState<LayerVisibility>(() => allLayers(false));
-  const { showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri, showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose, showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries, showFiber, showRecyclingCentres, showLibraries, showCanals } = layers;
+  const { showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri, showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose, showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries, showFiber, showRecyclingCentres, showLibraries, showCanals, showBdapWorks } = layers;
   const { setShowPasserelle } = useMemo(() => makeLayerSetters(setLayers), []);
   const [realtimeVehicles, setRealtimeVehicles] = useState<RealtimeVehicleDto[]>([]);
 
@@ -216,6 +217,8 @@ export default function HomePage() {
   const [libraries, setLibraries] = useState<CivicPoiItem[]>([]);
   // Briccole, segnalamenti e canali da OpenStreetMap (~450 KB): caricati alla prima attivazione
   const [lagoonNetwork, setLagoonNetwork] = useState<LagoonNetwork | null>(null);
+  // Opere in esecuzione dal Monitoraggio Opere Pubbliche (BDAP), caricate solo con il layer acceso
+  const [bdapWorks, setBdapWorks] = useState<BdapProject[] | null>(null);
   const [metarData, setMetarData] = useState<AirportMetarData | null>(null);
   const [liveTrains, setLiveTrains] = useState<TrainLiveItem[]>(OPEN_LIVE_TRAINS);
   const [wasteBoats, setWasteBoats] = useState<VeritasWasteBoatItem[]>(OPEN_VERITAS_WASTE_BOATS);
@@ -277,6 +280,16 @@ export default function HomePage() {
     const id = setInterval(load, 60 * 1000);
     return () => clearInterval(id);
   }, [showShips]);
+
+  useEffect(() => {
+    if (!showBdapWorks || bdapWorks) return;
+    fetch('/api/opere-bdap')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) setBdapWorks(json.data as BdapProject[]);
+      })
+      .catch((err) => console.warn('Opere BDAP non disponibili:', err));
+  }, [showBdapWorks, bdapWorks]);
 
   useEffect(() => {
     if ((!showMarineSignals && !showCanals) || lagoonNetwork) return;
@@ -786,6 +799,7 @@ export default function HomePage() {
     showTrees: trees.length,
     showRecyclingCentres: recyclingCentres.length,
     showLibraries: libraries.length,
+    showBdapWorks: bdapWorks?.filter(isLocatedBdap).length ?? 0,
     showCanals: lagoonNetwork?.canals.length ?? 0,
     showWifiHotspots: wifiHotspots.length,
     showEvCharging: evCharging.length,
@@ -816,7 +830,7 @@ export default function HomePage() {
     showBikeRoutes: regionalBikeRoutes.length,
     showPollenStations: pollenMonitoringStations.length,
     showTributaries: lagoonTributaryRivers.length,
-  }), [categoryCounts, realtimeVehicles, stops, alilagunaBoats, cantieri, cameras, flights, ships, moseGates, passerelle, briccole, lagoonNetwork, oceanStations, bathingWaters, trees, recyclingCentres, libraries, wifiHotspots, evCharging, fountains, parkings, airStations, pedestrianFlows, satellites, canalSpeedLimits, bridges, gondolas, docks, subsidencePoints, lagoonMorphology, marineWindStations, liveTrains, wasteBoats, nizioleti, wells, bellTowers, fortressIslands, emergencyDocks, daeList, pharmacies, heatIslands, lagoonWaterQuality, touristAccommodations, regionalBikeRoutes, pollenMonitoringStations, lagoonTributaryRivers]);
+  }), [categoryCounts, realtimeVehicles, stops, alilagunaBoats, cantieri, cameras, flights, ships, moseGates, passerelle, briccole, lagoonNetwork, oceanStations, bathingWaters, trees, recyclingCentres, libraries, bdapWorks, wifiHotspots, evCharging, fountains, parkings, airStations, pedestrianFlows, satellites, canalSpeedLimits, bridges, gondolas, docks, subsidencePoints, lagoonMorphology, marineWindStations, liveTrains, wasteBoats, nizioleti, wells, bellTowers, fortressIslands, emergencyDocks, daeList, pharmacies, heatIslands, lagoonWaterQuality, touristAccommodations, regionalBikeRoutes, pollenMonitoringStations, lagoonTributaryRivers]);
   const liveWebcamsCount = useMemo(() => cameras.filter((c) => c.hasLiveFeed).length, [cameras]);
 
   return (
@@ -938,6 +952,8 @@ export default function HomePage() {
           recyclingCentres={recyclingCentres}
           showLibraries={showLibraries}
           libraries={libraries}
+          showBdapWorks={showBdapWorks}
+          bdapWorks={bdapWorks}
           showCanals={showCanals}
           lagoonNetwork={lagoonNetwork}
           // 3. Ferrovia & Logistica

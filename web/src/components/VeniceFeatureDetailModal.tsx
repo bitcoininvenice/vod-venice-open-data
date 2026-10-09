@@ -27,7 +27,8 @@ import {
   ThermometerSun,
   Layers,
   Plane,
-  Info
+  Info,
+  Construction
 } from 'lucide-react';
 import {
   PollenMeasuredProfile,
@@ -68,6 +69,8 @@ import {
 import { Droplet, Building2, Bike, Flower2, GitBranch, Car } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { InfoClose, InfoPanel } from '@/components/ui/InfoPanel';
+import { BdapWorkDetails } from '@/components/BdapWorkDetails';
+import type { BdapProject } from '@/lib/bdap';
 import type { LayerKey } from '@/lib/urlLayers';
 
 export type VeniceFeatureSelected =
@@ -106,7 +109,8 @@ export type VeniceFeatureSelected =
   | { type: 'airStation'; data: AirQualityItem }
   | { type: 'civicPoi'; data: CivicPoiItem }
   | { type: 'lagoonMarker'; data: { lon: number; lat: number; kind: MarkerKind; osmId: number } }
-  | { type: 'canal'; data: LagoonCanal };
+  | { type: 'canal'; data: LagoonCanal }
+  | { type: 'bdapWork'; data: BdapProject };
 
 interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
@@ -232,6 +236,9 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             {feature.type === 'canal' && (
               <div className="p-2 rounded-xl bg-sky-500/20 text-sky-400"><Waves className="w-5 h-5" /></div>
             )}
+            {feature.type === 'bdapWork' && (
+              <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400"><Construction className="w-5 h-5" /></div>
+            )}
             {feature.type === 'civicPoi' && (
               <div className={`p-2 rounded-xl ${feature.data.kind === 'recycling' ? 'bg-green-500/20 text-green-400' : 'bg-violet-500/20 text-violet-400'}`}>
                 {feature.data.kind === 'recycling' ? <Trash2 className="w-5 h-5" /> : <Landmark className="w-5 h-5" />}
@@ -276,6 +283,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'civicPoi' && feature.data.name}
                 {feature.type === 'lagoonMarker' && t(`ui.feature.marker_${MARKER_KEY[feature.data.kind]}`)}
                 {feature.type === 'canal' && (feature.data.name ?? t('ui.feature.canalUnnamed'))}
+                {feature.type === 'bdapWork' && feature.data.object}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
                 {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
@@ -297,6 +305,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'parking' && `${feature.data.location} · ${feature.data.operator}`}
                 {feature.type === 'fountain' && `${feature.data.sestiere} · ${t('ui.feature.fountainSubtitle')}`}
                 {feature.type === 'fiberCell' && t('ui.feature.fiberSubtitle', { date: feature.data.dataDate.split('-').reverse().join('/') })}
+                {feature.type === 'bdapWork' && (feature.data.place ?? t('ui.bdap.publicWork'))}
               </span>
             </div>
           </div>
@@ -1229,6 +1238,17 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             </div>
           )}
 
+          {feature.type === 'bdapWork' && (
+            <>
+              <BdapWorkDetails project={feature.data} showPlace={false} />
+              {feature.data.geocodedFrom && (
+                <p className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
+                  {t('ui.bdap.approxPosition', { place: feature.data.geocodedFrom })}
+                </p>
+              )}
+            </>
+          )}
+
           <FeatureProvenance feature={feature} />
         </div>
     </InfoPanel>
@@ -1247,7 +1267,7 @@ const FEATURE_LAYER: Record<Exclude<VeniceFeatureSelected['type'], 'civicPoi'>, 
   pharmacy: 'showPharmacies', heatIsland: 'showHeatIslands', lagoonWater: 'showLagoonWater',
   accommodation: 'showAccommodations', bikeRoute: 'showBikeRoutes', pollenStation: 'showPollenStations',
   tributaryRiver: 'showTributaries', parking: 'showParkings', fountain: 'showCityAssets', fiberCell: 'showFiber',
-  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals',
+  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks',
 };
 
 function featureLayer(feature: VeniceFeatureSelected): LayerKey {
@@ -1263,7 +1283,7 @@ const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
 ]);
 
 /** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
-const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater']);
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'bdapWork']);
 
 /** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
 const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {

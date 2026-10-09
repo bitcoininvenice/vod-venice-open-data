@@ -65,7 +65,7 @@ test('su mobile il menu "Altro" offre metriche, lingua e palette', async ({ page
   const menu = page.getByRole('menu');
   await expect(menu).toBeVisible();
   await expect(menu.getByRole('menuitem', { name: /metriche/i })).toBeVisible();
-  await expect(menu.getByRole('menuitemradio', { name: /carta/i })).toBeVisible();
+  await expect(menu.getByRole('menuitemradio', { name: /giorno/i })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(menu).toBeHidden();
 });
@@ -209,6 +209,13 @@ test('legenda dei livelli attivi: si apre e spegne un livello', async ({ page })
   await page.getByRole('button', { name: /disattiva defibrillatori|disattiva dae/i }).first().click();
   await expect(page).not.toHaveURL(/dae_pubblici/);
   await expect(page).toHaveURL(/farmacie_turno/);
+});
+
+test('metriche: sezione delle opere pubbliche dal monitoraggio BDAP', async ({ page }) => {
+  await page.goto('/metrics');
+  const section = page.getByTestId('public-works-monitor');
+  await expect(section).toBeVisible();
+  await expect(section.getByText(/lavori in corso più costosi/i)).toBeVisible();
 });
 
 test('la scheda informativa non copre il pannello livelli e non blocca la mappa', async ({ page, isMobile }) => {
@@ -435,6 +442,32 @@ test.describe('API', () => {
     expect([200, 503]).toContain(res.status());
     expect(body.data.moseGates).toHaveLength(4);
     expect(body.meta.levels.kind).toBe('live');
+  });
+
+  test('opere-bdap restituisce le opere in corso del Comune con fonte e riepilogo', async ({ request }) => {
+    const res = await request.get('/api/opere-bdap');
+    expect(res.ok()).toBeTruthy();
+    const body = await res.json();
+    expect(body.meta.license).toMatch(/CC BY/);
+    expect(body.meta.source).toMatch(/Ragioneria Generale dello Stato/);
+    expect(body.data.length).toBeGreaterThan(0);
+    expect(body.data.every((p: { phase: string; cup: string }) => p.phase === 'execution' && p.cup.length === 15)).toBe(true);
+    expect(body.summary.projects).toBeGreaterThan(body.summary.openProjects);
+  });
+
+  test('cantieri: le opere collegate per CUP hanno i dati del monitoraggio BDAP', async ({ request }) => {
+    const body = await (await request.get('/api/cantieri')).json();
+    const linked = body.data.filter((c: { bdap: unknown }) => c.bdap);
+    expect(linked.length).toBe(body.meta.bdap.linked);
+    expect(linked.length).toBeGreaterThan(0);
+    for (const c of linked) expect(c.bdap.cup).toBe(c.cup);
+  });
+
+  test('MCP: dataset delle opere BDAP con riepilogo', async ({ request }) => {
+    const res = await request.get('/api/datasets/public_works_bdap?limit=3');
+    expect(res.ok()).toBeTruthy();
+    const body = await res.json();
+    expect(JSON.stringify(body)).toContain('summary');
   });
 
   test('radius non valido restituisce 400', async ({ request }) => {

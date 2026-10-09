@@ -492,9 +492,25 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     portalName: 'dati.venezia.it',
     descriptionIt: 'Elenco Annuale dei Lavori 2026 del Comune di Venezia: 133 opere con importo, stato del progetto, RUP e CUP.',
     descriptionEn: 'City of Venice Annual Works List 2026: 133 works with amount, project stage, project manager and CUP code.',
-    technicalNotesIt: 'Dataset CSV di dati.venezia.it (CC BY) importato con pipeline/import_opere_pubbliche.py. Il file non contiene coordinate: le opere che nominano un luogo sono geocodificate con OpenStreetMap Nominatim (posizione approssimata), le altre restano solo in elenco.',
-    technicalNotesEn: 'CSV dataset from dati.venezia.it (CC BY) imported with pipeline/import_opere_pubbliche.py. The file has no coordinates: works naming a place are geocoded with OpenStreetMap Nominatim (approximate position), the others are listed only.',
+    technicalNotesIt: 'Dataset CSV di dati.venezia.it (CC BY) importato con pipeline/import_opere_pubbliche.py. Il file non contiene coordinate: le opere che nominano un luogo sono geocodificate con OpenStreetMap Nominatim (posizione approssimata), le altre restano solo in elenco. Le opere trovate per CUP nel Monitoraggio Opere Pubbliche dello Stato (BDAP) mostrano anche fase reale, date, costi e fonti di finanziamento.',
+    technicalNotesEn: 'CSV dataset from dati.venezia.it (CC BY) imported with pipeline/import_opere_pubbliche.py. The file has no coordinates: works naming a place are geocoded with OpenStreetMap Nominatim (approximate position), the others are listed only. Works found by CUP in the State Public Works Monitoring (BDAP) also show actual stage, dates, costs and funding sources.',
     endpointOrFile: '/api/cantieri'
+  },
+  {
+    id: 'opere_bdap',
+    nameIt: 'Opere in corso (BDAP)',
+    nameEn: 'Works in progress (BDAP)',
+    group: 'city',
+    regime: 'static',
+    acquisition: 'local',
+    institution: 'MEF - Ragioneria Generale dello Stato (BDAP)',
+    portalUrl: 'https://bdap-opendata.rgs.mef.gov.it/opendata/spd_mop_prg_mon_reg05_01_9999',
+    portalName: 'bdap-opendata.rgs.mef.gov.it (MOP Veneto)',
+    descriptionIt: 'Le opere pubbliche del Comune di Venezia con i lavori iniziati e non ancora finiti secondo il Monitoraggio Opere Pubbliche dello Stato: CUP, settore, date effettive e previste, costo e fonti di finanziamento (Stato, UE, enti locali).',
+    descriptionEn: 'City of Venice public works whose construction has started and not yet finished according to the State Public Works Monitoring: CUP code, sector, actual and planned dates, cost and funding sources (State, EU, local bodies).',
+    technicalNotesIt: 'CSV "Progetti Opere Pubbliche MOP - Veneto" (CC BY, aggiornamento trimestrale) importato con pipeline/import_bdap_opere.py, filtrando il titolare "Comune di Venezia". Il dataset non ha coordinate: il luogo viene dalla descrizione del CUP e solo i posti precisi (ponte, museo, scuola, via, isola) sono geocodificati con OpenStreetMap Nominatim, con posizione approssimata; le opere su "municipalità diverse" o "centro storico" restano solo nel conteggio. La fase deriva dalle date effettive dichiarate dall\'ente.',
+    technicalNotesEn: 'CSV "Public Works Projects MOP - Veneto" (CC BY, quarterly update) imported with pipeline/import_bdap_opere.py, keeping the owner "Comune di Venezia". The dataset has no coordinates: the place comes from the CUP description and only precise places (bridge, museum, school, street, island) are geocoded with OpenStreetMap Nominatim, at an approximate position; works on "several districts" or "historic centre" are only counted. The stage derives from the actual dates declared by the body.',
+    endpointOrFile: '/api/opere-bdap (src/data/bdap-opere-venezia.json)'
   },
   {
     id: 'telecamere_webcam',

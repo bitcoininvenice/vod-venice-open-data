@@ -44,6 +44,7 @@ jobs:
           python import_arpav_pollen.py || echo "::warning::pollini misurati ARPAV non aggiornati"
           python import_arpav_lagoon.py || echo "::warning::sonde ARPAV della laguna non aggiornate"
           python import_cruscotto_italia.py || echo "::warning::profilo dei comuni (Cruscotto Italia) non aggiornato"
+          python import_bdap_opere.py || echo "::warning::opere pubbliche BDAP (Monitoraggio Opere Pubbliche) non aggiornate"
           python import_cciaa_turismo.py || echo "::warning::turismo e popolazione non aggiornati"
           python import_alilaguna_gtfs.py || echo "::warning::orario Alilaguna non aggiornato"
           python import_agcom_fiber.py || echo "::warning::copertura fibra AGCOM non aggiornata"
@@ -72,6 +73,7 @@ jobs:
             - orario Alilaguna (GTFS dell'operatore, `web/src/data/alilaguna-gtfs.json`)
             - copertura della rete fissa (AGCOM BroadbandMap, `web/src/data/agcom-fiber.json`)
             - profilo socio-economico dei comuni della laguna (Cruscotto Italia, AgID)
+            - opere pubbliche del Comune dal Monitoraggio Opere Pubbliche (BDAP – Ragioneria Generale dello Stato)
             - pollini misurati ARPAV a Venezia, sonde ARPAV della laguna e riepilogo balneazione, turismo e popolazione dei comuni della laguna (Camera di Commercio)
             - OpenStreetMap: telecamere, DAE, farmacie, fontanelle, colonnine, parcheggi, vere da pozzo, alberi monumentali, ecocentri, biblioteche, briccole e canali
 

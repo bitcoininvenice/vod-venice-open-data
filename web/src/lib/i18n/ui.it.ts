@@ -74,7 +74,7 @@ export const itUi = {
     linguaItalianoEnglish: "Lingua: Italiano → English",
     paletteMappa: "Palette mappa",
     notte: "Notte",
-    carta: "Carta",
+    carta: "Giorno",
     dinamica: "Dinamica",
     currentLanguage: "Italiano (IT)",
     switchTarget: "EN"
@@ -117,7 +117,8 @@ export const itUi = {
     regimeSimulatedTitle: "Posizioni stimate dagli orari ufficiali, non misurate",
     regimeStaticTitle: "Dataset ufficiale o OpenStreetMap, aggiornato periodicamente",
     regimeCuratedTitle: "Elenco curato a mano: da verificare",
-    liveWebcams: "{n} live"
+    liveWebcams: "{n} live",
+    bdapWorks: "Opere in corso (BDAP)"
   },
   map: {
     orarioUfficialeActv: "orario ufficiale ACTV",
@@ -1148,7 +1149,9 @@ export const itUi = {
     name_aisstream: "Navi AIS (aisstream.io)",
     meta_aisstream: "Collegamento breve al massimo una volta al minuto; navi sentite negli ultimi 30 minuti. La ripubblicazione dei dati va confermata con aisstream.io.",
     detailNoShips: "nessuna nave ricevuta nell’ultima lettura",
-    detailAisNotConfigured: "chiave AISSTREAM_API_KEY non configurata"
+    detailAisNotConfigured: "chiave AISSTREAM_API_KEY non configurata",
+    "name_bdap-mop": "Opere pubbliche del Comune dal monitoraggio BDAP (pipeline)",
+    "meta_bdap-mop": "CSV «Progetti Opere Pubbliche MOP – Veneto» della Ragioneria Generale dello Stato, filtrato sul Comune di Venezia una volta a settimana; la fonte si aggiorna ogni trimestre."
   },
   notFound: {
     subtitle: "Pagina non trovata",
@@ -1315,6 +1318,60 @@ export const itUi = {
   infoPanel: {
     aboutLayer: "Scheda del livello",
     moreDetails: "Altri dettagli"
+  },
+  bdap: {
+    publicWork: "Opera pubblica",
+    sectionTitle: "Monitoraggio Opere Pubbliche (BDAP)",
+    notInMonitoring: "Questo CUP non risulta (ancora) nel Monitoraggio Opere Pubbliche della BDAP.",
+    phase_planned: "Solo CUP",
+    phase_design: "In progettazione",
+    phase_execution: "Lavori in corso",
+    phase_completed: "Conclusa",
+    overdue: "La fine dei lavori era prevista per il {date}: nel monitoraggio non risulta ancora conclusa.",
+    costPlanned: "Costo previsto",
+    executionStart: "Inizio lavori",
+    executionEndPlanned: "Fine prevista",
+    executionEnd: "Fine lavori",
+    timeElapsed: "Tempo trascorso sul previsto",
+    timeElapsedNote: "Calcolato dalle date: non è lo stato di avanzamento fisico dei lavori.",
+    funding: "Finanziamenti",
+    funding_state: "Stato",
+    funding_eu: "Unione europea",
+    funding_local: "Enti territoriali",
+    funding_private: "Privati",
+    funding_other: "Altre fonti",
+    funding_toFind: "Da reperire",
+    action: "Intervento",
+    place: "Luogo indicato",
+    subsector: "Sottosettore",
+    category: "Categoria",
+    type: "Tipologia",
+    designStart: "Inizio progettazione",
+    executionStartPlanned: "Inizio lavori previsto",
+    worksCost: "Costo dei soli lavori",
+    savings: "Economie",
+    cupStatus: "Stato del CUP",
+    source: "Fonte: RGS – BDAP, Monitoraggio Opere Pubbliche (CC BY)",
+    sourceWithDate: "Fonte: RGS – BDAP, Monitoraggio Opere Pubbliche (CC BY), dati al {date}",
+    approxPosition: "Posizione approssimata, stimata da «{place}» con OpenStreetMap Nominatim.",
+    metricsTitle: "Opere pubbliche del Comune nel monitoraggio dello Stato",
+    metricsAside: "BDAP – Ragioneria Generale dello Stato",
+    unavailable: "Dati del Monitoraggio Opere Pubbliche non disponibili.",
+    kpiProjects: "Progetti del Comune",
+    kpiProjectsNote: "CUP con titolare il Comune di Venezia, di ogni anno",
+    kpiOpen: "Opere non concluse",
+    kpiOpenNote: "Da avviare, in progettazione o in esecuzione",
+    kpiOpenCost: "Costo previsto non concluse",
+    kpiOpenCostNote: "Lavori e somme a disposizione",
+    kpiExecution: "Lavori in corso",
+    kpiExecutionNote: "Di cui {n} oltre la fine prevista",
+    byPhaseTitle: "Tutti i progetti per fase",
+    fundingOpenTitle: "Finanziamenti delle opere non concluse",
+    bySectorTitle: "Opere non concluse per settore",
+    projectsCount: "{n} progetti",
+    topTitle: "Lavori in corso più costosi",
+    endPlannedShort: "fine prevista {date}",
+    metricsNote: "La fase deriva dalle date effettive dichiarate dall’ente nel monitoraggio; i finanziamenti sono quelli dichiarati, non i pagamenti. Le opere con un luogo preciso sono anche sulla mappa (livello «Opere in corso (BDAP)»)."
   }
 };
 

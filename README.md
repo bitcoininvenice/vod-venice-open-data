@@ -42,6 +42,7 @@ vod-venice-open-data/
 │   ├── sync_gtfs_rt.py             # Sincronizzazione feed real-time GTFS-RT
 │   ├── export_simulation_data.py   # GTFS ACTV -> dataset di simulazione e indice corse
 │   ├── import_opere_pubbliche.py   # Elenco Annuale dei Lavori + geocodifica approssimata
+│   ├── import_bdap_opere.py        # Monitoraggio Opere Pubbliche BDAP (MEF-RGS): opere del Comune in corso, fasi, costi, finanziamenti
 │   ├── import_wifi_hotspots.py     # Hotspot WiFi del Comune
 │   ├── import_arpav_air.py         # Qualità dell'aria ARPAV (medie annue validate)
 │   ├── import_osm_surveillance.py  # Telecamere da OpenStreetMap
@@ -128,6 +129,7 @@ python export_simulation_data.py            # opzionale: --date YYYY-MM-DD; non 
 
 # Dataset ufficiali (ognuno indipendente dagli altri)
 python import_opere_pubbliche.py            # Elenco Annuale dei Lavori (dati.venezia.it) + geocodifica OSM
+python import_bdap_opere.py                 # Monitoraggio Opere Pubbliche BDAP (dopo import_opere_pubbliche, per il collegamento via CUP)
 python import_wifi_hotspots.py              # Hotspot WiFi del Comune
 python import_arpav_air.py                  # Medie annue validate ARPAV
 python import_osm_surveillance.py           # Telecamere da OpenStreetMap
@@ -208,7 +210,6 @@ Apri il browser su: **`http://localhost:3000`**
 
 | Metodo | Endpoint | Descrizione |
 | :--- | :--- | :--- |
-| `GET` | `/api/cantieri` | Elenco di tutti i cantieri del Comune con budget, date e coordinate. |
 | `GET` | `/api/stops` | Fermate e pontili ACTV con filtro opzionale `?mode=navigazione`. |
 | `GET` | `/api/spatial/stops-near-cantieri?radius=200` | Query spaziale: fermate entro il raggio indicato da cantieri attivi. |
 | `GET` | `/api/realtime/vehicles` | Posizioni reali dei mezzi ACTV dal feed GTFS-RT (cache 20 s). |
@@ -226,7 +227,8 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/stats` | Metriche aggregate; `null` dove manca una fonte in tempo reale. |
 | `GET` | `/api/health` | Stato ed età di ogni fonte live e dei dataset della pipeline (`ok` / `stale` / `down`). |
 | `GET` | `/api/satellites` | Satelliti con orbite SGP4 da TLE CelesTrak e prossimo passaggio sopra Venezia. |
-| `GET` | `/api/cantieri` | Opere pubbliche dell'Elenco Annuale dei Lavori 2026 (posizioni approssimate). |
+| `GET` | `/api/cantieri` | Opere pubbliche dell'Elenco Annuale dei Lavori 2026 (posizioni approssimate); il campo `bdap` aggiunge, per CUP, fase reale, date, costi e finanziamenti dal Monitoraggio Opere Pubbliche. |
+| `GET` | `/api/opere-bdap` | Opere del Comune con lavori in corso dal Monitoraggio Opere Pubbliche (BDAP – Ragioneria Generale dello Stato, CC BY) e riepilogo di tutti i progetti per fase, settore e finanziamento. |
 
 Le API sono pubbliche e in sola lettura, con cache server per ogni fonte e un limite di
 600 richieste al minuto per IP (`API_RATE_LIMIT_PER_MINUTE`).
@@ -236,6 +238,7 @@ Le API sono pubbliche e in sola lettura, con cache server per ogni fonte e un li
 ## 📄 Fonti, licenze e crediti
 * **ACTV S.p.A. / AVM**: GTFS Navigazione e Automobilistico (Open Data, CC BY – citazione obbligatoria). Il feed GTFS-RT è pubblico ma la licenza d'uso va confermata con AVM.
 * **Comune di Venezia – CPSM**: livelli e previsioni di marea da `dati.venezia.it`.
+* **MEF – Ragioneria Generale dello Stato (BDAP OpenData)**: Monitoraggio Opere Pubbliche (MOP) Veneto, CC BY.
 * **NOAA Aviation Weather Center**: METAR LIPZ (pubblico dominio).
 * **OpenSky Network**: dati ADS-B, uso non commerciale/ricerca secondo i termini OpenSky.
 * **SkylineWebcams, CNR-ISMAR**: solo collegamenti alle pagine ufficiali delle dirette; nessuna immagine viene ripubblicata.

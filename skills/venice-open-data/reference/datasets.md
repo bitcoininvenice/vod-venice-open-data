@@ -15,6 +15,7 @@ Run `python scripts/vod.py datasets` (or the MCP tool `list_datasets`) for the l
 | Fountains, recycling, libraries, car parks, EV | `drinking_fountains`, `recycling_centres`, `libraries`, `parkings`, `ev_charging` | OpenStreetMap |
 | Fibre at an address | `fiber_coverage` | `near` with radius 100-200 m |
 | Canals and channel markers | `canals`, `channel_markers` | not for navigation |
-| Public works | `public_works` | positions are approximate |
+| Public works | `public_works` | positions are approximate; field `bdap` adds actual stage, dates, cost and funding when the CUP is in the State monitoring |
+| Works under construction, public spending on works | `public_works_bdap` | State Public Works Monitoring (BDAP); `meta.summary` has all City projects by stage, sector and funding |
 | Tourism and municipal statistics | `tourism`, `municipal_profile` | yearly figures by municipality |
 | Is a source up to date? | `sources_status` | |

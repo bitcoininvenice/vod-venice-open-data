@@ -6,6 +6,7 @@ import { CantiereItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge';
 import { InfoPanel } from '@/components/ui/InfoPanel';
+import { BdapWorkDetails } from '@/components/BdapWorkDetails';
 
 interface CantiereDetailModalProps {
   cantiere: CantiereItem | null;
@@ -111,6 +112,16 @@ export const CantiereDetailModal: React.FC<CantiereDetailModalProps> = ({ cantie
             </>
           )}
         </dl>
+
+        {/* Monitoraggio Opere Pubbliche dello Stato (BDAP), collegato per CUP */}
+        {cantiere.bdap ? (
+          <section className="flex flex-col gap-2 rounded-xl border border-orange-500/30 bg-orange-500/5 p-3" aria-label={t('ui.bdap.sectionTitle')}>
+            <h4 className="text-[10px] font-mono font-bold uppercase tracking-wider text-orange-300">{t('ui.bdap.sectionTitle')}</h4>
+            <BdapWorkDetails project={cantiere.bdap} />
+          </section>
+        ) : (
+          cantiere.cup && <p className="text-[11px] text-[var(--ink-3)]">{t('ui.bdap.notInMonitoring')}</p>
+        )}
 
         {/* Posizione */}
         <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl flex items-start gap-2 text-[11px] text-[var(--ink-2)]">

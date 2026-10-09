@@ -1,3 +1,6 @@
+import type { BdapProject } from './bdap';
+
+
 export type TransportModeCategory = 
   | 'vaporetto' 
   | 'motoscafo' 
@@ -77,6 +80,8 @@ export interface CantiereItem {
   lon: number | null;
   /** true se la posizione è stimata con geocodifica OpenStreetMap del luogo citato nel titolo */
   posizioneApprossimata: boolean;
+  /** Dati del Monitoraggio Opere Pubbliche (BDAP) per lo stesso CUP, se presenti (solo dall'API) */
+  bdap?: BdapProject | null;
 }
 
 /** Opera pubblica con posizione sulla mappa. */

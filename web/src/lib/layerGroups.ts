@@ -166,6 +166,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
           e('showEvCharging', 'layers.layerEvCharging', 'zap', 'amber'),
           e('showCameras', 'layers.layerCameras', 'camera', 'cyan'),
           e('showCantieri', 'layers.layerCantieri', 'construction', 'amber'),
+          e('showBdapWorks', 'ui.layerPanel.bdapWorks', 'construction', 'orange'),
           e('showSpatialBuffer', 'ui.layerPanel.bufferSpazialeCantieri', 'sliders', 'amber'),
           e('showPedestrianFlows', 'layers.layerPedestrianFlows', 'footprints', 'rose'),
         ],

@@ -182,5 +182,133 @@
  "Fusina, Venezia": [
   45.419077,
   12.257771
+ ],
+ "Via Arsenale, Venezia": null,
+ "Via Asseggiano, Venezia": [
+  45.499294,
+  12.175145
+ ],
+ "Via Miranese, Chirignago": [
+  45.484506,
+  12.189773
+ ],
+ "Via Case Nuove, Venezia": [
+  45.478789,
+  12.211266
+ ],
+ "Teatro La Fenice, Venezia": [
+  45.43371,
+  12.333857
+ ],
+ "Scuola Media Sansovino, Venezia": null,
+ "Calle Remer, Venezia": [
+  45.441795,
+  12.338359
+ ],
+ "Via Della Rinascita, Marghera": [
+  45.470862,
+  12.222828
+ ],
+ "Via Ca' Solaro, Venezia": [
+  45.516387,
+  12.266978
+ ],
+ "Mercato Fisso Di Mestre, Mestre": null,
+ "Via Fapanni, Mestre": [
+  45.494544,
+  12.244863
+ ],
+ "Via Triestina, Venezia": [
+  45.509118,
+  12.336435
+ ],
+ "Isola Nova Del Tronchetto, Venezia": [
+  45.441947,
+  12.306589
+ ],
+ "Scuola Primaria Manzoni, Venezia": null,
+ "Calle Megio, Venezia": [
+  45.441294,
+  12.329046
+ ],
+ "Centro Culturale Candiani, Mestre": [
+  45.494557,
+  12.239976
+ ],
+ "Via Fornace, Mestre": [
+  45.486318,
+  12.248142
+ ],
+ "Area Marciana, Venezia": null,
+ "Museo Correr, Venezia": [
+  45.433599,
+  12.337184
+ ],
+ "Ponte Lungo, Murano": [
+  45.425756,
+  12.329242
+ ],
+ "Museo Fortuny, Venezia": null,
+ "Ramo Orfei, Venezia": [
+  45.435218,
+  12.332307
+ ],
+ "Stadio Baracca, Mestre": [
+  45.500518,
+  12.250327
+ ],
+ "Museo Del Vetro, Murano": [
+  45.456619,
+  12.356889
+ ],
+ "Forte Marghera, Venezia": [
+  45.475176,
+  12.26163
+ ],
+ "Via San Pio X, Venezia": [
+  45.493751,
+  12.245703
+ ],
+ "Remiere S. Alvise, Venezia": null,
+ "Calle Della Celestia, Venezia": [
+  45.43803,
+  12.34974
+ ],
+ "Via San Giuliano, Mestre": [
+  45.468038,
+  12.277175
+ ],
+ "Ponte Vinanti, Venezia": [
+  45.436132,
+  12.324481
+ ],
+ "Ponte Case Nove, Venezia": [
+  45.431051,
+  12.358422
+ ],
+ "Via Terraglio, Carpenedo": [
+  45.503606,
+  12.237803
+ ],
+ "Palestra Rodari, Favaro Veneto": [
+  45.509873,
+  12.28475
+ ],
+ "Via Cà Solaro, Favaro Veneto": [
+  45.516498,
+  12.267021
+ ],
+ "Via Claudia, Favaro Veneto": [
+  45.510211,
+  12.284492
+ ],
+ "Ex Convento Dei Santi Cosma, Giudecca": null,
+ "Via Del Lavoratore, Marghera": [
+  45.465113,
+  12.218975
+ ],
+ "Fondamenta Da Mula, Murano": [
+  45.455904,
+  12.35204
  ]
 }

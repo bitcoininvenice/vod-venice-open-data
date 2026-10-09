@@ -17,6 +17,7 @@ import { GET as heritageGET } from '@/app/api/heritage/route';
 import { GET as lagoonNetworkGET } from '@/app/api/lagoon-network/route';
 import { GET as fiberGET } from '@/app/api/fiber/route';
 import { GET as cantieriGET } from '@/app/api/cantieri/route';
+import { GET as bdapGET } from '@/app/api/opere-bdap/route';
 import { GET as healthGET } from '@/app/api/health/route';
 import tourism from '@/data/turismo-comuni.json';
 import cruscotto from '@/data/cruscotto-comuni.json';
@@ -158,6 +159,10 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   public_works: async () => {
     const j = await read(cantieriGET());
     return { items: asRows(j.data), meta: j.meta as Row };
+  },
+  public_works_bdap: async () => {
+    const j = await read(bdapGET());
+    return { items: asRows(j.data), meta: { ...(j.meta as Row), summary: j.summary } };
   },
   tourism: async () => ({ items: tourism.comuni as unknown as Row[], meta: { year: tourism.tourismYear, populationDate: tourism.populationDate, source: tourism.source } }),
   municipal_profile: async () => ({

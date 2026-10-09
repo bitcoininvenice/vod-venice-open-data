@@ -22,6 +22,7 @@ import import_arpav_pollen as arpav_pollen  # noqa: E402
 import import_cciaa_turismo as cciaa  # noqa: E402
 import import_arpav_lagoon as arpav_lagoon  # noqa: E402
 import import_cruscotto_italia as cruscotto  # noqa: E402
+import import_bdap_opere as bdap  # noqa: E402
 from download_gtfs import safe_extract  # noqa: E402
 from vod_common import redact  # noqa: E402
 
@@ -280,3 +281,70 @@ def test_safe_extract_rejects_path_traversal(tmp_path):
         zf.writestr("../escape.txt", "x")
     assert safe_extract(str(archive), str(tmp_path / "out")) is False
     assert not (tmp_path / "escape.txt").exists()
+
+
+# --- BDAP: Monitoraggio Opere Pubbliche ---
+
+def _bdap_row(**over):
+    row = {
+        "Codice CUP": "F76D20000060005",
+        "Descrizione CUP Integrale": "MUSEO DEL VETRO*ISOLA DI MURANO*AMPLIAMENTO DEL MUSEO",
+        "Descrizione Stato CUP": "ATTIVO",
+        "Settore Interv Inv": "INFRASTRUTTURE SOCIALI", "Sottosettore Interv Inv": "BENI CULTURALI",
+        "Categoria Interv Inv": "MUSEI", "Tipologia Intervento": "AMPLIAMENTO",
+        "Inizio progettazione prevista": "", "Inizio progettazione effettiva": "2021-01-10",
+        "Inizio esecuzione prevista": "2025-07-01", "Inizio esecuzione effettiva": "2025-07-20",
+        "Fine esecuzione prevista": "2026-08-30", "Fine esecuzione effettiva": "",
+        "Costo Lavori Previsto": "2500000.00", "Somme a disposizione Previste": "530000.00",
+        "Finanziamenti Statali": "1000000", "Finanziamenti Europei": "0", "Finanziamenti Enti Territorial": "2030000",
+        "Finanziamenti Privati": "0", "Altre fonti di finanziamento": "0", "Finanziamenti da reperire": "0",
+        "Totale Economie": "0",
+    }
+    row.update(over)
+    return row
+
+
+def test_bdap_descrizione_e_fase():
+    assert bdap.split_description("A*B*C*D") == ("A", "B", "C D")
+    assert bdap.split_description("SOLO OGGETTO") == ("SOLO OGGETTO", "", "")
+    assert bdap.phase(_bdap_row()) == "execution"
+    assert bdap.phase(_bdap_row(**{"Fine esecuzione effettiva": "2026-01-01"})) == "completed"
+    assert bdap.phase(_bdap_row(**{"Descrizione Stato CUP": "CHIUSO"})) == "completed"
+    assert bdap.phase(_bdap_row(**{"Inizio esecuzione effettiva": ""})) == "design"
+    assert bdap.phase(_bdap_row(**{"Inizio esecuzione effettiva": "", "Inizio progettazione effettiva": ""})) == "planned"
+
+
+def test_bdap_progetto_e_riepilogo():
+    p = bdap.project(_bdap_row())
+    assert p["object"] == "Museo del vetro" and p["place"] == "Isola di murano"
+    assert p["costPlannedEur"] == 3030000.0
+    assert p["funding"]["local"] == 2030000.0
+    s = bdap.summarize([p, bdap.project(_bdap_row(**{"Fine esecuzione effettiva": "2026-01-01"}))])
+    assert s["projects"] == 2 and s["openProjects"] == 1
+    assert s["byPhase"]["execution"] == 1 and s["byPhase"]["completed"] == 1
+    assert s["openCostEur"] == 3030000.0 and s["openBySector"][0]["count"] == 1
+
+
+def test_bdap_luoghi_solo_se_precisi():
+    assert bdap.place_queries("MUSEO DEL VETRO", "ISOLA DI MURANO") == ["Museo Del Vetro, Murano", "Isola Di Murano, Venezia"]
+    assert bdap.place_queries("PONTE VINANTI", "DORSODURO, 3771, VE") == ["Ponte Vinanti, Venezia"]
+    assert bdap.place_queries("REMIERE S. ALVISE", "CANNAREGIO") == ["Remiere S. Alvise, Venezia"]
+    # luoghi generici o ambigui: nessuna posizione
+    assert bdap.place_queries("EDILIZIA SPORTIVA", "TERRAFERMA - MUNICIPALITÀ DIVERSE") == []
+    assert bdap.place_queries("SCUOLE", "VENEZIA CENTRO STORICO") == []
+    assert bdap.place_queries("BIENNALE", "VIA VENEZIA") == []
+    assert bdap.place_queries("CAMPO DA ALLENAMENTO", "SPORT") == []
+
+
+def test_bdap_omonimi_e_punti_coincidenti():
+    assert bdap.plausible("Ponte Lungo, Murano", (45.457, 12.353))
+    assert not bdap.plausible("Ponte Lungo, Murano", (45.4258, 12.3292))  # il Ponte Lungo della Giudecca
+    assert bdap.plausible("Via Fapanni, Mestre", (45.49, 12.24))
+    pts = bdap.spread([(45.0, 12.0), (45.0, 12.0), (45.1, 12.1)])
+    assert pts[0] != pts[1] and pts[2] == (45.1, 12.1)
+    assert all(abs(a - 45.0) < 0.001 for a, _ in pts[:2])
+
+
+def test_bdap_data_osservazione():
+    assert bdap.observed_at("Dati osservati al 30/09/2026. - [X]") == "2026-09-30"
+    assert bdap.observed_at("") is None

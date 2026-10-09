@@ -55,6 +55,7 @@ import {
 } from '@/lib/types';
 import { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import type { MapObjectSelected } from './MapObjectPanel';
+import type { BdapProject } from '@/lib/bdap';
 import { D, LAND } from '@/lib/simulation-data';
 import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
@@ -65,7 +66,7 @@ import type { RenderContext } from './map/renderContext';
 import { drawRoutes, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, drawMarineSignals, drawOceanStations, drawCanalLimits, drawBridges, drawGondolas, drawDocks, drawMarineWind } from './map/lagoonLayers';
-import { drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
+import { bdapRadius, drawBdapWorks, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 import { drawFloodLayer } from './map/floodLayer';
 import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
@@ -178,6 +179,9 @@ export interface MapEngineProps {
   recyclingCentres?: CivicPoiItem[];
   showLibraries?: boolean;
   libraries?: CivicPoiItem[];
+  /** Opere in esecuzione (BDAP); quelle senza posizione non vengono disegnate */
+  showBdapWorks?: boolean;
+  bdapWorks?: BdapProject[] | null;
   /** Briccole, segnalamenti e canali da OpenStreetMap */
   showCanals?: boolean;
   lagoonNetwork?: LagoonNetwork | null;
@@ -306,6 +310,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   recyclingCentres = [],
   showLibraries = false,
   libraries = [],
+  showBdapWorks = false,
+  bdapWorks = null,
   showCanals = false,
   lagoonNetwork = null,
   showTrains = false,
@@ -1260,6 +1266,19 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
     }
 
+    // 1aa. Opere in esecuzione (BDAP)
+    if (showBdapWorks && bdapWorks && onSelectFeature) {
+      for (const w of bdapWorks) {
+        if (w.lat === null || w.lon === null) continue;
+        const px = (mx(w.lon) - camera.x0) * camera.s;
+        const py = (my(w.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - px, clickY - py) <= Math.max(12, bdapRadius(w.costPlannedEur) + 3)) {
+          onSelectFeature({ type: 'bdapWork', data: w });
+          return;
+        }
+      }
+    }
+
     // 1ab0. Ecocentri e biblioteche (OpenStreetMap)
     if (onSelectFeature) {
       const civic = [...(showRecyclingCentres ? recyclingCentres : []), ...(showLibraries ? libraries : [])];
@@ -1582,6 +1601,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         recyclingCentres,
         showLibraries,
         libraries,
+        showBdapWorks,
+        bdapWorks,
         showCanals,
         lagoonNetwork,
         moseGates,
@@ -1687,6 +1708,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
         drawCityAssets(rc);
         drawCivicPois(rc);
+        drawBdapWorks(rc);
 
         drawParkings(rc);
 
@@ -1845,6 +1867,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     recyclingCentres,
     showLibraries,
     libraries,
+    showBdapWorks,
+    bdapWorks,
     showCanals,
     lagoonNetwork,
     showTrains,

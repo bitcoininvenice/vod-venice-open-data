@@ -29,10 +29,12 @@ import {
   LifeBuoy,
   Info,
   Users,
-  Landmark
+  Landmark,
+  Construction
 } from 'lucide-react';
 import tourismData from '@/data/turismo-comuni.json';
 import { MunicipalProfile } from '@/components/metrics/MunicipalProfile';
+import { PublicWorksMonitor } from '@/components/metrics/PublicWorksMonitor';
 import arpavLagoon from '@/data/arpav-lagoon.json';
 
 /** Riepilogo ARPAV della balneazione sul mare Adriatico veneto (ultimo anno pubblicato) */
@@ -417,6 +419,14 @@ export default function MetricsPage() {
           <section className="flex flex-col gap-5">
             <SectionHeader icon={Landmark} iconCls="text-cyan-400" title={t('ui.municipalProfile.title')} aside={t('ui.municipalProfile.aside')} />
             <MunicipalProfile />
+          </section>
+        )}
+
+        {/* ===================== OPERE PUBBLICHE (BDAP - Monitoraggio Opere Pubbliche) ===================== */}
+        {showKpi && (
+          <section className="flex flex-col gap-5">
+            <SectionHeader icon={Construction} iconCls="text-orange-400" title={t('ui.bdap.metricsTitle')} aside={t('ui.bdap.metricsAside')} />
+            <PublicWorksMonitor />
           </section>
         )}
 
