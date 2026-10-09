@@ -64,6 +64,8 @@ export const itTranslations: Translations = {
     sourcesHint: 'Disponibilità e freschezza dei dati',
     layersList: 'Elenco Livelli',
     layersListHint: 'Tutti i livelli con fonte e provenienza',
+    connectAi: 'Collega la tua AI',
+    connectAiHint: 'Interroga i dati di VOD da Claude, ChatGPT o Cursor',
     exportHint: 'GeoJSON, CSV e SHA-256',
     floodHint: 'Allagamento e previsioni CPSM',
     language: 'Lingua / Language',

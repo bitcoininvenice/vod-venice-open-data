@@ -65,6 +65,8 @@ export interface Translations {
     sourcesHint: string;
     layersList: string;
     layersListHint: string;
+    connectAi: string;
+    connectAiHint: string;
     exportHint: string;
     floodHint: string;
     language: string;

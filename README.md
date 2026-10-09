@@ -205,6 +205,7 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/tide` | Livelli di marea reali, previsione CPSM con data di emissione, anagrafica MOSE. |
 | `GET` | `/api/weather` | METAR LIPZ reale e stazioni vento di riferimento. |
 | `GET` | `/api/flights` | Aerei rilevati da OpenSky nell'area di Venezia (cache 15 s). |
+| `POST` | `/api/mcp` | Server MCP in sola lettura (Streamable HTTP): strumenti `list_datasets` e `query_dataset` per collegare Claude, ChatGPT, Cursor e altri assistenti. Istruzioni in `/mcp`, descrizione per AI in `/llms.txt`, dettagli in `docs/MCP.md`. |
 | `GET` | `/api/lagoon-network` | Briccole, pali, segnali, boe, fanali e canali della laguna da OpenStreetMap (ODbL). Non per la navigazione. |
 | `GET` | `/api/fiber` | Copertura della rete fissa (FTTH, FTTC, ADSL) su celle di ~100 m da AGCOM BroadbandMap, CC BY 4.0. |
 | `GET` | `/api/environment` | Medie annue ARPAV per stazione più previsione oraria Copernicus CAMS nello stesso punto (indice europeo, PM, NO₂, ozono, UV). |

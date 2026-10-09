@@ -64,6 +64,8 @@ export const enTranslations: Translations = {
     sourcesHint: 'Data availability and freshness',
     layersList: 'Layer List',
     layersListHint: 'Every layer with its source and provenance',
+    connectAi: 'Connect your AI',
+    connectAiHint: 'Query VOD data from Claude, ChatGPT or Cursor',
     exportHint: 'GeoJSON, CSV and SHA-256',
     floodHint: 'Flooding and CPSM forecasts',
     language: 'Language / Lingua',

@@ -2,14 +2,14 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Activity, ArrowLeft, BarChart3, Compass, Globe, Layers } from 'lucide-react';
+import { Activity, ArrowLeft, BarChart3, Bot, Compass, Globe, Layers } from 'lucide-react';
 import { ALL_LAYER_KEYS } from '@/lib/urlLayers';
 import { useTranslation } from '@/lib/i18n';
 
 /** Numero di layer della mappa: unica fonte per intestazioni, piè di pagina e pagina 404. */
 export const LAYER_COUNT = ALL_LAYER_KEYS.length;
 
-export type SitePage = 'layers' | 'metrics' | 'sources' | 'notFound';
+export type SitePage = 'layers' | 'metrics' | 'sources' | 'mcp' | 'notFound';
 
 const NAV_CLS =
   'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-[var(--ink-2)] hover:text-[var(--ink)] bg-[var(--rule)]/60 hover:bg-[var(--rule)] transition-all cursor-pointer border border-[var(--rule)]';
@@ -23,10 +23,11 @@ const BADGE_CLS: Record<SitePage, string> = {
   layers: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
   metrics: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
   sources: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+  mcp: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
   notFound: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
 };
 
-const BADGE_TEXT: Record<SitePage, string> = { layers: '/layers', metrics: '/metrics', sources: '/sources', notFound: '/404' };
+const BADGE_TEXT: Record<SitePage, string> = { layers: '/layers', metrics: '/metrics', sources: '/sources', mcp: '/mcp', notFound: '/404' };
 
 /** Voci di navigazione comuni alle pagine secondarie. */
 function useNavItems() {
@@ -36,6 +37,7 @@ function useNavItems() {
     { page: 'layers' as const, href: '/layers', icon: <Layers className="w-3.5 h-3.5 text-cyan-400" />, label: t('ui.metricsPage.navLayers', { n: LAYER_COUNT }), tone: 'cyan' as const },
     { page: 'metrics' as const, href: '/metrics', icon: <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />, label: t('ui.metricsPage.navMetrics'), tone: 'cyan' as const },
     { page: 'sources' as const, href: '/sources', icon: <Activity className="w-3.5 h-3.5 text-emerald-400" />, label: t('ui.metricsPage.navSources'), tone: 'emerald' as const },
+    { page: 'mcp' as const, href: '/mcp', icon: <Bot className="w-3.5 h-3.5 text-cyan-400" />, label: t('ui.mcpPage.navLabel'), tone: 'cyan' as const },
   ];
 }
 

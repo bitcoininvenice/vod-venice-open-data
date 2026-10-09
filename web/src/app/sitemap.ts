@@ -22,6 +22,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: 'https://venice-open-data.vercel.app/sources',
       changeFrequency: 'daily',
       priority: 0.5
+    },
+    {
+      url: 'https://venice-open-data.vercel.app/mcp',
+      changeFrequency: 'monthly',
+      priority: 0.6
     }
   ];
 }

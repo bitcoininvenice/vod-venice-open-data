@@ -1,0 +1,55 @@
+/**
+ * Catalogo dei dataset che VOD espone alle AI tramite MCP (sola lettura).
+ * Solo metadati: i dati arrivano dagli stessi endpoint del sito (vedi loaders.ts), senza copie.
+ */
+
+/** Natura del dato, da dichiarare sempre all'utente */
+export type McpDatasetKind = 'live' | 'forecast' | 'simulated' | 'dataset' | 'osm' | 'curated';
+
+export interface McpDatasetMeta {
+  id: string;
+  title: string;
+  titleEn: string;
+  description: string;
+  kind: McpDatasetKind;
+  source: string;
+  license: string;
+  /** true se le voci hanno lat/lon e accettano il filtro `near` */
+  geo: boolean;
+  caveat: string;
+}
+
+const OSM = 'ODbL 1.0 – © OpenStreetMap contributors';
+const CURATED = 'Elenco curato del progetto: posizioni e valori indicativi, da verificare presso la fonte citata.';
+
+export const MCP_DATASETS: McpDatasetMeta[] = [
+  { id: 'tide', title: 'Marea a Venezia: livello misurato, previsione e MOSE', titleEn: 'Venice tide: measured level, forecast and MOSE', description: 'Livello di marea delle stazioni CPSM, previsione degli estremali con data di emissione e anagrafica delle paratoie MOSE.', kind: 'live', source: 'Comune di Venezia – Centro Maree (dati.venezia.it)', license: 'CC BY', geo: false, caveat: 'Lo stato operativo delle paratoie MOSE non è pubblicato come open data.' },
+  { id: 'weather_stations', title: 'Stazioni meteo-marine (vento, onde, aria) e METAR', titleEn: 'Weather and marine stations (wind, waves, air) and METAR', description: 'Misure ogni 5 minuti della rete CPSM e bollettino METAR dell’aeroporto di Tessera.', kind: 'live', source: 'CPSM (dati.venezia.it), NOAA Aviation Weather Center', license: 'CC BY / Public domain', geo: true, caveat: 'L’indicatore di spinta sulla marea è una semplificazione.' },
+  { id: 'wind_forecast', title: 'Vento previsto su griglia (9×9 punti)', titleEn: 'Forecast wind on a grid (9×9 points)', description: 'Velocità e direzione del vento a 10 m previste dai modelli ICON/ECMWF.', kind: 'forecast', source: 'Open-Meteo', license: 'CC BY 4.0', geo: true, caveat: 'Previsione di modello, non misura.' },
+  { id: 'air_quality', title: 'Qualità dell’aria: medie annue ARPAV e previsione oraria CAMS', titleEn: 'Air quality: ARPAV annual means and CAMS hourly forecast', description: 'Stazioni ARPAV del Comune con PM10, PM2.5, NO2 annuali e previsione oraria CAMS (indice europeo, UV) nello stesso punto.', kind: 'dataset', source: 'ARPAV; Copernicus CAMS via Open-Meteo', license: 'CC BY 4.0', geo: true, caveat: 'Le medie ARPAV sono annuali; la parte oraria è una previsione di modello.' },
+  { id: 'pollen', title: 'Pollini: previsione CAMS e calendario misurato ARPAV', titleEn: 'Pollen: CAMS forecast and ARPAV measured calendar', description: 'Previsione oraria in 4 punti e, per Venezia, medie mensili misurate dalla stazione aerobiologica ARPAV.', kind: 'forecast', source: 'Copernicus CAMS via Open-Meteo; ARPAV', license: 'CC BY 4.0', geo: true, caveat: 'Le soglie dei livelli sono indicative.' },
+  { id: 'lagoon_probes', title: 'Sonde ARPAV della laguna', titleEn: 'ARPAV lagoon probes', description: 'Ultimo campionamento per stazione: temperatura, salinità, ossigeno, pH, clorofilla.', kind: 'dataset', source: 'ARPAV – monitoraggio ecologico della laguna', license: 'CC BY 4.0', geo: true, caveat: 'Misure periodiche, non in tempo reale.' },
+  { id: 'marine_platform', title: 'Piattaforma oceanografica Acqua Alta e stazioni marine', titleEn: 'Acqua Alta oceanographic platform and marine stations', description: 'Onde e temperatura dell’acqua misurate, più previsione del modello marino.', kind: 'live', source: 'CPSM; Open-Meteo Marine', license: 'CC BY / CC BY 4.0', geo: true, caveat: 'Solo la piattaforma Acqua Alta ha misure aperte; la previsione è un modello.' },
+  { id: 'public_transport_stops', title: 'Fermate ACTV (vaporetti, bus, tram)', titleEn: 'ACTV stops (waterbus, bus, tram)', description: 'Fermate dal GTFS ufficiale ACTV con prossime partenze da orario.', kind: 'dataset', source: 'ACTV / AVM (GTFS)', license: 'CC BY', geo: true, caveat: 'Le partenze vengono dall’orario, non da tabelloni in tempo reale.' },
+  { id: 'realtime_vehicles', title: 'Posizioni reali dei mezzi ACTV (GTFS-RT)', titleEn: 'Real ACTV vehicle positions (GTFS-RT)', description: 'Posizioni GPS di vaporetti, bus e tram quando il feed è disponibile.', kind: 'live', source: 'ACTV / AVM (GTFS-Realtime)', license: 'Da confermare con AVM', geo: true, caveat: 'Endpoint pubblico non documentato come open data.' },
+  { id: 'alilaguna_boats', title: 'Barche Alilaguna simulate dall’orario', titleEn: 'Alilaguna boats simulated from the timetable', description: 'Posizioni interpolate dal GTFS ufficiale Alilaguna, con fermate e linee.', kind: 'simulated', source: 'Alilaguna S.p.A. (GTFS)', license: 'Non dichiarata: citare la fonte', geo: true, caveat: 'Simulazione da orario, non tracciamento GPS.' },
+  { id: 'flights', title: 'Voli nell’area di Venezia (ADS-B)', titleEn: 'Flights around Venice (ADS-B)', description: 'Aerei rilevati da OpenSky nell’area.', kind: 'live', source: 'OpenSky Network', license: 'OpenSky Terms of Use (uso non commerciale)', geo: true, caveat: 'La quota gratuita può esaurirsi: in quel caso l’elenco è vuoto.' },
+  { id: 'pharmacies', title: 'Farmacie', titleEn: 'Pharmacies', description: 'Farmacie mappate su OpenStreetMap con orari se indicati; i turni sono sul sito ULSS 3.', kind: 'osm', source: 'OpenStreetMap', license: OSM, geo: true, caveat: 'I turni di guardia non sono open data.' },
+  { id: 'defibrillators', title: 'Defibrillatori (DAE)', titleEn: 'Defibrillators (AED)', description: 'DAE mappati su OpenStreetMap più voci curate da verificare.', kind: 'osm', source: 'OpenStreetMap + elenco curato', license: OSM, geo: true, caveat: 'Non esiste un dataset ufficiale aperto dei DAE; in emergenza chiamare il 112.' },
+  { id: 'drinking_fountains', title: 'Fontanelle pubbliche', titleEn: 'Public drinking fountains', description: 'Fontanelle mappate su OpenStreetMap con toponimo di prossimità.', kind: 'osm', source: 'OpenStreetMap', license: OSM, geo: true, caveat: 'Funzionamento dei singoli punti non verificato.' },
+  { id: 'recycling_centres', title: 'Ecocentri (ingombranti)', titleEn: 'Recycling centres (bulky waste)', description: 'Ecocentri mappati su OpenStreetMap.', kind: 'osm', source: 'OpenStreetMap', license: OSM, geo: true, caveat: 'Orari da verificare sulla pagina del Comune.' },
+  { id: 'libraries', title: 'Biblioteche', titleEn: 'Libraries', description: 'Biblioteche civiche, universitarie e di fondazioni.', kind: 'osm', source: 'OpenStreetMap', license: OSM, geo: true, caveat: 'Non tutte sono aperte al pubblico.' },
+  { id: 'parkings', title: 'Parcheggi con almeno 100 posti', titleEn: 'Car parks with 100+ spaces', description: 'Parcheggi OSM con capienza dichiarata e autorimesse dell’elenco curato.', kind: 'osm', source: 'OpenStreetMap + elenco curato', license: OSM, geo: true, caveat: 'Nessun dato di occupazione in tempo reale.' },
+  { id: 'ev_charging', title: 'Colonnine di ricarica', titleEn: 'EV charging stations', description: 'Stazioni di ricarica mappate su OpenStreetMap.', kind: 'osm', source: 'OpenStreetMap', license: OSM, geo: true, caveat: 'La disponibilità in tempo reale non è pubblicata.' },
+  { id: 'wifi_hotspots', title: 'Hotspot Wi-Fi del Comune', titleEn: 'City Wi-Fi hotspots', description: 'Punti di accesso della rete pubblica con stato attivo/non attivo.', kind: 'dataset', source: 'Comune di Venezia (dati.venezia.it)', license: 'CC BY 4.0', geo: true, caveat: '' },
+  { id: 'monumental_trees', title: 'Alberi monumentali', titleEn: 'Monumental trees', description: 'Alberi monumentali da OpenStreetMap, molti con codice MASAF.', kind: 'osm', source: 'OpenStreetMap', license: OSM, geo: true, caveat: '' },
+  { id: 'wellheads', title: 'Vere da pozzo', titleEn: 'Historic wellheads', description: 'Vere da pozzo storiche (elenco curato) e pozzi mappati su OSM.', kind: 'curated', source: 'Elenco curato + OpenStreetMap', license: OSM, geo: true, caveat: CURATED },
+  { id: 'channel_markers', title: 'Briccole e segnalamenti della laguna', titleEn: 'Lagoon channel markers (briccole)', description: 'Briccole, pali, segnali, boe e fanali mappati su OpenStreetMap.', kind: 'osm', source: 'OpenStreetMap', license: OSM, geo: true, caveat: 'Non usare per la navigazione.' },
+  { id: 'canals', title: 'Canali e rii', titleEn: 'Canals', description: 'Tratti di canali e rii con nome e lunghezza.', kind: 'osm', source: 'OpenStreetMap', license: OSM, geo: true, caveat: 'Non è una carta nautica.' },
+  { id: 'fiber_coverage', title: 'Copertura della rete fissa (FTTH, FTTC, ADSL)', titleEn: 'Fixed network coverage (FTTH, FTTC, ADSL)', description: 'Tecnologia migliore su riquadri di circa 100 m e operatori FTTH.', kind: 'dataset', source: 'AGCOM BroadbandMap', license: 'CC BY 4.0 (citare “BroadbandMap di Agcom”)', geo: true, caveat: 'Copertura della rete, non servizi attivi.' },
+  { id: 'public_works', title: 'Opere pubbliche del Comune', titleEn: 'City public works', description: 'Elenco annuale dei lavori con importo, stato e posizione approssimata.', kind: 'dataset', source: 'Comune di Venezia (dati.venezia.it)', license: 'CC BY', geo: true, caveat: 'Posizioni geocodificate in modo approssimato.' },
+  { id: 'tourism', title: 'Turismo e popolazione dei comuni della laguna', titleEn: 'Tourism and population of lagoon municipalities', description: 'Arrivi, presenze e residenti annuali di Venezia, Chioggia e Cavallino-Treporti.', kind: 'dataset', source: 'Camera di Commercio Venezia Rovigo (dati Regione/ISTAT)', license: 'CC BY 4.0', geo: false, caveat: 'Non esistono dati aperti per sestiere.' },
+  { id: 'sources_status', title: 'Stato delle fonti', titleEn: 'Source status', description: 'Freschezza e disponibilità di ogni fonte usata da VOD.', kind: 'live', source: 'VOD', license: '—', geo: false, caveat: '' },
+];
+
+export const MCP_DATASET_IDS = MCP_DATASETS.map((d) => d.id) as [string, ...string[]];

@@ -163,7 +163,54 @@ test('layers, metriche e fonti mostrano lo stesso numero di layer', async ({ pag
   expect(new Set(labels).size).toBe(1);
 });
 
+test('la pagina Collega la tua AI mostra l\'indirizzo del server MCP', async ({ page }) => {
+  await page.goto('/mcp');
+  await expect(page.getByRole('heading', { level: 1, name: /collega la tua ai/i })).toBeVisible();
+  await expect(page.getByText(/\/api\/mcp$/).first()).toBeVisible();
+});
+
+test('llms.txt descrive il sito e il server MCP', async ({ request }) => {
+  const res = await request.get('/llms.txt');
+  expect(res.ok()).toBe(true);
+  const text = await res.text();
+  expect(text).toContain('/api/mcp');
+  expect(text).toContain('fiber_coverage');
+});
+
 test.describe('API', () => {
+  test('il server MCP si inizializza, elenca gli strumenti e risponde a una query', async ({ request }) => {
+    const headers = { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream', 'MCP-Protocol-Version': '2025-06-18' };
+    const rpc = async (id: number, method: string, params: Record<string, unknown> = {}) => {
+      const res = await request.post('/api/mcp', { headers, data: { jsonrpc: '2.0', id, method, params } });
+      expect(res.ok()).toBe(true);
+      const text = await res.text();
+      // risposta JSON oppure singolo evento SSE
+      const json = text.trim().startsWith('{') ? JSON.parse(text) : JSON.parse(text.split('\n').find((l) => l.startsWith('data:'))!.slice(5));
+      expect(json.error).toBeUndefined();
+      return json.result;
+    };
+    const init = await rpc(1, 'initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'e2e', version: '1' } });
+    expect(init.serverInfo.name).toBe('vod-venice-open-data');
+    const tools = await rpc(2, 'tools/list');
+    expect(tools.tools.map((t: { name: string }) => t.name).sort()).toEqual(['list_datasets', 'query_dataset']);
+    const list = await rpc(3, 'tools/call', { name: 'list_datasets', arguments: {} });
+    expect(JSON.parse(list.content[0].text).datasets.length).toBeGreaterThan(20);
+    const q = await rpc(4, 'tools/call', { name: 'query_dataset', arguments: { dataset: 'canals', text: 'Canal Grande', limit: 3 } });
+    const body = JSON.parse(q.content[0].text);
+    expect(body.dataset.license).toMatch(/ODbL/);
+    expect(body.returned).toBeGreaterThan(0);
+    const near = await rpc(5, 'tools/call', { name: 'query_dataset', arguments: { dataset: 'fiber_coverage', near: { lat: 45.438, lon: 12.3358, radiusMeters: 200 }, limit: 5 } });
+    const nearBody = JSON.parse(near.content[0].text);
+    expect(nearBody.items[0].technology).toBe('FTTH');
+    expect(nearBody.items[0].distanceMeters).toBeLessThanOrEqual(200);
+  });
+
+  test('il server MCP accetta le richieste preflight dei connettori web', async ({ request }) => {
+    const res = await request.fetch('/api/mcp', { method: 'OPTIONS', headers: { Origin: 'https://claude.ai' } });
+    expect(res.status()).toBe(204);
+    expect(res.headers()['access-control-allow-origin']).toBe('*');
+  });
+
   test('le sonde della laguna sono misure ARPAV con data di campionamento', async ({ request }) => {
     const body = await (await request.get('/api/regional-data')).json();
     expect(body.data.waterQuality.length).toBeGreaterThan(50);

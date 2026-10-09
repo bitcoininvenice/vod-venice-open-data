@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { CameraViewPreset, PaletteTheme } from '@/lib/types';
-import { Compass, Moon, Sun, Sparkles, Layers, BarChart3, HelpCircle, Globe, Waves, MoreHorizontal, Construction, Search, Download, TrendingUp, TrendingDown, Activity, Menu } from 'lucide-react';
+import { Compass, Moon, Sun, Sparkles, Layers, BarChart3, HelpCircle, Globe, Waves, MoreHorizontal, Construction, Search, Download, TrendingUp, TrendingDown, Activity, Menu, Bot } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { formatSignedCm, formatLocalStamp } from '@/lib/time';
 
@@ -243,6 +243,15 @@ export const Header: React.FC<HeaderProps> = ({
                   <Layers className="w-4 h-4 text-cyan-400" />
                   <span>{t('header.layersList')}</span>
                 </Link>
+                <Link
+                  href="/mcp"
+                  role="menuitem"
+                  onClick={() => setIsMoreOpen(false)}
+                  className="flex items-center gap-2.5 w-full px-2.5 py-2.5 rounded-lg text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none cursor-pointer"
+                >
+                  <Bot className="w-4 h-4 text-cyan-400" />
+                  <span>{t('header.connectAi')}</span>
+                </Link>
                 {onOpenTutorial && (
                   <MobileMenuItem
                     icon={<HelpCircle className="w-4 h-4 text-amber-400" />}
@@ -462,6 +471,20 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="flex flex-col">
                   <span className="font-semibold">{t('header.layersList')}</span>
                   <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('header.layersListHint')}</span>
+                </div>
+              </Link>
+
+              {/* 3c. Collega la tua AI (MCP) */}
+              <Link
+                href="/mcp"
+                role="menuitem"
+                onClick={() => setIsDesktopMenuOpen(false)}
+                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none transition-all cursor-pointer"
+              >
+                <Bot className="w-4 h-4 text-cyan-400 shrink-0" />
+                <div className="flex flex-col">
+                  <span className="font-semibold">{t('header.connectAi')}</span>
+                  <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('header.connectAiHint')}</span>
                 </div>
               </Link>
 
