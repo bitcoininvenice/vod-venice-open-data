@@ -154,6 +154,15 @@ test('il catalogo dei layer dichiara la natura dei dati', async ({ page }) => {
   await expect(page.getByText(/opere pubbliche 2026/i).first()).toBeVisible();
 });
 
+test('layers, metriche e fonti mostrano lo stesso numero di layer', async ({ page }) => {
+  const labels: string[] = [];
+  for (const path of ['/layers', '/metrics', '/sources']) {
+    await page.goto(path);
+    labels.push((await page.locator('header').getByRole('link', { name: /\d+ layer/i }).first().innerText()).trim());
+  }
+  expect(new Set(labels).size).toBe(1);
+});
+
 test.describe('API', () => {
   test('le sonde della laguna sono misure ARPAV con data di campionamento', async ({ request }) => {
     const body = await (await request.get('/api/regional-data')).json();

@@ -1,13 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
-import { ALL_LAYER_KEYS } from '@/lib/urlLayers';
 import { downloadBlob } from '@/lib/dataExport';
 import {
   Compass,
-  ArrowLeft,
-  BarChart3,
   Waves,
   ShieldAlert,
   Droplets,
@@ -31,7 +27,6 @@ import {
   Navigation,
   Trees,
   LifeBuoy,
-  Activity,
   Info,
   Users
 } from 'lucide-react';
@@ -46,6 +41,7 @@ const VENICE_TOURISM = tourismData.comuni.find((c) => c.code === '027042');
 import { PlatformMetrics } from '@/lib/types';
 import type { TideForecast } from '@/lib/contracts/tide';
 import { formatSignedCm } from '@/lib/time';
+import { SiteFooter, SiteHeader } from '@/components/site/SiteChrome';
 import { useTranslation } from '@/lib/i18n';
 import {
   calculateEmergencyAccessibility,
@@ -292,8 +288,6 @@ export default function MetricsPage() {
     matches('marea tide mose passerelle allagamento flooding canali canals calore heat metar', m('section2Title'));
   const showPlatform = viewSection === 'all' || viewSection === 'platform';
 
-  const navLinkCls =
-    'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-[var(--ink-2)] hover:text-[var(--ink)] bg-[var(--rule)]/60 hover:bg-[var(--rule)] transition-all cursor-pointer border border-[var(--rule)]';
   const sectionBtnCls = (active: boolean, activeCls: string) =>
     `px-3 py-1.5 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all whitespace-nowrap cursor-pointer ${
       active ? `${activeCls} text-white shadow-md` : 'text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--rule)]/60'
@@ -301,44 +295,11 @@ export default function MetricsPage() {
 
   return (
     <div className="min-h-screen bg-[var(--ground)] text-[var(--ink)] flex flex-col justify-between selection:bg-cyan-500/30">
-      <header className="border-b border-[var(--rule)] bg-[var(--ground)]/90 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-6 py-3">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2.5 group cursor-pointer">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
-                <Compass className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <span className="font-bold text-base tracking-tight block text-[var(--ink)]">VOD – Venice Open Data</span>
-                <span className="text-[10px] font-mono text-[var(--ink-3)] block -mt-0.5">{m('brandSubtitle')}</span>
-              </div>
-            </Link>
-            <span className="hidden sm:inline-block text-[11px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-semibold">
-              /metrics
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <Link href="/" className={navLinkCls}>
-              <ArrowLeft className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{m('navMap')}</span>
-            </Link>
-            <Link href="/layers" className={navLinkCls}>
-              <Layers className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{m('navLayers', { n: ALL_LAYER_KEYS.length })}</span>
-            </Link>
-            <Link
-              href="/metrics"
-              aria-current="page"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold transition-all cursor-pointer shadow-sm"
-            >
-              <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{m('navMetrics')}</span>
-            </Link>
-            <Link href="/sources" className={navLinkCls}>
-              <Activity className="w-3.5 h-3.5 text-emerald-400" />
-              <span>{m('navSources')}</span>
-            </Link>
+      <SiteHeader
+        page="metrics"
+        subtitle={m('brandSubtitle')}
+        actions={
+          <>
             <button
               type="button"
               onClick={refreshData}
@@ -358,9 +319,9 @@ export default function MetricsPage() {
               <Download className="w-3.5 h-3.5" />
               <span>{m('export')}</span>
             </button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6">
         {/* Titolo */}
@@ -931,17 +892,7 @@ export default function MetricsPage() {
         </section>
       </main>
 
-      <footer className="border-t border-[var(--rule)] bg-[var(--ground)] py-6 px-4 text-center text-xs text-[var(--ink-3)] font-mono">
-        <div className="max-w-7xl w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <p>{m('footer')}</p>
-          <div className="flex items-center gap-4 text-[11px] flex-wrap justify-center">
-            <Link href="/" className="hover:text-cyan-400 transition-colors">{m('navMap')}</Link>
-            <Link href="/layers" className="hover:text-cyan-400 transition-colors">{m('navLayers', { n: ALL_LAYER_KEYS.length })}</Link>
-            <Link href="/metrics" className="hover:text-cyan-400 transition-colors">{m('navMetrics')}</Link>
-            <Link href="/sources" className="hover:text-cyan-400 transition-colors">{m('navSources')}</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

@@ -1,16 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
-import { ALL_LAYER_KEYS } from '@/lib/urlLayers';
 import { downloadBlob } from '@/lib/dataExport';
+import { SiteFooter, SiteHeader } from '@/components/site/SiteChrome';
 import { useTranslation } from '@/lib/i18n';
 import {
-  Compass,
-  ArrowLeft,
   Activity,
-  Layers,
-  BarChart3,
   CheckCircle2,
   AlertTriangle,
   XCircle,
@@ -178,49 +173,14 @@ export default function SourcesPage() {
     });
   }, [data, selectedFilter, searchQuery]);
 
-  const navLinkCls =
-    'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-[var(--ink-2)] hover:text-[var(--ink)] bg-[var(--rule)]/60 hover:bg-[var(--rule)] transition-all cursor-pointer border border-[var(--rule)]';
 
   return (
     <div className="min-h-screen bg-[var(--ground)] text-[var(--ink)] flex flex-col justify-between selection:bg-cyan-500/30">
-      <header className="border-b border-[var(--rule)] bg-[var(--ground)]/90 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-6 py-3">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2.5 group cursor-pointer">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
-                <Compass className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <span className="font-bold text-base tracking-tight block text-[var(--ink)]">VOD – Venice Open Data</span>
-                <span className="text-[10px] font-mono text-[var(--ink-3)] block -mt-0.5">{s_('brandSubtitle')}</span>
-              </div>
-            </Link>
-            <span className="hidden sm:inline-block text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold">
-              /sources
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <Link href="/" className={navLinkCls}>
-              <ArrowLeft className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{t('ui.metricsPage.navMap')}</span>
-            </Link>
-            <Link href="/layers" className={navLinkCls}>
-              <Layers className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{t('ui.metricsPage.navLayers', { n: ALL_LAYER_KEYS.length })}</span>
-            </Link>
-            <Link href="/metrics" className={navLinkCls}>
-              <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{t('ui.metricsPage.navMetrics')}</span>
-            </Link>
-            <Link
-              href="/sources"
-              aria-current="page"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold transition-all cursor-pointer shadow-sm"
-            >
-              <Activity className="w-3.5 h-3.5 text-emerald-400" />
-              <span>{t('ui.metricsPage.navSources')}</span>
-            </Link>
+      <SiteHeader
+        page="sources"
+        subtitle={s_('brandSubtitle')}
+        actions={
+          <>
             <button
               type="button"
               onClick={fetchHealth}
@@ -241,9 +201,9 @@ export default function SourcesPage() {
               <Download className="w-3.5 h-3.5" />
               <span>{t('ui.metricsPage.export')}</span>
             </button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[var(--rule)] pb-6">
@@ -477,17 +437,7 @@ export default function SourcesPage() {
         </section>
       </main>
 
-      <footer className="border-t border-[var(--rule)] bg-[var(--ground)] py-6 px-4 text-center text-xs text-[var(--ink-3)] font-mono">
-        <div className="max-w-7xl w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <p>{t('ui.metricsPage.footer')}</p>
-          <div className="flex items-center gap-4 text-[11px] flex-wrap justify-center">
-            <Link href="/" className="hover:text-cyan-400 transition-colors">{t('ui.metricsPage.navMap')}</Link>
-            <Link href="/layers" className="hover:text-cyan-400 transition-colors">{t('ui.metricsPage.navLayers', { n: ALL_LAYER_KEYS.length })}</Link>
-            <Link href="/metrics" className="hover:text-cyan-400 transition-colors">{t('ui.metricsPage.navMetrics')}</Link>
-            <Link href="/sources" className="hover:text-cyan-400 transition-colors">{t('ui.metricsPage.navSources')}</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
