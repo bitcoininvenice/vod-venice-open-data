@@ -28,6 +28,7 @@ import { useTranslation } from '@/lib/i18n';
 import { ALL_LAYER_KEYS } from '@/lib/urlLayers';
 import { DEFAULT_PRESET, SCENARIO_PRESETS, type MapPreset } from '@/lib/layerState';
 import { RichText } from './ui/RichText';
+import { RegimeBadge } from './layerVisuals';
 import { useDialogA11y } from '@/components/ui/useDialogA11y';
 
 
@@ -101,7 +102,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
         </div>
       )
     },
-    // Step 1: How to use filters & layers
+    // Passo 2: pannello dei livelli, scheda informativa e legenda
     {
       badge: t('tutorial.step2Badge'),
       title: t('tutorial.step2Title'),
@@ -133,6 +134,25 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
             </div>
           </div>
 
+          {/* Come si usa il pannello, la scheda informativa e la legenda */}
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[var(--ink-3)]">{t('ui.onboarding.howToTitle')}</span>
+            <ul className="flex flex-col gap-1.5 text-[11px]">
+              {(['howSearch', 'howGroups', 'howNature', 'howCard', 'howLegend'] as const).map((k) => (
+                <li key={k} className="flex flex-col gap-1 pl-2.5 border-l-2 border-cyan-500/40">
+                  <RichText text={t(`ui.onboarding.${k}`)} strongClassName="text-[var(--ink)]" />
+                  {k === 'howNature' && (
+                    <span className="flex flex-wrap gap-1">
+                      {(['realtime', 'simulated', 'static', 'curated'] as const).map((r) => (
+                        <RegimeBadge key={r} regime={r} />
+                      ))}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {/* Sezione Documentazione Trasparenza Dati /layers */}
           <div className="mt-1 p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex flex-col gap-2">
             <div className="flex items-center justify-between">
@@ -152,13 +172,13 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
               </a>
             </div>
             <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">
-              {t('ui.onboarding.vuoiConoscereLOriginePrecisione')}
+              {t('ui.onboarding.vuoiConoscereLOriginePrecisione', { n: ALL_LAYER_KEYS.length })}
             </p>
           </div>
         </div>
       )
     },
-    // Step 2: Interactive preset selection
+    // Passo 3: scelta dello scenario di partenza
     {
       badge: t('tutorial.step3Badge'),
       title: t('tutorial.step3Title'),

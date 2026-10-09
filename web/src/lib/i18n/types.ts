@@ -97,7 +97,6 @@ export interface Translations {
     openPanelTitle: string;
     hidePanel: string;
     searchPlaceholder: string;
-    quickPresets: string;
     catMobility: string;
     catLagoon: string;
     catCity: string;
@@ -175,9 +174,6 @@ export interface Translations {
     step3Badge: string;
     step3Title: string;
     step3Subtitle: string;
-    featureLiveTime: string;
-    featureSpatial: string;
-    featurePalette: string;
     skip: string;
     back: string;
     next: string;

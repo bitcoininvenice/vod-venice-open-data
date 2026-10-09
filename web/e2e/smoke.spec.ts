@@ -26,6 +26,22 @@ test('il tutorial compare alla prima visita e si chiude con Escape', async ({ pa
   expect(await page.evaluate(() => localStorage.getItem('vod_onboarding_completed'))).toBe('true');
 });
 
+test('la guida spiega pannello, scheda e scenari e parte da "Muoversi"', async ({ page }) => {
+  await page.addInitScript(() => localStorage.removeItem('vod_onboarding_completed'));
+  await page.goto('/');
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: /avanti/i }).click();
+  await expect(dialog.getByRole('heading', { name: /trova e attiva i livelli/i })).toBeVisible();
+  await expect(dialog.getByText(/come si usa/i)).toBeVisible();
+  await expect(dialog.getByText(/clicca un punto/i)).toBeVisible();
+  await dialog.getByRole('button', { name: /avanti/i }).click();
+  await expect(dialog.getByRole('heading', { name: /scegli da dove partire/i })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: /muoversi/i })).toHaveAttribute('aria-pressed', 'true');
+  // alla prima visita la mappa parte già dallo scenario predefinito
+  await expect(page).toHaveURL(/vaporetti_live/);
+});
+
 test('le azioni dell\'header restano dentro lo schermo', async ({ page }) => {
   await page.goto('/');
   const viewport = page.viewportSize()!;
