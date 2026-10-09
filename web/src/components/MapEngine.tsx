@@ -1676,6 +1676,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     // con layer animati a ogni frame.
     const hasAnimatedLayers =
       showVehicles || showFlights || showAlilaguna || showSatellites ||
+      (showShips && ships.length > 0) ||
       showCameras || showMarineSignals || showOceanStations || showLagoonWater ||
       (showMarineWind && windField !== null);
     let lastDraw = -Infinity;

@@ -151,6 +151,15 @@ export const SHIP_COLORS: Record<ShipCategory, string> = {
   OTHER: '#94a3b8',
 };
 
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+
+/** Converte #rrggbb in rgba con l'opacità indicata */
+function withAlpha(hex: string, alpha: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+
 export function drawShips(rc: RenderContext): void {
   const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, selectedShipOnMap, paletteTheme, showShips, ships } = rc;
   // Navi AIS: posizione e rotta dell'ultimo segnale ricevuto, senza movimenti simulati
@@ -166,6 +175,15 @@ export function drawShips(rc: RenderContext): void {
     const color = SHIP_COLORS[sh.category];
     // Grandi navi un po' più grandi, entro limiti leggibili
     const scale = sh.lengthMeters ? Math.min(1.8, Math.max(0.8, sh.lengthMeters / 120)) : 1;
+
+    // Alone pulsante nel colore della categoria, come per le sonde ARPAV: le navi si vedono a colpo d'occhio.
+    // Fase diversa per ogni nave (dall'MMSI) così non lampeggiano tutte insieme; fermo con "riduci movimento".
+    const phase = (Number(sh.mmsi.slice(-4)) || 0) / 1000;
+    const pulse = prefersReducedMotion() ? 0.5 : (Math.sin(Date.now() / 600 + phase) + 1) / 2;
+    ctx.beginPath();
+    ctx.arc(shx, shy, (11 + pulse * 7) * scale, 0, Math.PI * 2);
+    ctx.fillStyle = withAlpha(color, isDark ? 0.28 - pulse * 0.12 : 0.24 - pulse * 0.1);
+    ctx.fill();
 
     ctx.save();
     ctx.translate(shx, shy);
