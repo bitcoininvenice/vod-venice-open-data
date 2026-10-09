@@ -144,6 +144,17 @@ test('il catalogo dei layer dichiara la natura dei dati', async ({ page }) => {
 });
 
 test.describe('API', () => {
+  test('wind-field restituisce una griglia completa o un errore esplicito', async ({ request }) => {
+    const res = await request.get('/api/wind-field');
+    expect(res.ok()).toBe(true);
+    const body = await res.json();
+    expect(typeof body.success).toBe('boolean');
+    if (body.success) {
+      expect(body.data.u).toHaveLength(body.data.nx * body.data.ny);
+      expect(body.data.validTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/);
+    }
+  });
+
   test('health elenca le fonti con uno stato', async ({ request }) => {
     const res = await request.get('/api/health');
     expect(res.ok()).toBe(true);

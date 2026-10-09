@@ -412,14 +412,14 @@ const LAYER_CATALOG: LayerDocItem[] = [
     group: 'lagoon',
     regime: 'realtime',
     acquisition: 'api',
-    institution: 'Aeronautica Militare (LIPZ) & Centro Maree CPSM',
+    institution: 'Centro Maree CPSM, METAR LIPZ (NOAA), previsione Open-Meteo',
     portalUrl: 'https://www.meteoam.it',
     portalName: 'meteoam.it & comune.venezia.it/maree',
-    descriptionIt: 'Rete meteo-marina del Centro Maree (vento, raffiche, onde, temperatura, pressione) più il METAR dell\'aeroporto di Tessera.',
-    descriptionEn: 'Tide Centre meteo-marine network (wind, gusts, waves, temperature, pressure) plus the Tessera airport METAR.',
-    technicalNotesIt: 'Misure reali ogni 5 minuti dai feed CPSM su dati.venezia.it (vento, onde, temperatura aria, pressione, umidità) e METAR LIPZ da NOAA. Sono mostrate solo le stazioni con coordinate pubblicate. L\'indicatore di spinta sulla marea è una semplificazione basata su direzione e intensità del vento.',
-    technicalNotesEn: 'Real measurements every 5 minutes from CPSM feeds on dati.venezia.it (wind, waves, air temperature, pressure, humidity) and the LIPZ METAR from NOAA. Only stations with published coordinates are shown. The tide-push indicator is a simplification based on wind direction and speed.',
-    endpointOrFile: '/api/weather & /api/marine-sensors'
+    descriptionIt: 'Rete meteo-marina del Centro Maree (vento, raffiche, onde, temperatura, pressione) e METAR dell\'aeroporto di Tessera, con il vento previsto animato su tutta la laguna.',
+    descriptionEn: 'Tide Centre meteo-marine network (wind, gusts, waves, temperature, pressure) and the Tessera airport METAR, with the forecast wind animated across the lagoon.',
+    technicalNotesIt: 'Stazioni: misure reali ogni 5 minuti dai feed CPSM su dati.venezia.it e METAR LIPZ da NOAA. Animazione: previsione di vento a 10 m da Open-Meteo (modelli DWD ICON / ECMWF, CC BY 4.0) su una griglia di 9×9 punti (circa 4 km), riletta ogni 30 minuti; le particelle seguono il campo interpolato e il colore indica l\'intensità. È un modello, non una misura. L\'indicatore di spinta sulla marea è una semplificazione basata su direzione e intensità del vento.',
+    technicalNotesEn: 'Stations: real readings every 5 minutes from CPSM feeds on dati.venezia.it and the LIPZ METAR from NOAA. Animation: 10 m wind forecast from Open-Meteo (DWD ICON / ECMWF models, CC BY 4.0) on a 9×9 grid (about 4 km), refreshed every 30 minutes; particles follow the interpolated field and colour shows strength. It is a model, not a measurement. The tide-push indicator is a simplification based on wind direction and speed.',
+    endpointOrFile: '/api/weather + /api/wind-field'
   },
   {
     id: 'fortezze_lagunari',

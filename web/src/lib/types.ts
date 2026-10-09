@@ -666,6 +666,28 @@ export interface AirportMetarData {
   officialSource: string;
 }
 
+/**
+ * Campo di vento previsto su una griglia regolare (Open-Meteo, modelli numerici).
+ * u e v in m/s, verso est e verso nord; righe da sud a nord, colonne da ovest a est.
+ */
+export interface WindField {
+  /** Ora locale (Europe/Rome) a cui si riferisce la previsione, es. "2026-10-09T10:30" */
+  validTime: string;
+  fetchedAt: string;
+  source: string;
+  sourceUrl: string;
+  license: string;
+  lon0: number;
+  lat0: number;
+  dLon: number;
+  dLat: number;
+  nx: number;
+  ny: number;
+  u: number[];
+  v: number[];
+  maxSpeedMs: number;
+}
+
 export interface MeteoMarineWindItem {
   id: string;
   stationName: string;

@@ -989,7 +989,10 @@ export const itUi = {
     "name_alilaguna-gtfs": "Orario Alilaguna GTFS (pipeline)",
     "meta_osm-poi": "Sostituisce gli elenchi compilati a mano: le voci curate restano solo se non hanno un riscontro OSM vicino e sono segnate \"da verificare\".",
     "meta_alilaguna-gtfs": "Il feed non dichiara una licenza: si cita la fonte. Le barche sono simulate dall'orario, che ha una validità stagionale.",
-    detailTimetableExpired: "orario importato non più valido"
+    detailTimetableExpired: "orario importato non più valido",
+    "name_open-meteo": "Previsione vento Open-Meteo",
+    "meta_open-meteo": "Previsione di modello su griglia di circa 4 km per l'animazione del vento, non una misura. Uso gratuito per scopi non commerciali.",
+    refresh_r30min: "riletto ogni 30 min"
   },
   notFound: {
     subtitle: "Pagina non trovata",
@@ -1020,7 +1023,10 @@ export const itUi = {
     beds: "{beds} letti ({ratio}× residenti)",
     pollenRisk: "Pollini: rischio {risk}",
     airportDock: "Darsena aeroporto VCE (Alilaguna)",
-    freightDock: "Riva merci ({min} min)"
+    freightDock: "Riva merci ({min} min)",
+    windTitle: "Vento previsto a 10 m",
+    windValidAt: "valido alle {time}",
+    windSource: "Previsione di modello (ICON / ECMWF via Open-Meteo, CC BY 4.0), non una misura. I punti sono le stazioni reali CPSM e METAR."
   },
   provenance: {
     live: "Dato live",

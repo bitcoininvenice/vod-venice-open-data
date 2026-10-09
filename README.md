@@ -4,7 +4,7 @@
 
 VOD integra:
 1. **Simulazione da orario della flotta ACTV** (oltre 5.400 corse feriali dal GTFS ufficiale, rigenerata dalla pipeline) e, separatamente, **posizioni GPS reali** dal feed GTFS-RT.
-2. **Dati live** letti lato server con cache condivisa: maree e rete meteo-marina CPSM (dati.venezia.it), METAR LIPZ (NOAA AWC), voli ADS-B (OpenSky), mezzi ACTV (GTFS-RT), orbite satellitari (TLE CelesTrak).
+2. **Dati live** letti lato server con cache condivisa: maree e rete meteo-marina CPSM (dati.venezia.it), METAR LIPZ (NOAA AWC), voli ADS-B (OpenSky), mezzi ACTV (GTFS-RT), orbite satellitari (TLE CelesTrak), previsione del vento su griglia (Open-Meteo, CC BY 4.0) per l'animazione del layer vento.
 3. **Analisi spaziale** cantieri ↔ fermate entro un raggio configurabile.
 4. **Palette solare dinamica** sincronizzata con alba e tramonto a Venezia.
 5. **Pipeline Python** per download GTFS, ingestione in PostgreSQL + PostGIS e sincronizzazione GTFS-RT.
@@ -195,6 +195,7 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/tide` | Livelli di marea reali, previsione CPSM con data di emissione, anagrafica MOSE. |
 | `GET` | `/api/weather` | METAR LIPZ reale e stazioni vento di riferimento. |
 | `GET` | `/api/flights` | Aerei rilevati da OpenSky nell'area di Venezia (cache 15 s). |
+| `GET` | `/api/wind-field` | Vento previsto a 10 m su griglia 9×9 (Open-Meteo, cache 30 min): previsione di modello, non misura. |
 | `GET` | `/api/stats` | Metriche aggregate; `null` dove manca una fonte in tempo reale. |
 | `GET` | `/api/health` | Stato ed età di ogni fonte live e dei dataset della pipeline (`ok` / `stale` / `down`). |
 | `GET` | `/api/satellites` | Satelliti con orbite SGP4 da TLE CelesTrak e prossimo passaggio sopra Venezia. |

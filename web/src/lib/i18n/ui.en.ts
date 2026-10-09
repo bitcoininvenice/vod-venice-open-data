@@ -991,7 +991,10 @@ export const enUi: UiTranslations = {
     "name_alilaguna-gtfs": "Alilaguna GTFS timetable (pipeline)",
     "meta_osm-poi": "Replaces hand-compiled lists: curated entries remain only if no nearby OSM match exists and are marked \"to be verified\".",
     "meta_alilaguna-gtfs": "The feed declares no licence: the source is credited. Boats are simulated from the timetable, which is valid for a season.",
-    detailTimetableExpired: "imported timetable no longer valid"
+    detailTimetableExpired: "imported timetable no longer valid",
+    "name_open-meteo": "Open-Meteo wind forecast",
+    "meta_open-meteo": "Model forecast on a ~4 km grid for the wind animation, not a measurement. Free for non-commercial use.",
+    refresh_r30min: "refreshed every 30 min"
   },
   notFound: {
     subtitle: "Page not found",
@@ -1022,7 +1025,10 @@ export const enUi: UiTranslations = {
     beds: "{beds} beds ({ratio}× residents)",
     pollenRisk: "Pollen: {risk} risk",
     airportDock: "VCE airport dock (Alilaguna)",
-    freightDock: "Freight dock ({min} min)"
+    freightDock: "Freight dock ({min} min)",
+    windTitle: "Forecast wind at 10 m",
+    windValidAt: "valid at {time}",
+    windSource: "Model forecast (ICON / ECMWF via Open-Meteo, CC BY 4.0), not a measurement. The dots are the real CPSM and METAR stations."
   },
   provenance: {
     live: "Live data",

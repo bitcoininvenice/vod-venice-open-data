@@ -6,6 +6,7 @@ import { LIPZ_METAR_URL, parseLipzMetar } from '@/server/sources/metar';
 import { ACTV_GTFS_RT_FEEDS, parseVehiclePositions } from '@/server/sources/gtfsRt';
 import { CPSM_METEO_URLS, parseCpsmFeed } from '@/server/sources/cpsmMeteo';
 import { OPENSKY_STATES_URL, parseOpenSkyStates } from '@/server/sources/opensky';
+import { openMeteoWindUrl, parseOpenMeteoWind } from '@/server/sources/openMeteoWind';
 import { GTFS_INDEX_GENERATED_AT } from '@/server/sources/gtfsIndex';
 import { OPERE_PUBBLICHE_META } from '@/lib/db';
 import { WIFI_HOTSPOTS_META } from '@/lib/urbanAssetsVeniceData';
@@ -27,7 +28,7 @@ const DAY = 24 * 60;
  */
 export async function GET() {
   const now = new Date();
-  const [levels, forecast, metar, rtNav, rtAut, wind, flights] = await Promise.all([
+  const [levels, forecast, metar, rtNav, rtAut, wind, flights, windField] = await Promise.all([
     fetchUpstream(TIDE_LEVELS_URL, parseTideLevels, { revalidate: 60 }),
     fetchUpstream(TIDE_FORECAST_URL, (raw) => parseTideForecast(raw, now), { revalidate: 600 }),
     fetchUpstream(LIPZ_METAR_URL, parseLipzMetar, { revalidate: 300 }),
@@ -35,6 +36,7 @@ export async function GET() {
     fetchUpstream(ACTV_GTFS_RT_FEEDS.automobilistico, (raw) => parseVehiclePositions(raw as ArrayBuffer), { revalidate: 20, responseType: 'arrayBuffer' }),
     fetchUpstream(CPSM_METEO_URLS.vento, parseCpsmFeed, { revalidate: 300 }),
     fetchUpstream(OPENSKY_STATES_URL, parseOpenSkyStates, { revalidate: 15 }),
+    fetchUpstream(openMeteoWindUrl(), parseOpenMeteoWind, { revalidate: 1800, timeoutMs: 8000 }),
   ]);
 
   const newestVehicle = (r: typeof rtNav) =>
@@ -53,6 +55,7 @@ export async function GET() {
     assess('gtfs-rt-aut', 'GTFS-RT ACTV automobilistico', 'live', newestVehicle(rtAut), 10, now),
     assess('cpsm-meteo', 'Rete meteo-marina CPSM', 'live', newestWind, 30, now),
     assess('opensky', 'OpenSky Network', 'live', flights.ok ? now : null, 5, now, flights.ok ? undefined : 'quota esaurita o servizio non raggiungibile'),
+    assess('open-meteo', 'Previsione vento Open-Meteo', 'live', windField.ok ? fromRomeLocal(windField.data.validTime.replace('T', ' ')) : null, 90, now),
     assess('gtfs-static', 'Simulazione GTFS ACTV (pipeline)', 'dataset', new Date(GTFS_INDEX_GENERATED_AT), 8 * DAY, now),
     assess('opere-pubbliche', 'Opere pubbliche (pipeline)', 'dataset', new Date(OPERE_PUBBLICHE_META.generatedAt), 31 * DAY, now),
     assess('wifi', 'Hotspot WiFi (pipeline)', 'dataset', new Date(WIFI_HOTSPOTS_META.generatedAt), 31 * DAY, now),

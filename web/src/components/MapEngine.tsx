@@ -34,6 +34,7 @@ import {
   SubsidenceInSARItem,
   LagoonMorphologyItem,
   MeteoMarineWindItem,
+  WindField,
   TrainLiveItem,
   VeritasWasteBoatItem,
   NizioletoCivicoItem,
@@ -65,6 +66,7 @@ import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, dra
 import { drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 import { drawFloodLayer } from './map/floodLayer';
+import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
 import { MAP_3D_CSS_TRANSFORM, unprojectFrom3D } from '@/lib/map3d';
 
 
@@ -151,6 +153,8 @@ export interface MapEngineProps {
   lagoonMorphology?: LagoonMorphologyItem[];
   showMarineWind?: boolean;
   marineWindStations?: MeteoMarineWindItem[];
+  /** Campo di vento previsto (Open-Meteo) per le particelle animate del layer vento */
+  windField?: WindField | null;
   showTrains?: boolean;
   liveTrains?: TrainLiveItem[];
   showWasteBoats?: boolean;
@@ -265,6 +269,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   lagoonMorphology = [],
   showMarineWind = false,
   marineWindStations = [],
+  windField = null,
   showTrains = false,
   liveTrains = [],
   showWasteBoats = false,
@@ -1686,6 +1691,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         lagoonWaterQuality,
         liveTrains,
         marineWindStations,
+        windField,
         moseGates,
         nizioleti,
         oceanStations,
@@ -1758,6 +1764,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         wifiHotspots
       };
 
+      // Vento animato sotto tutti gli altri layer, come sfondo
+      drawWindFlow(rc);
       drawRoutes(rc);
 
       drawSpatialBuffer(rc);
@@ -1932,6 +1940,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     lagoonMorphology,
     showMarineWind,
     marineWindStations,
+    windField,
     showTrains,
     liveTrains,
     showWasteBoats,
@@ -1994,6 +2003,32 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           transition: 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
         }}
       />
+
+      {/* Legenda del vento animato: scala in km/h, fonte e ora di validità della previsione */}
+      {showMarineWind && windField && (
+        <div className="absolute left-1/2 -translate-x-1/2 top-3 z-20 pointer-events-none glass-panel rounded-xl border border-[var(--rule)] px-3 py-2 flex flex-col gap-1 w-[min(20rem,calc(100vw-7rem))] shadow-lg">
+          <div className="flex items-center justify-between gap-2 text-[10px] font-mono">
+            <span className="font-bold text-[var(--ink)] uppercase">{tr('ui.mapLabels.windTitle')}</span>
+            <span className="text-[var(--ink-3)]">{tr('ui.mapLabels.windValidAt', { time: windField.validTime.slice(11, 16) })}</span>
+          </div>
+          <div
+            className="h-2 rounded-full"
+            style={{
+              background: `linear-gradient(to right, ${WIND_COLOR_STOPS.filter(([s]) => s <= 25)
+                .map(([s, [r, g, b]]) => `rgb(${r},${g},${b}) ${(s / 25) * 100}%`)
+                .join(', ')})`,
+            }}
+          />
+          <div className="flex justify-between text-[9px] font-mono text-[var(--ink-3)]">
+            {/* la scala va da 0 a 25 m/s = 90 km/h: etichette equidistanti */}
+            {[0, 30, 60].map((kmh) => (
+              <span key={kmh}>{kmh}</span>
+            ))}
+            <span>90 km/h</span>
+          </div>
+          <span className="text-[9px] text-[var(--ink-3)]">{tr('ui.mapLabels.windSource')}</span>
+        </div>
+      )}
 
       {/* Floating map hint (desktop only to prevent clutter on mobile) */}
       {/* <div className="hidden md:flex absolute md:top-4 md:left-[21rem] xl:md:left-[22rem] pointer-events-none glass-panel px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-[var(--rule)] text-[11px] sm:text-xs text-[var(--ink-2)] items-center gap-1.5 sm:gap-2 shadow-lg max-w-[calc(100vw-5rem)]">

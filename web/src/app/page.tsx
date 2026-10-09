@@ -54,6 +54,7 @@ import {
   SubsidenceInSARItem,
   LagoonMorphologyItem,
   MeteoMarineWindItem,
+  WindField,
   TrainLiveItem,
   VeritasWasteBoatItem,
   NizioletoCivicoItem,
@@ -202,6 +203,8 @@ export default function HomePage() {
   const [lagoonMorphology, setLagoonMorphology] = useState<LagoonMorphologyItem[]>(OPEN_LAGOON_MORPHOLOGY);
   // Stazioni meteo-marine reali (METAR LIPZ + rete CPSM) da /api/weather
   const [marineWindStations, setMarineWindStations] = useState<MeteoMarineWindItem[]>([]);
+  // Campo di vento previsto (Open-Meteo) per l'animazione del layer vento: caricato solo quando serve
+  const [windField, setWindField] = useState<WindField | null>(null);
   const [metarData, setMetarData] = useState<AirportMetarData | null>(null);
   const [liveTrains, setLiveTrains] = useState<TrainLiveItem[]>(OPEN_LIVE_TRAINS);
   const [wasteBoats, setWasteBoats] = useState<VeritasWasteBoatItem[]>(OPEN_VERITAS_WASTE_BOATS);
@@ -249,6 +252,20 @@ export default function HomePage() {
   const [simulatedTideLevel, setSimulatedTideLevel] = useState<number | null>(null);
 
   // Global Keyboard Shortcut: Cmd+K / Ctrl+K for Global Search
+  useEffect(() => {
+    if (!showMarineWind) return;
+    const load = () =>
+      fetch('/api/wind-field')
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.success && json.data) setWindField(json.data as WindField);
+        })
+        .catch((err) => console.warn('Campo di vento non disponibile:', err));
+    void load();
+    const id = setInterval(load, 30 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [showMarineWind]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -803,6 +820,7 @@ export default function HomePage() {
           lagoonMorphology={lagoonMorphology}
           showMarineWind={showMarineWind}
           marineWindStations={marineWindStations}
+          windField={windField}
           // 3. Ferrovia & Logistica
           showTrains={showTrains}
           liveTrains={liveTrains}
