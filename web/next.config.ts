@@ -40,6 +40,8 @@ const nextConfig: NextConfig = {
       source: `/api/:name(${pattern})`,
       headers: [{ key: "Cache-Control", value: `public, max-age=${maxAge}, stale-while-revalidate=${swr}` }],
     });
+    // In sviluppo niente cache del browser: i dati rigenerati dalle pipeline devono vedersi subito
+    if (isDev) return [{ source: "/:path*", headers: securityHeaders }];
     return [
       { source: "/:path*", headers: securityHeaders },
       // Dataset aggiornati dalle pipeline (al più una volta al giorno)
