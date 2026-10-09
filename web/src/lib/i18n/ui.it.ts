@@ -97,7 +97,8 @@ export const itUi = {
     fiber: "Copertura fibra (AGCOM)",
     subTerritory: "Territorio & turismo",
     recyclingCentres: "Ecocentri (ingombranti)",
-    libraries: "Biblioteche"
+    libraries: "Biblioteche",
+    canals: "Canali e rii (OpenStreetMap)"
   },
   map: {
     orarioUfficialeActv: "orario ufficiale ACTV",
@@ -538,7 +539,20 @@ export const itUi = {
     recyclingOfficialLink: "Orari, ecocentri mobili e ritiro a domicilio degli ingombranti (Comune di Venezia)",
     libraryOfficialLink: "Rete Biblioteche Venezia: prestito digitale e servizi (Comune di Venezia)",
     civicPoiNote: "Punto mappato su OpenStreetMap: orari e servizi vanno verificati sulla pagina ufficiale.",
-    wasteOfficialLink: "Calendario ufficiale della raccolta nel centro storico e nelle isole (Comune di Venezia)"
+    wasteOfficialLink: "Calendario ufficiale della raccolta nel centro storico e nelle isole (Comune di Venezia)",
+    marker_briccola: "Briccola",
+    marker_palo: "Palo / palina",
+    marker_segnale: "Segnale (meda)",
+    marker_boa: "Boa",
+    marker_fanale: "Fanale",
+    markerHint_briccola: "Gruppo di pali che delimita il canale navigabile.",
+    markerHint_palo: "Palo singolo di segnalamento o ormeggio.",
+    markerHint_segnale: "Segnale fisso di navigazione (laterale, cardinale, speciale…).",
+    markerHint_boa: "Boa galleggiante di segnalamento.",
+    markerHint_fanale: "Luce di segnalamento notturno.",
+    canalUnnamed: "Canale senza nome",
+    canalLength: "Tratto mappato: {km} km",
+    lagoonOsmNote: "Posizione da OpenStreetMap: non esiste un dataset ufficiale aperto di briccole e canali. Non usare per la navigazione: fanno fede carte nautiche e avvisi della Capitaneria."
   },
   layersPage: {
     tornaAllaMappa: "Torna alla Mappa",
@@ -1059,7 +1073,9 @@ export const itUi = {
     "name_cams-air": "Previsione aria, pollini e UV Copernicus CAMS",
     "meta_cams-air": "Previsione di modello nei punti delle stazioni ARPAV e dei punti pollini, non misure. Uso gratuito per scopi non commerciali.",
     "name_open-meteo-marine": "Previsione marina Open-Meteo",
-    "meta_open-meteo-marine": "Onde e temperatura del mare previste alla piattaforma Acqua Alta, accanto alle misure CPSM."
+    "meta_open-meteo-marine": "Onde e temperatura del mare previste alla piattaforma Acqua Alta, accanto alle misure CPSM.",
+    "name_osm-waterways": "Briccole e canali OpenStreetMap (pipeline)",
+    "meta_osm-waterways": "Non esiste un dataset ufficiale aperto di briccole e canali: OpenStreetMap è la fonte più completa. Non per la navigazione."
   },
   notFound: {
     subtitle: "Pagina non trovata",

@@ -1,6 +1,7 @@
 'use client';
 
 import { FIBER_CLASS_KEY, FIBER_COLORS, fiberOperators, type FiberCell } from '@/lib/fiber';
+import { MARKER_COLORS, MARKER_KEY, canalLengthMeters, type LagoonCanal, type MarkerKind } from '@/lib/lagoonNetwork';
 import React from 'react';
 import { PHARMACY_DUTY_URL } from '@/lib/pharmacies-data';
 import {
@@ -100,7 +101,9 @@ export type VeniceFeatureSelected =
   | { type: 'fountain'; data: CityAssetItem }
   | { type: 'fiberCell'; data: { cell: FiberCell; dataDate: string } }
   | { type: 'airStation'; data: AirQualityItem }
-  | { type: 'civicPoi'; data: CivicPoiItem };
+  | { type: 'civicPoi'; data: CivicPoiItem }
+  | { type: 'lagoonMarker'; data: { lon: number; lat: number; kind: MarkerKind; osmId: number } }
+  | { type: 'canal'; data: LagoonCanal };
 
 interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
@@ -228,6 +231,12 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             {feature.type === 'airStation' && (
               <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400"><Wind className="w-5 h-5" /></div>
             )}
+            {feature.type === 'lagoonMarker' && (
+              <div className="p-2 rounded-xl bg-amber-500/20 text-amber-500"><Anchor className="w-5 h-5" /></div>
+            )}
+            {feature.type === 'canal' && (
+              <div className="p-2 rounded-xl bg-sky-500/20 text-sky-400"><Waves className="w-5 h-5" /></div>
+            )}
             {feature.type === 'civicPoi' && (
               <div className={`p-2 rounded-xl ${feature.data.kind === 'recycling' ? 'bg-green-500/20 text-green-400' : 'bg-violet-500/20 text-violet-400'}`}>
                 {feature.data.kind === 'recycling' ? <Trash2 className="w-5 h-5" /> : <Landmark className="w-5 h-5" />}
@@ -270,6 +279,8 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'fiberCell' && t('ui.feature.fiberTitle')}
                 {feature.type === 'airStation' && `ARPAV · ${feature.data.stationName}`}
                 {feature.type === 'civicPoi' && feature.data.name}
+                {feature.type === 'lagoonMarker' && t(`ui.feature.marker_${MARKER_KEY[feature.data.kind]}`)}
+                {feature.type === 'canal' && (feature.data.name ?? t('ui.feature.canalUnnamed'))}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
                 {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
@@ -285,6 +296,8 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'pollenStation' && t('ui.feature.pollenSubtitle')}
                 {feature.type === 'airStation' && `${feature.data.location} · ${feature.data.stationType}`}
                 {feature.type === 'civicPoi' && `${t(feature.data.kind === 'recycling' ? 'ui.feature.recyclingCentre' : 'ui.feature.library')} · ${feature.data.zone}`}
+                {feature.type === 'lagoonMarker' && `${feature.data.lat.toFixed(5)}, ${feature.data.lon.toFixed(5)}`}
+                {feature.type === 'canal' && t('ui.feature.canalLength', { km: (canalLengthMeters(feature.data.coords) / 1000).toFixed(2) })}
                 {feature.type === 'tributaryRiver' && `${t('ui.feature.portata')}: ${feature.data.avgFlowM3s} m³/s · ${feature.data.mouthZone}`}
                 {feature.type === 'parking' && `${feature.data.location} · ${feature.data.operator}`}
                 {feature.type === 'fountain' && `${feature.data.sestiere} · ${t('ui.feature.fountainSubtitle')}`}
@@ -1176,6 +1189,28 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
 
           {feature.type === 'airStation' && <AirStationBody station={feature.data} />}
 
+          {feature.type === 'lagoonMarker' && (
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full" style={{ background: MARKER_COLORS[feature.data.kind] }} />
+                <span className="text-[var(--ink-2)]">{t(`ui.feature.markerHint_${MARKER_KEY[feature.data.kind]}`)}</span>
+              </div>
+              <p className="text-[11px] text-[var(--ink-3)]">{t('ui.feature.lagoonOsmNote')}</p>
+              <a href={`https://www.openstreetmap.org/node/${feature.data.osmId}`} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline">
+                © OpenStreetMap contributors (ODbL)
+              </a>
+            </div>
+          )}
+
+          {feature.type === 'canal' && (
+            <div className="flex flex-col gap-2">
+              <p className="text-[11px] text-[var(--ink-3)]">{t('ui.feature.lagoonOsmNote')}</p>
+              <a href={`https://www.openstreetmap.org/way/${feature.data.id}`} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline">
+                © OpenStreetMap contributors (ODbL)
+              </a>
+            </div>
+          )}
+
           {feature.type === 'civicPoi' && (
             <div className="flex flex-col gap-2">
               {feature.data.address && <p className="text-[var(--ink-2)]">{t('ui.feature.indirizzo')} <b>{feature.data.address}</b></p>}
@@ -1213,7 +1248,7 @@ const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
 ]);
 
 /** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
-const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation']);
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal']);
 
 /** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
 const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {

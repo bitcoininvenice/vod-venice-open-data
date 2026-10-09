@@ -104,6 +104,7 @@ import { VENICE_CAMERAS } from '@/lib/cameras-data';
 import { NOTTE, CARTA, getDynamicPalette } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import type { FiberDataset } from '@/lib/fiber';
+import type { LagoonNetwork } from '@/lib/lagoonNetwork';
 import { useTranslation } from '@/lib/i18n';
 import { romeDayType, romeSecondsOfDay, formatSignedCm } from '@/lib/time';
 import { activeTripsAt, dayActivity } from '@/lib/gtfsActivity';
@@ -151,8 +152,8 @@ export default function HomePage() {
 
   // Layer toggles (Default to false on clean map startup)
   const [layers, setLayers] = useState<LayerVisibility>(() => allLayers(false));
-  const { showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri, showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose, showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries, showFiber, showRecyclingCentres, showLibraries } = layers;
-  const { setShowRoutes, setShowStops, setShowVehicles, setShowRealtimeVehicles, setShowCantieri, setShowSpatialBuffer, setShowFlights, setShowShips, setShowShipRoutes, setShowMose, setShowCityAssets, setShowParkings, setShowAirQuality, setShowPedestrianFlows, setShowAlilaguna, setShowSatellites, setShowPasserelle, setShowMarineSignals, setShowOceanStations, setShowBathingWaters, setShowTrees, setShowWifiHotspots, setShowEvCharging, setShowCameras, setShowCanalLimits, setShowBridges, setShowGondolas, setShowDocks, setShowSubsidence, setShowMorphology, setShowMarineWind, setShowTrains, setShowWasteBoats, setShowNizioleti, setShowWells, setShowBellTowers, setShowFortresses, setShowEmergencyDocks, setShowDae, setShowPharmacies, setShowHeatIslands, setShowLagoonWater, setShowAccommodations, setShowBikeRoutes, setShowPollenStations, setShowTributaries, setShowFiber, setShowRecyclingCentres, setShowLibraries } = useMemo(() => makeLayerSetters(setLayers), []);
+  const { showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri, showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose, showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries, showFiber, showRecyclingCentres, showLibraries, showCanals } = layers;
+  const { setShowRoutes, setShowStops, setShowVehicles, setShowRealtimeVehicles, setShowCantieri, setShowSpatialBuffer, setShowFlights, setShowShips, setShowShipRoutes, setShowMose, setShowCityAssets, setShowParkings, setShowAirQuality, setShowPedestrianFlows, setShowAlilaguna, setShowSatellites, setShowPasserelle, setShowMarineSignals, setShowOceanStations, setShowBathingWaters, setShowTrees, setShowWifiHotspots, setShowEvCharging, setShowCameras, setShowCanalLimits, setShowBridges, setShowGondolas, setShowDocks, setShowSubsidence, setShowMorphology, setShowMarineWind, setShowTrains, setShowWasteBoats, setShowNizioleti, setShowWells, setShowBellTowers, setShowFortresses, setShowEmergencyDocks, setShowDae, setShowPharmacies, setShowHeatIslands, setShowLagoonWater, setShowAccommodations, setShowBikeRoutes, setShowPollenStations, setShowTributaries, setShowFiber, setShowRecyclingCentres, setShowLibraries, setShowCanals } = useMemo(() => makeLayerSetters(setLayers), []);
   const [realtimeVehicles, setRealtimeVehicles] = useState<RealtimeVehicleDto[]>([]);
 
   // 1. Viabilità Acquea & Canali
@@ -212,6 +213,8 @@ export default function HomePage() {
   // Ecocentri e biblioteche (OpenStreetMap) da /api/city-assets
   const [recyclingCentres, setRecyclingCentres] = useState<CivicPoiItem[]>([]);
   const [libraries, setLibraries] = useState<CivicPoiItem[]>([]);
+  // Briccole, segnalamenti e canali da OpenStreetMap (~450 KB): caricati alla prima attivazione
+  const [lagoonNetwork, setLagoonNetwork] = useState<LagoonNetwork | null>(null);
   const [metarData, setMetarData] = useState<AirportMetarData | null>(null);
   const [liveTrains, setLiveTrains] = useState<TrainLiveItem[]>(OPEN_LIVE_TRAINS);
   const [wasteBoats, setWasteBoats] = useState<VeritasWasteBoatItem[]>(OPEN_VERITAS_WASTE_BOATS);
@@ -259,6 +262,16 @@ export default function HomePage() {
   const [simulatedTideLevel, setSimulatedTideLevel] = useState<number | null>(null);
 
   // Global Keyboard Shortcut: Cmd+K / Ctrl+K for Global Search
+  useEffect(() => {
+    if ((!showMarineSignals && !showCanals) || lagoonNetwork) return;
+    fetch('/api/lagoon-network')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) setLagoonNetwork(json.data as LagoonNetwork);
+      })
+      .catch((err) => console.warn('Rete lagunare non disponibile:', err));
+  }, [showMarineSignals, showCanals, lagoonNetwork]);
+
   useEffect(() => {
     if (!showFiber || fiberData) return;
     fetch('/api/fiber')
@@ -846,6 +859,8 @@ export default function HomePage() {
           recyclingCentres={recyclingCentres}
           showLibraries={showLibraries}
           libraries={libraries}
+          showCanals={showCanals}
+          lagoonNetwork={lagoonNetwork}
           // 3. Ferrovia & Logistica
           showTrains={showTrains}
           liveTrains={liveTrains}
@@ -958,7 +973,7 @@ export default function HomePage() {
               passerelleCount={passerelle.length}
               showMarineSignals={showMarineSignals}
               onToggleMarineSignals={() => setShowMarineSignals((p) => !p)}
-              briccoleCount={briccole.length}
+              briccoleCount={briccole.length + (lagoonNetwork?.markers.length ?? 0)}
               showOceanStations={showOceanStations}
               onToggleOceanStations={() => setShowOceanStations((p) => !p)}
               oceanStationsCount={oceanStations.length}
@@ -978,6 +993,9 @@ export default function HomePage() {
               showLibraries={showLibraries}
               onToggleLibraries={() => setShowLibraries((p) => !p)}
               librariesCount={libraries.length}
+              showCanals={showCanals}
+              onToggleCanals={() => setShowCanals((p) => !p)}
+              canalsCount={lagoonNetwork?.canals.length ?? 0}
               wifiHotspotsCount={wifiHotspots.length}
               showEvCharging={showEvCharging}
               onToggleEvCharging={() => setShowEvCharging((p) => !p)}
@@ -1141,7 +1159,7 @@ export default function HomePage() {
                 passerelleCount={passerelle.length}
                 showMarineSignals={showMarineSignals}
                 onToggleMarineSignals={() => setShowMarineSignals((p) => !p)}
-                briccoleCount={briccole.length}
+                briccoleCount={briccole.length + (lagoonNetwork?.markers.length ?? 0)}
                 showOceanStations={showOceanStations}
                 onToggleOceanStations={() => setShowOceanStations((p) => !p)}
                 oceanStationsCount={oceanStations.length}
@@ -1161,6 +1179,9 @@ export default function HomePage() {
               showLibraries={showLibraries}
               onToggleLibraries={() => setShowLibraries((p) => !p)}
               librariesCount={libraries.length}
+              showCanals={showCanals}
+              onToggleCanals={() => setShowCanals((p) => !p)}
+              canalsCount={lagoonNetwork?.canals.length ?? 0}
                 wifiHotspotsCount={wifiHotspots.length}
                 showEvCharging={showEvCharging}
                 onToggleEvCharging={() => setShowEvCharging((p) => !p)}

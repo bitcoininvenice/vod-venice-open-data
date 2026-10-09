@@ -69,6 +69,8 @@ import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLa
 import { drawFloodLayer } from './map/floodLayer';
 import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
 import { drawFiber } from './map/fiberLayer';
+import { drawLagoonNetwork } from './map/lagoonNetworkLayer';
+import { pointSegmentDistance, type LagoonNetwork } from '@/lib/lagoonNetwork';
 import { FIBER_COLORS, fiberCellAt, indexFiberCells, type FiberDataset } from '@/lib/fiber';
 import { MAP_3D_CSS_TRANSFORM, unprojectFrom3D } from '@/lib/map3d';
 
@@ -166,6 +168,9 @@ export interface MapEngineProps {
   recyclingCentres?: CivicPoiItem[];
   showLibraries?: boolean;
   libraries?: CivicPoiItem[];
+  /** Briccole, segnalamenti e canali da OpenStreetMap */
+  showCanals?: boolean;
+  lagoonNetwork?: LagoonNetwork | null;
   showTrains?: boolean;
   liveTrains?: TrainLiveItem[];
   showWasteBoats?: boolean;
@@ -287,6 +292,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   recyclingCentres = [],
   showLibraries = false,
   libraries = [],
+  showCanals = false,
+  lagoonNetwork = null,
   showTrains = false,
   liveTrains = [],
   showWasteBoats = false,
@@ -1592,6 +1599,46 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
     }
 
+    // Briccole e segnalamenti OpenStreetMap: il punto più vicino entro 10 px
+    if (showMarineSignals && lagoonNetwork && onSelectFeature) {
+      let best: { d: number; m: (typeof lagoonNetwork.markers)[number] } | null = null;
+      for (const m of lagoonNetwork.markers) {
+        const d = Math.hypot(clickX - (mx(m[0]) - camera.x0) * camera.s, clickY - (my(m[1]) - camera.y0) * camera.s);
+        if (d <= 10 && (!best || d < best.d)) best = { d, m };
+      }
+      if (best) {
+        onSelectFeature({ type: 'lagoonMarker', data: { lon: best.m[0], lat: best.m[1], kind: best.m[2], osmId: best.m[3] } });
+        setSelectedVehicle(null);
+        setSelectedFlight(null);
+        setSelectedShipOnMap(null);
+        setSelectedAlilagunaBoat(null);
+        return;
+      }
+    }
+
+    // Canali OpenStreetMap: il tracciato più vicino entro 8 px
+    if (showCanals && lagoonNetwork && onSelectFeature) {
+      let best: { d: number; c: (typeof lagoonNetwork.canals)[number] } | null = null;
+      for (const c of lagoonNetwork.canals) {
+        for (let i = 1; i < c.coords.length; i++) {
+          const ax = (mx(c.coords[i - 1][0]) - camera.x0) * camera.s;
+          const ay = (my(c.coords[i - 1][1]) - camera.y0) * camera.s;
+          const bx = (mx(c.coords[i][0]) - camera.x0) * camera.s;
+          const by = (my(c.coords[i][1]) - camera.y0) * camera.s;
+          const d = pointSegmentDistance(clickX, clickY, ax, ay, bx, by);
+          if (d <= 8 && (!best || d < best.d)) best = { d, c };
+        }
+      }
+      if (best) {
+        onSelectFeature({ type: 'canal', data: best.c });
+        setSelectedVehicle(null);
+        setSelectedFlight(null);
+        setSelectedShipOnMap(null);
+        setSelectedAlilagunaBoat(null);
+        return;
+      }
+    }
+
     // Copertura fibra: ultima priorità, si apre la scheda della cella sotto il clic
     if (showFiber && fiberData && fiberIndex && onSelectFeature) {
       const lon = LON0 + (clickX / camera.s + camera.x0) / KX;
@@ -1767,6 +1814,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         recyclingCentres,
         showLibraries,
         libraries,
+        showCanals,
+        lagoonNetwork,
         moseGates,
         nizioleti,
         oceanStations,
@@ -1842,6 +1891,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       // Vento animato sotto tutti gli altri layer, come sfondo
       drawWindFlow(rc);
       drawFiber(rc);
+      drawLagoonNetwork(rc);
       drawRoutes(rc);
 
       drawSpatialBuffer(rc);
@@ -2024,6 +2074,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     recyclingCentres,
     showLibraries,
     libraries,
+    showCanals,
+    lagoonNetwork,
     showTrains,
     liveTrains,
     showWasteBoats,

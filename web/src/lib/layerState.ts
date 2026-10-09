@@ -30,7 +30,7 @@ export function countActiveLayers(v: LayerVisibility): number {
 const PRESET_LAYERS: Record<Exclude<MapPreset, 'clean' | 'all'>, LayerKey[]> = {
   mobility: [
     'showRoutes', 'showStops', 'showVehicles', 'showAlilaguna', 'showShips', 'showShipRoutes', 'showFlights',
-    'showCanalLimits', 'showBridges', 'showGondolas', 'showDocks', 'showTrains', 'showWasteBoats',
+    'showCanalLimits', 'showBridges', 'showGondolas', 'showDocks', 'showTrains', 'showWasteBoats', 'showCanals',
     'showBikeRoutes', 'showEvCharging', 'showCameras',
   ],
   lagoon: [

@@ -47,7 +47,8 @@ export type LayerKey =
   | 'showTributaries'
   | 'showFiber'
   | 'showRecyclingCentres'
-  | 'showLibraries';
+  | 'showLibraries'
+  | 'showCanals';
 
 /**
  * Mapping from LayerKey to canonical Open Data catalog slug (matching /layers page IDs)
@@ -102,6 +103,7 @@ export const LAYER_SLUG_BY_KEY: Record<LayerKey, string> = {
   showFiber: 'copertura_fibra',
   showRecyclingCentres: 'ecocentri',
   showLibraries: 'biblioteche',
+  showCanals: 'canali_laguna',
 };
 
 /**
@@ -158,6 +160,7 @@ export const SLUG_TO_LAYER_KEY: Record<string, LayerKey> = {
   copertura_fibra: 'showFiber',
   ecocentri: 'showRecyclingCentres',
   biblioteche: 'showLibraries',
+  canali_laguna: 'showCanals',
 
   // Convenient aliases
   fountains: 'showCityAssets',
@@ -216,6 +219,8 @@ export const SLUG_TO_LAYER_KEY: Record<string, LayerKey> = {
   ftth: 'showFiber',
   ingombranti: 'showRecyclingCentres',
   libraries: 'showLibraries',
+  canali: 'showCanals',
+  canals: 'showCanals',
   suem: 'showEmergencyDocks',
 };
 

@@ -109,6 +109,9 @@ interface LayerPanelProps {
   showLibraries?: boolean;
   onToggleLibraries?: () => void;
   librariesCount?: number;
+  showCanals?: boolean;
+  onToggleCanals?: () => void;
+  canalsCount?: number;
   wifiHotspotsCount?: number;
   showEvCharging?: boolean;
   onToggleEvCharging?: () => void;
@@ -283,6 +286,9 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   showLibraries = false,
   onToggleLibraries,
   librariesCount = 0,
+  showCanals = false,
+  onToggleCanals,
+  canalsCount = 0,
   wifiHotspotsCount = 0,
   showEvCharging = true,
   onToggleEvCharging,
@@ -570,7 +576,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           </span>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-mono text-[var(--ink-3)] lowercase">
-              {[showVehicles, showRealtimeVehicles, showRoutes, showStops, showShips, showShipRoutes, showAlilaguna, showFlights, showParkings, showCanalLimits, showBridges, showGondolas, showDocks, showTrains, showWasteBoats, showBikeRoutes].filter(Boolean).length}/16
+              {[showVehicles, showRealtimeVehicles, showRoutes, showStops, showShips, showShipRoutes, showAlilaguna, showFlights, showParkings, showCanalLimits, showBridges, showGondolas, showDocks, showTrains, showWasteBoats, showBikeRoutes, showCanals].filter(Boolean).length}/17
             </span>
             {sectionOpen.mobility ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </div>
@@ -699,6 +705,31 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               icon={<Gauge className="w-3 h-3 text-amber-400" />}
               label={t('layers.subCanalTraffic')}
             />
+
+            {/* Canali e rii (OpenStreetMap) */}
+            {onToggleCanals && (
+              <button
+                type="button"
+                onClick={onToggleCanals}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showCanals
+                    ? 'bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Waves className="w-3.5 h-3.5 text-sky-400" />
+                  <span>{t('ui.layerPanel.canals')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {canalsCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-bold">
+                      {canalsCount}
+                    </span>
+                  )}
+                  {showCanals ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
 
             {/* Limiti Velocità & Barcavelox */}
             {onToggleCanalLimits && (

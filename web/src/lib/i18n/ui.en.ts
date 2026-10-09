@@ -99,7 +99,8 @@ export const enUi: UiTranslations = {
     fiber: "Fibre coverage (AGCOM)",
     subTerritory: "Territory & tourism",
     recyclingCentres: "Recycling centres (bulky waste)",
-    libraries: "Libraries"
+    libraries: "Libraries",
+    canals: "Canals (OpenStreetMap)"
   },
   map: {
     orarioUfficialeActv: "official ACTV timetable",
@@ -540,7 +541,20 @@ export const enUi: UiTranslations = {
     recyclingOfficialLink: "Opening hours, mobile centres and home collection of bulky waste (City of Venice)",
     libraryOfficialLink: "Venice Library Network: digital lending and services (City of Venice)",
     civicPoiNote: "Point mapped on OpenStreetMap: check opening hours and services on the official page.",
-    wasteOfficialLink: "Official collection calendar for the historic centre and islands (City of Venice)"
+    wasteOfficialLink: "Official collection calendar for the historic centre and islands (City of Venice)",
+    marker_briccola: "Briccola (mooring dolphin)",
+    marker_palo: "Pile",
+    marker_segnale: "Beacon",
+    marker_boa: "Buoy",
+    marker_fanale: "Light",
+    markerHint_briccola: "Group of piles marking the navigable channel.",
+    markerHint_palo: "Single marker or mooring pile.",
+    markerHint_segnale: "Fixed navigation beacon (lateral, cardinal, special…).",
+    markerHint_boa: "Floating marker buoy.",
+    markerHint_fanale: "Night navigation light.",
+    canalUnnamed: "Unnamed canal",
+    canalLength: "Mapped section: {km} km",
+    lagoonOsmNote: "Position from OpenStreetMap: there is no official open dataset of channel markers and canals. Not for navigation: nautical charts and Coast Guard notices prevail."
   },
   layersPage: {
     tornaAllaMappa: "Back to Map",
@@ -1061,7 +1075,9 @@ export const enUi: UiTranslations = {
     "name_cams-air": "Copernicus CAMS air, pollen and UV forecast",
     "meta_cams-air": "Model forecast at the ARPAV station and pollen points, not measurements. Free for non-commercial use.",
     "name_open-meteo-marine": "Open-Meteo marine forecast",
-    "meta_open-meteo-marine": "Forecast waves and sea temperature at the Acqua Alta platform, alongside CPSM readings."
+    "meta_open-meteo-marine": "Forecast waves and sea temperature at the Acqua Alta platform, alongside CPSM readings.",
+    "name_osm-waterways": "OpenStreetMap channel markers and canals (pipeline)",
+    "meta_osm-waterways": "There is no official open dataset of channel markers and canals: OpenStreetMap is the most complete source. Not for navigation."
   },
   notFound: {
     subtitle: "Page not found",

@@ -50,6 +50,7 @@ vod-venice-open-data/
 │   ├── import_osm_fountains.py     # Fontanelle da OpenStreetMap
 │   ├── import_osm_poi.py           # Colonnine, parcheggi, vere da pozzo, alberi monumentali, ecocentri, biblioteche (OSM)
 │   ├── import_alilaguna_gtfs.py    # Orario ufficiale Alilaguna (GTFS dell'operatore)
+│   ├── import_osm_waterways.py     # Briccole, segnalamenti e canali della laguna (OSM)
 │   ├── import_agcom_fiber.py       # Copertura rete fissa FTTH/FTTC/ADSL (AGCOM BroadbandMap, CC BY 4.0)
 │   ├── enrich_fountains.py         # Toponimo di prossimità per le fontanelle senza nome
 │   └── tests/                      # Test pytest
@@ -129,6 +130,7 @@ python import_osm_fountains.py && python enrich_fountains.py  # Fontanelle da Op
 python import_osm_poi.py                    # Colonnine, parcheggi ≥100 posti, vere da pozzo, alberi monumentali, ecocentri, biblioteche (OSM)
 python import_alilaguna_gtfs.py             # Orario Alilaguna (simulazione delle barche dall'orario)
 python import_agcom_fiber.py                # Copertura fibra AGCOM su celle di ~100 m
+python import_osm_waterways.py              # Briccole, segnalamenti e canali della laguna (OSM)
 
 # Test della pipeline
 python -m pytest -q tests
@@ -197,6 +199,7 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/tide` | Livelli di marea reali, previsione CPSM con data di emissione, anagrafica MOSE. |
 | `GET` | `/api/weather` | METAR LIPZ reale e stazioni vento di riferimento. |
 | `GET` | `/api/flights` | Aerei rilevati da OpenSky nell'area di Venezia (cache 15 s). |
+| `GET` | `/api/lagoon-network` | Briccole, pali, segnali, boe, fanali e canali della laguna da OpenStreetMap (ODbL). Non per la navigazione. |
 | `GET` | `/api/fiber` | Copertura della rete fissa (FTTH, FTTC, ADSL) su celle di ~100 m da AGCOM BroadbandMap, CC BY 4.0. |
 | `GET` | `/api/environment` | Medie annue ARPAV per stazione più previsione oraria Copernicus CAMS nello stesso punto (indice europeo, PM, NO₂, ozono, UV). |
 | `GET` | `/api/wind-field` | Vento previsto a 10 m su griglia 9×9 (Open-Meteo, cache 30 min): previsione di modello, non misura. |

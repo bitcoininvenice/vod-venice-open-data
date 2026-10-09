@@ -16,6 +16,7 @@ import import_osm_pharmacies as osm_pharm  # noqa: E402
 import import_osm_poi as osm_poi  # noqa: E402
 import import_alilaguna_gtfs as ali  # noqa: E402
 import import_agcom_fiber as fiber  # noqa: E402
+import import_osm_waterways as waterways  # noqa: E402
 from download_gtfs import safe_extract  # noqa: E402
 from vod_common import redact  # noqa: E402
 
@@ -189,6 +190,17 @@ def test_agcom_aggregate_keeps_best_technology():
     cells = fiber.aggregate([(lon, lat, 1, 0), (lon + 0.0002, lat, 3, 1), (lon, lat + 0.0003, 2, 2)])
     assert cells == {(0, 0): (3, 1, 3)}  # operatori FTTH solo dalle celle FTTH
     assert fiber.ring_centroid([[[0, 0], [2, 0], [2, 2], [0, 2], [0, 0]]]) == (1, 1)
+
+
+def test_osm_waterways_marker_kind_and_simplify():
+    assert waterways.marker_kind({"man_made": "dolphin"}) == "briccola"
+    assert waterways.marker_kind({"man_made": "dolphin", "seamark:type": "pile"}) == "briccola"
+    assert waterways.marker_kind({"seamark:type": "pile"}) == "palo"
+    assert waterways.marker_kind({"seamark:type": "beacon_lateral"}) == "segnale"
+    assert waterways.marker_kind({"seamark:type": "buoy_cardinal"}) == "boa"
+    assert waterways.marker_kind({"seamark:type": "light_minor"}) == "fanale"
+    line = [[12.0, 45.0], [12.00001, 45.000001], [12.001, 45.0]]
+    assert waterways.simplify(line, 4.0) == [[12.0, 45.0], [12.001, 45.0]]
 
 
 def test_safe_extract_rejects_path_traversal(tmp_path):

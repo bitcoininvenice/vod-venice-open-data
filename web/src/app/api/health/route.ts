@@ -22,6 +22,7 @@ import fountainsDataset from '@/data/fountains.json';
 import { OSM_POI_META } from '@/lib/osmPoi';
 import { ALILAGUNA_FEED_META, isAlilagunaTimetableValid } from '@/lib/alilaguna-schedule';
 import fiberDataset from '@/data/agcom-fiber.json';
+import lagoonDataset from '@/data/osm-waterways.json';
 
 export const revalidate = 60;
 
@@ -75,6 +76,7 @@ export async function GET() {
     assess('osm-pharmacies', 'Farmacie OpenStreetMap (pipeline)', 'dataset', new Date(OSM_PHARMACIES_META.generatedAt), 31 * DAY, now),
     assess('osm-fountains', 'Fontanelle OpenStreetMap (pipeline)', 'dataset', new Date(fountainsDataset.metadata.extractedAt), 31 * DAY, now),
     assess('osm-poi', 'POI OpenStreetMap: colonnine, parcheggi, pozzi, alberi (pipeline)', 'dataset', new Date(OSM_POI_META.generatedAt), 31 * DAY, now),
+    assess('osm-waterways', 'Briccole e canali OpenStreetMap (pipeline)', 'dataset', new Date(lagoonDataset.generatedAt), 31 * DAY, now),
     assess('agcom-fiber', 'Copertura rete fissa AGCOM (pipeline)', 'dataset', new Date(fiberDataset.generatedAt), 120 * DAY, now),
     assess('alilaguna-gtfs', 'Orario Alilaguna GTFS (pipeline)', 'dataset', new Date(ALILAGUNA_FEED_META.generatedAt), 31 * DAY, now,
       isAlilagunaTimetableValid(now) ? undefined : 'orario importato non più valido'),

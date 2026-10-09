@@ -330,16 +330,16 @@ const LAYER_CATALOG: LayerDocItem[] = [
     nameIt: 'Briccole & Segnalamenti Canali',
     nameEn: 'Lagoon Channel Markers & Lights',
     group: 'lagoon',
-    regime: 'curated',
-    acquisition: 'local',
-    institution: 'Elenco curato del progetto · rif. Provveditorato OO.PP. / Comune di Venezia',
-    portalUrl: 'https://dati.venezia.it',
-    portalName: 'dati.venezia.it',
-    descriptionIt: 'Paline e briccole in legno di quercia che delimitano i bordi navigabili dei canali lagunari e fanali d\'accesso.',
-    descriptionEn: 'Traditional oak wooden piles and sector lights marking navigable lagoon channels.',
-    technicalNotesIt: 'Codici e fondali indicativi. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
-    technicalNotesEn: 'Codes and depths are indicative. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
-    endpointOrFile: 'marineSensorsData.ts'
+    regime: 'static',
+    acquisition: 'api',
+    institution: 'OpenStreetMap contributors (ODbL)',
+    portalUrl: 'https://www.openstreetmap.org',
+    portalName: 'openstreetmap.org (man_made=dolphin, seamark)',
+    descriptionIt: 'Le briccole, i pali, i segnali, le boe e i fanali che delimitano i canali navigabili della laguna: oltre 6.000 punti con la posizione mappata.',
+    descriptionEn: 'The briccole, piles, beacons, buoys and lights marking the navigable lagoon channels: over 6,000 mapped points.',
+    technicalNotesIt: 'Import con pipeline/import_osm_waterways.py (man_made=dolphin e seamark:type per pali, segnali, boe e fanali, ODbL). Non esiste un dataset ufficiale aperto equivalente (verificato su dati.venezia.it, catalogo regionale e data.europa.eu). Le poche voci dell\'elenco curato restano solo se non hanno un segnalamento OSM entro 30 m e sono segnate da verificare. Non usare per la navigazione.',
+    technicalNotesEn: 'Imported with pipeline/import_osm_waterways.py (man_made=dolphin and seamark:type for piles, beacons, buoys and lights, ODbL). There is no equivalent official open dataset (checked on dati.venezia.it, the regional catalogue and data.europa.eu). The few curated entries remain only without an OSM marker within 30 m and are marked to be verified. Not for navigation.',
+    endpointOrFile: '/api/lagoon-network (src/data/osm-waterways.json)'
   },
   {
     id: 'piattaforma_cnr',
@@ -824,6 +824,22 @@ const LAYER_CATALOG: LayerDocItem[] = [
     technicalNotesIt: 'Import con pipeline/import_osm_poi.py (amenity=library, ODbL). Orari e accesso solo se presenti in OSM; non tutte le biblioteche sono aperte al pubblico.',
     technicalNotesEn: 'Imported with pipeline/import_osm_poi.py (amenity=library, ODbL). Hours and access only when tagged in OSM; not every library is open to the public.',
     endpointOrFile: '/api/city-assets (src/data/osm-poi.json)'
+  },
+  {
+    id: 'canali_laguna',
+    nameIt: 'Canali e Rii (OpenStreetMap)',
+    nameEn: 'Canals (OpenStreetMap)',
+    group: 'mobility',
+    regime: 'static',
+    acquisition: 'api',
+    institution: 'OpenStreetMap contributors (ODbL)',
+    portalUrl: 'https://www.openstreetmap.org',
+    portalName: 'openstreetmap.org (waterway=canal)',
+    descriptionIt: 'Il tracciato dei canali lagunari e dei rii del centro storico e delle isole, con il nome quando è mappato: oltre 900 tratti, circa due terzi con nome.',
+    descriptionEn: 'The course of lagoon canals and of the rii in the historic centre and islands, with the name when mapped: over 900 sections, about two thirds named.',
+    technicalNotesIt: 'Import con pipeline/import_osm_waterways.py (waterway=canal, ODbL), tracciati semplificati a 4 m. Cliccando un canale si vedono nome e lunghezza del tratto mappato. Non è una carta nautica: profondità e navigabilità non sono indicate.',
+    technicalNotesEn: 'Imported with pipeline/import_osm_waterways.py (waterway=canal, ODbL), courses simplified to 4 m. Clicking a canal shows its name and the length of the mapped section. It is not a nautical chart: depth and navigability are not shown.',
+    endpointOrFile: '/api/lagoon-network (src/data/osm-waterways.json)'
   }
 ];
 

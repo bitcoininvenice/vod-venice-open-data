@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 import { OCEAN_STATIONS_DATA, BRICCOLE_SIGNALS_DATA } from '@/lib/marineSensorsData';
+import lagoonNetwork from '@/data/osm-waterways.json';
+import { curatedNotInOsm } from '@/lib/osmPoi';
+
+// Le briccole dell'elenco curato restano solo se non c'è un segnalamento OSM entro 30 m
+const OSM_MARKERS = (lagoonNetwork.markers as number[][]).map(([lon, lat]) => ({ lon, lat }));
+const CURATED_BRICCOLE = curatedNotInOsm(BRICCOLE_SIGNALS_DATA, OSM_MARKERS, 30);
 import { fetchUpstream } from '@/server/upstream';
 import { CPSM_METEO_URLS, parseCpsmFeed, platformReadings, type CpsmFeedName } from '@/server/sources/cpsmMeteo';
 import { MARINE_SOURCE, marineUrl, parseMarine } from '@/server/sources/openMeteoMarine';
@@ -38,10 +44,10 @@ export async function GET() {
   return NextResponse.json({
     success: true,
     oceanStationsCount: oceanStations.length,
-    briccoleCount: BRICCOLE_SIGNALS_DATA.length,
+    briccoleCount: CURATED_BRICCOLE.length,
     data: {
       oceanStations,
-      briccole: BRICCOLE_SIGNALS_DATA,
+      briccole: CURATED_BRICCOLE,
     },
     meta: {
       kind: hasLive ? 'live' : 'static-reference',

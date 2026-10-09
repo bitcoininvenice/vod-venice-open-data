@@ -155,6 +155,13 @@ test('il catalogo dei layer dichiara la natura dei dati', async ({ page }) => {
 });
 
 test.describe('API', () => {
+  test('lagoon-network restituisce briccole e canali OpenStreetMap', async ({ request }) => {
+    const body = await (await request.get('/api/lagoon-network')).json();
+    expect(body.data.license).toBe('ODbL 1.0');
+    expect(body.data.markers.length).toBeGreaterThan(1000);
+    expect(body.data.canals.length).toBeGreaterThan(300);
+  });
+
   test('city-assets include ecocentri e biblioteche da OpenStreetMap', async ({ request }) => {
     const body = await (await request.get('/api/city-assets')).json();
     for (const key of ['recyclingCentres', 'libraries']) {
