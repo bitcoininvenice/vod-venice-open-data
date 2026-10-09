@@ -7,7 +7,6 @@ import { PHARMACY_DUTY_URL } from '@/lib/pharmacies-data';
 import tourismData from '@/data/turismo-comuni.json';
 import cruscottoData from '@/data/cruscotto-comuni.json';
 import {
-  X,
   ShieldAlert,
   Anchor,
   Compass,
@@ -68,7 +67,8 @@ import {
 } from '@/lib/types';
 import { Droplet, Building2, Bike, Flower2, GitBranch, Car } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
-import { useDialogA11y } from '@/components/ui/useDialogA11y';
+import { InfoClose, InfoPanel } from '@/components/ui/InfoPanel';
+import type { LayerKey } from '@/lib/urlLayers';
 
 export type VeniceFeatureSelected =
   | { type: 'passerella'; data: PasserellaItem }
@@ -120,20 +120,12 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
   currentTideLevelCm
 }) => {
   const { t } = useTranslation();
-  const panelRef = useDialogA11y(feature !== null, onClose);
   if (!feature) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="feature-modal-title"
-        tabIndex={-1}
-        className="bg-[var(--surface)] text-[var(--ink)] border border-[var(--rule)] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] outline-none">
+    <InfoPanel open onClose={onClose} labelledBy="feature-modal-title" layer={featureLayer(feature)}>
         {/* Header */}
-        <div className="p-4 border-b border-[var(--rule)] flex items-center justify-between bg-black/10">
+        <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
           <div className="flex items-center gap-2.5">
             {feature.type === 'passerella' && (
               <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400"><ShieldAlert className="w-5 h-5" /></div>
@@ -308,24 +300,18 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               </span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <InfoClose onClose={onClose} />
         </div>
 
         {/* Body */}
-        <div className="p-5 flex flex-col gap-4 overflow-y-auto text-xs leading-relaxed">
+        <div className="flex flex-col gap-4 text-xs leading-relaxed">
           {/* SPEED LIMIT */}
           {feature.type === 'speedLimit' && (
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.velocitaMassima')}</span>
-                  <p className="text-2xl font-bold font-mono text-amber-400">{feature.data.maxSpeedKmh} km/h</p>
+                  <p className="text-xl font-bold font-mono text-amber-400">{feature.data.maxSpeedKmh} km/h</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.controlloElettronico')}</span>
@@ -359,13 +345,13 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                             ? t('ui.feature.francoAttualeMarea', { cm: currentTideLevelCm ?? 0 })
                             : (t('ui.feature.francoZeroMareograficoMareaN'))}
                         </span>
-                        <p className={`text-2xl font-bold font-mono ${isNavigable ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        <p className={`text-xl font-bold font-mono ${isNavigable ? 'text-emerald-400' : 'text-rose-400'}`}>
                           {liveClearance} cm
                         </p>
                       </div>
                       <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                         <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.mareaMaxTransito')}</span>
-                        <p className="text-2xl font-bold font-mono text-cyan-400">+{feature.data.minNavigableTideCm} cm</p>
+                        <p className="text-xl font-bold font-mono text-cyan-400">+{feature.data.minNavigableTideCm} cm</p>
                       </div>
                     </div>
                     <div className={`p-3 rounded-xl border flex items-center justify-between ${
@@ -394,11 +380,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.gondoleOperative')}</span>
-                  <p className="text-2xl font-bold font-mono text-purple-400">{feature.data.activeGondolas}</p>
+                  <p className="text-xl font-bold font-mono text-purple-400">{feature.data.activeGondolas}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.tariffaRegolata')}</span>
-                  <p className="text-2xl font-bold font-mono text-emerald-400">€ {feature.data.priceEur.toFixed(2)}</p>
+                  <p className="text-xl font-bold font-mono text-emerald-400">€ {feature.data.priceEur.toFixed(2)}</p>
                 </div>
               </div>
               <p className="text-[var(--ink-2)]">{t('ui.feature.orariServizio')} <b>{feature.data.openingHours}</b></p>
@@ -414,11 +400,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.velocitaMovimentoSuolo')}</span>
-                  <p className="text-2xl font-bold font-mono text-rose-400">{feature.data.velocityMmYear} mm/anno</p>
+                  <p className="text-xl font-bold font-mono text-rose-400">{feature.data.velocityMmYear} mm/anno</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.affidabilitaRadarCoerenza')}</span>
-                  <p className="text-2xl font-bold font-mono text-cyan-400">{Math.round(feature.data.coherence * 100)}%</p>
+                  <p className="text-xl font-bold font-mono text-cyan-400">{Math.round(feature.data.coherence * 100)}%</p>
                 </div>
               </div>
               <p className="text-[var(--ink-2)]">
@@ -433,11 +419,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.superficieProtetta')}</span>
-                  <p className="text-2xl font-bold font-mono text-emerald-400">{feature.data.areaHectares} ha</p>
+                  <p className="text-xl font-bold font-mono text-emerald-400">{feature.data.areaHectares} ha</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.quotaMediaFondale')}</span>
-                  <p className="text-2xl font-bold font-mono text-cyan-400">{feature.data.avgDepthMeters} m</p>
+                  <p className="text-xl font-bold font-mono text-cyan-400">{feature.data.avgDepthMeters} m</p>
                 </div>
               </div>
               <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-[11px] text-emerald-300">
@@ -485,7 +471,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono flex items-center gap-1">
                     <Waves className="w-3 h-3 text-cyan-400" /> {t('ui.feature.altezzaDOndaHs')}
                   </span>
-                  <p className="text-2xl font-bold font-mono text-cyan-600 dark:text-cyan-400">
+                  <p className="text-xl font-bold font-mono text-cyan-600 dark:text-cyan-400">
                     {feature.data.waveHeightMeters === null ? 'n.d.' : `${feature.data.waveHeightMeters} m`}
                   </p>
                   <span className="text-[10px] text-[var(--ink-3)] block mt-0.5">
@@ -601,7 +587,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.capienzaDichiarata')}</span>
-                  <p className="text-2xl font-bold font-mono text-cyan-400">
+                  <p className="text-xl font-bold font-mono text-cyan-400">
                     {feature.data.totalSpots ?? 'n.d.'} {feature.data.totalSpots !== null && <span className="text-xs text-[var(--ink-2)] font-normal">{t('ui.feature.posti')}</span>}
                   </p>
                 </div>
@@ -668,11 +654,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.altezzaTorre')}</span>
-                  <p className="text-2xl font-bold font-mono text-orange-400">{feature.data.heightMeters} m</p>
+                  <p className="text-xl font-bold font-mono text-orange-400">{feature.data.heightMeters} m</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.inclinazionePendenza')}</span>
-                  <p className={`text-2xl font-bold font-mono ${feature.data.tiltAngleDeg > 1 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                  <p className={`text-xl font-bold font-mono ${feature.data.tiltAngleDeg > 1 ? 'text-rose-400' : 'text-emerald-400'}`}>
                     {feature.data.tiltAngleDeg}°
                   </p>
                 </div>
@@ -700,13 +686,13 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.tempSuperficieLst')}</span>
-                  <p className={`text-2xl font-bold font-mono ${feature.data.surfaceTempCelsius > 32 ? 'text-rose-400' : 'text-cyan-400'}`}>
+                  <p className={`text-xl font-bold font-mono ${feature.data.surfaceTempCelsius > 32 ? 'text-rose-400' : 'text-cyan-400'}`}>
                     {feature.data.surfaceTempCelsius}°C
                   </p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.deltaMicroclimatico')}</span>
-                  <p className={`text-2xl font-bold font-mono ${feature.data.airTempDelta > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                  <p className={`text-xl font-bold font-mono ${feature.data.airTempDelta > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
                     {feature.data.airTempDelta > 0 ? `+${feature.data.airTempDelta}°C` : `${feature.data.airTempDelta}°C`}
                   </p>
                 </div>
@@ -761,11 +747,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.altezzaOndaHs')}</span>
-                  <p className="text-2xl font-bold font-mono text-cyan-400">{feature.data.waveHeightMeters === null ? 'n.d.' : `${feature.data.waveHeightMeters} m`}</p>
+                  <p className="text-xl font-bold font-mono text-cyan-400">{feature.data.waveHeightMeters === null ? 'n.d.' : `${feature.data.waveHeightMeters} m`}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.tempAcqua')}</span>
-                  <p className="text-2xl font-bold font-mono text-emerald-400">{feature.data.waterTempC === null ? 'n.d.' : `${feature.data.waterTempC} °C`}</p>
+                  <p className="text-xl font-bold font-mono text-emerald-400">{feature.data.waterTempC === null ? 'n.d.' : `${feature.data.waterTempC} °C`}</p>
                 </div>
               </div>
               <div className="text-[11px] text-[var(--ink-3)]">
@@ -802,7 +788,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.altezza')}</span>
-                  <p className="text-2xl font-bold font-mono text-green-400">{feature.data.heightMeters !== null ? `${feature.data.heightMeters} m` : 'n.d.'}</p>
+                  <p className="text-xl font-bold font-mono text-green-400">{feature.data.heightMeters !== null ? `${feature.data.heightMeters} m` : 'n.d.'}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">MASAF</span>
@@ -820,7 +806,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {feature.type === 'evCharging' && (
             <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
               <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.prese')}</span>
-              <p className="text-2xl font-bold font-mono text-yellow-400">{feature.data.totalSockets ?? 'n.d.'}</p>
+              <p className="text-xl font-bold font-mono text-yellow-400">{feature.data.totalSockets ?? 'n.d.'}</p>
               <span className="text-[11px] text-[var(--ink-3)] block">
                 {t('ui.feature.disponibilitaTempoRealeNonPubblicata')}
               </span>
@@ -855,7 +841,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {feature.type === 'publicDock' && (
             <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
               <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.sostaMassimaConsentita')}</span>
-              <p className="text-2xl font-bold font-mono text-blue-400">{feature.data.maxStayMinutes} min</p>
+              <p className="text-xl font-bold font-mono text-blue-400">{feature.data.maxStayMinutes} min</p>
             </div>
           )}
 
@@ -1245,10 +1231,29 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
 
           <FeatureProvenance feature={feature} />
         </div>
-      </div>
-    </div>
+    </InfoPanel>
   );
 };
+
+/** Layer da cui proviene ogni tipo di scheda (natura del dato e fonte nel piede della scheda). */
+const FEATURE_LAYER: Record<Exclude<VeniceFeatureSelected['type'], 'civicPoi'>, LayerKey> = {
+  passerella: 'showPasserelle', briccola: 'showMarineSignals', oceanStation: 'showOceanStations',
+  bathingWater: 'showBathingWaters', urbanTree: 'showTrees', evCharging: 'showEvCharging',
+  wifiHotspot: 'showWifiHotspots', speedLimit: 'showCanalLimits', bridgeClearance: 'showBridges',
+  gondolaStation: 'showGondolas', publicDock: 'showDocks', subsidence: 'showSubsidence',
+  lagoonMorphology: 'showMorphology', marineWind: 'showMarineWind', trainLive: 'showTrains',
+  wasteBoat: 'showWasteBoats', nizioleto: 'showNizioleti', veniceWell: 'showWells', bellTower: 'showBellTowers',
+  fortressIsland: 'showFortresses', emergencyDock: 'showEmergencyDocks', publicDae: 'showDae',
+  pharmacy: 'showPharmacies', heatIsland: 'showHeatIslands', lagoonWater: 'showLagoonWater',
+  accommodation: 'showAccommodations', bikeRoute: 'showBikeRoutes', pollenStation: 'showPollenStations',
+  tributaryRiver: 'showTributaries', parking: 'showParkings', fountain: 'showCityAssets', fiberCell: 'showFiber',
+  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals',
+};
+
+function featureLayer(feature: VeniceFeatureSelected): LayerKey {
+  if (feature.type === 'civicPoi') return feature.data.kind === 'recycling' ? 'showRecyclingCentres' : 'showLibraries';
+  return FEATURE_LAYER[feature.type];
+}
 
 /** Tipi che vengono da elenchi compilati nel progetto, senza un campo `source` per voce. */
 const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([

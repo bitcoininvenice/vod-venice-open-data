@@ -5,7 +5,7 @@ import { X, Plane, Navigation, Compass, Waves, Bus, Wind, Thermometer, Cloud, Ch
 import { FlightItem, AirportMetarData } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge';
-import { useDialogA11y } from '@/components/ui/useDialogA11y';
+import { InfoPanel } from '@/components/ui/InfoPanel';
 
 interface AirportDetailModalProps {
   isOpen: boolean;
@@ -23,7 +23,6 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const [copiedMetar, setCopiedMetar] = useState(false);
-  const panelRef = useDialogA11y(isOpen, onClose);
   if (!isOpen) return null;
 
   const handleCopyMetar = () => {
@@ -39,15 +38,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
   const activeTaxi = flights.filter((f) => f.status === 'TAXI' || f.onGround);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="airport-modal-title"
-        tabIndex={-1}
-        className="glass-panel w-full max-w-lg rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-3.5 sm:gap-4 border border-sky-500/40 animate-in fade-in zoom-in-95 duration-200 max-h-[88vh] overflow-y-auto outline-none"
-      >
+    <InfoPanel open={isOpen} onClose={onClose} labelledBy="airport-modal-title" layer="showFlights" accent="border-sky-500/40">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
           <div className="flex items-center gap-3">
@@ -133,7 +124,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
             </div>
 
             {/* Weather Breakdown Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="bg-[var(--rule)]/30 p-2 rounded-xl border border-[var(--rule)] flex flex-col">
                 <span className="text-[10px] text-[var(--ink-3)] font-mono flex items-center gap-1">
                   <Wind className="w-3 h-3 text-sky-400" /> {t('airportModal.groundWind')}
@@ -200,7 +191,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
           <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
             <Compass className="w-4 h-4 text-sky-400" /> {t('airportModal.runwaysTitle')}
           </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-1 gap-2 text-xs">
             <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-sky-500/20 flex flex-col gap-1">
               <div className="flex justify-between items-center">
                 <span className="font-mono font-bold text-sky-300">{t('airportModal.mainRunway')}</span>
@@ -232,7 +223,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
           <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
             <Navigation className="w-4 h-4 text-emerald-400" /> {t('airportModal.intermodalTitle')}
           </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-1 gap-2 text-xs">
             <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 flex flex-col gap-1">
               <div className="flex items-center gap-1.5 font-semibold text-blue-400">
                 <Waves className="w-3.5 h-3.5" /> {t('airportModal.waterDockTitle')}
@@ -311,7 +302,6 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
             {t('airportModal.close')}
           </button>
         </div>
-      </div>
-    </div>
+    </InfoPanel>
   );
 };

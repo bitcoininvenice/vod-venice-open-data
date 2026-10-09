@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { X, Plane, Ship, Satellite, Plus, Minus, Maximize2, Box } from 'lucide-react';
+import { Plus, Minus, Maximize2, Box } from 'lucide-react';
 import {
   CameraViewPreset,
   TransportModeCategory,
@@ -54,6 +54,7 @@ import {
   VeniceCameraItem
 } from '@/lib/types';
 import { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
+import type { MapObjectSelected } from './MapObjectPanel';
 import { D, LAND } from '@/lib/simulation-data';
 import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
@@ -70,6 +71,7 @@ import { drawFloodLayer } from './map/floodLayer';
 import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
 import { drawFiber } from './map/fiberLayer';
 import { drawLagoonNetwork } from './map/lagoonNetworkLayer';
+import { withLabelGuard } from './map/labelGuard';
 import { pointSegmentDistance, type LagoonNetwork } from '@/lib/lagoonNetwork';
 import { FIBER_COLORS, fiberCellAt, indexFiberCells, type FiberDataset } from '@/lib/fiber';
 import { MAP_3D_CSS_TRANSFORM, unprojectFrom3D } from '@/lib/map3d';
@@ -140,7 +142,15 @@ export interface MapEngineProps {
   onSelectStop: (stop: StopItem) => void;
   onSelectCantiere: (cantiere: CantiereItem) => void;
   onSelectAirport?: () => void;
-  onSelectShip?: (ship: ShipItem) => void;
+  /** Oggetti in movimento (navi, voli, mezzi, Alilaguna): si aprono nella scheda informativa */
+  onSelectObject?: (object: MapObjectSelected) => void;
+  /** Clic su un punto vuoto della mappa */
+  onClearSelection?: () => void;
+  /** Legenda dei livelli attivi, in cima alla pila delle legende */
+  legend?: React.ReactNode;
+  /** Oggetto e satellite selezionati, evidenziati sulla mappa */
+  selectedObject?: MapObjectSelected | null;
+  selectedSatellite?: SatelliteItem | null;
   onSelectMose?: () => void;
   focusedCoordinates?: { lat: number; lon: number } | null;
   // New Open Data Feeds
@@ -268,7 +278,11 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   onSelectStop,
   onSelectCantiere,
   onSelectAirport,
-  onSelectShip,
+  onSelectObject,
+  onClearSelection,
+  selectedObject = null,
+  legend,
+  selectedSatellite = null,
   onSelectMose,
   focusedCoordinates,
   showCanalLimits = false,
@@ -347,32 +361,19 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
   // View Camera State (x0, y0, scale)
   const [camera, setCamera] = useState({ x0: 0, y0: 0, s: 0.02 });
-  const [containerWidth, setContainerWidth] = useState(320);
   const [is3DView, setIs3DView] = useState(false);
 
   /** Coordinate dello schermo -> piano della mappa (in 3D il canvas è inclinato via CSS). */
   const toMapPlane = (x: number, y: number, rect: DOMRect) =>
     is3DView ? unprojectFrom3D(x, y, rect.width, rect.height) : { x, y };
   const isDraggingRef = useRef(false);
+  // Evidenziazione sulla mappa dell'oggetto aperto nella scheda informativa
+  const selectedFlight = selectedObject?.type === 'flight' ? selectedObject.data : null;
+  const selectedShipOnMap = selectedObject?.type === 'ship' ? selectedObject.data : null;
+  const selectedAlilagunaBoat = selectedObject?.type === 'alilagunaBoat' ? selectedObject.data : null;
   const dragStartRef = useRef({ x: 0, y: 0, camX: 0, camY: 0 });
 
   // Hover & Selection state
-  const [selectedVehicle, setSelectedVehicle] = useState<{
-    line: string;
-    category: string;
-    speedKmh: number;
-    screenX: number;
-    screenY: number;
-    color: string;
-    headsign: string;
-    /** 'gps' = posizione reale GTFS-RT, 'schedule' = simulazione da orario */
-    source: 'gps' | 'schedule';
-    updatedAt?: number | null;
-  } | null>(null);
-  const [selectedFlight, setSelectedFlight] = useState<FlightItem | null>(null);
-  const [selectedShipOnMap, setSelectedShipOnMap] = useState<ShipItem | null>(null);
-  const [selectedAlilagunaBoat, setSelectedAlilagunaBoat] = useState<AlilagunaBoat | null>(null);
-  const [selectedSatellite, setSelectedSatellite] = useState<SatelliteItem | null>(null);
 
 
   // Update camera based on presets with exact mathematical centering
@@ -463,7 +464,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
       canvasRef.current.width = w * dpr;
       canvasRef.current.height = h * dpr;
-      setContainerWidth(w);
 
       updateCameraToPreset(currentView, w, h);
     };
@@ -702,9 +702,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     if (Math.hypot(clickX - vceX, clickY - vceY) <= Math.max(34, 45 * (camera.s / 0.02))) {
       if (onSelectAirport) {
         onSelectAirport();
-        setSelectedVehicle(null);
-        setSelectedFlight(null);
-        setSelectedShipOnMap(null);
         return;
       }
     }
@@ -716,16 +713,16 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         const fx = (mx(live.lon) - camera.x0) * camera.s;
         const fy = (my(live.lat) - camera.y0) * camera.s;
         if (Math.hypot(clickX - fx, clickY - fy) <= 24) {
-          setSelectedFlight({
+          onSelectObject?.({
+            type: 'flight',
+            data: {
             ...f,
             lon: live.lon,
             lat: live.lat,
             trackDegrees: live.heading,
             altitudeMeters: live.alt
+            },
           });
-          setSelectedVehicle(null);
-          setSelectedShipOnMap(null);
-          setSelectedAlilagunaBoat(null);
           return;
         }
       }
@@ -737,10 +734,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         const sxPos = (mx(s.lon) - camera.x0) * camera.s;
         const syPos = (my(s.lat) - camera.y0) * camera.s;
         if (Math.hypot(clickX - sxPos, clickY - syPos) <= 18) {
-          setSelectedShipOnMap(s);
-          setSelectedVehicle(null);
-          setSelectedFlight(null);
-          setSelectedAlilagunaBoat(null);
+          onSelectObject?.({ type: 'ship', data: s });
           return;
         }
       }
@@ -754,10 +748,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - gx, clickY - gy) <= 30) {
           if (onSelectMose) {
             onSelectMose();
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
             return;
           }
         }
@@ -771,10 +761,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         const bxPos = (mx(b.lon) - camera.x0) * camera.s;
         const byPos = (my(b.lat) - camera.y0) * camera.s;
         if (Math.hypot(clickX - bxPos, clickY - byPos) <= 22) {
-          setSelectedAlilagunaBoat(b);
-          setSelectedVehicle(null);
-          setSelectedFlight(null);
-          setSelectedShipOnMap(null);
+          onSelectObject?.({ type: 'alilagunaBoat', data: b });
           return;
         }
       }
@@ -788,11 +775,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - sxPos, clickY - syPos) <= 18) {
           if (onSelectAlilaguna) {
             onSelectAlilaguna();
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -808,11 +790,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - cx, clickY - cy) <= hitRadius) {
           if (onSelectCamera) {
             onSelectCamera(cam);
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -826,25 +803,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         const satX = (mx(live.lon) - camera.x0) * camera.s;
         const satY = (my(live.lat) - camera.y0) * camera.s;
         if (Math.hypot(clickX - satX, clickY - satY) <= 24) {
-          if (onSelectSatellite) {
-            onSelectSatellite({
-              ...sat,
-              currentLon: live.lon,
-              currentLat: live.lat,
-              heading: live.heading
-            });
-          } else {
-            setSelectedSatellite({
-              ...sat,
-              currentLon: live.lon,
-              currentLat: live.lat,
-              heading: live.heading
-            });
-          }
-          setSelectedVehicle(null);
-          setSelectedFlight(null);
-          setSelectedShipOnMap(null);
-          setSelectedAlilagunaBoat(null);
+          onSelectSatellite?.({
+            ...sat,
+            currentLon: live.lon,
+            currentLat: live.lat,
+            heading: live.heading
+          });
           return;
         }
       }
@@ -858,11 +822,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - sxPos, clickY - syPos) <= 24) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'oceanStation', data: st });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -877,11 +836,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - bxPos, clickY - byPos) <= 20) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'briccola', data: br });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -897,11 +851,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           if (Math.hypot(clickX - px, clickY - py) <= 18) {
             if (onSelectFeature) {
               onSelectFeature({ type: 'passerella', data: p });
-              setSelectedVehicle(null);
-              setSelectedFlight(null);
-              setSelectedShipOnMap(null);
-              setSelectedAlilagunaBoat(null);
-              setSelectedSatellite(null);
               return;
             }
           }
@@ -917,11 +866,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - bx, clickY - by) <= 22) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'bathingWater', data: bw });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -936,11 +880,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - tx, clickY - ty) <= 20) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'urbanTree', data: tr });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -955,11 +894,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - ex, clickY - ey) <= 20) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'evCharging', data: ev });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -974,11 +908,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - wx, clickY - wy) <= 20) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'wifiHotspot', data: wf });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -993,11 +922,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - bx, clickY - by) <= 22) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'bridgeClearance', data: b });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1012,11 +936,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - gx, clickY - gy) <= 20) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'gondolaStation', data: g });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1031,11 +950,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - dx, clickY - dy) <= 20) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'publicDock', data: d });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1050,11 +964,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - sxPos, clickY - syPos) <= 22) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'subsidence', data: sub });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1069,11 +978,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - cx, clickY - cy) <= 26) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'lagoonMorphology', data: morph });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1088,11 +992,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - wx, clickY - wy) <= 24) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'marineWind', data: w });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1107,11 +1006,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - tx, clickY - ty) <= 24) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'trainLive', data: tr });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1126,11 +1020,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - px, clickY - (py - 10)) <= 28) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'parking', data: p });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1145,11 +1034,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - bx, clickY - by) <= 20) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'wasteBoat', data: wb });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1164,11 +1048,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - nx, clickY - ny) <= 20) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'nizioleto', data: niz });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1183,11 +1062,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - wx, clickY - wy) <= 20) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'veniceWell', data: w });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1202,11 +1076,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - bx, clickY - by) <= 24) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'bellTower', data: bt });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1221,11 +1090,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - fx, clickY - fy) <= 26) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'fortressIsland', data: fort });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1240,11 +1104,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - ex, clickY - ey) <= 22) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'emergencyDock', data: ed });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1258,11 +1117,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - dx, clickY - dy) <= 20) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'publicDae', data: dae });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1276,11 +1130,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - px, clickY - py) <= 20) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'pharmacy', data: ph });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1295,11 +1144,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - hx, clickY - hy) <= 26) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'heatIsland', data: hi });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1314,11 +1158,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - wx, clickY - wy) <= 24) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'lagoonWater', data: wq });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1333,11 +1172,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - ax, clickY - ay) <= 28) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'accommodation', data: acc });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1353,11 +1187,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           if (Math.hypot(clickX - bx, clickY - by) <= 20) {
             if (onSelectFeature) {
               onSelectFeature({ type: 'bikeRoute', data: br });
-              setSelectedVehicle(null);
-              setSelectedFlight(null);
-              setSelectedShipOnMap(null);
-              setSelectedAlilagunaBoat(null);
-              setSelectedSatellite(null);
               return;
             }
           }
@@ -1373,11 +1202,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - px, clickY - py) <= 24) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'pollenStation', data: pol });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1392,11 +1216,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - rx, clickY - ry) <= 26) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'tributaryRiver', data: riv });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1406,11 +1225,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           if (Math.hypot(clickX - px, clickY - py) <= 20) {
             if (onSelectFeature) {
               onSelectFeature({ type: 'tributaryRiver', data: riv });
-              setSelectedVehicle(null);
-              setSelectedFlight(null);
-              setSelectedShipOnMap(null);
-              setSelectedAlilagunaBoat(null);
-              setSelectedSatellite(null);
               return;
             }
           }
@@ -1427,11 +1241,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           if (Math.hypot(clickX - px, clickY - py) <= 18) {
             if (onSelectFeature) {
               onSelectFeature({ type: 'speedLimit', data: sl });
-              setSelectedVehicle(null);
-              setSelectedFlight(null);
-              setSelectedShipOnMap(null);
-              setSelectedAlilagunaBoat(null);
-              setSelectedSatellite(null);
               return;
             }
           }
@@ -1446,11 +1255,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         const ay = (my(a.lat) - camera.y0) * camera.s;
         if (Math.hypot(clickX - ax, clickY - (ay - 8)) <= 18) {
           onSelectFeature({ type: 'airStation', data: a });
-          setSelectedVehicle(null);
-          setSelectedFlight(null);
-          setSelectedShipOnMap(null);
-          setSelectedAlilagunaBoat(null);
-          setSelectedSatellite(null);
           return;
         }
       }
@@ -1464,11 +1268,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         const py = (my(p.lat) - camera.y0) * camera.s;
         if (Math.hypot(clickX - px, clickY - py) <= 14) {
           onSelectFeature({ type: 'civicPoi', data: p });
-          setSelectedVehicle(null);
-          setSelectedFlight(null);
-          setSelectedShipOnMap(null);
-          setSelectedAlilagunaBoat(null);
-          setSelectedSatellite(null);
           return;
         }
       }
@@ -1482,11 +1281,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         if (Math.hypot(clickX - fx, clickY - fy) <= 16) {
           if (onSelectFeature) {
             onSelectFeature({ type: 'fountain', data: f });
-            setSelectedVehicle(null);
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
-            setSelectedAlilagunaBoat(null);
-            setSelectedSatellite(null);
             return;
           }
         }
@@ -1501,8 +1295,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         const dist = Math.hypot(clickX - cx, clickY - cy);
         if (dist <= 18) {
           onSelectCantiere(c);
-          setSelectedVehicle(null);
-          setSelectedFlight(null);
           return;
         }
       }
@@ -1516,8 +1308,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         const dist = Math.hypot(clickX - sx, clickY - sy);
         if (dist <= 15) {
           onSelectStop(s);
-          setSelectedVehicle(null);
-          setSelectedFlight(null);
           return;
         }
       }
@@ -1550,18 +1340,17 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             const speedKmh = Math.round(((distAt(prof, dtNow) - distAt(prof, dtNow - spanSec)) / spanSec) * 3.6 * 10) / 10;
             const lineName = prof.route.n || 'ACTV';
             const longName = `${tr('ui.mapLabels.line', { line: lineName })} · ${tr('ui.map.orarioUfficialeActv')}`;
-            setSelectedVehicle({
-              line: lineName,
-              category: rCat.toUpperCase(),
-              speedKmh,
-              screenX: clickX,
-              screenY: clickY,
-              color: paletteAt(currentTimeSeconds).cats[rCat] || '#5cc8ff',
-              headsign: longName,
-              source: 'schedule'
+            onSelectObject?.({
+              type: 'vehicle',
+              data: {
+                line: lineName,
+                category: rCat.toUpperCase(),
+                speedKmh,
+                color: paletteAt(currentTimeSeconds).cats[rCat] || '#5cc8ff',
+                headsign: longName,
+                source: 'schedule',
+              },
             });
-            setSelectedFlight(null);
-            setSelectedShipOnMap(null);
             return;
           }
         }
@@ -1575,19 +1364,18 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         const vy = (my(v.lat) - camera.y0) * camera.s;
         if (Math.hypot(clickX - vx, clickY - vy) <= 14) {
           const cat = v.category || 'vaporetto';
-          setSelectedVehicle({
-            line: v.line || '?',
-            category: `${cat.toUpperCase()} · GPS`,
-            speedKmh: 0,
-            screenX: clickX,
-            screenY: clickY,
-            color: paletteAt(currentTimeSeconds).cats[cat] || '#34d399',
-            headsign: v.line ? `${tr('ui.mapLabels.line', { line: v.line })} · ${tr(v.network === 'navigazione' ? 'ui.mapLabels.networkNav' : 'ui.mapLabels.networkBus')}` : tr('ui.mapLabels.unknownLine', { id: v.label || v.id }),
-            source: 'gps',
-            updatedAt: v.timestamp
+          onSelectObject?.({
+            type: 'vehicle',
+            data: {
+              line: v.line || '?',
+              category: `${cat.toUpperCase()} · GPS`,
+              speedKmh: null,
+              color: paletteAt(currentTimeSeconds).cats[cat] || '#34d399',
+              headsign: v.line ? `${tr('ui.mapLabels.line', { line: v.line })} · ${tr(v.network === 'navigazione' ? 'ui.mapLabels.networkNav' : 'ui.mapLabels.networkBus')}` : tr('ui.mapLabels.unknownLine', { id: v.label || v.id }),
+              source: 'gps',
+              updatedAt: v.timestamp,
+            },
           });
-          setSelectedFlight(null);
-          setSelectedShipOnMap(null);
           return;
         }
       }
@@ -1602,10 +1390,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
       if (best) {
         onSelectFeature({ type: 'lagoonMarker', data: { lon: best.m[0], lat: best.m[1], kind: best.m[2], osmId: best.m[3] } });
-        setSelectedVehicle(null);
-        setSelectedFlight(null);
-        setSelectedShipOnMap(null);
-        setSelectedAlilagunaBoat(null);
         return;
       }
     }
@@ -1625,10 +1409,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
       if (best) {
         onSelectFeature({ type: 'canal', data: best.c });
-        setSelectedVehicle(null);
-        setSelectedFlight(null);
-        setSelectedShipOnMap(null);
-        setSelectedAlilagunaBoat(null);
         return;
       }
     }
@@ -1640,19 +1420,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       const cell = fiberCellAt(fiberData, fiberIndex, lon, lat);
       if (cell) {
         onSelectFeature({ type: 'fiberCell', data: { cell, dataDate: fiberData.dataDate } });
-        setSelectedVehicle(null);
-        setSelectedFlight(null);
-        setSelectedShipOnMap(null);
-        setSelectedAlilagunaBoat(null);
         return;
       }
     }
 
-    // Dismiss tooltips on empty click
-    setSelectedVehicle(null);
-    setSelectedFlight(null);
-    setSelectedShipOnMap(null);
-    setSelectedAlilagunaBoat(null);
+    // Clic su un punto vuoto: si chiude la scheda aperta
+    onClearSelection?.();
   };
 
   // Mouse click wrapper
@@ -1886,101 +1659,104 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       // Vento animato sotto tutti gli altri layer, come sfondo
       drawWindFlow(rc);
       drawFiber(rc);
-      drawLagoonNetwork(rc);
-      drawRoutes(rc);
+      // Etichette diradate: niente sovrapposizioni e un massimo per frame (vince chi è disegnato prima)
+      withLabelGuard(ctx, (unguarded) => {
+        drawLagoonNetwork(rc);
+        drawRoutes(rc);
 
-      drawSpatialBuffer(rc);
+        drawSpatialBuffer(rc);
 
-      // Zone allagate (stima indicativa): con il simulatore attivo o con il layer passerelle acceso
-      if (simulatedTideLevel != null || showPasserelle) drawFloodLayer(rc, rc.tideLevel);
+        // Zone allagate (stima indicativa): con il simulatore attivo o con il layer passerelle acceso
+        if (simulatedTideLevel != null || showPasserelle) unguarded(() => drawFloodLayer(rc, rc.tideLevel));
 
-      drawVehicles(rc);
+        drawVehicles(rc);
 
-      drawRealtimeVehicles(rc);
+        drawRealtimeVehicles(rc);
 
-      drawStops(rc);
+        drawStops(rc);
 
-      drawCantieri(rc);
+        drawCantieri(rc);
 
-      drawFlights(rc);
+        drawFlights(rc);
 
-      drawMose(rc);
+        drawMose(rc);
 
-      drawShipRoutes(rc);
+        drawShipRoutes(rc);
 
-      drawShips(rc);
+        drawShips(rc);
 
-      drawCityAssets(rc);
-      drawCivicPois(rc);
+        drawCityAssets(rc);
+        drawCivicPois(rc);
 
-      drawParkings(rc);
+        drawParkings(rc);
 
-      drawAirQuality(rc);
+        drawAirQuality(rc);
 
-      drawPedestrianFlows(rc);
+        drawPedestrianFlows(rc);
 
-      drawAlilaguna(rc);
+        drawAlilaguna(rc);
 
-      drawSatellites(rc);
+        drawSatellites(rc);
 
-      drawCameras(rc);
+        drawCameras(rc);
 
-      drawPasserelle(rc);
+        drawPasserelle(rc);
 
-      drawMarineSignals(rc);
+        drawMarineSignals(rc);
 
-      drawOceanStations(rc);
+        drawOceanStations(rc);
 
-      drawBathingWaters(rc);
+        drawBathingWaters(rc);
 
-      drawTrees(rc);
+        drawTrees(rc);
 
-      drawEvCharging(rc);
-      drawWifiHotspots(rc);
+        drawEvCharging(rc);
+        drawWifiHotspots(rc);
 
-      drawCanalLimits(rc);
+        drawCanalLimits(rc);
 
-      drawBridges(rc);
+        drawBridges(rc);
 
-      drawGondolas(rc);
+        drawGondolas(rc);
 
-      drawDocks(rc);
+        drawDocks(rc);
 
-      drawSubsidence(rc);
+        drawSubsidence(rc);
 
-      drawMorphology(rc);
+        drawMorphology(rc);
 
-      drawMarineWind(rc);
+        drawMarineWind(rc);
 
-      drawTrains(rc);
+        drawTrains(rc);
 
-      drawWasteBoats(rc);
+        drawWasteBoats(rc);
 
-      drawNizioleti(rc);
+        drawNizioleti(rc);
 
-      drawWells(rc);
+        drawWells(rc);
 
-      drawBellTowers(rc);
+        drawBellTowers(rc);
 
-      drawFortresses(rc);
+        drawFortresses(rc);
 
-      drawEmergencyDocks(rc);
+        drawEmergencyDocks(rc);
 
-      drawDae(rc);
+        drawDae(rc);
 
-      drawPharmacies(rc);
+        drawPharmacies(rc);
 
-      drawHeatIslands(rc);
+        drawHeatIslands(rc);
 
-      drawLagoonWater(rc);
+        drawLagoonWater(rc);
 
-      drawAccommodations(rc);
+        drawAccommodations(rc);
 
-      drawBikeRoutes(rc);
+        drawBikeRoutes(rc);
 
-      drawPollenStations(rc);
+        drawPollenStations(rc);
 
-      drawTributaries(rc);
+        drawTributaries(rc);
+      });
 
       ctx.restore();
       animId = requestAnimationFrame(render);
@@ -2134,9 +1910,11 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         }}
       />
 
-      {/* Legende dei layer a campo (vento, fibra), impilate in alto al centro */}
-      {((showMarineWind && windField) || (showFiber && fiberData)) && (
+      {/* Legende impilate in alto al centro: livelli attivi, poi i layer a campo (vento, fibra) */}
+      {(legend || (showMarineWind && windField) || (showFiber && fiberData)) && (
       <div className="absolute left-1/2 -translate-x-1/2 top-3 z-20 flex flex-col gap-2 w-[min(20rem,calc(100vw-7rem))]">
+      {/* Legenda unica dei livelli accesi */}
+      {legend}
       {/* Legenda del vento animato: scala in km/h, fonte e ora di validità della previsione */}
       {showMarineWind && windField && (
         <div className="pointer-events-none glass-panel rounded-xl border border-[var(--rule)] px-3 py-2 flex flex-col gap-1 shadow-lg">
@@ -2244,341 +2022,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         </button>
       </div>
 
-      {/* Floating Vehicle Tooltip */}
-      {selectedVehicle && (
-        <div
-          className="absolute z-40 glass-panel rounded-2xl p-4 shadow-2xl border border-cyan-500/50 w-[calc(100vw-2rem)] max-w-sm sm:w-80 flex flex-col gap-2.5 animate-in fade-in zoom-in-95 pointer-events-auto"
-          style={{
-            left:
-              typeof window !== 'undefined' && window.innerWidth < 640
-                ? 16
-                : Math.max(16, Math.min(containerWidth - 340, selectedVehicle.screenX - 160)),
-            top:
-              typeof window !== 'undefined' && window.innerWidth < 640
-                ? 64
-                : selectedVehicle.screenY > 210
-                  ? selectedVehicle.screenY - 180
-                  : selectedVehicle.screenY + 25
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center justify-between border-b border-[var(--rule)] pb-2">
-            <div className="flex items-center gap-2">
-              <span
-                className="px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold text-white shadow-sm"
-                style={{ backgroundColor: selectedVehicle.color }}
-              >
-                {t('map.vehicleLine')} {selectedVehicle.line}
-              </span>
-              <span className="text-[11px] font-mono text-cyan-400 font-bold uppercase">
-                {selectedVehicle.category}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setSelectedVehicle(null)}
-              className="text-[var(--ink-2)] hover:text-[var(--ink)] p-1 rounded cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="flex flex-col gap-1 text-xs">
-            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('map.routeDirection')}</span>
-            <span className="font-medium text-[var(--ink)] leading-snug">{selectedVehicle.headsign}</span>
-          </div>
-
-          {selectedVehicle.source === 'gps' ? (
-            <div className="pt-1 border-t border-[var(--rule)] text-xs flex flex-col gap-1">
-              <span className="font-mono font-bold text-emerald-400">
-                {tr('ui.map.posizioneGpsRealeGtfsRt')}
-              </span>
-              <span className="text-[11px] text-[var(--ink-3)] font-mono">
-                {selectedVehicle.updatedAt
-                  ? `${tr('ui.map.aggiornataAlle')} ${new Date(selectedVehicle.updatedAt * 1000).toLocaleTimeString('it-IT', { timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
-                  : (tr('ui.map.orarioPosizioneNonIndicato'))}
-              </span>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[var(--rule)] text-xs">
-              <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-                <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.estimatedSpeed')}</span>
-                <span className="font-mono font-bold text-emerald-400">{selectedVehicle.speedKmh} km/h</span>
-              </div>
-              <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-                <span className="text-[10px] text-[var(--ink-3)] block font-mono">{tr('ui.map.fonte')}</span>
-                <span className="font-mono font-bold text-sky-400">{tr('ui.map.simulatoOrario')}</span>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Floating Flight Tooltip */}
-      {selectedFlight && (
-        <div
-          className="absolute z-40 glass-panel rounded-2xl p-4 shadow-2xl border border-sky-500/50 w-[calc(100vw-2rem)] max-w-sm sm:w-80 flex flex-col gap-2.5 animate-in fade-in zoom-in-95 pointer-events-auto right-4 sm:right-5 top-16 sm:top-20"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center justify-between border-b border-[var(--rule)] pb-2">
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold bg-sky-500 text-white flex items-center gap-1">
-                <Plane className="w-3.5 h-3.5" /> {selectedFlight.callsign}
-              </span>
-              <span className="text-[10px] font-mono text-sky-400 font-bold uppercase">
-                {selectedFlight.status}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setSelectedFlight(null)}
-              className="text-[var(--ink-2)] hover:text-[var(--ink)] p-1 rounded cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="flex flex-col gap-1 text-xs">
-            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('map.airlineAirport')}</span>
-            <span className="font-medium text-[var(--ink)] leading-snug">
-              {selectedFlight.country} · {selectedFlight.airport}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[var(--rule)] text-xs">
-            <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.altitude')}</span>
-              <span className="font-mono font-bold text-sky-400">{selectedFlight.altitudeMeters} {t('map.meters')}</span>
-            </div>
-            <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.speed')}</span>
-              <span className="font-mono font-bold text-emerald-400">{selectedFlight.speedKmh} km/h</span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-1 border-t border-[var(--rule)] text-[11px] font-mono text-[var(--ink-2)]">
-            <span>{t('map.track')}: {selectedFlight.trackDegrees}°</span>
-            <span className="text-amber-400 font-semibold">
-              {t('map.vceDist')}: {(Math.hypot(selectedFlight.lon - 12.3519, selectedFlight.lat - 45.5053) * 111).toFixed(1)} km
-            </span>
-          </div>
-
-          {onSelectAirport && (
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedFlight(null);
-                onSelectAirport();
-              }}
-              className="w-full mt-1 py-1.5 px-3 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 text-xs font-mono font-medium border border-sky-500/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
-            >
-              <Plane className="w-3.5 h-3.5" /> {t('map.airportDetailsButton')}
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Floating Ship Tooltip */}
-      {selectedShipOnMap && (
-        <div
-          className="absolute z-40 glass-panel rounded-2xl p-4 shadow-2xl border border-indigo-500/50 w-[calc(100vw-2rem)] max-w-sm sm:w-84 flex flex-col gap-2.5 animate-in fade-in zoom-in-95 pointer-events-auto left-4 sm:left-6 top-16 sm:top-20"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center justify-between border-b border-[var(--rule)] pb-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold bg-indigo-500 text-white flex items-center gap-1 shadow-sm truncate">
-                <Ship className="w-3.5 h-3.5 shrink-0" /> {selectedShipOnMap.name}
-              </span>
-              <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase shrink-0">
-                {tr(`ui.ship.category_${selectedShipOnMap.category}`)}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setSelectedShipOnMap(null)}
-              className="text-[var(--ink-2)] hover:text-[var(--ink)] p-1 rounded cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.speed')}</span>
-              <span className="font-mono font-bold text-emerald-400">{selectedShipOnMap.speedKnots ?? 'n.d.'} {t('common.knots')}</span>
-            </div>
-            <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.track')}</span>
-              <span className="font-mono font-bold text-indigo-300">{selectedShipOnMap.courseDeg ?? selectedShipOnMap.heading ?? 'n.d.'}°</span>
-            </div>
-          </div>
-
-          {selectedShipOnMap.destination && (
-            <div className="text-xs text-[var(--ink-2)]">
-              {tr('ui.ship.destination')}: <b className="text-[var(--ink)]">{selectedShipOnMap.destination}</b>
-            </div>
-          )}
-          <div className="text-[11px] font-mono text-[var(--ink-3)]">
-            {selectedShipOnMap.navStatus ? `${tr(`ui.ship.nav_${selectedShipOnMap.navStatus}`)} · ` : ''}
-            {tr('ui.ship.lastSeen', { time: new Date(selectedShipOnMap.lastSeen).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' }) })}
-          </div>
-
-          {onSelectShip && (
-            <button
-              type="button"
-              onClick={() => {
-                const s = selectedShipOnMap;
-                setSelectedShipOnMap(null);
-                onSelectShip(s);
-              }}
-              className="w-full mt-1 py-1.5 px-3 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-mono font-medium border border-indigo-500/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
-            >
-              <Ship className="w-3.5 h-3.5" /> {t('map.shipDetailsButton')}
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Floating Alilaguna Boat Tooltip */}
-      {selectedAlilagunaBoat && (
-        <div
-          className="absolute z-40 glass-panel rounded-2xl p-4 shadow-2xl border border-blue-500/50 w-[calc(100vw-2rem)] max-w-sm sm:w-84 flex flex-col gap-2.5 animate-in fade-in zoom-in-95 pointer-events-auto left-4 sm:left-6 top-16 sm:top-20"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center justify-between border-b border-[var(--rule)] pb-2">
-            <div className="flex items-center gap-2">
-              <span
-                className="px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold text-white flex items-center gap-1 shadow-sm"
-                style={{ backgroundColor: selectedAlilagunaBoat.color }}
-              >
-                <Ship className="w-3.5 h-3.5" /> {selectedAlilagunaBoat.lineName}
-              </span>
-              <span className="text-[10px] font-mono text-amber-400 font-bold uppercase">
-                {selectedAlilagunaBoat.name}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setSelectedAlilagunaBoat(null)}
-              className="text-[var(--ink-2)] hover:text-[var(--ink)] p-1 rounded cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="flex flex-col gap-1 text-xs">
-            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('map.destinationNextStop')}</span>
-            <span className="font-semibold text-[var(--ink)] leading-snug">
-              {t('map.directionLabel')}: {selectedAlilagunaBoat.destination}
-            </span>
-            <span className="text-[11px] text-blue-400 font-mono">
-              {t('map.nextStopLabel')}: {selectedAlilagunaBoat.nextStop}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[var(--rule)] text-xs">
-            <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.speed')}</span>
-              <span className="font-mono font-bold text-emerald-400">{selectedAlilagunaBoat.speedKmh} km/h</span>
-            </div>
-            <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{tr('ui.alilaguna.positionLabel')}</span>
-              <span className="font-mono font-bold text-cyan-400">{tr('ui.alilaguna.fromTimetable')}</span>
-            </div>
-          </div>
-
-          {selectedAlilagunaBoat.scheduledDeparture && (
-            <div className="flex items-center justify-between text-[11px] font-mono text-[var(--ink-2)] bg-[var(--rule)]/30 px-2.5 py-1.5 rounded-xl border border-[var(--rule)]">
-              <span className="text-amber-400 font-semibold">{tr('ui.map.partenza')} {selectedAlilagunaBoat.scheduledDeparture}</span>
-              <span className="text-cyan-400 font-semibold">{tr('ui.map.arrivoPrevisto')} {selectedAlilagunaBoat.scheduledArrival}</span>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between pt-1 border-t border-[var(--rule)] text-[11px] font-mono text-[var(--ink-2)]">
-            <span>{t('map.track')}: {selectedAlilagunaBoat.heading}°</span>
-            <span className="text-amber-400 font-semibold">Feed: f-u20f-alilagunaspa</span>
-          </div>
-
-          {onSelectAlilaguna && (
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedAlilagunaBoat(null);
-                onSelectAlilaguna();
-              }}
-              className="w-full mt-1 py-1.5 px-3 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 text-xs font-mono font-medium border border-blue-500/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
-            >
-              <Ship className="w-3.5 h-3.5" /> {t('map.alilagunaDetailsButton')}
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Floating Satellite Tooltip */}
-      {selectedSatellite && (
-        <div
-          className="absolute z-40 glass-panel rounded-2xl p-4 shadow-2xl border border-fuchsia-500/50 w-[calc(100vw-2rem)] max-w-sm sm:w-88 flex flex-col gap-2.5 animate-in fade-in zoom-in-95 pointer-events-auto left-4 sm:left-6 top-16 sm:top-20"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center justify-between border-b border-[var(--rule)] pb-2">
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 flex items-center gap-1 shadow-sm">
-                <Satellite className="w-3.5 h-3.5 text-fuchsia-400" /> {selectedSatellite.type.replace('_', ' ')}
-              </span>
-              <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase">
-                {selectedSatellite.operator.split('/')[0].trim()}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setSelectedSatellite(null)}
-              className="text-[var(--ink-2)] hover:text-[var(--ink)] p-1 rounded cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="flex flex-col gap-1 text-xs">
-            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('map.missionRemoteSensing')}</span>
-            <span className="font-bold text-[var(--ink)] leading-snug">
-              {selectedSatellite.name}
-            </span>
-            <span className="text-[11px] text-fuchsia-300 leading-relaxed">
-              {selectedSatellite.missionTarget}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[var(--rule)] text-xs">
-            <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.altitudeSpeed')}</span>
-              <span className="font-mono font-bold text-fuchsia-400">{selectedSatellite.altitudeKm} km</span>
-              <span className="text-[10px] text-[var(--ink-2)] font-mono">{selectedSatellite.speedKmh.toLocaleString()} km/h</span>
-            </div>
-            <div className="bg-[var(--rule)]/40 p-2 rounded-xl border border-[var(--rule)]">
-              <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('map.sensorResolution')}</span>
-              <span className="font-mono font-bold text-cyan-400">{selectedSatellite.resolution}</span>
-              <span className="text-[10px] text-[var(--ink-2)] font-mono">{t('map.swath')} {selectedSatellite.swathWidthKm} km</span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-1 border-t border-[var(--rule)] text-[11px] font-mono text-[var(--ink-2)]">
-            <span>{t('map.satellitePass')}: {selectedSatellite.nextPassVenice.split('(')[0].trim()}</span>
-            <span className="text-emerald-400 font-semibold">{t('map.satelliteElevation')} {selectedSatellite.maxElevationDeg}°</span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              const sat = selectedSatellite;
-              setSelectedSatellite(null);
-              if (onSelectSatellite) onSelectSatellite(sat);
-            }}
-            className="w-full mt-1 py-1.5 px-3 rounded-xl bg-fuchsia-500/20 hover:bg-fuchsia-500/30 text-fuchsia-300 text-xs font-mono font-medium border border-fuchsia-500/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
-          >
-            <Satellite className="w-3.5 h-3.5" /> {t('map.satelliteDetailsButton')}
-          </button>
-        </div>
-      )}
     </div>
   );
 };

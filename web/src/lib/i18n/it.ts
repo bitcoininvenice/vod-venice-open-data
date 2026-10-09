@@ -97,13 +97,6 @@ export const itTranslations: Translations = {
     hidePanel: 'Chiudi pannello',
     searchPlaceholder: 'Filtra per nome livello...',
     quickPresets: 'Configurazioni Rapide',
-    presetClean: 'Pulisci',
-    presetAll: 'Tutti',
-    presetMobility: 'Mobilità',
-    presetLagoon: 'Ambiente',
-    presetCity: 'Città',
-    presetSatellites: 'Satelliti',
-    presetRegional: 'Regionale',
     catMobility: 'Mobilità & Trasporti',
     catLagoon: 'Ambiente',
     catCity: 'Città & Servizi',
@@ -398,7 +391,6 @@ export const itTranslations: Translations = {
     track: 'Rotta',
     vceDist: 'Dist. VCE',
     airportDetailsButton: 'Dettagli Aeroporto Marco Polo (VCE)',
-    shipDetailsButton: 'Dettagli Completi & Telemetria AIS',
     destinationNextStop: 'Destinazione & Scalo Successivo',
     directionLabel: 'Direzione',
     nextStopLabel: 'Prossima fermata',
@@ -409,7 +401,6 @@ export const itTranslations: Translations = {
     swath: 'Swath',
     satellitePass: 'Passaggio',
     satelliteElevation: 'Elev.',
-    satelliteDetailsButton: 'Scheda Completa & Dati ESA/ASI'
   },
   ui: itUi
 };

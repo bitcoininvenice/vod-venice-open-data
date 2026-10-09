@@ -1,4 +1,5 @@
 import { D } from '@/lib/simulation-data';
+import { getSimulation } from '@/lib/simulationModel';
 import type { DayType } from '@/lib/types';
 
 /**
@@ -63,4 +64,19 @@ export function dayActivity(day: DayType): DayActivity {
 export function activeTripsAt(day: DayType, secondsOfDay: number): number {
   const minute = Math.min(MINUTES - 1, Math.max(0, Math.floor(secondsOfDay / 60)));
   return dayActivity(day).perMinute[minute];
+}
+
+/** Corse in servizio in quell'istante, per tipo di mezzo (stessa regola della simulazione in mappa). */
+export function activeTripsByCategory(day: DayType, secondsOfDay: number): Record<string, number> {
+  const sim = getSimulation();
+  const trips = sim.daysTrips[day];
+  const out: Record<string, number> = {};
+  if (!trips) return out;
+  const { tP, t0, t1, count } = trips;
+  for (let i = 0; i < count; i++) {
+    if (t0[i] > secondsOfDay || t1[i] < secondsOfDay) continue;
+    const cat = sim.profs[tP[i]].route.cat || 'vaporetto';
+    out[cat] = (out[cat] ?? 0) + 1;
+  }
+  return out;
 }

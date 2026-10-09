@@ -17,7 +17,7 @@ import {
 import { VeniceCameraItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge';
-import { useDialogA11y } from '@/components/ui/useDialogA11y';
+import { InfoPanel } from '@/components/ui/InfoPanel';
 
 interface CameraDetailModalProps {
   camera: VeniceCameraItem | null;
@@ -26,20 +26,11 @@ interface CameraDetailModalProps {
 
 export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, onClose }) => {
   const { t } = useTranslation();
-  const panelRef = useDialogA11y(camera !== null, onClose);
 
   if (!camera) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4">
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="camera-modal-title"
-        tabIndex={-1}
-        className="glass-panel w-full max-w-2xl rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 border border-cyan-500/40 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto outline-none"
-      >
+    <InfoPanel open={camera !== null} onClose={onClose} labelledBy="camera-modal-title" layer="showCameras" accent="border-cyan-500/40">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
           <div className="flex items-center gap-3">
@@ -85,7 +76,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
         </div>
 
         {/* Location & Target Info */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+        <div className="grid grid-cols-1 gap-2 text-xs">
           <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1">
             <span className="text-[10px] font-mono text-[var(--ink-3)] uppercase flex items-center gap-1">
               <Building2 className="w-3 h-3 text-cyan-400" />{' '}
@@ -156,7 +147,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
 
         {/* Technical Metadata Grid */}
         <div className="p-3 rounded-xl bg-[var(--rule)]/25 border border-[var(--rule)] text-xs flex flex-col gap-2">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <div>
               <span className="text-[10px] text-[var(--ink-3)] font-mono block">
                 {t('ui.camera.titolareGestore')}
@@ -222,7 +213,6 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
             {t('common.close')}
           </button>
         </div>
-      </div>
-    </div>
+    </InfoPanel>
   );
 };

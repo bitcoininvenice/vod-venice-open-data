@@ -5,7 +5,7 @@ import { X, Satellite, Orbit, Radio, ExternalLink, Zap, Eye, Compass, ShieldChec
 import { SatelliteItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge';
-import { useDialogA11y } from '@/components/ui/useDialogA11y';
+import { InfoPanel } from '@/components/ui/InfoPanel';
 
 interface SatelliteDetailModalProps {
   satellite: SatelliteItem | null;
@@ -17,7 +17,6 @@ export const SatelliteDetailModal: React.FC<SatelliteDetailModalProps> = ({
   onClose
 }) => {
   const { t } = useTranslation();
-  const panelRef = useDialogA11y(satellite !== null, onClose);
   if (!satellite) return null;
   // Traccia a terra verso sud = discendente, verso nord = ascendente
   const descending = satellite.heading > 90 && satellite.heading < 270;
@@ -38,15 +37,7 @@ export const SatelliteDetailModal: React.FC<SatelliteDetailModalProps> = ({
     : 'text-violet-400 bg-violet-500/15 border-violet-500/30';
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="satellite-modal-title"
-        tabIndex={-1}
-        className="glass-panel w-full max-w-lg rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-3.5 sm:gap-4 border border-fuchsia-500/40 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto outline-none"
-      >
+    <InfoPanel open={satellite !== null} onClose={onClose} labelledBy="satellite-modal-title" layer="showSatellites" accent="border-fuchsia-500/40">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
           <div className="flex items-center gap-3">
@@ -101,7 +92,7 @@ export const SatelliteDetailModal: React.FC<SatelliteDetailModalProps> = ({
         </div>
 
         {/* Orbital Mechanics Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+        <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-0.5">
             <span className="text-[10px] font-mono text-[var(--ink-3)] flex items-center gap-1">
               <Orbit className="w-3 h-3 text-cyan-400" /> {t('ui.satellite.quotaOrbitale')}
@@ -200,7 +191,6 @@ export const SatelliteDetailModal: React.FC<SatelliteDetailModalProps> = ({
             {t('common.close')}
           </button>
         </div>
-      </div>
-    </div>
+    </InfoPanel>
   );
 };

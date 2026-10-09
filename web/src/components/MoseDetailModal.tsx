@@ -7,7 +7,7 @@ import type { TideCategory, TideForecast, TideStation, TideTrend } from '@/lib/c
 import { useTranslation } from '@/lib/i18n';
 import { formatLocalStamp, formatSignedCm } from '@/lib/time';
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge';
-import { useDialogA11y } from '@/components/ui/useDialogA11y';
+import { InfoPanel } from '@/components/ui/InfoPanel';
 
 interface MoseDetailModalProps {
   isOpen: boolean;
@@ -42,7 +42,6 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
   tideInfo
 }) => {
   const { t } = useTranslation();
-  const panelRef = useDialogA11y(isOpen, onClose);
   if (!isOpen) return null;
 
   const { forecast, category, trend, observedAt } = tideInfo;
@@ -53,15 +52,7 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
   const thresholdReached = forecastMax !== null && forecastMax >= MOSE_THRESHOLD_CM;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4">
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="mose-modal-title"
-        tabIndex={-1}
-        className="glass-panel w-full max-w-2xl rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 border border-blue-500/40 animate-in fade-in zoom-in-95 duration-200 max-h-[88vh] overflow-y-auto outline-none"
-      >
+    <InfoPanel open={isOpen} onClose={onClose} labelledBy="mose-modal-title" layer="showMose" accent="border-blue-500/40">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
           <div className="flex items-center gap-3">
@@ -91,11 +82,11 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
         </div>
 
         {/* Livello attuale, previsione, stato MOSE */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+        <div className="grid grid-cols-1 gap-2.5 text-xs">
           <div className="bg-blue-500/10 p-3 rounded-xl border border-blue-500/30 flex flex-col justify-between gap-1">
             <span className="text-[10px] text-[var(--ink-3)] font-mono">Punta della Salute</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold font-mono text-[var(--ink)]">{formatSignedCm(tideLevel)}</span>
+              <span className="text-xl font-bold font-mono text-[var(--ink)]">{formatSignedCm(tideLevel)}</span>
               {category && (
                 <span className={`text-xs font-semibold ${CATEGORY_CLASS[category]}`}>
                   ({t(`ui.mose.cat_${category}`)})
@@ -152,7 +143,7 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
                 {t('ui.mose.forecastMaybeOld', { issued: formatLocalStamp(forecast.issuedAt) })}
               </div>
             )}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div className="grid grid-cols-2 gap-2 text-xs">
               {forecast.extremes.slice(0, 8).map((e) => (
                 <div key={e.at} className="p-2 rounded-lg bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col">
                   <span className="text-[10px] font-mono text-[var(--ink-3)]">{formatLocalStamp(e.at)}</span>
@@ -171,7 +162,7 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
             {t('ui.mose.bocchePorto')}
             <ProvenanceBadge kind="static-reference" />
           </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-1 gap-2 text-xs">
             {moseGates.map((gate) => (
               <div key={gate.id} className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1.5">
                 <strong className="text-[var(--ink)] text-xs">{gate.inletName}</strong>
@@ -197,7 +188,7 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
           {stations.length === 0 ? (
             <p className="text-[11px] text-[var(--ink-3)]">{t('ui.mose.datiNonDisponibili')}</p>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div className="grid grid-cols-2 gap-2 text-xs">
               {stations.map((s) => (
                 <div key={s.id} className="p-2.5 rounded-xl bg-[var(--rule)]/40 border border-[var(--rule)] flex flex-col gap-0.5">
                   <span className="text-[10px] text-[var(--ink-3)] truncate" title={s.name}>{s.name}</span>
@@ -234,7 +225,6 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
             {t('common.close')}
           </button>
         </div>
-      </div>
-    </div>
+    </InfoPanel>
   );
 };

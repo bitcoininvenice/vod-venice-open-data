@@ -4,7 +4,7 @@ import React from 'react';
 import { X, Anchor, Accessibility, MapPin, ExternalLink, ShieldCheck } from 'lucide-react';
 import { StopItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
-import { useDialogA11y } from '@/components/ui/useDialogA11y';
+import { InfoPanel } from '@/components/ui/InfoPanel';
 
 interface StopDetailModalProps {
   stop: StopItem | null;
@@ -17,20 +17,12 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
   onClose
 }) => {
   const { t } = useTranslation();
-  const panelRef = useDialogA11y(stop !== null, onClose);
   if (!stop) return null;
 
   const sampleLines = stop.lines && stop.lines.length > 0 ? stop.lines : ['1', '2'];
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="stop-modal-title"
-        tabIndex={-1}
-        className="glass-panel w-full max-w-md rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-3.5 sm:gap-4 border border-cyan-500/30 animate-in fade-in zoom-in-95 duration-200 max-h-[88vh] overflow-y-auto outline-none">
+    <InfoPanel open={stop !== null} onClose={onClose} labelledBy="stop-modal-title" layer="showStops" accent="border-cyan-500/30">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
           <div className="flex items-center gap-3">
@@ -108,7 +100,6 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
             {t('ui.stop.orariUfficialiNavigazioneActv')}
           </a>
         </div>
-      </div>
-    </div>
+    </InfoPanel>
   );
 };

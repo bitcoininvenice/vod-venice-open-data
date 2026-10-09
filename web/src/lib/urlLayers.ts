@@ -233,7 +233,8 @@ export interface ParsedLayerParams {
 }
 
 /**
- * Parses query string (?layers=all, ?layers=fountains,wifi or ?layer=fountains or ?preset=mobility)
+ * Legge la query string (?layers=fontanelle,wifi, ?layer=fontanelle o ?preset=muoversi).
+ * Il vecchio ?layers=all (tutti i layer insieme, mappa illeggibile) diventa il preset predefinito.
  */
 export function parseLayerParams(search: string): ParsedLayerParams {
   const result: ParsedLayerParams = {
@@ -258,12 +259,9 @@ export function parseLayerParams(search: string): ParsedLayerParams {
   if (rawLayers) {
     const tokens = rawLayers.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
 
-    // If 'all' or 'tutti' is specified, activate all known layers
+    // ?layers=all non accende più tutto: rimanda al preset predefinito (alias 'all')
     if (tokens.includes('all') || tokens.includes('tutti')) {
-      for (const key of ALL_LAYER_KEYS) {
-        result.activeLayers[key] = true;
-      }
-      result.hasLayerParams = true;
+      result.preset ??= 'all';
       return result;
     }
 
@@ -280,19 +278,13 @@ export function parseLayerParams(search: string): ParsedLayerParams {
 }
 
 /**
- * Builds a comma-separated slug string from active LayerKey states.
- * If all layers are active, returns 'all' for clean and compact URLs.
+ * Elenco degli slug dei layer attivi, separati da virgola.
  */
 export function buildLayersParam(activeLayers: Partial<Record<LayerKey, boolean>>): string {
   const activeKeys = ALL_LAYER_KEYS.filter((key) => activeLayers[key]);
 
   if (activeKeys.length === 0) {
     return '';
-  }
-
-  // Se tutti i livelli sono selezionati, l'URL usa la forma compatta ?layers=all
-  if (activeKeys.length === ALL_LAYER_KEYS.length) {
-    return 'all';
   }
 
   const slugs: string[] = [];

@@ -4,12 +4,45 @@ import { ALL_LAYER_KEYS, parseLayerParams, type LayerKey } from './urlLayers';
 /** Visibilità di tutti i layer della mappa in un unico oggetto. */
 export type LayerVisibility = Record<LayerKey, boolean>;
 
-export type MapPreset = 'mobility' | 'lagoon' | 'city' | 'satellites' | 'regional' | 'clean' | 'all';
+/**
+ * Preset per scenario d'uso: pochi layer (3-6) per una domanda precisa.
+ * Gli id sono anche i valori di ?preset= nell'URL.
+ */
+export type MapPreset = 'muoversi' | 'acqua-alta' | 'ambiente' | 'servizi' | 'citta' | 'clean';
 
-const MAP_PRESETS: readonly MapPreset[] = ['mobility', 'lagoon', 'city', 'satellites', 'regional', 'clean', 'all'];
+/** Preset mostrati nell'interfaccia, in ordine. */
+export const SCENARIO_PRESETS = ['muoversi', 'acqua-alta', 'ambiente', 'servizi', 'citta'] as const satisfies readonly MapPreset[];
+
+/** Preset applicato alla prima visita, quando l'URL non indica layer. */
+export const DEFAULT_PRESET: MapPreset = 'muoversi';
+
+const MAP_PRESETS: readonly MapPreset[] = [...SCENARIO_PRESETS, 'clean'];
+
+/** Nomi dei vecchi preset (link già condivisi) verso i preset attuali. */
+const PRESET_ALIASES: Record<string, MapPreset> = {
+  mobility: 'muoversi',
+  lagoon: 'acqua-alta',
+  city: 'servizi',
+  satellites: 'ambiente',
+  regional: 'ambiente',
+  all: DEFAULT_PRESET,
+  acquaalta: 'acqua-alta',
+  acqua_alta: 'acqua-alta',
+  mobilita: 'muoversi',
+  environment: 'ambiente',
+  services: 'servizi',
+};
 
 export function isMapPreset(value: string | null | undefined): value is MapPreset {
   return !!value && (MAP_PRESETS as readonly string[]).includes(value);
+}
+
+/** Preset attuale da un valore di ?preset=, accettando anche i vecchi nomi; null se sconosciuto. */
+export function resolvePreset(value: string | null | undefined): MapPreset | null {
+  if (!value) return null;
+  const v = value.trim().toLowerCase();
+  if (isMapPreset(v)) return v;
+  return PRESET_ALIASES[v] ?? null;
 }
 
 export function allLayers(active: boolean): LayerVisibility {
@@ -26,33 +59,30 @@ export function countActiveLayers(v: LayerVisibility): number {
   return ALL_LAYER_KEYS.reduce((n, k) => n + (v[k] ? 1 : 0), 0);
 }
 
-/** Layer accesi da ciascun preset tematico (tutti gli altri restano spenti). */
-const PRESET_LAYERS: Record<Exclude<MapPreset, 'clean' | 'all'>, LayerKey[]> = {
-  mobility: [
-    'showRoutes', 'showStops', 'showVehicles', 'showAlilaguna', 'showShips', 'showShipRoutes', 'showFlights',
-    'showCanalLimits', 'showBridges', 'showGondolas', 'showDocks', 'showTrains', 'showWasteBoats', 'showCanals',
-    'showBikeRoutes', 'showEvCharging', 'showCameras',
-  ],
-  lagoon: [
-    'showMose', 'showPasserelle', 'showMarineSignals', 'showOceanStations', 'showBathingWaters',
-    'showSubsidence', 'showMorphology', 'showMarineWind', 'showFortresses', 'showLagoonWater', 'showTributaries',
-    'showTrees', 'showAirQuality', 'showPollenStations', 'showHeatIslands',
-  ],
-  city: [
-    'showCityAssets', 'showWifiHotspots', 'showEvCharging', 'showCameras', 'showParkings',
-    'showCantieri', 'showPedestrianFlows', 'showNizioleti', 'showWells', 'showBellTowers',
-    'showEmergencyDocks', 'showDae', 'showPharmacies', 'showAccommodations',
-    'showFiber', 'showRecyclingCentres', 'showLibraries',
-  ],
-  satellites: ['showSatellites', 'showSubsidence', 'showHeatIslands'],
-  regional: ['showLagoonWater', 'showAccommodations', 'showBikeRoutes', 'showPollenStations', 'showTributaries'],
+/**
+ * Layer accesi da ciascun preset (tutti gli altri restano spenti).
+ * Solo dati verificati: i layer "da verificare" (regime curated) non entrano nei preset.
+ */
+export const PRESET_LAYERS: Record<Exclude<MapPreset, 'clean'>, LayerKey[]> = {
+  muoversi: ['showVehicles', 'showRealtimeVehicles', 'showStops', 'showAlilaguna', 'showShips'],
+  'acqua-alta': ['showMose', 'showOceanStations', 'showMarineWind', 'showCanals'],
+  ambiente: ['showAirQuality', 'showPollenStations', 'showLagoonWater', 'showMarineWind'],
+  servizi: ['showPharmacies', 'showDae', 'showCityAssets', 'showRecyclingCentres', 'showWifiHotspots'],
+  citta: ['showLibraries', 'showCameras', 'showCantieri', 'showTrees', 'showCanals'],
 };
 
 export function presetLayers(preset: MapPreset): LayerVisibility {
-  if (preset === 'all') return allLayers(true);
   if (preset === 'clean') return allLayers(false);
   return layersFrom(Object.fromEntries(PRESET_LAYERS[preset].map((k) => [k, true])));
 }
+
+/** Preset che corrisponde esattamente ai layer accesi, se c'è. */
+export function matchingPreset(v: LayerVisibility): MapPreset | null {
+  return MAP_PRESETS.find((p) => ALL_LAYER_KEYS.every((k) => presetLayers(p)[k] === v[k])) ?? null;
+}
+
+/** Oltre questa soglia la mappa diventa difficile da leggere: l'interfaccia lo segnala. */
+export const CROWDED_LAYER_THRESHOLD = 12;
 
 export type LayerSetters = {
   [K in LayerKey as `set${Capitalize<K>}`]: Dispatch<SetStateAction<boolean>>;
@@ -73,11 +103,12 @@ export function makeLayerSetters(setLayers: Dispatch<SetStateAction<LayerVisibil
 
 /**
  * Stato iniziale dei layer dalla query string: ?layers= (o ?layer=) ha la precedenza su ?preset=;
- * un preset sconosciuto è ignorato. null se l'URL non indica nulla.
+ * i vecchi nomi dei preset sono convertiti, quelli sconosciuti ignorati. null se l'URL non indica nulla.
  */
 export function initialLayersFromSearch(search: string): { layers: LayerVisibility; preset: MapPreset | null } | null {
   const parsed = parseLayerParams(search);
   if (parsed.hasLayerParams) return { layers: layersFrom(parsed.activeLayers), preset: null };
-  if (isMapPreset(parsed.preset)) return { layers: presetLayers(parsed.preset), preset: parsed.preset };
+  const preset = resolvePreset(parsed.preset);
+  if (preset) return { layers: presetLayers(preset), preset };
   return null;
 }

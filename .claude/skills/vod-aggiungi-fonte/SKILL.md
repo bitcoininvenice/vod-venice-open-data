@@ -28,11 +28,15 @@ Completare **tutti** i passaggi nello stesso giro e verificare tutto prima del c
 - Dati curati sostituiti: rimuovere i valori inventati; tenere le voci curate solo se senza riscontro (`curatedNotInOsm`) e segnarle "da verificare".
 
 ## 4. Mappa e interfaccia
-- Layer nuovo: chiave in `web/src/lib/urlLayers.ts` (tipo, slug, alias), preset in `web/src/lib/layerState.ts`,
-  pulsante in `web/src/components/LayerPanel.tsx` (aggiornare il contatore del gruppo), stato e fetch in `web/src/app/page.tsx`
-  (caricare solo quando il layer è attivo), prop in `MapEngine.tsx` + `map/renderContext.ts` (DataProps) + dipendenze dell'effetto di disegno,
-  disegno in `web/src/components/map/*Layer*.ts`, clic con `onSelectFeature`.
-- Scheda in `web/src/components/VeniceFeatureDetailModal.tsx` con nota di provenienza (`FeatureProvenance`, `OWN_PROVENANCE`, `CURATED_TYPES`).
+- Layer nuovo: chiave in `web/src/lib/urlLayers.ts` (tipo, slug, alias); voce nel pannello in `web/src/lib/layerGroups.ts`
+  (gruppo, sottogruppo, etichetta i18n, icona, colore: pannello, ricerca, contatori e legenda si aggiornano da soli);
+  conteggio in `layerCounts` e stato/fetch in `web/src/app/page.tsx` (caricare solo quando il layer è attivo),
+  prop in `MapEngine.tsx` + `map/renderContext.ts` (DataProps) + dipendenze dell'effetto di disegno,
+  disegno in `web/src/components/map/*Layer*.ts` (le etichette passano dalla guardia anti-sovrapposizione `map/labelGuard.ts`), clic con `onSelectFeature`.
+- Preset (`PRESET_LAYERS` in `web/src/lib/layerState.ts`): scenari da 3-6 layer, mai layer `curated` (un test lo verifica).
+- Scheda nella scheda informativa unica (`components/ui/InfoPanel.tsx`): tipo in `VeniceFeatureDetailModal.tsx`
+  (+ `FEATURE_LAYER` per natura del dato e fonte nel piede, nota di provenienza con `FeatureProvenance`, `OWN_PROVENANCE`, `CURATED_TYPES`);
+  oggetti in movimento in `MapObjectPanel.tsx`. Niente nuovi modali o tooltip flottanti sulla mappa.
 - Layer animati: aggiungerli a `hasAnimatedLayers` in `MapEngine.tsx`.
 
 ## 5. Traduzioni

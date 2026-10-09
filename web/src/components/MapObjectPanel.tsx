@@ -1,0 +1,219 @@
+'use client';
+
+import React from 'react';
+import { ExternalLink, Navigation, Plane, Radio, Ship } from 'lucide-react';
+import type { AlilagunaBoat, FlightItem, ShipItem } from '@/lib/types';
+import { useTranslation } from '@/lib/i18n';
+import { InfoHeader, InfoPanel, KeyValues, MoreDetails } from '@/components/ui/InfoPanel';
+
+/** Mezzo ACTV selezionato: posizione simulata dall'orario o reale (GTFS-RT). */
+export interface VehicleSelection {
+  line: string;
+  category: string;
+  speedKmh: number | null;
+  color: string;
+  headsign: string;
+  source: 'gps' | 'schedule';
+  /** secondi Unix dell'ultima posizione GPS */
+  updatedAt?: number | null;
+}
+
+/** Oggetti in movimento cliccati sulla mappa (le schede dei punti fissi sono in VeniceFeatureDetailModal). */
+export type MapObjectSelected =
+  | { type: 'ship'; data: ShipItem }
+  | { type: 'flight'; data: FlightItem }
+  | { type: 'vehicle'; data: VehicleSelection }
+  | { type: 'alilagunaBoat'; data: AlilagunaBoat };
+
+interface MapObjectPanelProps {
+  object: MapObjectSelected | null;
+  onClose: () => void;
+  onOpenAirport?: () => void;
+  onOpenAlilaguna?: () => void;
+}
+
+const VCE = { lat: 45.5053, lon: 12.3519 };
+
+export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose, onOpenAirport, onOpenAlilaguna }) => {
+  const { t, language } = useTranslation();
+  if (!object) return null;
+  const locale = language === 'it' ? 'it-IT' : 'en-GB';
+  const time = (d: Date, withSeconds = false) =>
+    d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', ...(withSeconds ? { second: '2-digit' } : {}), timeZone: 'Europe/Rome' });
+
+  if (object.type === 'ship') {
+    const ship = object.data;
+    const s = (key: string, params?: Record<string, string | number>) => t(`ui.ship.${key}`, params);
+    const lastSeen = new Date(ship.lastSeen);
+    return (
+      <InfoPanel
+        open
+        onClose={onClose}
+        labelledBy="map-object-title"
+        layer="showShips"
+        accent="border-indigo-500/40"
+        dataTime={s('lastSeen', { time: lastSeen.toLocaleString(locale, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' }) })}
+      >
+        <InfoHeader
+          id="map-object-title"
+          icon={<Ship className="w-5 h-5 text-indigo-400" />}
+          category={s(`category_${ship.category}`)}
+          title={ship.name}
+          subtitle={ship.navStatus ? s(`nav_${ship.navStatus}`) : undefined}
+          onClose={onClose}
+        />
+        <KeyValues
+          items={[
+            [s('speed'), ship.speedKnots !== null ? `${ship.speedKnots} ${t('common.knots')}` : null, 'text-emerald-400'],
+            [s('course'), ship.courseDeg !== null ? `${ship.courseDeg}°` : ship.heading !== null ? `${ship.heading}°` : null, 'text-indigo-300'],
+            [s('destination'), ship.destination],
+            [s('length'), ship.lengthMeters !== null ? `${ship.lengthMeters} m` : null],
+          ]}
+        />
+        {ship.category === 'PASSENGER' && (ship.lengthMeters ?? 0) >= 180 && (
+          <p className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300">{s('largeShipNotice')}</p>
+        )}
+        <MoreDetails>
+          <KeyValues
+            items={[
+              [s('heading'), ship.heading !== null ? `${ship.heading}°` : null],
+              [s('eta'), ship.eta],
+              [s('draught'), ship.draughtMeters !== null ? `${ship.draughtMeters} m` : null],
+              [s('callSign'), ship.callSign],
+              ['IMO', ship.imo],
+              ['MMSI', ship.mmsi],
+              [s('position'), `${ship.lat.toFixed(5)}, ${ship.lon.toFixed(5)}`],
+            ]}
+          />
+          <p className="text-[11px] text-[var(--ink-3)] leading-relaxed">{s('aisNote')}</p>
+          {ship.imo && (
+            <a
+              href={`https://www.marinetraffic.com/en/ais/details/ships/imo:${ship.imo}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] text-cyan-400 hover:underline flex items-center gap-1"
+            >
+              {s('moreInfo')} <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
+        </MoreDetails>
+      </InfoPanel>
+    );
+  }
+
+  if (object.type === 'flight') {
+    const f = object.data;
+    const distKm = (Math.hypot(f.lon - VCE.lon, f.lat - VCE.lat) * 111).toFixed(1);
+    return (
+      <InfoPanel open onClose={onClose} labelledBy="map-object-title" layer="showFlights" accent="border-sky-500/40">
+        <InfoHeader
+          id="map-object-title"
+          icon={<Plane className="w-5 h-5 text-sky-400" />}
+          category={f.status}
+          title={f.callsign}
+          subtitle={`${f.country} · ${f.airport}`}
+          onClose={onClose}
+        />
+        <KeyValues
+          items={[
+            [t('map.altitude'), `${f.altitudeMeters} ${t('map.meters')}`, 'text-sky-400'],
+            [t('map.speed'), `${f.speedKmh} km/h`, 'text-emerald-400'],
+            [t('map.track'), `${f.trackDegrees}°`],
+            [t('map.vceDist'), `${distKm} km`, 'text-amber-400'],
+          ]}
+        />
+        {onOpenAirport && (
+          <button
+            type="button"
+            onClick={onOpenAirport}
+            className="w-full py-1.5 px-3 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 text-xs font-mono border border-sky-500/40 flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <Plane className="w-3.5 h-3.5" /> {t('map.airportDetailsButton')}
+          </button>
+        )}
+      </InfoPanel>
+    );
+  }
+
+  if (object.type === 'vehicle') {
+    const v = object.data;
+    const gps = v.source === 'gps';
+    return (
+      <InfoPanel
+        open
+        onClose={onClose}
+        labelledBy="map-object-title"
+        layer={gps ? 'showRealtimeVehicles' : 'showVehicles'}
+        accent="border-cyan-500/40"
+        dataTime={
+          gps
+            ? v.updatedAt
+              ? `${t('ui.map.aggiornataAlle')} ${time(new Date(v.updatedAt * 1000), true)}`
+              : t('ui.map.orarioPosizioneNonIndicato')
+            : null
+        }
+      >
+        <InfoHeader
+          id="map-object-title"
+          icon={gps ? <Radio className="w-5 h-5 text-emerald-400" /> : <Navigation className="w-5 h-5" style={{ color: v.color }} />}
+          category={v.category}
+          title={
+            <span className="inline-flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-lg text-sm font-mono font-bold text-white" style={{ backgroundColor: v.color }}>
+                {t('map.vehicleLine')} {v.line}
+              </span>
+            </span>
+          }
+          subtitle={v.headsign}
+          onClose={onClose}
+        />
+        <KeyValues
+          items={[
+            [t('map.estimatedSpeed'), !gps && v.speedKmh !== null ? `${v.speedKmh} km/h` : null, 'text-emerald-400'],
+            [t('ui.map.fonte'), gps ? t('ui.map.posizioneGpsRealeGtfsRt') : t('ui.map.simulatoOrario'), gps ? 'text-emerald-400' : 'text-sky-400'],
+          ]}
+        />
+      </InfoPanel>
+    );
+  }
+
+  const b = object.data;
+  return (
+    <InfoPanel open onClose={onClose} labelledBy="map-object-title" layer="showAlilaguna" accent="border-blue-500/40">
+      <InfoHeader
+        id="map-object-title"
+        icon={<Ship className="w-5 h-5" style={{ color: b.color }} />}
+        category={b.name}
+        title={b.lineName}
+        subtitle={`${t('map.directionLabel')}: ${b.destination}`}
+        onClose={onClose}
+      />
+      <KeyValues
+        items={[
+          [t('map.nextStopLabel'), b.nextStop, 'text-blue-400'],
+          [t('map.speed'), `${b.speedKmh} km/h`, 'text-emerald-400'],
+          [t('ui.map.partenza'), b.scheduledDeparture, 'text-amber-400'],
+          [t('ui.map.arrivoPrevisto'), b.scheduledArrival, 'text-cyan-400'],
+        ]}
+      />
+      <MoreDetails>
+        <KeyValues
+          items={[
+            [t('map.track'), `${b.heading}°`],
+            [t('ui.alilaguna.positionLabel'), t('ui.alilaguna.fromTimetable')],
+          ]}
+        />
+        <span className="text-[11px] font-mono text-[var(--ink-3)]">GTFS: f-u20f-alilagunaspa</span>
+      </MoreDetails>
+      {onOpenAlilaguna && (
+        <button
+          type="button"
+          onClick={onOpenAlilaguna}
+          className="w-full py-1.5 px-3 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 text-xs font-mono border border-blue-500/40 flex items-center justify-center gap-1.5 cursor-pointer"
+        >
+          <Ship className="w-3.5 h-3.5" /> {t('map.alilagunaDetailsButton')}
+        </button>
+      )}
+    </InfoPanel>
+  );
+};

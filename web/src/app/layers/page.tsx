@@ -288,7 +288,8 @@ export default function LayersDocumentationPage() {
             filteredLayers.map((layer) => (
               <div
                 key={layer.id}
-                className="glass-panel rounded-2xl p-4 sm:p-5 border border-[var(--rule)] hover:border-cyan-500/40 transition-all flex flex-col gap-3 shadow-md group"
+                id={layer.id}
+                className="glass-panel rounded-2xl p-4 sm:p-5 border border-[var(--rule)] hover:border-cyan-500/40 target:border-cyan-400 target:ring-1 target:ring-cyan-400/50 scroll-mt-24 transition-all flex flex-col gap-3 shadow-md group"
               >
                 {/* Header row: Name, Group, Regime Pill */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--rule)]/60 pb-2.5">

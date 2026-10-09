@@ -8,6 +8,9 @@ import {
   Clock,
   CheckCircle2,
   Ship,
+  Navigation,
+  Wind,
+  HeartPulse,
   Waves,
   Landmark,
   ChevronRight,
@@ -18,19 +21,29 @@ import {
   ExternalLink,
   Lightbulb,
   Calendar,
-  FastForward
+  FastForward,
+  type LucideIcon
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { ALL_LAYER_KEYS } from '@/lib/urlLayers';
+import { DEFAULT_PRESET, SCENARIO_PRESETS, type MapPreset } from '@/lib/layerState';
 import { RichText } from './ui/RichText';
 import { useDialogA11y } from '@/components/ui/useDialogA11y';
 
-export type MapPresetType = 'mobility' | 'lagoon' | 'city' | 'satellites' | 'regional' | 'clean' | 'all';
+
+const PRESET_CARD: Record<MapPreset, { icon: LucideIcon; text: string; on: string }> = {
+  muoversi: { icon: Navigation, text: 'text-sky-400', on: 'bg-sky-500/15 border-sky-500 text-[var(--ink)] shadow-md shadow-sky-500/10' },
+  'acqua-alta': { icon: Waves, text: 'text-blue-400', on: 'bg-blue-500/15 border-blue-500 text-[var(--ink)] shadow-md shadow-blue-500/10' },
+  ambiente: { icon: Wind, text: 'text-emerald-400', on: 'bg-emerald-500/15 border-emerald-500 text-[var(--ink)] shadow-md shadow-emerald-500/10' },
+  servizi: { icon: HeartPulse, text: 'text-rose-400', on: 'bg-rose-500/15 border-rose-500 text-[var(--ink)] shadow-md shadow-rose-500/10' },
+  citta: { icon: Landmark, text: 'text-amber-400', on: 'bg-amber-500/15 border-amber-500 text-[var(--ink)] shadow-md shadow-amber-500/10' },
+  clean: { icon: EyeOff, text: 'text-cyan-400', on: 'bg-cyan-500/15 border-cyan-500 text-[var(--ink)] shadow-md shadow-cyan-500/10' },
+};
 
 interface OnboardingTutorialModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectPreset: (preset: MapPresetType) => void;
+  onSelectPreset: (preset: MapPreset) => void;
 }
 
 export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = ({
@@ -40,12 +53,12 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
 }) => {
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState<number>(0);
-  const [selectedPreset, setSelectedPreset] = useState<MapPresetType>('clean');
+  const [selectedPreset, setSelectedPreset] = useState<MapPreset>(DEFAULT_PRESET);
 
   const panelRef = useDialogA11y(isOpen, onClose);
   if (!isOpen) return null;
 
-  const handleFinish = (preset: MapPresetType = selectedPreset) => {
+  const handleFinish = (preset: MapPreset = selectedPreset) => {
     onSelectPreset(preset);
     onClose();
   };
@@ -157,90 +170,35 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
             {t('ui.onboarding.selezionaConfigurazioneInizialeConCui')}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-            {/* Option 1: Clean */}
-            <button
-              type="button"
-              onClick={() => setSelectedPreset('clean')}
-              className={`p-3 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
-                selectedPreset === 'clean'
-                  ? 'bg-cyan-500/15 border-cyan-500 text-[var(--ink)] shadow-md shadow-cyan-500/10'
-                  : 'bg-[var(--rule)]/20 border-[var(--rule)] text-[var(--ink-2)] hover:border-[var(--ink-3)]'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-cyan-400 flex items-center gap-1.5">
-                  <EyeOff className="w-3.5 h-3.5" /> {t('ui.onboarding.mappaPulitaConsigliato')}
-                </span>
-                {selectedPreset === 'clean' && <CheckCircle2 className="w-4 h-4 text-cyan-400" />}
-              </div>
-              <span className="text-[11px] leading-tight text-[var(--ink-2)]">
-                {t('ui.onboarding.zeroIconeEsploraGeografiaLaguna')}
-              </span>
-            </button>
-
-            {/* Option 2: Mobility */}
-            <button
-              type="button"
-              onClick={() => setSelectedPreset('mobility')}
-              className={`p-3 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
-                selectedPreset === 'mobility'
-                  ? 'bg-teal-500/15 border-teal-500 text-[var(--ink)] shadow-md shadow-teal-500/10'
-                  : 'bg-[var(--rule)]/20 border-[var(--rule)] text-[var(--ink-2)] hover:border-[var(--ink-3)]'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-teal-400 flex items-center gap-1.5">
-                  <Ship className="w-3.5 h-3.5" /> {t('layers.presetMobility')}
-                </span>
-                {selectedPreset === 'mobility' && <CheckCircle2 className="w-4 h-4 text-teal-400" />}
-              </div>
-              <span className="text-[11px] leading-tight text-[var(--ink-2)]">
-                {t('ui.onboarding.vaporettiActvMovimentoBattelliAlilaguna')}
-              </span>
-            </button>
-
-            {/* Option 3: Lagoon & Tide */}
-            <button
-              type="button"
-              onClick={() => setSelectedPreset('lagoon')}
-              className={`p-3 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
-                selectedPreset === 'lagoon'
-                  ? 'bg-blue-500/15 border-blue-500 text-[var(--ink)] shadow-md shadow-blue-500/10'
-                  : 'bg-[var(--rule)]/20 border-[var(--rule)] text-[var(--ink-2)] hover:border-[var(--ink-3)]'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-blue-400 flex items-center gap-1.5">
-                  <Waves className="w-3.5 h-3.5" /> {t('layers.presetLagoon')}
-                </span>
-                {selectedPreset === 'lagoon' && <CheckCircle2 className="w-4 h-4 text-blue-400" />}
-              </div>
-              <span className="text-[11px] leading-tight text-[var(--ink-2)]">
-                {t('ui.onboarding.barriereMosePasserelleLAcqua')}
-              </span>
-            </button>
-
-            {/* Option 4: City & Public Heritage */}
-            <button
-              type="button"
-              onClick={() => setSelectedPreset('city')}
-              className={`p-3 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
-                selectedPreset === 'city'
-                  ? 'bg-emerald-500/15 border-emerald-500 text-[var(--ink)] shadow-md shadow-emerald-500/10'
-                  : 'bg-[var(--rule)]/20 border-[var(--rule)] text-[var(--ink-2)] hover:border-[var(--ink-3)]'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-emerald-400 flex items-center gap-1.5">
-                  <Landmark className="w-3.5 h-3.5" /> {t('layers.presetCity')}
-                </span>
-                {selectedPreset === 'city' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-              </div>
-              <span className="text-[11px] leading-tight text-[var(--ink-2)]">
-                {t('ui.onboarding.serviziCittadiniPatrimonio')}
-              </span>
-            </button>
+            {[...SCENARIO_PRESETS, 'clean' as const].map((p) => {
+              const style = PRESET_CARD[p];
+              const Icon = style.icon;
+              const selected = selectedPreset === p;
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setSelectedPreset(p)}
+                  aria-pressed={selected}
+                  className={`p-3 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
+                    selected ? style.on : 'bg-[var(--rule)]/20 border-[var(--rule)] text-[var(--ink-2)] hover:border-[var(--ink-3)]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={`font-bold text-xs flex items-center gap-1.5 ${style.text}`}>
+                      <Icon className="w-3.5 h-3.5" /> {t(`ui.presets.${p}`)}
+                      {p === DEFAULT_PRESET && (
+                        <span className="font-mono font-normal text-[9px] uppercase text-[var(--ink-3)]">· {t('ui.presets.recommended')}</span>
+                      )}
+                    </span>
+                    {selected && <CheckCircle2 className={`w-4 h-4 ${style.text}`} />}
+                  </div>
+                  <span className="text-[11px] leading-tight text-[var(--ink-2)]">{t(`ui.presets.${p}Desc`)}</span>
+                </button>
+              );
+            })}
           </div>
+          <p className="text-[10px] text-[var(--ink-3)]">{t('ui.presets.verifiedOnly')}</p>
         </div>
       )
     },

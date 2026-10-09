@@ -16,24 +16,15 @@ describe('urlLayers utilities', () => {
     expect(res.preset).toBeNull();
   });
 
-  it('parses ?layers=all and activates all known layers', () => {
-    const res = parseLayerParams('?layers=all');
-    expect(res.hasLayerParams).toBe(true);
-    expect(Object.keys(res.activeLayers).length).toBe(ALL_LAYER_KEYS.length);
-    for (const key of ALL_LAYER_KEYS) {
-      expect(res.activeLayers[key]).toBe(true);
+  it('?layers=all e ?layers=tutti non accendono tutto: rimandano al preset predefinito', () => {
+    for (const q of ['?layers=all', '?layers=tutti', '?layer=all']) {
+      const res = parseLayerParams(q);
+      expect(res.hasLayerParams).toBe(false);
+      expect(res.activeLayers).toEqual({});
+      expect(res.preset).toBe('all');
     }
-  });
-
-  it('parses ?layers=tutti and ?layer=all aliases correctly', () => {
-    const resTutti = parseLayerParams('?layers=tutti');
-    expect(resTutti.hasLayerParams).toBe(true);
-    expect(resTutti.activeLayers.showRoutes).toBe(true);
-    expect(resTutti.activeLayers.showTributaries).toBe(true);
-
-    const resLayerAll = parseLayerParams('?layer=all');
-    expect(resLayerAll.hasLayerParams).toBe(true);
-    expect(resLayerAll.activeLayers.showCityAssets).toBe(true);
+    // un preset esplicito resta valido
+    expect(parseLayerParams('?preset=ambiente&layers=all').preset).toBe('ambiente');
   });
 
   it('parses ?layers=fountains correctly via alias', () => {
@@ -73,13 +64,11 @@ describe('urlLayers utilities', () => {
     expect(param).not.toBe('all');
   });
 
-  it('builds concise ?layers=all when all layers are selected', () => {
+  it('con tutti i layer attivi elenca gli slug (niente forma compatta all)', () => {
     const allActive = Object.fromEntries(ALL_LAYER_KEYS.map((k) => [k, true]));
     const param = buildLayersParam(allActive);
-    expect(param).toBe('all');
-
-    const url = buildShareUrl(allActive, 'https://venice.opendata.it/');
-    expect(url).toBe('https://venice.opendata.it/?layers=all');
+    expect(param).not.toBe('all');
+    expect(param.split(',').length).toBe(ALL_LAYER_KEYS.length);
   });
 
   it('builds full shareable URL with query params', () => {

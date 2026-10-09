@@ -27,5 +27,7 @@ export default defineConfig({
     port: PORT,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
+    // Tutti i test arrivano dallo stesso IP: il limite per IP (600/min in produzione) qui è più alto
+    env: { API_RATE_LIMIT_PER_MINUTE: '20000' },
   },
 });

@@ -97,13 +97,6 @@ export const enTranslations: Translations = {
     hidePanel: 'Hide panel',
     searchPlaceholder: 'Filter by layer name...',
     quickPresets: 'Quick Presets',
-    presetClean: 'Clean',
-    presetAll: 'All',
-    presetMobility: 'Mobility',
-    presetLagoon: 'Environment',
-    presetCity: 'City',
-    presetSatellites: 'Satellites',
-    presetRegional: 'Regional',
     catMobility: 'Water, Air & Rail Mobility',
     catLagoon: 'Environment',
     catCity: 'Historic City, Heritage & Services',
@@ -398,7 +391,6 @@ export const enTranslations: Translations = {
     track: 'Track',
     vceDist: 'VCE Dist.',
     airportDetailsButton: 'Marco Polo Airport Details (VCE)',
-    shipDetailsButton: 'Full Details & AIS Telemetry',
     destinationNextStop: 'Destination & Next Port',
     directionLabel: 'Direction',
     nextStopLabel: 'Next stop',
@@ -409,7 +401,6 @@ export const enTranslations: Translations = {
     swath: 'Swath',
     satellitePass: 'Pass',
     satelliteElevation: 'Elev.',
-    satelliteDetailsButton: 'Full Sheet & ESA/ASI Data'
   },
   ui: enUi
 };

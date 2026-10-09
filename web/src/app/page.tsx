@@ -5,20 +5,21 @@ import { Header } from '@/components/Header';
 import { MapEngine } from '@/components/MapEngine';
 import { TimelineControls } from '@/components/TimelineControls';
 import { LayerPanel } from '@/components/LayerPanel';
-import { buildLayersParam, buildShareUrl } from '@/lib/urlLayers';
-import { allLayers, countActiveLayers, initialLayersFromSearch, makeLayerSetters, presetLayers, type LayerVisibility } from '@/lib/layerState';
+import { buildLayersParam, buildShareUrl, type LayerKey } from '@/lib/urlLayers';
+import { allLayers, countActiveLayers, DEFAULT_PRESET, initialLayersFromSearch, makeLayerSetters, presetLayers, type LayerVisibility, type MapPreset } from '@/lib/layerState';
 import { copyToClipboard } from '@/lib/dataExport';
 import { StopDetailModal } from '@/components/StopDetailModal';
 import { CantiereDetailModal } from '@/components/CantiereDetailModal';
 import { SpatialAnalysisModal } from '@/components/SpatialAnalysisModal';
 import { AirportDetailModal } from '@/components/AirportDetailModal';
-import { ShipDetailModal } from '@/components/ShipDetailModal';
+import { MapObjectPanel, type MapObjectSelected } from '@/components/MapObjectPanel';
+import { ActiveLayersLegend } from '@/components/ActiveLayersLegend';
 import { MoseDetailModal } from '@/components/MoseDetailModal';
 import { AlilagunaDetailModal } from '@/components/AlilagunaDetailModal';
 import { SatelliteDetailModal } from '@/components/SatelliteDetailModal';
 import { CameraDetailModal } from '@/components/CameraDetailModal';
 import { VeniceFeatureDetailModal, VeniceFeatureSelected } from '@/components/VeniceFeatureDetailModal';
-import { OnboardingTutorialModal, MapPresetType } from '@/components/OnboardingTutorialModal';
+import { OnboardingTutorialModal } from '@/components/OnboardingTutorialModal';
 import { GlobalSearchModal, SearchResultItem } from '@/components/GlobalSearchModal';
 import { TideFloodModal } from '@/components/TideFloodModal';
 import { DataExportModal } from '@/components/DataExportModal';
@@ -106,9 +107,9 @@ import type { FiberDataset } from '@/lib/fiber';
 import type { LagoonNetwork } from '@/lib/lagoonNetwork';
 import { useTranslation } from '@/lib/i18n';
 import { romeDayType, romeSecondsOfDay, formatSignedCm } from '@/lib/time';
-import { activeTripsAt, dayActivity } from '@/lib/gtfsActivity';
+import { activeTripsAt, activeTripsByCategory, dayActivity } from '@/lib/gtfsActivity';
 import { simClock } from '@/lib/simClock';
-import { usePreference, writePreference, THEME_PREFERENCE_KEY } from '@/lib/localPreference';
+import { readPreference, usePreference, writePreference, THEME_PREFERENCE_KEY } from '@/lib/localPreference';
 
 const ONBOARDING_KEY = 'vod_onboarding_completed';
 import type { TideResponse, TideStation, TideForecast, TideTrend, TideCategory } from '@/lib/contracts/tide';
@@ -153,7 +154,7 @@ export default function HomePage() {
   // Layer toggles (Default to false on clean map startup)
   const [layers, setLayers] = useState<LayerVisibility>(() => allLayers(false));
   const { showRoutes, showStops, showVehicles, showRealtimeVehicles, showCantieri, showSpatialBuffer, showFlights, showShips, showShipRoutes, showMose, showCityAssets, showParkings, showAirQuality, showPedestrianFlows, showAlilaguna, showSatellites, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showTrees, showWifiHotspots, showEvCharging, showCameras, showCanalLimits, showBridges, showGondolas, showDocks, showSubsidence, showMorphology, showMarineWind, showTrains, showWasteBoats, showNizioleti, showWells, showBellTowers, showFortresses, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showLagoonWater, showAccommodations, showBikeRoutes, showPollenStations, showTributaries, showFiber, showRecyclingCentres, showLibraries, showCanals } = layers;
-  const { setShowRoutes, setShowStops, setShowVehicles, setShowRealtimeVehicles, setShowCantieri, setShowSpatialBuffer, setShowFlights, setShowShips, setShowShipRoutes, setShowMose, setShowCityAssets, setShowParkings, setShowAirQuality, setShowPedestrianFlows, setShowAlilaguna, setShowSatellites, setShowPasserelle, setShowMarineSignals, setShowOceanStations, setShowBathingWaters, setShowTrees, setShowWifiHotspots, setShowEvCharging, setShowCameras, setShowCanalLimits, setShowBridges, setShowGondolas, setShowDocks, setShowSubsidence, setShowMorphology, setShowMarineWind, setShowTrains, setShowWasteBoats, setShowNizioleti, setShowWells, setShowBellTowers, setShowFortresses, setShowEmergencyDocks, setShowDae, setShowPharmacies, setShowHeatIslands, setShowLagoonWater, setShowAccommodations, setShowBikeRoutes, setShowPollenStations, setShowTributaries, setShowFiber, setShowRecyclingCentres, setShowLibraries, setShowCanals } = useMemo(() => makeLayerSetters(setLayers), []);
+  const { setShowPasserelle } = useMemo(() => makeLayerSetters(setLayers), []);
   const [realtimeVehicles, setRealtimeVehicles] = useState<RealtimeVehicleDto[]>([]);
 
   // 1. Viabilità Acquea & Canali
@@ -246,7 +247,7 @@ export default function HomePage() {
   // Active selections & Modals
   const [selectedStop, setSelectedStop] = useState<StopItem | null>(null);
   const [selectedCantiere, setSelectedCantiere] = useState<CantiereItem | null>(null);
-  const [selectedShip, setSelectedShip] = useState<ShipItem | null>(null);
+  const [selectedObject, setSelectedObject] = useState<MapObjectSelected | null>(null);
   const [selectedSatellite, setSelectedSatellite] = useState<SatelliteItem | null>(null);
   const [selectedFeature, setSelectedFeature] = useState<VeniceFeatureSelected | null>(null);
   const [selectedCamera, setSelectedCamera] = useState<VeniceCameraItem | null>(null);
@@ -322,9 +323,27 @@ export default function HomePage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Scheda informativa unica: aprirne una chiude le altre
+  const clearDetails = useCallback(() => {
+    setSelectedStop(null);
+    setSelectedCantiere(null);
+    setSelectedSatellite(null);
+    setSelectedFeature(null);
+    setSelectedCamera(null);
+    setSelectedObject(null);
+    setIsAirportModalOpen(false);
+    setIsMoseModalOpen(false);
+    setIsAlilagunaModalOpen(false);
+  }, []);
+  const showDetail = useCallback((open: () => void) => {
+    clearDetails();
+    open();
+  }, [clearDetails]);
+
   // Center camera and focus element from search results
   const handleSelectSearchResult = useCallback((item: SearchResultItem) => {
     setFocusedCoordinates({ lat: item.lat, lon: item.lon });
+    clearDetails();
 
     // Accende il layer del risultato (senza toccare gli altri)
     const key = item.layerKey;
@@ -342,7 +361,7 @@ export default function HomePage() {
     else if (item.type === 'emergency_dock') setSelectedFeature({ type: 'emergencyDock', data: item.rawItem });
     else if (item.type === 'fountain') setSelectedFeature({ type: 'fountain', data: item.rawItem });
     else if (item.type === 'parking') setSelectedFeature({ type: 'parking', data: item.rawItem });
-  }, []);
+  }, [clearDetails]);
 
   // Tutorial mostrato alla prima visita: lato server si assume già visto per evitare un flash
   const onboardingDone = usePreference(ONBOARDING_KEY, 'true') !== null;
@@ -372,17 +391,19 @@ export default function HomePage() {
     };
   }, [showRealtimeVehicles]);
 
-  const turnAllLayers = useCallback((active: boolean) => setLayers(allLayers(active)), []);
+  const toggleLayer = useCallback((key: LayerKey) => setLayers((prev) => ({ ...prev, [key]: !prev[key] })), []);
+  const setLayerGroup = useCallback(
+    (keys: LayerKey[], active: boolean) => setLayers((prev) => ({ ...prev, ...Object.fromEntries(keys.map((k) => [k, active])) })),
+    []
+  );
 
-  const applyPreset = useCallback((preset: MapPresetType) => {
-    setLayers(presetLayers(preset));
-    if (preset === 'regional') setCurrentView('lagoon');
-  }, []);
+  const applyPreset = useCallback((preset: MapPreset) => setLayers(presetLayers(preset)), []);
 
   // Track initial mount load from URL
   const hasLoadedUrlParamsRef = useRef(false);
 
-  // Stato iniziale dei layer dall'URL: ?layers= ha la precedenza su ?preset=
+  // Stato iniziale dei layer dall'URL (?layers= ha la precedenza su ?preset=);
+  // alla prima visita, senza indicazioni nell'URL, si parte dal preset predefinito
   useEffect(() => {
     const initial = initialLayersFromSearch(window.location.search);
     if (initial?.preset) {
@@ -390,6 +411,8 @@ export default function HomePage() {
       applyPreset(initial.preset);
     } else if (initial) {
       setLayers(initial.layers);
+    } else if (readPreference(ONBOARDING_KEY) === null) {
+      applyPreset(DEFAULT_PRESET);
     }
     hasLoadedUrlParamsRef.current = true;
   }, [applyPreset]);
@@ -741,15 +764,60 @@ export default function HomePage() {
 
   // Active category counts and colors
   const activePalette = paletteTheme === 'carta' ? CARTA : paletteTheme === 'dynamic' ? getDynamicPalette(currentTimeSeconds) : NOTTE;
-  const categoryCounts = {
-    vaporetto: 84,
-    motoscafo: 42,
-    motonave: 18,
-    ferry: 6,
-    tram: 24,
-    bus: 112,
-    island: 16
-  };
+  // Corse ACTV in servizio per tipo di mezzo (ricalcolate una volta al minuto)
+  const currentMinute = Math.floor(currentTimeSeconds / 60);
+  const categoryCounts = useMemo(() => activeTripsByCategory(selectedDay, currentMinute * 60 + 30), [selectedDay, currentMinute]);
+
+  // Elementi caricati per layer, mostrati nel pannello accanto ai layer accesi
+  const layerCounts = useMemo<Partial<Record<LayerKey, number>>>(() => ({
+    showVehicles: Object.values(categoryCounts).reduce((a, b) => a + b, 0),
+    showRealtimeVehicles: realtimeVehicles.length,
+    showStops: stops.length,
+    showAlilaguna: alilagunaBoats.length,
+    showCantieri: cantieri.length,
+    showCameras: cameras.length,
+    showFlights: flights.length,
+    showShips: ships.length,
+    showMose: moseGates.length,
+    showPasserelle: passerelle.length,
+    showMarineSignals: briccole.length + (lagoonNetwork?.markers.length ?? 0),
+    showOceanStations: oceanStations.length,
+    showBathingWaters: bathingWaters.length,
+    showTrees: trees.length,
+    showRecyclingCentres: recyclingCentres.length,
+    showLibraries: libraries.length,
+    showCanals: lagoonNetwork?.canals.length ?? 0,
+    showWifiHotspots: wifiHotspots.length,
+    showEvCharging: evCharging.length,
+    showCityAssets: fountains.length,
+    showParkings: parkings.length,
+    showAirQuality: airStations.length,
+    showPedestrianFlows: pedestrianFlows.length,
+    showSatellites: satellites.length,
+    showCanalLimits: canalSpeedLimits.length,
+    showBridges: bridges.length,
+    showGondolas: gondolas.length,
+    showDocks: docks.length,
+    showSubsidence: subsidencePoints.length,
+    showMorphology: lagoonMorphology.length,
+    showMarineWind: marineWindStations.length,
+    showTrains: liveTrains.length,
+    showWasteBoats: wasteBoats.length,
+    showNizioleti: nizioleti.length,
+    showWells: wells.length,
+    showBellTowers: bellTowers.length,
+    showFortresses: fortressIslands.length,
+    showEmergencyDocks: emergencyDocks.length,
+    showDae: daeList.length,
+    showPharmacies: pharmacies.length,
+    showHeatIslands: heatIslands.length,
+    showLagoonWater: lagoonWaterQuality.length,
+    showAccommodations: touristAccommodations.length,
+    showBikeRoutes: regionalBikeRoutes.length,
+    showPollenStations: pollenMonitoringStations.length,
+    showTributaries: lagoonTributaryRivers.length,
+  }), [categoryCounts, realtimeVehicles, stops, alilagunaBoats, cantieri, cameras, flights, ships, moseGates, passerelle, briccole, lagoonNetwork, oceanStations, bathingWaters, trees, recyclingCentres, libraries, wifiHotspots, evCharging, fountains, parkings, airStations, pedestrianFlows, satellites, canalSpeedLimits, bridges, gondolas, docks, subsidencePoints, lagoonMorphology, marineWindStations, liveTrains, wasteBoats, nizioleti, wells, bellTowers, fortressIslands, emergencyDocks, daeList, pharmacies, heatIslands, lagoonWaterQuality, touristAccommodations, regionalBikeRoutes, pollenMonitoringStations, lagoonTributaryRivers]);
+  const liveWebcamsCount = useMemo(() => cameras.filter((c) => c.hasLiveFeed).length, [cameras]);
 
   return (
     <main className="relative w-screen h-screen overflow-hidden flex flex-col bg-[var(--ground)]">
@@ -813,15 +881,15 @@ export default function HomePage() {
           alilagunaRoutes={alilagunaRoutes}
           alilagunaStops={alilagunaStops}
           alilagunaBoats={alilagunaBoats}
-          onSelectAlilaguna={() => setIsAlilagunaModalOpen(true)}
+          onSelectAlilaguna={() => showDetail(() => setIsAlilagunaModalOpen(true))}
           showCameras={showCameras}
           cameras={cameras}
           showRealtimeVehicles={showRealtimeVehicles}
           realtimeVehicles={realtimeVehicles}
-          onSelectCamera={setSelectedCamera}
+          onSelectCamera={(c) => showDetail(() => setSelectedCamera(c))}
           showSatellites={showSatellites}
           satellites={satellites}
-          onSelectSatellite={setSelectedSatellite}
+          onSelectSatellite={(sat) => showDetail(() => setSelectedSatellite(sat))}
           showPasserelle={showPasserelle}
           passerelle={passerelle}
           showMarineSignals={showMarineSignals}
@@ -836,12 +904,16 @@ export default function HomePage() {
           showEvCharging={showEvCharging}
           evCharging={evCharging}
           wifiHotspots={wifiHotspots}
-          onSelectFeature={setSelectedFeature}
-          onSelectStop={setSelectedStop}
-          onSelectCantiere={setSelectedCantiere}
-          onSelectAirport={() => setIsAirportModalOpen(true)}
-          onSelectShip={setSelectedShip}
-          onSelectMose={() => setIsMoseModalOpen(true)}
+          onSelectFeature={(f) => showDetail(() => setSelectedFeature(f))}
+          onSelectStop={(st) => showDetail(() => setSelectedStop(st))}
+          onSelectCantiere={(c) => showDetail(() => setSelectedCantiere(c))}
+          onSelectAirport={() => showDetail(() => setIsAirportModalOpen(true))}
+          onSelectObject={(o) => showDetail(() => setSelectedObject(o))}
+          onClearSelection={clearDetails}
+          legend={<ActiveLayersLegend layers={layers} counts={layerCounts} onHideLayer={toggleLayer} />}
+          selectedObject={selectedObject}
+          selectedSatellite={selectedSatellite}
+          onSelectMose={() => showDetail(() => setIsMoseModalOpen(true))}
           focusedCoordinates={focusedCoordinates}
           // 1. Viabilità Acquea & Canali
           showCanalLimits={showCanalLimits}
@@ -942,158 +1014,12 @@ export default function HomePage() {
           <div className="hidden md:block absolute top-4 left-4 z-20 w-80 xl:w-84 max-w-[calc(100vw-2rem)] animate-in fade-in zoom-in-95 duration-200">
             <LayerPanel
               onClose={() => setIsDesktopLayerPanelOpen(false)}
-              onTurnAllOff={() => turnAllLayers(false)}
-              onTurnAllOn={() => turnAllLayers(true)}
+              layers={layers}
+              onToggleLayer={toggleLayer}
+              onSetLayers={setLayerGroup}
               onApplyPreset={applyPreset}
-              showRoutes={showRoutes}
-              onToggleRoutes={() => setShowRoutes((p) => !p)}
-              showStops={showStops}
-              onToggleStops={() => setShowStops((p) => !p)}
-              stopsCount={stops.length}
-              showVehicles={showVehicles}
-              onToggleVehicles={() => setShowVehicles((p) => !p)}
-              showRealtimeVehicles={showRealtimeVehicles}
-              onToggleRealtimeVehicles={() => setShowRealtimeVehicles((p) => !p)}
-              realtimeVehiclesCount={realtimeVehicles.length}
-              showAlilaguna={showAlilaguna}
-              onToggleAlilaguna={() => setShowAlilaguna((p) => !p)}
-              alilagunaBoatsCount={alilagunaBoats.length}
-              showCantieri={showCantieri}
-              onToggleCantieri={() => setShowCantieri((p) => !p)}
-              cantieriCount={cantieri.length}
-              showCameras={showCameras}
-              onToggleCameras={() => setShowCameras((p) => !p)}
-              camerasCount={cameras.length}
-              liveWebcamsCount={cameras.filter((c) => c.hasLiveFeed).length}
-              showFlights={showFlights}
-              onToggleFlights={() => setShowFlights((p) => !p)}
-              flightsCount={flights.length}
-              showShips={showShips}
-              onToggleShips={() => setShowShips((p) => !p)}
-              shipsCount={ships.length}
-              showShipRoutes={showShipRoutes}
-              onToggleShipRoutes={() => setShowShipRoutes((p) => !p)}
-              showMose={showMose}
-              onToggleMose={() => setShowMose((p) => !p)}
-              showPasserelle={showPasserelle}
-              onTogglePasserelle={() => setShowPasserelle((p) => !p)}
-              passerelleCount={passerelle.length}
-              showMarineSignals={showMarineSignals}
-              onToggleMarineSignals={() => setShowMarineSignals((p) => !p)}
-              briccoleCount={briccole.length + (lagoonNetwork?.markers.length ?? 0)}
-              showOceanStations={showOceanStations}
-              onToggleOceanStations={() => setShowOceanStations((p) => !p)}
-              oceanStationsCount={oceanStations.length}
-              showBathingWaters={showBathingWaters}
-              onToggleBathingWaters={() => setShowBathingWaters((p) => !p)}
-              bathingWatersCount={bathingWaters.length}
-              showTrees={showTrees}
-              onToggleTrees={() => setShowTrees((p) => !p)}
-              treesCount={trees.length}
-              showWifiHotspots={showWifiHotspots}
-              onToggleWifiHotspots={() => setShowWifiHotspots((p) => !p)}
-              showFiber={showFiber}
-              onToggleFiber={() => setShowFiber((p) => !p)}
-              showRecyclingCentres={showRecyclingCentres}
-              onToggleRecyclingCentres={() => setShowRecyclingCentres((p) => !p)}
-              recyclingCentresCount={recyclingCentres.length}
-              showLibraries={showLibraries}
-              onToggleLibraries={() => setShowLibraries((p) => !p)}
-              librariesCount={libraries.length}
-              showCanals={showCanals}
-              onToggleCanals={() => setShowCanals((p) => !p)}
-              canalsCount={lagoonNetwork?.canals.length ?? 0}
-              wifiHotspotsCount={wifiHotspots.length}
-              showEvCharging={showEvCharging}
-              onToggleEvCharging={() => setShowEvCharging((p) => !p)}
-              evChargingCount={evCharging.length}
-              showCityAssets={showCityAssets}
-              onToggleCityAssets={() => setShowCityAssets((p) => !p)}
-              showParkings={showParkings}
-              onToggleParkings={() => setShowParkings((p) => !p)}
-              parkingsCount={parkings.length}
-              showAirQuality={showAirQuality}
-              onToggleAirQuality={() => setShowAirQuality((p) => !p)}
-              showPedestrianFlows={showPedestrianFlows}
-              onTogglePedestrianFlows={() => setShowPedestrianFlows((p) => !p)}
-              showSatellites={showSatellites}
-              onToggleSatellites={() => setShowSatellites((p) => !p)}
-              satellitesCount={satellites.length}
-              // 1. Viabilità Acquea & Canali
-              showCanalLimits={showCanalLimits}
-              onToggleCanalLimits={() => setShowCanalLimits((p) => !p)}
-              canalLimitsCount={canalSpeedLimits.length}
-              showBridges={showBridges}
-              onToggleBridges={() => setShowBridges((p) => !p)}
-              bridgesCount={bridges.length}
-              showGondolas={showGondolas}
-              onToggleGondolas={() => setShowGondolas((p) => !p)}
-              gondolasCount={gondolas.length}
-              showDocks={showDocks}
-              onToggleDocks={() => setShowDocks((p) => !p)}
-              docksCount={docks.length}
-              // 2. Idrografia, Subsidenza & Morfologia
-              showSubsidence={showSubsidence}
-              onToggleSubsidence={() => setShowSubsidence((p) => !p)}
-              subsidenceCount={subsidencePoints.length}
-              showMorphology={showMorphology}
-              onToggleMorphology={() => setShowMorphology((p) => !p)}
-              morphologyCount={lagoonMorphology.length}
-              showMarineWind={showMarineWind}
-              onToggleMarineWind={() => setShowMarineWind((p) => !p)}
-              marineWindCount={marineWindStations.length}
-              // 3. Ferrovia & Logistica
-              showTrains={showTrains}
-              onToggleTrains={() => setShowTrains((p) => !p)}
-              trainsCount={liveTrains.length}
-              showWasteBoats={showWasteBoats}
-              onToggleWasteBoats={() => setShowWasteBoats((p) => !p)}
-              wasteBoatsCount={wasteBoats.length}
-              // 4. Patrimonio Storico & Nizioleti
-              showNizioleti={showNizioleti}
-              onToggleNizioleti={() => setShowNizioleti((p) => !p)}
-              nizioletiCount={nizioleti.length}
-              showWells={showWells}
-              onToggleWells={() => setShowWells((p) => !p)}
-              wellsCount={wells.length}
-              showBellTowers={showBellTowers}
-              onToggleBellTowers={() => setShowBellTowers((p) => !p)}
-              bellTowersCount={bellTowers.length}
-              showFortresses={showFortresses}
-              onToggleFortresses={() => setShowFortresses((p) => !p)}
-              fortressesCount={fortressIslands.length}
-              // 5. Salute Pubblica & SUEM 118
-              showEmergencyDocks={showEmergencyDocks}
-              onToggleEmergencyDocks={() => setShowEmergencyDocks((p) => !p)}
-              emergencyDocksCount={emergencyDocks.length}
-              showDae={showDae}
-              onToggleDae={() => setShowDae((p) => !p)}
-              daeCount={daeList.length}
-              showPharmacies={showPharmacies}
-              onTogglePharmacies={() => setShowPharmacies((p) => !p)}
-              pharmaciesCount={pharmacies.length}
-              // 6. Microclima & Isole Calore
-              showHeatIslands={showHeatIslands}
-              onToggleHeatIslands={() => setShowHeatIslands((p) => !p)}
-              heatIslandsCount={heatIslands.length}
-              // 7. Open Data Regione Veneto (dati.veneto.it)
-              showLagoonWater={showLagoonWater}
-              onToggleLagoonWater={() => setShowLagoonWater((p) => !p)}
-              lagoonWaterCount={lagoonWaterQuality.length}
-              showAccommodations={showAccommodations}
-              onToggleAccommodations={() => setShowAccommodations((p) => !p)}
-              accommodationsCount={touristAccommodations.length}
-              showBikeRoutes={showBikeRoutes}
-              onToggleBikeRoutes={() => setShowBikeRoutes((p) => !p)}
-              bikeRoutesCount={regionalBikeRoutes.length}
-              showPollenStations={showPollenStations}
-              onTogglePollenStations={() => setShowPollenStations((p) => !p)}
-              pollenStationsCount={pollenMonitoringStations.length}
-              showTributaries={showTributaries}
-              onToggleTributaries={() => setShowTributaries((p) => !p)}
-              tributariesCount={lagoonTributaryRivers.length}
-              showSpatialBuffer={showSpatialBuffer}
-              onToggleSpatialBuffer={() => setShowSpatialBuffer((p) => !p)}
+              counts={layerCounts}
+              liveWebcamsCount={liveWebcamsCount}
               bufferRadiusMeters={bufferRadiusMeters}
               onBufferRadiusChange={setBufferRadiusMeters}
               selectedCategory={selectedCategory}
@@ -1112,7 +1038,7 @@ export default function HomePage() {
             >
               <Layers className="w-4 h-4 text-cyan-400 group-hover:rotate-12 transition-transform" />
               <span className="font-semibold">{t('layers.panelTitle')}</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-mono">44</span>
+              {activeLayersCount > 0 && <span className="px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-mono tabular">{activeLayersCount}</span>}
             </button>
           </div>
         )}
@@ -1128,165 +1054,19 @@ export default function HomePage() {
               onClick={(e) => e.stopPropagation()}
             >
               <LayerPanel
-                onTurnAllOff={() => turnAllLayers(false)}
-                onTurnAllOn={() => turnAllLayers(true)}
+                onClose={() => setIsLayerPanelOpenMobile(false)}
+                layers={layers}
+                onToggleLayer={toggleLayer}
+                onSetLayers={setLayerGroup}
                 onApplyPreset={applyPreset}
-                showRoutes={showRoutes}
-                onToggleRoutes={() => setShowRoutes((p) => !p)}
-                showStops={showStops}
-                onToggleStops={() => setShowStops((p) => !p)}
-                stopsCount={stops.length}
-                showVehicles={showVehicles}
-                onToggleVehicles={() => setShowVehicles((p) => !p)}
-                showRealtimeVehicles={showRealtimeVehicles}
-                onToggleRealtimeVehicles={() => setShowRealtimeVehicles((p) => !p)}
-                realtimeVehiclesCount={realtimeVehicles.length}
-                showAlilaguna={showAlilaguna}
-                onToggleAlilaguna={() => setShowAlilaguna((p) => !p)}
-                alilagunaBoatsCount={alilagunaBoats.length}
-                showCantieri={showCantieri}
-                onToggleCantieri={() => setShowCantieri((p) => !p)}
-                cantieriCount={cantieri.length}
-                showCameras={showCameras}
-                onToggleCameras={() => setShowCameras((p) => !p)}
-                camerasCount={cameras.length}
-                liveWebcamsCount={cameras.filter((c) => c.hasLiveFeed).length}
-                showFlights={showFlights}
-                onToggleFlights={() => setShowFlights((p) => !p)}
-                flightsCount={flights.length}
-                showShips={showShips}
-                onToggleShips={() => setShowShips((p) => !p)}
-                shipsCount={ships.length}
-                showShipRoutes={showShipRoutes}
-                onToggleShipRoutes={() => setShowShipRoutes((p) => !p)}
-                showMose={showMose}
-                onToggleMose={() => setShowMose((p) => !p)}
-                showPasserelle={showPasserelle}
-                onTogglePasserelle={() => setShowPasserelle((p) => !p)}
-                passerelleCount={passerelle.length}
-                showMarineSignals={showMarineSignals}
-                onToggleMarineSignals={() => setShowMarineSignals((p) => !p)}
-                briccoleCount={briccole.length + (lagoonNetwork?.markers.length ?? 0)}
-                showOceanStations={showOceanStations}
-                onToggleOceanStations={() => setShowOceanStations((p) => !p)}
-                oceanStationsCount={oceanStations.length}
-                showBathingWaters={showBathingWaters}
-                onToggleBathingWaters={() => setShowBathingWaters((p) => !p)}
-                bathingWatersCount={bathingWaters.length}
-                showTrees={showTrees}
-                onToggleTrees={() => setShowTrees((p) => !p)}
-                treesCount={trees.length}
-                showWifiHotspots={showWifiHotspots}
-                onToggleWifiHotspots={() => setShowWifiHotspots((p) => !p)}
-              showFiber={showFiber}
-              onToggleFiber={() => setShowFiber((p) => !p)}
-              showRecyclingCentres={showRecyclingCentres}
-              onToggleRecyclingCentres={() => setShowRecyclingCentres((p) => !p)}
-              recyclingCentresCount={recyclingCentres.length}
-              showLibraries={showLibraries}
-              onToggleLibraries={() => setShowLibraries((p) => !p)}
-              librariesCount={libraries.length}
-              showCanals={showCanals}
-              onToggleCanals={() => setShowCanals((p) => !p)}
-              canalsCount={lagoonNetwork?.canals.length ?? 0}
-                wifiHotspotsCount={wifiHotspots.length}
-                showEvCharging={showEvCharging}
-                onToggleEvCharging={() => setShowEvCharging((p) => !p)}
-                evChargingCount={evCharging.length}
-                showCityAssets={showCityAssets}
-                onToggleCityAssets={() => setShowCityAssets((p) => !p)}
-                showParkings={showParkings}
-                onToggleParkings={() => setShowParkings((p) => !p)}
-                parkingsCount={parkings.length}
-                showAirQuality={showAirQuality}
-                onToggleAirQuality={() => setShowAirQuality((p) => !p)}
-                showPedestrianFlows={showPedestrianFlows}
-                onTogglePedestrianFlows={() => setShowPedestrianFlows((p) => !p)}
-                showSatellites={showSatellites}
-                onToggleSatellites={() => setShowSatellites((p) => !p)}
-                satellitesCount={satellites.length}
-                // 1. Viabilità Acquea & Canali
-                showCanalLimits={showCanalLimits}
-                onToggleCanalLimits={() => setShowCanalLimits((p) => !p)}
-                canalLimitsCount={canalSpeedLimits.length}
-                showBridges={showBridges}
-                onToggleBridges={() => setShowBridges((p) => !p)}
-                bridgesCount={bridges.length}
-                showGondolas={showGondolas}
-                onToggleGondolas={() => setShowGondolas((p) => !p)}
-                gondolasCount={gondolas.length}
-                showDocks={showDocks}
-                onToggleDocks={() => setShowDocks((p) => !p)}
-                docksCount={docks.length}
-                // 2. Idrografia, Subsidenza & Morfologia
-                showSubsidence={showSubsidence}
-                onToggleSubsidence={() => setShowSubsidence((p) => !p)}
-                subsidenceCount={subsidencePoints.length}
-                showMorphology={showMorphology}
-                onToggleMorphology={() => setShowMorphology((p) => !p)}
-                morphologyCount={lagoonMorphology.length}
-                showMarineWind={showMarineWind}
-                onToggleMarineWind={() => setShowMarineWind((p) => !p)}
-                marineWindCount={marineWindStations.length}
-                // 3. Ferrovia & Logistica
-                showTrains={showTrains}
-                onToggleTrains={() => setShowTrains((p) => !p)}
-                trainsCount={liveTrains.length}
-                showWasteBoats={showWasteBoats}
-                onToggleWasteBoats={() => setShowWasteBoats((p) => !p)}
-                wasteBoatsCount={wasteBoats.length}
-                // 4. Patrimonio Storico & Nizioleti
-                showNizioleti={showNizioleti}
-                onToggleNizioleti={() => setShowNizioleti((p) => !p)}
-                nizioletiCount={nizioleti.length}
-                showWells={showWells}
-                onToggleWells={() => setShowWells((p) => !p)}
-                wellsCount={wells.length}
-                showBellTowers={showBellTowers}
-                onToggleBellTowers={() => setShowBellTowers((p) => !p)}
-                bellTowersCount={bellTowers.length}
-                showFortresses={showFortresses}
-                onToggleFortresses={() => setShowFortresses((p) => !p)}
-                fortressesCount={fortressIslands.length}
-                // 5. Salute Pubblica & SUEM 118
-                showEmergencyDocks={showEmergencyDocks}
-                onToggleEmergencyDocks={() => setShowEmergencyDocks((p) => !p)}
-                emergencyDocksCount={emergencyDocks.length}
-                showDae={showDae}
-                onToggleDae={() => setShowDae((p) => !p)}
-                daeCount={daeList.length}
-                showPharmacies={showPharmacies}
-                onTogglePharmacies={() => setShowPharmacies((p) => !p)}
-                pharmaciesCount={pharmacies.length}
-                // 6. Microclima & Isole Calore
-                showHeatIslands={showHeatIslands}
-                onToggleHeatIslands={() => setShowHeatIslands((p) => !p)}
-                heatIslandsCount={heatIslands.length}
-                // 7. Open Data Regione Veneto (dati.veneto.it)
-                showLagoonWater={showLagoonWater}
-                onToggleLagoonWater={() => setShowLagoonWater((p) => !p)}
-                lagoonWaterCount={lagoonWaterQuality.length}
-                showAccommodations={showAccommodations}
-                onToggleAccommodations={() => setShowAccommodations((p) => !p)}
-                accommodationsCount={touristAccommodations.length}
-                showBikeRoutes={showBikeRoutes}
-                onToggleBikeRoutes={() => setShowBikeRoutes((p) => !p)}
-                bikeRoutesCount={regionalBikeRoutes.length}
-                showPollenStations={showPollenStations}
-                onTogglePollenStations={() => setShowPollenStations((p) => !p)}
-                pollenStationsCount={pollenMonitoringStations.length}
-                showTributaries={showTributaries}
-                onToggleTributaries={() => setShowTributaries((p) => !p)}
-                tributariesCount={lagoonTributaryRivers.length}
-                showSpatialBuffer={showSpatialBuffer}
-                onToggleSpatialBuffer={() => setShowSpatialBuffer((p) => !p)}
+                counts={layerCounts}
+                liveWebcamsCount={liveWebcamsCount}
                 bufferRadiusMeters={bufferRadiusMeters}
                 onBufferRadiusChange={setBufferRadiusMeters}
                 selectedCategory={selectedCategory}
                 onSelectCategory={setSelectedCategory}
                 categoryCounts={categoryCounts}
                 categoryColors={activePalette.cats}
-                onClose={() => setIsLayerPanelOpenMobile(false)}
               />
             </div>
           </div>
@@ -1331,65 +1111,67 @@ export default function HomePage() {
             onOpenTideModal={() => setIsTideModalOpen(true)}
           />
         </div>
+          {/* Scheda informativa unica (agganciata a destra su desktop, cassetto su mobile) */}
+        <StopDetailModal
+          stop={selectedStop}
+          onClose={() => setSelectedStop(null)}
+          currentTimeSeconds={currentTimeSeconds}
+        />
+
+        <CantiereDetailModal
+          cantiere={selectedCantiere}
+          onClose={() => setSelectedCantiere(null)}
+        />
+
+        <AirportDetailModal
+          isOpen={isAirportModalOpen}
+          onClose={() => setIsAirportModalOpen(false)}
+          flights={flights}
+          metar={metarData}
+        />
+
+        <MapObjectPanel
+          object={selectedObject}
+          onClose={() => setSelectedObject(null)}
+          onOpenAirport={() => showDetail(() => setIsAirportModalOpen(true))}
+          onOpenAlilaguna={() => showDetail(() => setIsAlilagunaModalOpen(true))}
+        />
+
+        <MoseDetailModal
+          isOpen={isMoseModalOpen}
+          onClose={() => setIsMoseModalOpen(false)}
+          moseGates={moseGates}
+          stations={cpsmStations}
+          tideLevel={tideLevel}
+          tideInfo={tideInfo}
+        />
+
+        <AlilagunaDetailModal
+          isOpen={isAlilagunaModalOpen}
+          onClose={() => setIsAlilagunaModalOpen(false)}
+          routes={alilagunaRoutes}
+          stops={alilagunaStops}
+          boats={alilagunaBoats}
+        />
+
+        <SatelliteDetailModal
+          satellite={selectedSatellite}
+          onClose={() => setSelectedSatellite(null)}
+        />
+
+        <CameraDetailModal
+          camera={selectedCamera}
+          onClose={() => setSelectedCamera(null)}
+        />
+
+        <VeniceFeatureDetailModal
+          feature={selectedFeature}
+          onClose={() => setSelectedFeature(null)}
+          currentTideLevelCm={tideLevel ?? undefined}
+        />
       </div>
 
-      {/* Modals */}
-      <StopDetailModal
-        stop={selectedStop}
-        onClose={() => setSelectedStop(null)}
-        currentTimeSeconds={currentTimeSeconds}
-      />
-
-      <CantiereDetailModal
-        cantiere={selectedCantiere}
-        onClose={() => setSelectedCantiere(null)}
-      />
-
-      <AirportDetailModal
-        isOpen={isAirportModalOpen}
-        onClose={() => setIsAirportModalOpen(false)}
-        flights={flights}
-        metar={metarData}
-      />
-
-      <ShipDetailModal
-        ship={selectedShip}
-        onClose={() => setSelectedShip(null)}
-      />
-
-      <MoseDetailModal
-        isOpen={isMoseModalOpen}
-        onClose={() => setIsMoseModalOpen(false)}
-        moseGates={moseGates}
-        stations={cpsmStations}
-        tideLevel={tideLevel}
-        tideInfo={tideInfo}
-      />
-
-      <AlilagunaDetailModal
-        isOpen={isAlilagunaModalOpen}
-        onClose={() => setIsAlilagunaModalOpen(false)}
-        routes={alilagunaRoutes}
-        stops={alilagunaStops}
-        boats={alilagunaBoats}
-      />
-
-      <SatelliteDetailModal
-        satellite={selectedSatellite}
-        onClose={() => setSelectedSatellite(null)}
-      />
-
-      <CameraDetailModal
-        camera={selectedCamera}
-        onClose={() => setSelectedCamera(null)}
-      />
-
-      <VeniceFeatureDetailModal
-        feature={selectedFeature}
-        onClose={() => setSelectedFeature(null)}
-        currentTideLevelCm={tideLevel ?? undefined}
-      />
-
+      {/* Finestre degli strumenti (centrate, modali) */}
       <SpatialAnalysisModal
         isOpen={isSpatialModalOpen}
         onClose={() => setIsSpatialModalOpen(false)}

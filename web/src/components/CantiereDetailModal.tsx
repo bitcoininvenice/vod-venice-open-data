@@ -5,7 +5,7 @@ import { X, Construction, FileText, Euro, Building2, MapPin, ExternalLink, Info 
 import { CantiereItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge';
-import { useDialogA11y } from '@/components/ui/useDialogA11y';
+import { InfoPanel } from '@/components/ui/InfoPanel';
 
 interface CantiereDetailModalProps {
   cantiere: CantiereItem | null;
@@ -17,19 +17,10 @@ const SOURCE_URL = 'https://dati.venezia.it/?q=area-tematica/opere-pubbliche';
 /** Scheda di un'opera pubblica dall'Elenco Annuale dei Lavori del Comune di Venezia. */
 export const CantiereDetailModal: React.FC<CantiereDetailModalProps> = ({ cantiere, onClose }) => {
   const { t } = useTranslation();
-  const panelRef = useDialogA11y(cantiere !== null, onClose);
   if (!cantiere) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="cantiere-modal-title"
-        tabIndex={-1}
-        className="glass-panel w-full max-w-lg rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-3.5 sm:gap-4 border border-amber-500/40 animate-in fade-in zoom-in-95 duration-200 max-h-[88vh] overflow-y-auto outline-none"
-      >
+    <InfoPanel open={cantiere !== null} onClose={onClose} labelledBy="cantiere-modal-title" layer="showCantieri" accent="border-amber-500/40">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-[var(--rule)] pb-3">
           <div className="flex items-center gap-3">
@@ -140,7 +131,6 @@ export const CantiereDetailModal: React.FC<CantiereDetailModalProps> = ({ cantie
           {t('ui.publicWork.fonteComuneVeneziaDatiVenezia')}
           <ExternalLink className="w-3 h-3" />
         </a>
-      </div>
-    </div>
+    </InfoPanel>
   );
 };

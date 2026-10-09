@@ -74,7 +74,10 @@ vod-venice-open-data/
 │   │   │   ├── Header.tsx           # Navigazione, viste camera, switcher palette
 │   │   │   ├── MapEngine.tsx        # Motore Canvas 2D / Vettoriale ad alte performance
 │   │   │   ├── TimelineControls.tsx # Scrubbing orario 24h, play/pause, velocità
-│   │   │   ├── LayerPanel.tsx       # Toggles layer, legenda e slider buffer spaziale
+│   │   │   ├── LayerPanel.tsx       # Scenari, ricerca, gruppi con natura del dato, voci "da verificare"
+│   │   │   ├── ActiveLayersLegend.tsx # Legenda unica dei livelli accesi
+│   │   │   ├── ui/InfoPanel.tsx     # Scheda informativa unica (destra su desktop, cassetto su mobile)
+│   │   │   ├── MapObjectPanel.tsx   # Schede di navi, voli, mezzi ACTV e Alilaguna
 │   │   │   ├── StopDetailModal.tsx  # Dettagli fermata e prossime corse programmate
 │   │   │   ├── CantiereDetailModal.tsx # Scheda cantiere, budget e impatto mobilità
 │   │   │   ├── SpatialAnalysisModal.tsx # Dashboard intersezioni spaziali buffer
@@ -184,6 +187,10 @@ Apri il browser su: **`http://localhost:3000`**
 * **Scia dei Mezzi (Ghosting Trail)**: ogni mezzo calcola e traccia la posizione precedente lungo il percorso in funzione della velocità di simulazione.
 * **Modalità Fusione Additiva (`lighter`)**: in modalità notte, l'incrocio dei vaporetti genera fasci di luce combinati.
 * **7 Categorie Distinte**: Vaporetto, Motoscafo, Motonave, Ferry-boat, Tram T1/T2, Bus Terraferma e Bus Isole.
+* **Scenari invece di "accendi tutto"**: *Muoversi* (predefinito alla prima visita), *Acqua alta*, *Ambiente oggi*, *Servizi utili*, *Città*. Ogni scenario accende 3-6 livelli e usa solo dati verificati. Link: `?preset=acqua-alta`; i vecchi nomi (`mobility`, `lagoon`, `city`, `satellites`, `regional`) restano validi e `?layers=all` apre lo scenario predefinito. I livelli attivi finiscono in `?layers=slug1,slug2`.
+* **Pannello dei livelli**: ricerca (anche per nome inglese, ente o slug), "Accendi / Spegni" per gruppo, bollino con la natura del dato (Live, Simulato, Dataset, Da verificare), elenchi curati raccolti in "Da verificare", avviso oltre 12 livelli accesi.
+* **Scheda informativa unica**: tutto ciò che si clicca sulla mappa si apre nella stessa scheda, a destra su desktop e dal basso su mobile, senza oscurare la mappa; nel piede natura del dato, ente e link alla scheda del livello in `/layers`.
+* **Etichette diradate e legenda unica**: le etichette che si sovrappongono vengono saltate (massimo 70 per frame); la legenda "Livelli attivi" elenca i livelli accesi e permette di spegnerli.
 
 ### 2. Incrocio spaziale: opere pubbliche e fermate
 * Raggio configurabile (10–2000 m) attorno alle opere pubbliche localizzate dell'Elenco Annuale dei Lavori.

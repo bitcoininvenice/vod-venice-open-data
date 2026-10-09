@@ -98,13 +98,6 @@ export interface Translations {
     hidePanel: string;
     searchPlaceholder: string;
     quickPresets: string;
-    presetClean: string;
-    presetAll: string;
-    presetMobility: string;
-    presetLagoon: string;
-    presetCity: string;
-    presetSatellites: string;
-    presetRegional: string;
     catMobility: string;
     catLagoon: string;
     catCity: string;
@@ -399,7 +392,6 @@ export interface Translations {
     track: string;
     vceDist: string;
     airportDetailsButton: string;
-    shipDetailsButton: string;
     destinationNextStop: string;
     directionLabel: string;
     nextStopLabel: string;
@@ -410,7 +402,6 @@ export interface Translations {
     swath: string;
     satellitePass: string;
     satelliteElevation: string;
-    satelliteDetailsButton: string;
   };
   /** Testi dei componenti, raggruppati per componente */
   ui: UiTranslations;

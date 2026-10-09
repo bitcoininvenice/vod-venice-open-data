@@ -124,13 +124,94 @@ test('il pannello export si apre, si chiude e si riapre senza errori', async ({ 
 });
 
 test('i layer attivi finiscono nell\'URL e il preset viene rimosso', async ({ page }) => {
-  await page.goto('/?preset=satellites');
-  await expect(page).toHaveURL(/layers=/);
+  // vecchio nome di preset (link già condivisi): diventa lo scenario "Acqua alta"
+  await page.goto('/?preset=lagoon');
+  await expect(page).toHaveURL(/layers=.*mose/);
   expect(new URL(page.url()).searchParams.get('preset')).toBeNull();
   // ricaricando si ritrovano gli stessi layer, non il preset
   const layers = new URL(page.url()).searchParams.get('layers');
   await page.reload();
   expect(new URL(page.url()).searchParams.get('layers')).toBe(layers);
+});
+
+test('?layers=all non accende tutto: apre lo scenario predefinito', async ({ page }) => {
+  await page.goto('/?layers=all');
+  await expect(page).toHaveURL(/layers=.*vaporetti_live/);
+  const layers = new URL(page.url()).searchParams.get('layers')!;
+  expect(layers).not.toBe('all');
+  expect(layers.split(',').length).toBeLessThanOrEqual(6);
+});
+
+/** Pannello dei livelli visibile (desktop o cassetto mobile). */
+async function openLayerPanel(page: import('@playwright/test').Page, isMobile: boolean) {
+  if (isMobile) await page.getByRole('button', { name: /filtri/i }).click();
+  return page.locator('aside').filter({ visible: true }).first();
+}
+
+test('gli scenari accendono pochi livelli e si evidenziano', async ({ page, isMobile }) => {
+  await page.goto('/');
+  const panel = await openLayerPanel(page, isMobile);
+  const servizi = panel.getByRole('button', { name: /servizi utili/i });
+  await servizi.click();
+  await expect(servizi).toHaveAttribute('aria-pressed', 'true');
+  await expect(page).toHaveURL(/farmacie_turno/);
+  await expect(page).toHaveURL(/dae_pubblici/);
+  // nessun pulsante "Tutti"
+  await expect(panel.getByRole('button', { name: /^tutti$/i })).toHaveCount(0);
+});
+
+test('la ricerca nel pannello filtra i livelli', async ({ page, isMobile }) => {
+  await page.goto('/');
+  const panel = await openLayerPanel(page, isMobile);
+  await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('farmac');
+  const pharmacies = panel.locator('[data-layer="showPharmacies"]');
+  await expect(pharmacies).toBeVisible();
+  await expect(panel.locator('[data-layer="showShips"]')).toHaveCount(0);
+  await pharmacies.click();
+  await expect(pharmacies).toHaveAttribute('aria-pressed', 'true');
+  await expect(page).toHaveURL(/farmacie_turno/);
+  await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('xyzxyz');
+  await expect(panel.getByText(/nessun livello per/i)).toBeVisible();
+});
+
+test('troppi livelli: avviso con "Pulisci"', async ({ page, isMobile }) => {
+  await page.goto('/');
+  const panel = await openLayerPanel(page, isMobile);
+  await panel.getByRole('button', { name: /accendi i livelli verificati di mobilità/i }).click();
+  await panel.getByRole('button', { name: /accendi i livelli verificati di ambiente/i }).click();
+  const warning = panel.getByRole('status').filter({ hasText: /livelli accesi/i });
+  await expect(warning).toBeVisible();
+  await warning.getByRole('button', { name: /pulisci/i }).click();
+  await expect(warning).toBeHidden();
+  await expect(page).not.toHaveURL(/layers=/);
+});
+
+test('legenda dei livelli attivi: si apre e spegne un livello', async ({ page }) => {
+  await page.goto('/?layers=farmacie_turno,dae_pubblici');
+  const legend = page.getByRole('button', { name: /mostra i livelli attivi/i });
+  await legend.click();
+  await page.getByRole('button', { name: /spegni defibrillatori|spegni dae/i }).first().click();
+  await expect(page).not.toHaveURL(/dae_pubblici/);
+  await expect(page).toHaveURL(/farmacie_turno/);
+});
+
+test('la scheda informativa non copre il pannello livelli e non blocca la mappa', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'su mobile la scheda è un cassetto dal basso');
+  await page.goto('/');
+  await page.locator('canvas').waitFor();
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder(/cerca fermate/i).fill('Rialto');
+  await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: /rialto/i }).first().click();
+  const info = page.locator('[data-info-panel]');
+  await expect(info).toBeVisible();
+  await expect(info).toHaveAttribute('aria-modal', 'false');
+  const infoBox = (await info.boundingBox())!;
+  const panelBox = (await page.locator('aside').filter({ visible: true }).first().boundingBox())!;
+  expect(infoBox.x).toBeGreaterThan(panelBox.x + panelBox.width);
+  // piede con natura del dato e link alla scheda del livello
+  await expect(info.getByRole('link', { name: /scheda del livello/i })).toHaveAttribute('href', /\/layers#fermate_actv/);
+  await page.keyboard.press('Escape');
+  await expect(info).toBeHidden();
 });
 
 test('la pagina delle fonti mostra lo stato', async ({ page }) => {
