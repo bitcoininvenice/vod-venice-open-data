@@ -118,7 +118,7 @@ export const itTranslations: Translations = {
     subHealth: 'Salute Pubblica & SUEM 118',
     subCityServices: 'Servizi ai Cittadini & Infrastrutture',
     subHeritage: 'Patrimonio Storico & Identità',
-    subEnvironmentClimate: 'Ambiente, Clima & Territorio',
+    subEnvironmentClimate: 'Aria, clima & verde',
     layerVaporetti: 'Mezzi ACTV (simulati da orario)',
     layerRealtimeVehicles: 'Posizioni reali ACTV (GTFS-RT)',
     layerStops: 'Fermate & Pontili ACTV',

@@ -981,7 +981,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           </span>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-mono text-[var(--ink-3)] lowercase">
-              {[showMose, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showSubsidence, showMorphology, showMarineWind, showFortresses, showSpatialBuffer, showLagoonWater, showTributaries].filter(Boolean).length}/12
+              {[showMose, showPasserelle, showMarineSignals, showOceanStations, showBathingWaters, showSubsidence, showMorphology, showMarineWind, showFortresses, showSpatialBuffer, showLagoonWater, showTributaries, showTrees, showAirQuality, showPollenStations, showHeatIslands].filter(Boolean).length}/16
             </span>
             {sectionOpen.lagoon ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </div>
@@ -1322,11 +1322,111 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 </div>
               </button>
             )}
+
+            {/* Sotto-categoria 5: Aria, Clima & Verde */}
+            <SubCategoryHeader
+              icon={<Trees className="w-3 h-3 text-emerald-400" />}
+              label={t('layers.subEnvironmentClimate')}
+            />
+
+            {/* Verde Urbano & Alberi Monumentali */}
+            {onToggleTrees && (
+              <button
+                type="button"
+                onClick={onToggleTrees}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showTrees
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Trees className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{t('layers.layerTrees')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {treesCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                      {treesCount}
+                    </span>
+                  )}
+                  {showTrees ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Qualità Aria ARPAV */}
+            <button
+              type="button"
+              onClick={onToggleAirQuality}
+              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showAirQuality
+                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                  : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <Wind className="w-3.5 h-3.5 text-emerald-400" />
+                <span>{t('layers.layerAirQuality')}</span>
+              </div>
+              {showAirQuality ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            </button>
+
+            {/* Bollettino Pollini ARPAV (dati.veneto.it) */}
+            {onTogglePollenStations && (
+              <button
+                type="button"
+                onClick={onTogglePollenStations}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showPollenStations
+                    ? 'bg-lime-500/15 text-lime-300 border-lime-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Flower2 className="w-3.5 h-3.5 text-lime-400" />
+                  <div className="flex flex-col text-left">
+                    <span className="leading-tight">{t('layers.layerPollenStations')}</span>
+                    <span className="text-[9px] font-mono text-teal-400">ARPAV · dati.veneto.it</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {pollenStationsCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-lime-500/20 text-lime-300 font-bold">
+                      {pollenStationsCount}
+                    </span>
+                  )}
+                  {showPollenStations ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Isole di Calore & LST Satellitare */}
+            {onToggleHeatIslands && (
+              <button
+                type="button"
+                onClick={onToggleHeatIslands}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showHeatIslands
+                    ? 'bg-orange-500/15 text-orange-300 border-orange-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <ThermometerSun className="w-3.5 h-3.5 text-orange-400" />
+                  <span>{t('layers.layerHeatIslands')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {heatIslandsCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-300 font-bold">
+                      {heatIslandsCount}
+                    </span>
+                  )}
+                  {showHeatIslands ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
           </div>
         )}
       </div>
 
-      {/* SECTION 3: Città & Ambiente */}
+      {/* SECTION 3: Città & Servizi */}
       <div className="flex flex-col gap-2 pt-2 border-t border-[var(--rule)]">
         <button
           type="button"
@@ -1339,7 +1439,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           </span>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-mono text-[var(--ink-3)] lowercase">
-              {[showCantieri, showCameras, showCityAssets, showTrees, showWifiHotspots, showEvCharging, showAirQuality, showPedestrianFlows, showSatellites, showNizioleti, showWells, showBellTowers, showEmergencyDocks, showDae, showPharmacies, showHeatIslands, showAccommodations, showPollenStations, showFiber].filter(Boolean).length}/19
+              {[showCantieri, showCameras, showCityAssets, showWifiHotspots, showEvCharging, showPedestrianFlows, showSatellites, showNizioleti, showWells, showBellTowers, showEmergencyDocks, showDae, showPharmacies, showAccommodations, showFiber].filter(Boolean).length}/15
             </span>
             {sectionOpen.city ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </div>
@@ -1674,105 +1774,11 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </button>
             )}
 
-            {/* Sotto-categoria 4: Ambiente, Clima & Territorio */}
+            {/* Sotto-categoria 4: Territorio & Turismo */}
             <SubCategoryHeader
-              icon={<Trees className="w-3 h-3 text-emerald-400" />}
-              label={t('layers.subEnvironmentClimate')}
+              icon={<Building2 className="w-3 h-3 text-fuchsia-400" />}
+              label={t('ui.layerPanel.subTerritory')}
             />
-
-            {/* Verde Urbano & Alberi Monumentali */}
-            {onToggleTrees && (
-              <button
-                type="button"
-                onClick={onToggleTrees}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showTrees
-                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Trees className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>{t('layers.layerTrees')}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {treesCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
-                      {treesCount}
-                    </span>
-                  )}
-                  {showTrees ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-            )}
-
-            {/* Qualità Aria ARPAV */}
-            <button
-              type="button"
-              onClick={onToggleAirQuality}
-              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showAirQuality
-                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                  : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                }`}
-            >
-              <div className="flex items-center gap-2">
-                <Wind className="w-3.5 h-3.5 text-emerald-400" />
-                <span>{t('layers.layerAirQuality')}</span>
-              </div>
-              {showAirQuality ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            </button>
-
-            {/* Bollettino Pollini ARPAV (dati.veneto.it) */}
-            {onTogglePollenStations && (
-              <button
-                type="button"
-                onClick={onTogglePollenStations}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showPollenStations
-                    ? 'bg-lime-500/15 text-lime-300 border-lime-500/40 shadow-sm'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Flower2 className="w-3.5 h-3.5 text-lime-400" />
-                  <div className="flex flex-col text-left">
-                    <span className="leading-tight">{t('layers.layerPollenStations')}</span>
-                    <span className="text-[9px] font-mono text-teal-400">ARPAV · dati.veneto.it</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {pollenStationsCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-lime-500/20 text-lime-300 font-bold">
-                      {pollenStationsCount}
-                    </span>
-                  )}
-                  {showPollenStations ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-            )}
-
-            {/* Isole di Calore & LST Satellitare */}
-            {onToggleHeatIslands && (
-              <button
-                type="button"
-                onClick={onToggleHeatIslands}
-                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showHeatIslands
-                    ? 'bg-orange-500/15 text-orange-300 border-orange-500/40 shadow-sm'
-                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <ThermometerSun className="w-3.5 h-3.5 text-orange-400" />
-                  <span>{t('layers.layerHeatIslands')}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {heatIslandsCount > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-300 font-bold">
-                      {heatIslandsCount}
-                    </span>
-                  )}
-                  {showHeatIslands ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </div>
-              </button>
-            )}
 
             {/* Satelliti & Radar SAR (Copernicus / ASI) */}
             <button

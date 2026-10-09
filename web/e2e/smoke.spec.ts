@@ -59,7 +59,7 @@ test('il pannello livelli si apre e mostra i gruppi', async ({ page, isMobile })
   if (isMobile) await page.getByRole('button', { name: /filtri/i }).click();
   // il pannello esiste in due varianti (desktop e cassetto mobile): conta quella visibile
   await expect(page.getByText(/mobilità & trasporti/i).filter({ visible: true }).first()).toBeVisible();
-  await expect(page.getByText(/laguna, idrografia/i).filter({ visible: true }).first()).toBeVisible();
+  await expect(page.getByText('Ambiente', { exact: true }).filter({ visible: true }).first()).toBeVisible();
 });
 
 test('il menu porta alla pagina delle metriche', async ({ page, isMobile }) => {

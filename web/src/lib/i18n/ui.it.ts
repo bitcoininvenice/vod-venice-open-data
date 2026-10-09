@@ -94,7 +94,8 @@ export const itUi = {
     raggioImpatto: "Raggio impatto:",
     flottaActvTipo: "Flotta ACTV per Tipo",
     mostraTuttiITipi: "Mostra tutti i tipi",
-    fiber: "Copertura fibra (AGCOM)"
+    fiber: "Copertura fibra (AGCOM)",
+    subTerritory: "Territorio & turismo"
   },
   map: {
     orarioUfficialeActv: "orario ufficiale ACTV",

@@ -36,11 +36,12 @@ const PRESET_LAYERS: Record<Exclude<MapPreset, 'clean' | 'all'>, LayerKey[]> = {
   lagoon: [
     'showMose', 'showPasserelle', 'showMarineSignals', 'showOceanStations', 'showBathingWaters',
     'showSubsidence', 'showMorphology', 'showMarineWind', 'showFortresses', 'showLagoonWater', 'showTributaries',
+    'showTrees', 'showAirQuality', 'showPollenStations', 'showHeatIslands',
   ],
   city: [
-    'showCityAssets', 'showTrees', 'showWifiHotspots', 'showEvCharging', 'showCameras', 'showParkings',
-    'showCantieri', 'showAirQuality', 'showPedestrianFlows', 'showNizioleti', 'showWells', 'showBellTowers',
-    'showEmergencyDocks', 'showDae', 'showPharmacies', 'showHeatIslands', 'showAccommodations', 'showPollenStations',
+    'showCityAssets', 'showWifiHotspots', 'showEvCharging', 'showCameras', 'showParkings',
+    'showCantieri', 'showPedestrianFlows', 'showNizioleti', 'showWells', 'showBellTowers',
+    'showEmergencyDocks', 'showDae', 'showPharmacies', 'showAccommodations',
     'showFiber',
   ],
   satellites: ['showSatellites', 'showSubsidence', 'showHeatIslands'],

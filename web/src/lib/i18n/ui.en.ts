@@ -96,7 +96,8 @@ export const enUi: UiTranslations = {
     raggioImpatto: "Impact radius:",
     flottaActvTipo: "ACTV Fleet by Vessel Type",
     mostraTuttiITipi: "Show all types",
-    fiber: "Fibre coverage (AGCOM)"
+    fiber: "Fibre coverage (AGCOM)",
+    subTerritory: "Territory & tourism"
   },
   map: {
     orarioUfficialeActv: "official ACTV timetable",

@@ -118,7 +118,7 @@ export const enTranslations: Translations = {
     subHealth: 'Public Health & Emergency 118',
     subCityServices: 'City Services & Infrastructure',
     subHeritage: 'Historical Heritage & Identity',
-    subEnvironmentClimate: 'Environment, Climate & Territory',
+    subEnvironmentClimate: 'Air, climate & greenery',
     layerVaporetti: 'ACTV vehicles (timetable simulation)',
     layerRealtimeVehicles: 'Real ACTV positions (GTFS-RT)',
     layerStops: 'ACTV Stops & Docks',
