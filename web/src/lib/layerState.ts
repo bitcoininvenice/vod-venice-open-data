@@ -11,10 +11,10 @@ export type LayerVisibility = Record<LayerKey, boolean>;
 export type MapPreset = 'muoversi' | 'acqua-alta' | 'ambiente' | 'servizi' | 'citta' | 'clean';
 
 /** Preset mostrati nell'interfaccia, in ordine. */
-export const SCENARIO_PRESETS = ['muoversi', 'acqua-alta', 'ambiente', 'servizi', 'citta'] as const satisfies readonly MapPreset[];
+export const SCENARIO_PRESETS = ['citta', 'muoversi', 'acqua-alta', 'ambiente', 'servizi'] as const satisfies readonly MapPreset[];
 
 /** Preset applicato alla prima visita, quando l'URL non indica layer. */
-export const DEFAULT_PRESET: MapPreset = 'muoversi';
+export const DEFAULT_PRESET: MapPreset = 'citta';
 
 const MAP_PRESETS: readonly MapPreset[] = [...SCENARIO_PRESETS, 'clean'];
 

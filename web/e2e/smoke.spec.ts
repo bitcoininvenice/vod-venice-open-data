@@ -26,7 +26,7 @@ test('il tutorial compare alla prima visita e si chiude con Escape', async ({ pa
   expect(await page.evaluate(() => localStorage.getItem('vod_onboarding_completed'))).toBe('true');
 });
 
-test('la guida spiega pannello, scheda e scenari e parte da "Muoversi"', async ({ page }) => {
+test('la guida spiega pannello, scheda e scenari e parte da "Città"', async ({ page }) => {
   await page.addInitScript(() => localStorage.removeItem('vod_onboarding_completed'));
   await page.goto('/');
   const dialog = page.getByRole('dialog');
@@ -37,9 +37,9 @@ test('la guida spiega pannello, scheda e scenari e parte da "Muoversi"', async (
   await expect(dialog.getByText(/clicca un punto/i)).toBeVisible();
   await dialog.getByRole('button', { name: /avanti/i }).click();
   await expect(dialog.getByRole('heading', { name: /scegli da dove partire/i })).toBeVisible();
-  await expect(dialog.getByRole('button', { name: /muoversi/i })).toHaveAttribute('aria-pressed', 'true');
+  await expect(dialog.getByRole('button', { name: /città/i })).toHaveAttribute('aria-pressed', 'true');
   // alla prima visita la mappa parte già dallo scenario predefinito
-  await expect(page).toHaveURL(/vaporetti_live/);
+  await expect(page).toHaveURL(/biblioteche/);
 });
 
 test('le azioni dell\'header restano dentro lo schermo', async ({ page }) => {
@@ -152,7 +152,7 @@ test('i layer attivi finiscono nell\'URL e il preset viene rimosso', async ({ pa
 
 test('?layers=all non accende tutto: apre lo scenario predefinito', async ({ page }) => {
   await page.goto('/?layers=all');
-  await expect(page).toHaveURL(/layers=.*vaporetti_live/);
+  await expect(page).toHaveURL(/layers=.*biblioteche/);
   const layers = new URL(page.url()).searchParams.get('layers')!;
   expect(layers).not.toBe('all');
   expect(layers.split(',').length).toBeLessThanOrEqual(6);
