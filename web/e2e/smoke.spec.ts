@@ -144,6 +144,23 @@ test('il catalogo dei layer dichiara la natura dei dati', async ({ page }) => {
 });
 
 test.describe('API', () => {
+  test('environment unisce medie ARPAV e previsione CAMS', async ({ request }) => {
+    const body = await (await request.get('/api/environment')).json();
+    expect(body.data.airStations.length).toBeGreaterThan(0);
+    for (const st of body.data.airStations) {
+      expect(typeof st.pm10 === 'number' || st.pm10 === null).toBe(true);
+      if (st.forecast) expect(st.forecast.validTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/);
+    }
+  });
+
+  test('i pollini vengono dal modello o restano vuoti, mai valori di esempio', async ({ request }) => {
+    const body = await (await request.get('/api/regional-data')).json();
+    for (const st of body.data.pollenStations) {
+      if (st.validTime === null) expect(st.pollens).toEqual([]);
+      else expect(st.pollens.map((p: { key: string }) => p.key)).toEqual(['alder', 'birch', 'grass', 'mugwort', 'olive', 'ragweed']);
+    }
+  });
+
   test('fiber restituisce le celle con attribuzione AGCOM', async ({ request }) => {
     const res = await request.get('/api/fiber');
     expect(res.ok()).toBe(true);

@@ -353,8 +353,8 @@ const LAYER_CATALOG: LayerDocItem[] = [
     portalName: 'ismar.cnr.it',
     descriptionIt: 'Piattaforma oceanografica "Acqua Alta" al largo di Venezia e boe lagunari per il monitoraggio marino profondo.',
     descriptionEn: 'Oceanographic research platform "Acqua Alta" 8 miles offshore and coastal wave sensor buoys.',
-    technicalNotesIt: 'Onde (Hs), vento e temperatura dell\'acqua della piattaforma "Acqua Alta" dai feed CPSM in tempo reale; le altre stazioni oceanografiche sono in anagrafica senza misure aperte collegate.',
-    technicalNotesEn: 'Waves (Hs), wind and water temperature at the "Acqua Alta" platform from real-time CPSM feeds; other oceanographic stations are listed without connected open measurements.',
+    technicalNotesIt: 'Onde (Hs), vento e temperatura dell\'acqua della piattaforma "Acqua Alta" dai feed CPSM in tempo reale, più la previsione del modello marino Open-Meteo (onda, periodo, direzione, temperatura del mare e onda massima a 72 ore), indicata come previsione. Le altre stazioni oceanografiche sono in anagrafica senza misure aperte collegate.',
+    technicalNotesEn: 'Waves (Hs), wind and water temperature from the "Acqua Alta" platform via live CPSM feeds, plus the Open-Meteo marine model forecast (wave, period, direction, sea temperature and 72-hour maximum wave), labelled as forecast. Other oceanographic stations are listed without linked open readings.',
     endpointOrFile: '/api/marine-sensors'
   },
   {
@@ -597,8 +597,8 @@ const LAYER_CATALOG: LayerDocItem[] = [
     portalName: 'arpa.veneto.it',
     descriptionIt: '6 stazioni fisse di campionamento atmosferico (Rio Novo, Sacca Fisola, Parco Bissuola, Via Beccaria, Malcontenta, Parco San Giuliano) con calcolo dell\'AQI.',
     descriptionEn: '6 fixed air quality sampling stations (Rio Novo, Sacca Fisola, Bissuola, Beccaria, Malcontenta, San Giuliano) measuring AQI in real time.',
-    technicalNotesIt: 'Medie annue validate ARPAV (PM10, PM2.5, NO2 e superamenti giornalieri PM10) dell\'anno più recente, licenza CC BY 4.0, importate con pipeline/import_arpav_air.py. Classificazione rispetto ai limiti UE vigenti e 2030. ARPAV non pubblica un\'API aperta con i dati orari.',
-    technicalNotesEn: 'ARPAV validated annual means (PM10, PM2.5, NO2 and PM10 daily exceedances) for the latest year, CC BY 4.0, imported with pipeline/import_arpav_air.py. Classified against current and 2030 EU limits. ARPAV does not publish an open hourly API.',
+    technicalNotesIt: 'Medie annue validate ARPAV (PM10, PM2.5, NO2 e superamenti giornalieri PM10) dell\'anno più recente, licenza CC BY 4.0, importate con pipeline/import_arpav_air.py e confrontate con i limiti UE vigenti e 2030. Cliccando una stazione si vede anche la previsione oraria del modello Copernicus CAMS nello stesso punto (indice europeo, PM, NO2, ozono, UV): è un modello, non una misura ARPAV, che non pubblica un\'API aperta con i dati orari.',
+    technicalNotesEn: 'ARPAV validated annual means (PM10, PM2.5, NO2 and daily PM10 exceedances) for the latest year, CC BY 4.0, imported with pipeline/import_arpav_air.py and compared with current and 2030 EU limits. Clicking a station also shows the hourly Copernicus CAMS model forecast at the same point (European index, PM, NO2, ozone, UV): it is a model, not an ARPAV measurement, as ARPAV publishes no open hourly API.',
     endpointOrFile: '/api/environment'
   },
   {
@@ -763,19 +763,19 @@ const LAYER_CATALOG: LayerDocItem[] = [
   },
   {
     id: 'pollini_arpav',
-    nameIt: 'Bollettino Pollini ARPAV',
-    nameEn: 'ARPAV Airborne Pollen Bulletin',
+    nameIt: 'Previsione Pollini (Copernicus CAMS)',
+    nameEn: 'Pollen Forecast (Copernicus CAMS)',
     group: 'lagoon',
-    regime: 'curated',
+    regime: 'realtime',
     acquisition: 'api',
-    institution: 'Elenco curato del progetto · rif. ARPAV – rete aerobiologica',
-    portalUrl: 'https://www.arpa.veneto.it',
-    portalName: 'arpa.veneto.it & dati.veneto.it',
-    descriptionIt: 'Stazioni aerobiologiche con concentrazioni di pollini di esempio per famiglia botanica.',
-    descriptionEn: 'Aerobiological stations with example pollen concentrations by plant family.',
-    technicalNotesIt: 'Le concentrazioni non vengono dal bollettino ARPAV: per i valori della settimana consultare arpa.veneto.it. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
-    technicalNotesEn: 'Concentrations do not come from the ARPAV bulletin: see arpa.veneto.it for this week\'s values. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
-    endpointOrFile: '/api/regional-data'
+    institution: 'Copernicus CAMS via Open-Meteo (CC BY 4.0)',
+    portalUrl: 'https://open-meteo.com/en/docs/air-quality-api',
+    portalName: 'open-meteo.com · atmosphere.copernicus.eu',
+    descriptionIt: 'Previsione oraria dei pollini di ontano, betulla, graminacee, artemisia, olivo e ambrosia in quattro punti (Venezia, Mestre, Lido, Chioggia), con livello basso/medio/alto per famiglia.',
+    descriptionEn: 'Hourly forecast of alder, birch, grass, mugwort, olive and ragweed pollen at four points (Venice, Mestre, Lido, Chioggia), with low/moderate/high level per family.',
+    technicalNotesIt: 'Modello europeo Copernicus CAMS letto da /api/regional-data tramite Open-Meteo (cache 30 minuti). È una previsione, non un campionamento: le soglie dei livelli sono indicative, sul modello delle classi ARPAV. Parietaria e cupressacee non sono nel modello; per il bollettino misurato fa fede ARPAV.',
+    technicalNotesEn: 'European Copernicus CAMS model read by /api/regional-data via Open-Meteo (30-minute cache). It is a forecast, not a sample: level thresholds are indicative, modelled on ARPAV classes. Pellitory and cypress are not in the model; the measured ARPAV bulletin prevails.',
+    endpointOrFile: '/api/regional-data (pollenStations)'
   },
   {
     id: 'copertura_fibra',

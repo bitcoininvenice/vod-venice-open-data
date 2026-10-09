@@ -414,15 +414,15 @@ export function drawBikeRoutes(rc: RenderContext): void {
 
 export function drawPollenStations(rc: RenderContext): void {
   const { ctx, isDark, sx, sy, mx, my, camera, showPollenStations, pollenMonitoringStations } = rc;
-  // 43. Render Bollettino Pollini ARPAV
+  // 43. Previsione pollini (Copernicus CAMS)
   if (showPollenStations && pollenMonitoringStations && pollenMonitoringStations.length > 0) {
     for (const pol of pollenMonitoringStations) {
       const px = sx(mx(pol.lon));
       const py = sy(my(pol.lat));
       ctx.save();
 
-      const isHigh = pol.overallAllergyRisk === 'ALTO';
-      ctx.fillStyle = isHigh ? '#f59e0b' : '#84cc16';
+      const isHigh = pol.overallAllergyRisk === 'ALTO' || pol.overallAllergyRisk === 'MEDIO';
+      ctx.fillStyle = pol.overallAllergyRisk === null ? '#94a3b8' : isHigh ? '#f59e0b' : '#84cc16';
       ctx.beginPath();
       ctx.arc(px, py, 5, 0, Math.PI * 2);
       ctx.fill();
@@ -442,7 +442,7 @@ export function drawPollenStations(rc: RenderContext): void {
       if (camera.s > 0.02) {
         ctx.font = 'bold 8px "DM Mono", monospace';
         ctx.fillStyle = isHigh ? (isDark ? '#fbbf24' : '#b45309') : (isDark ? '#a3e635' : '#4d7c0f');
-        ctx.fillText(rc.t('ui.mapLabels.pollenRisk', { risk: pol.overallAllergyRisk }), px + 8, py + 3);
+        ctx.fillText(rc.t('ui.mapLabels.pollenRisk', { risk: rc.t(`ui.feature.pollenLevel_${pol.overallAllergyRisk ?? 'ND'}`) }), px + 8, py + 3);
       }
       ctx.restore();
     }

@@ -2,18 +2,26 @@ import { NextResponse } from 'next/server';
 import { OCEAN_STATIONS_DATA, BRICCOLE_SIGNALS_DATA } from '@/lib/marineSensorsData';
 import { fetchUpstream } from '@/server/upstream';
 import { CPSM_METEO_URLS, parseCpsmFeed, platformReadings, type CpsmFeedName } from '@/server/sources/cpsmMeteo';
+import { MARINE_SOURCE, marineUrl, parseMarine } from '@/server/sources/openMeteoMarine';
 
 export const revalidate = 300;
 
 const FEEDS: CpsmFeedName[] = ['ondeMare', 'tempAcqua', 'vento'];
 
 export async function GET() {
-  const results = await Promise.all(FEEDS.map((f) => fetchUpstream(CPSM_METEO_URLS[f], parseCpsmFeed, { revalidate: 300 })));
+  const platform = OCEAN_STATIONS_DATA.find((st) => st.id === 'CNR-PLAT-01');
+  const [results, marine] = await Promise.all([
+    Promise.all(FEEDS.map((f) => fetchUpstream(CPSM_METEO_URLS[f], parseCpsmFeed, { revalidate: 300 }))),
+    platform
+      ? fetchUpstream(marineUrl(platform.lat, platform.lon), parseMarine, { revalidate: 1800, timeoutMs: 8000 })
+      : Promise.resolve(null),
+  ]);
   const feeds = Object.fromEntries(FEEDS.flatMap((f, i) => (results[i].ok ? [[f, results[i].data]] : [])));
   const live = platformReadings(feeds);
   const hasLive = live.waveHeightMeters !== null || live.waterTempC !== null;
 
-  const oceanStations = OCEAN_STATIONS_DATA.map((st) =>
+  const forecast = marine && marine.ok ? marine.data : null;
+  const oceanStations = OCEAN_STATIONS_DATA.map((st) => (st.id === 'CNR-PLAT-01' ? { ...st, forecast } : st)).map((st) =>
     st.id === 'CNR-PLAT-01' && hasLive
       ? {
           ...st,
@@ -40,6 +48,7 @@ export async function GET() {
       source: 'CPSM (piattaforma Acqua Alta) + anagrafica stazioni e segnalamenti',
       sourceUrl: 'https://dati.venezia.it/?q=content/cpsm-dati-meteomarini-laguna-e-litorale-veneziano',
       note: 'Solo la piattaforma "Acqua Alta" ha misure in tempo reale; per le altre stazioni non è collegata una fonte aperta.',
+      forecastSource: `${MARINE_SOURCE} – previsione, non misura (CC BY 4.0)`,
     },
   });
 }

@@ -28,6 +28,7 @@ import {
   Info
 } from 'lucide-react';
 import {
+  AirQualityItem,
   PasserellaItem,
   BriccolaSignalItem,
   OceanStationItem,
@@ -96,7 +97,8 @@ export type VeniceFeatureSelected =
   | { type: 'tributaryRiver'; data: LagoonTributaryRiverItem }
   | { type: 'parking'; data: ParkingItem }
   | { type: 'fountain'; data: CityAssetItem }
-  | { type: 'fiberCell'; data: { cell: FiberCell; dataDate: string } };
+  | { type: 'fiberCell'; data: { cell: FiberCell; dataDate: string } }
+  | { type: 'airStation'; data: AirQualityItem };
 
 interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
@@ -221,6 +223,9 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             {feature.type === 'fiberCell' && (
               <div className="p-2 rounded-xl bg-green-500/20 text-green-400"><Wifi className="w-5 h-5" /></div>
             )}
+            {feature.type === 'airStation' && (
+              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400"><Wind className="w-5 h-5" /></div>
+            )}
 
             <div>
               <h2 id="feature-modal-title" className="text-base font-bold leading-tight">
@@ -256,6 +261,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'parking' && feature.data.name}
                 {feature.type === 'fountain' && feature.data.name}
                 {feature.type === 'fiberCell' && t('ui.feature.fiberTitle')}
+                {feature.type === 'airStation' && `ARPAV · ${feature.data.stationName}`}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
                 {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
@@ -268,7 +274,8 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'lagoonWater' && `${t('ui.feature.bacino')} ${feature.data.subBasin.replace(/_/g, ' ')} · ${t('ui.feature.statoTrofico')}: ${feature.data.trophicState}`}
                 {feature.type === 'accommodation' && `${t('ui.feature.densita')}: ${feature.data.densityCategory} · ${feature.data.bedsPerResidentRatio} ${t('ui.feature.postiLettoResidente')}`}
                 {feature.type === 'bikeRoute' && `${t('ui.feature.lunghezza')}: ${feature.data.lengthKm} km · ${feature.data.section}`}
-                {feature.type === 'pollenStation' && `${t('ui.feature.rischioAllergico')}: ${feature.data.overallAllergyRisk} · ${feature.data.locationName}`}
+                {feature.type === 'pollenStation' && t('ui.feature.pollenSubtitle')}
+                {feature.type === 'airStation' && `${feature.data.location} · ${feature.data.stationType}`}
                 {feature.type === 'tributaryRiver' && `${t('ui.feature.portata')}: ${feature.data.avgFlowM3s} m³/s · ${feature.data.mouthZone}`}
                 {feature.type === 'parking' && `${feature.data.location} · ${feature.data.operator}`}
                 {feature.type === 'fountain' && `${feature.data.sestiere} · ${t('ui.feature.fountainSubtitle')}`}
@@ -739,6 +746,28 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="text-[11px] text-[var(--ink-3)]">
                 {t('ui.feature.operatore')} <b>{feature.data.operator}</b> · {feature.data.observedAt ? t('ui.feature.cpsmMeasuredAt', { time: feature.data.observedAt }) : t('ui.feature.noOpenMeasures')}
               </div>
+              {feature.data.forecast && (
+                <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 flex flex-col gap-1.5">
+                  <span className="text-[10px] uppercase font-mono text-sky-400 font-bold">
+                    {t('ui.feature.marineForecastTitle', { time: feature.data.forecast.validTime.slice(11, 16) })}
+                  </span>
+                  <div className="grid grid-cols-2 gap-2 font-mono">
+                    <span>{t('ui.feature.altezzaOndaHs')}: <b>{feature.data.forecast.waveHeightM ?? 'n.d.'} m</b></span>
+                    <span>{t('ui.feature.tempAcqua')}: <b>{feature.data.forecast.seaTempC ?? 'n.d.'} °C</b></span>
+                    <span>{t('ui.feature.wavePeriod')}: <b>{feature.data.forecast.wavePeriodS ?? 'n.d.'} s</b></span>
+                    <span>{t('ui.feature.waveDirection')}: <b>{feature.data.forecast.waveDirectionDeg ?? 'n.d.'}°</b></span>
+                  </div>
+                  {feature.data.forecast.waveMax72hM !== null && feature.data.forecast.waveMax72hAt && (
+                    <span className="text-xs text-[var(--ink-2)]">
+                      {t('ui.feature.waveMax72h', {
+                        m: feature.data.forecast.waveMax72hM,
+                        when: `${feature.data.forecast.waveMax72hAt.slice(8, 10)}/${feature.data.forecast.waveMax72hAt.slice(5, 7)} ${feature.data.forecast.waveMax72hAt.slice(11, 16)}`,
+                      })}
+                    </span>
+                  )}
+                  <span className="text-[10px] text-[var(--ink-3)]">{t('ui.feature.marineForecastNote')}</span>
+                </div>
+              )}
             </>
           )}
 
@@ -1004,36 +1033,39 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             <div className="flex flex-col gap-3">
               <div className="p-3 rounded-xl bg-lime-500/10 border border-lime-500/30 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] uppercase font-mono text-lime-400 font-bold">{t('ui.feature.rischioAllergicoAttuale')}</span>
-                  <p className="text-lg font-bold text-[var(--ink)]">{feature.data.overallAllergyRisk}</p>
+                  <span className="text-[10px] uppercase font-mono text-lime-400 font-bold">{t('ui.feature.pollenOverall')}</span>
+                  <p className="text-lg font-bold text-[var(--ink)]">{t(`ui.feature.pollenLevel_${feature.data.overallAllergyRisk ?? 'ND'}`)}</p>
                 </div>
-                <div className="text-right">
-                  <span className="text-[10px] uppercase font-mono text-[var(--ink-3)]">{t('ui.feature.campionatore')}</span>
-                  <p className="text-xs font-mono text-[var(--ink-2)]">{feature.data.samplerType.replace(/_/g, ' ')}</p>
-                </div>
+                {feature.data.validTime && (
+                  <span className="text-[10px] font-mono text-[var(--ink-3)] text-right">
+                    {t('ui.feature.forecastValidAt', { time: feature.data.validTime.slice(11, 16) })}
+                  </span>
+                )}
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[11px] font-mono text-[var(--ink-3)] uppercase">{t('ui.feature.famiglieBotanicheRilevateGraniM3')}</span>
-                {feature.data.pollens.map((p, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-black/20 border border-[var(--rule)] text-xs">
-                    <div>
-                      <b className="text-[var(--ink)]">{p.family}</b>
-                      <span className="block text-[10px] text-[var(--ink-3)]">{p.commonName}</span>
+              {feature.data.pollens.length > 0 ? (
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[11px] font-mono text-[var(--ink-3)] uppercase">{t('ui.feature.pollenFamilies')}</span>
+                  {feature.data.pollens.map((p) => (
+                    <div key={p.key} className="flex items-center justify-between p-2 rounded-lg bg-black/20 border border-[var(--rule)] text-xs">
+                      <div>
+                        <b className="text-[var(--ink)]">{t(`ui.feature.pollen_${p.key}`)}</b>
+                        <span className="block text-[10px] text-[var(--ink-3)]">{t(`ui.feature.pollenFamily_${p.key}`)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-amber-400">{p.grainsM3 === null ? 'n.d.' : `${p.grainsM3} gr/m³`}</span>
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${p.level === 'ALTO' ? 'bg-rose-500/20 text-rose-300' : p.level === 'MEDIO' ? 'bg-amber-500/20 text-amber-300' : p.level === 'BASSO' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-[var(--rule)] text-[var(--ink-3)]'}`}>
+                          {t(`ui.feature.pollenLevel_${p.level}`)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-amber-400">{p.concentrationGrainsM3} gr/m³</span>
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${p.level === 'ALTO' ? 'bg-rose-500/20 text-rose-300' : p.level === 'MEDIO' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
-                        {p.level}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[var(--ink-2)]">{t('ui.feature.forecastUnavailable')}</p>
+              )}
 
-              <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                {t('ui.feature.riferimento')} <b>{feature.data.officialSource}</b>
-              </span>
+              <p className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">{t('ui.feature.pollenNote')}</p>
             </div>
           )}
 
@@ -1125,6 +1157,8 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             </div>
           )}
 
+          {feature.type === 'airStation' && <AirStationBody station={feature.data} />}
+
           <FeatureProvenance feature={feature} />
         </div>
       </div>
@@ -1136,11 +1170,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
 const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
   'passerella', 'briccola', 'bathingWater', 'speedLimit', 'bridgeClearance', 'gondolaStation', 'publicDock',
   'subsidence', 'lagoonMorphology', 'trainLive', 'wasteBoat', 'nizioleto', 'bellTower', 'fortressIsland',
-  'heatIsland', 'lagoonWater', 'accommodation', 'bikeRoute', 'pollenStation', 'tributaryRiver',
+  'heatIsland', 'lagoonWater', 'accommodation', 'bikeRoute', 'tributaryRiver',
 ]);
 
 /** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
-const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell']);
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation']);
 
 /** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
 const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {
@@ -1180,4 +1214,90 @@ const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ featu
     );
   }
   return null;
+};
+
+const AQI_BAND_CLASS: Record<string, string> = {
+  good: 'text-emerald-400',
+  fair: 'text-lime-400',
+  moderate: 'text-amber-400',
+  poor: 'text-orange-400',
+  veryPoor: 'text-rose-400',
+  extremelyPoor: 'text-fuchsia-400',
+};
+
+/** Indice europeo (EEA) -> classe; replica lato client della funzione del server. */
+function aqiBand(aqi: number | null): string | null {
+  if (aqi === null) return null;
+  if (aqi <= 20) return 'good';
+  if (aqi <= 40) return 'fair';
+  if (aqi <= 60) return 'moderate';
+  if (aqi <= 80) return 'poor';
+  if (aqi <= 100) return 'veryPoor';
+  return 'extremelyPoor';
+}
+
+/** Scheda stazione aria: medie annue ARPAV (misure) e previsione oraria CAMS (modello), ben separate. */
+const AirStationBody: React.FC<{ station: AirQualityItem }> = ({ station }) => {
+  const { t } = useTranslation();
+  const f = station.forecast;
+  const band = f ? aqiBand(f.europeanAqi) : null;
+  const max24 = f ? Math.max(1, ...f.aqiNext24h.map((v) => v ?? 0)) : 1;
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1.5">
+        <span className="text-[10px] uppercase font-mono text-emerald-400 font-bold">
+          {t('ui.feature.airAnnualTitle', { year: station.year })}
+        </span>
+        <div className="grid grid-cols-2 gap-2 font-mono text-xs">
+          <span>PM10: <b>{station.pm10 ?? 'n.d.'} µg/m³</b></span>
+          <span>PM2.5: <b>{station.pm25 ?? 'n.d.'} µg/m³</b></span>
+          <span>NO₂: <b>{station.no2 ?? 'n.d.'} µg/m³</b></span>
+          <span>{t('ui.feature.airExceedances')}: <b>{station.pm10Exceedances ?? 'n.d.'}</b></span>
+        </div>
+        <span className="text-xs text-[var(--ink-2)]">{t(`ui.feature.airClass_${station.aqi}`)}</span>
+      </div>
+
+      {f ? (
+        <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase font-mono text-sky-400 font-bold">
+              {t('ui.feature.forecastValidAt', { time: f.validTime.slice(11, 16) })}
+            </span>
+            {band && (
+              <span className={`text-xs font-bold ${AQI_BAND_CLASS[band]}`}>
+                {t('ui.feature.europeanAqi')} {f.europeanAqi} · {t(`ui.feature.aqiBand_${band}`)}
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-2 font-mono text-xs">
+            <span>PM10: <b>{f.pm10 ?? 'n.d.'} µg/m³</b></span>
+            <span>PM2.5: <b>{f.pm25 ?? 'n.d.'} µg/m³</b></span>
+            <span>NO₂: <b>{f.no2 ?? 'n.d.'} µg/m³</b></span>
+            <span>O₃: <b>{f.o3 ?? 'n.d.'} µg/m³</b></span>
+          </div>
+          {f.aqiNext24h.length > 1 && (
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] text-[var(--ink-3)]">{t('ui.feature.aqiNext24h')}</span>
+              <div className="flex items-end gap-px h-8" aria-hidden>
+                {f.aqiNext24h.map((v, i) => (
+                  <span
+                    key={i}
+                    className={`flex-1 rounded-sm bg-current ${AQI_BAND_CLASS[aqiBand(v) ?? 'good']}`}
+                    style={{ height: `${Math.max(8, ((v ?? 0) / max24) * 100)}%`, opacity: v === null ? 0.2 : 0.8 }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          <span className="text-xs text-[var(--ink-2)]">
+            {t('ui.feature.uvIndex')}: <b>{f.uvIndex ?? 'n.d.'}</b>
+            {f.uvMaxToday !== null && <> · {t('ui.feature.uvMaxToday')}: <b>{f.uvMaxToday}</b></>}
+          </span>
+          <span className="text-[10px] text-[var(--ink-3)]">{t('ui.feature.camsNote')}</span>
+        </div>
+      ) : (
+        <p className="text-[var(--ink-2)]">{t('ui.feature.forecastUnavailable')}</p>
+      )}
+    </div>
+  );
 };

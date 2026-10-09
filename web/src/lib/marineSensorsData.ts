@@ -8,6 +8,7 @@ export const OCEAN_STATIONS_DATA: OceanStationItem[] = [
     id: 'CNR-PLAT-01',
     name: 'Piattaforma Oceanografica CNR-ISMAR "Acqua Alta"',
     type: 'OCEANOGRAPHIC_PLATFORM',
+    // coordinate pubblicate dal CPSM nei feed meteo-marini
     lat: 45.3231,
     lon: 12.5147,
     operator: 'CNR-ISMAR',

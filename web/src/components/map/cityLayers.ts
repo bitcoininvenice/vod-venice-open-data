@@ -113,7 +113,9 @@ export function drawAirQuality(rc: RenderContext): void {
 
       ctx.save();
       ctx.font = '600 9px "DM Mono", monospace';
-      const aTxt = `ARPAV ${a.stationName} · PM10 ${a.pm10 ?? 'n.d.'} µg/m³ (media ${a.year})`;
+      const aTxt = a.forecast?.europeanAqi != null
+        ? rc.t('ui.mapLabels.airForecast', { name: a.stationName, aqi: a.forecast.europeanAqi })
+        : rc.t('ui.mapLabels.airAnnual', { name: a.stationName, pm10: a.pm10 ?? 'n.d.', year: a.year });
       const aW = ctx.measureText(aTxt).width;
 
       ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.88)';

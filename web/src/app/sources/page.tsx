@@ -58,6 +58,8 @@ const SOURCES_METADATA: Record<string, SourceMetadata> = {
   'cpsm-meteo': { institution: `${COMUNE} – Centro Maree (CPSM)`, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY', format: 'JSON', refresh: 'r5min' },
   opensky: { institution: 'OpenSky Network', portalUrl: 'https://opensky-network.org', portalName: 'opensky-network.org', license: 'OpenSky Terms of Use', format: 'REST JSON', refresh: 'r15s', hasNote: true },
   'open-meteo': { institution: 'Open-Meteo (modelli DWD ICON / ECMWF)', portalUrl: 'https://open-meteo.com', portalName: 'open-meteo.com', license: 'CC BY 4.0', format: 'REST JSON', refresh: 'r30min', hasNote: true },
+  'cams-air': { institution: 'Copernicus CAMS via Open-Meteo', portalUrl: 'https://open-meteo.com/en/docs/air-quality-api', portalName: 'open-meteo.com', license: 'CC BY 4.0', format: 'REST JSON', refresh: 'r30min', hasNote: true },
+  'open-meteo-marine': { institution: 'Open-Meteo Marine', portalUrl: 'https://open-meteo.com/en/docs/marine-weather-api', portalName: 'open-meteo.com', license: 'CC BY 4.0', format: 'REST JSON', refresh: 'r30min', hasNote: true },
   'gtfs-static': { institution: 'ACTV (Open Data)', portalUrl: 'https://actv.avmspa.it', portalName: 'actv.avmspa.it', license: 'CC BY', format: 'GTFS', refresh: 'weekly' },
   'opere-pubbliche': { institution: COMUNE, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY', format: 'CSV', refresh: 'weekly', hasNote: true },
   wifi: { institution: COMUNE, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY', format: 'GeoJSON', refresh: 'weekly' },

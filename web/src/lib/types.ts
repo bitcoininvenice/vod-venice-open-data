@@ -326,6 +326,22 @@ export interface AirQualityItem {
   no2: number | null;
   pm10Exceedances: number | null;
   lastUpdate: string;
+  /** Previsione oraria del modello Copernicus CAMS nel punto della stazione (non misura ARPAV) */
+  forecast?: AirForecast | null;
+}
+
+export interface AirForecast {
+  validTime: string;
+  pm10: number | null;
+  pm25: number | null;
+  no2: number | null;
+  o3: number | null;
+  /** European Air Quality Index (0-100+) */
+  europeanAqi: number | null;
+  uvIndex: number | null;
+  uvMaxToday: number | null;
+  /** indice europeo per le prossime 24 ore, un valore all'ora */
+  aqiNext24h: Array<number | null>;
 }
 
 export interface PedestrianFlowItem {
@@ -477,6 +493,17 @@ export interface BriccolaSignalItem {
   description: string;
 }
 
+export interface MarineForecast {
+  validTime: string;
+  waveHeightM: number | null;
+  waveDirectionDeg: number | null;
+  wavePeriodS: number | null;
+  seaTempC: number | null;
+  /** onda massima prevista nelle prossime 72 ore e ora locale in cui è attesa */
+  waveMax72hM: number | null;
+  waveMax72hAt: string | null;
+}
+
 export interface OceanStationItem {
   id: string;
   name: string;
@@ -496,6 +523,8 @@ export interface OceanStationItem {
   depthMeters: number;
   /** Ora locale (HH:MM) dell'ultima misura aperta; null se la stazione non ha misure pubblicate */
   observedAt: string | null;
+  /** Previsione del modello marino (Open-Meteo), distinta dalle misure */
+  forecast?: MarineForecast | null;
   officialSource: string;
   portalLink: string;
 }
@@ -918,26 +947,26 @@ export interface RegionalBikeRouteItem {
   officialSource: string;
 }
 
+export type PollenKey = 'alder' | 'birch' | 'grass' | 'mugwort' | 'olive' | 'ragweed';
+export type PollenLevel = 'ASSENTE' | 'BASSO' | 'MEDIO' | 'ALTO';
+
 export interface PollenFamilyItem {
-  family: string;
-  commonName: string;
-  level: 'BASSO' | 'MEDIO' | 'ALTO' | 'MOLTO_ALTO';
-  concentrationGrainsM3: number;
-  trend: 'STABILE' | 'CRESCITA' | 'DIMINUZIONE';
-  allergenicity: 'MOLTO_ALTA' | 'ALTA' | 'MEDIA' | 'BASSA';
+  key: PollenKey;
+  /** granuli/m³ previsti; null se il modello non dà il valore (fuori stagione) */
+  grainsM3: number | null;
+  level: PollenLevel;
 }
 
+/** Punto di previsione dei pollini (Copernicus CAMS via Open-Meteo): modello, non campionatore. */
 export interface PollenMonitoringStationItem {
   id: string;
   stationName: string;
-  locationName: string;
   lat: number;
   lon: number;
+  /** ora locale della previsione; null se la fonte non era raggiungibile */
+  validTime: string | null;
   pollens: PollenFamilyItem[];
-  overallAllergyRisk: 'BASSO' | 'MEDIO' | 'ALTO';
-  samplerType: 'CAPTOR_VOLUMETRICO_BURKARD' | 'AUTOMATICO_CONTINUO';
-  bulletinWeek: string;
-  officialSource: string;
+  overallAllergyRisk: PollenLevel | null;
 }
 
 export interface LagoonTributaryRiverItem {

@@ -1428,6 +1428,23 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
     }
 
+    // 1aa. Stazioni qualità dell'aria ARPAV (etichetta disegnata sopra il punto)
+    if (showAirQuality && airStations && airStations.length > 0 && onSelectFeature) {
+      for (const a of airStations) {
+        const ax = (mx(a.lon) - camera.x0) * camera.s;
+        const ay = (my(a.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - ax, clickY - (ay - 8)) <= 18) {
+          onSelectFeature({ type: 'airStation', data: a });
+          setSelectedVehicle(null);
+          setSelectedFlight(null);
+          setSelectedShipOnMap(null);
+          setSelectedAlilagunaBoat(null);
+          setSelectedSatellite(null);
+          return;
+        }
+      }
+    }
+
     // 1ab. Hit test Fontanelle Potabili (City Assets - Fountains)
     if (showCityAssets && fountains && fountains.length > 0) {
       for (const f of fountains) {
