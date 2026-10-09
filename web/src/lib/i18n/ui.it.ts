@@ -1436,12 +1436,11 @@ export const itUi = {
     yes: "Sì",
     no: "No",
     access_public: "Aperto a tutti",
-    access_parish: "Spazio parrocchiale (patronato)",
+    access_parish: "Patronato o istituto religioso",
     access_club: "Società sportiva",
     access_customers: "Per soci o clienti",
     access_private: "Privato",
     access_unknown: "Non indicato",
-    parishNote: "Spazio di una parrocchia: si accede negli orari del patronato e rispettando le regole del luogo.",
     note: "Orari e condizioni non sono verificati da VOD: in caso di dubbio controlla sul posto.",
     sourceCampo: "Dati forniti dalla comunità di CAMPO Venezia (CC BY 4.0)",
     kind_pitch: "Campo sportivo",
@@ -1486,7 +1485,12 @@ export const itUi = {
     filter_other: "Altro",
     campoLicense: "Licenza, avvertenze e richieste di rettifica o rimozione",
     updated: "Segnalazione aggiornata il {date}.",
-    accessUnclear: "Accesso da verificare: la segnalazione cita gli orari di un patronato o di un istituto."
+    accessUnclear: "Accesso da verificare: la segnalazione cita gli orari di un patronato o di un istituto.",
+    access_school: "Struttura scolastica (accesso riservato)",
+    access_institution: "Università o istituzione (accesso regolato)",
+    notice_parish: "Spazio parrocchiale o di un istituto religioso: si accede negli orari stabiliti e rispettando le regole del luogo.",
+    notice_school: "Struttura scolastica: l’accesso è riservato agli studenti e alle attività autorizzate.",
+    notice_institution: "Struttura universitaria o istituzionale: l’accesso è regolato dall’ente che la gestisce."
   }
 };
 

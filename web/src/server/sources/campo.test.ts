@@ -26,6 +26,11 @@ describe('CAMPO', () => {
     expect(places(fc(feature({ schedule_info: 'Aperto tutti i giorni / orari patronato' })))[0].access).toBe('parish');
     expect(places(fc(feature({ access: 'parish' })))[0].access).toBe('parish');
     expect(places(fc(feature({ marker_type: 'patronage' })))[0].access).toBe('parish');
+    expect(places(fc(feature({ access: 'school', marker_type: 'school' })))[0].access).toBe('school');
+    expect(places(fc(feature({ access: 'institution', marker_type: 'university' })))[0].access).toBe('institution');
+    // senza `access` dichiarato vale il tipo di punto, mai "pubblico" per scuole e università
+    expect(places(fc(feature({ marker_type: 'school' })))[0].access).toBe('school');
+    expect(places(fc(feature({ marker_type: 'university' })))[0].access).toBe('institution');
     const club = places(fc(feature({ marker_type: 'partner' })))[0];
     expect(club.access).toBe('club');
     expect(club.kind).toBe('club');

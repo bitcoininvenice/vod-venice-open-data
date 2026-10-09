@@ -1553,6 +1553,8 @@ function sportNames(sports: string[], t: (k: string) => string): string {
 const SPORT_ACCESS_CLASS: Record<SportPlace['access'], string> = {
   public: 'text-emerald-400',
   parish: 'text-amber-400',
+  school: 'text-amber-400',
+  institution: 'text-amber-400',
   club: 'text-sky-400',
   customers: 'text-amber-400',
   private: 'text-rose-400',
@@ -1578,8 +1580,8 @@ const SportPlaceBody: React.FC<{ place: SportPlace }> = ({ place: p }) => {
       />
       {p.address && <p className="text-[var(--ink-2)]">{p.address}</p>}
       {p.description && <p className="text-[var(--ink)]">{p.description}</p>}
-      {(p.access === 'parish' || p.notice) && (
-        <p className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px]">{p.notice ?? s('parishNote')}</p>
+      {(p.access === 'parish' || p.access === 'school' || p.access === 'institution' || p.notice) && (
+        <p className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px]">{p.notice ?? s(`notice_${p.access}`)}</p>
       )}
       {p.access === 'unknown' && p.source === 'CAMPO' && <p className="text-[11px] text-amber-300">{s('accessUnclear')}</p>}
       <p className="text-[11px] text-[var(--ink-3)]">

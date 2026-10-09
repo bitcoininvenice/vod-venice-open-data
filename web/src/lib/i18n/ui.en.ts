@@ -1438,12 +1438,11 @@ export const enUi: UiTranslations = {
     yes: "Yes",
     no: "No",
     access_public: "Open to all",
-    access_parish: "Parish space (patronato)",
+    access_parish: "Parish or religious institute",
     access_club: "Sports club",
     access_customers: "Members or customers",
     access_private: "Private",
     access_unknown: "Not stated",
-    parishNote: "Parish space: access during the patronato opening hours and following the rules of the place.",
     note: "Hours and conditions are not verified by VOD: if in doubt, check on site.",
     sourceCampo: "Data provided by the CAMPO Venezia community (CC BY 4.0)",
     kind_pitch: "Sports pitch",
@@ -1488,6 +1487,11 @@ export const enUi: UiTranslations = {
     filter_other: "Other",
     campoLicense: "Licence, disclaimer and correction or removal requests",
     updated: "Report updated on {date}.",
-    accessUnclear: "Access to be checked: the report mentions the hours of a patronato or an institute."
+    accessUnclear: "Access to be checked: the report mentions the hours of a patronato or an institute.",
+    access_school: "School facility (restricted access)",
+    access_institution: "University or institution (regulated access)",
+    notice_parish: "Parish or religious institute space: access during the set hours and following the rules of the place.",
+    notice_school: "School facility: access is reserved for students and authorised activities.",
+    notice_institution: "University or institutional facility: access is regulated by the managing body."
   }
 };

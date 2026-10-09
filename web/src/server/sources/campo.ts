@@ -36,12 +36,14 @@ const mentionsParish = (p: Record<string, unknown>) =>
 
 function accessOf(p: Record<string, unknown>): SportPlace['access'] {
   const declared = str(p.access)?.toLowerCase();
-  if (declared === 'parish' || declared === 'club') return declared;
+  if (declared === 'parish' || declared === 'club' || declared === 'school' || declared === 'institution') return declared;
   // Prudenza: un punto dichiarato pubblico ma con orari "del patronato" (scuole, istituti religiosi)
   // non viene mostrato come "aperto a tutti" finché la fonte non chiarisce
   if (declared === 'public') return mentionsParish(p) ? 'unknown' : 'public';
   if (p.marker_type === 'partner') return 'club';
   if (p.marker_type === 'patronage' || mentionsParish(p)) return 'parish';
+  if (p.marker_type === 'school') return 'school';
+  if (p.marker_type === 'university' || p.marker_type === 'institution') return 'institution';
   return 'public';
 }
 

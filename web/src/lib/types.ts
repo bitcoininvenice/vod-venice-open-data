@@ -1064,8 +1064,9 @@ export interface SportPlace {
   /** sport praticati (chiavi normalizzate, es. basketball, soccer, tennis) */
   sports: string[];
   kind: 'pitch' | 'sportsCentre' | 'fitness' | 'track' | 'stadium' | 'hall' | 'hub' | 'club';
-  /** public: aperto a tutti; parish: spazio parrocchiale (patronato); club: società sportiva */
-  access: 'public' | 'parish' | 'club' | 'customers' | 'private' | 'unknown';
+  /** public: aperto a tutti; parish: patronato o istituto religioso; school: struttura scolastica;
+   *  institution: università o altra istituzione; club: società sportiva */
+  access: 'public' | 'parish' | 'school' | 'institution' | 'club' | 'customers' | 'private' | 'unknown';
   lat: number;
   lon: number;
   /** sestiere o zona */
