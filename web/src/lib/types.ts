@@ -1023,3 +1023,17 @@ export interface LagoonTributaryRiverItem {
 
 
 
+
+/** Gateway LoRaWAN online (posizione arrotondata a circa 100 m, nessun identificativo del proprietario). */
+export interface LoraGateway {
+  id: string;
+  lat: number;
+  lon: number;
+  network: string;
+  antennaPlacement: 'outdoor' | 'indoor' | null;
+  antennaCount: number | null;
+  /** altitudine dichiarata dell'antenna (m), se indicata */
+  altitudeM: number | null;
+  /** ultimo aggiornamento di stato ricevuto dal Packet Broker */
+  statusUpdatedAt: string | null;
+}

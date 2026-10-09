@@ -52,7 +52,7 @@ const nextConfig: NextConfig = {
       ),
       // Previsioni e medie che cambiano nell'arco della giornata
       browserCache("environment|regional-data|wind-field", 600, 1800),
-      browserCache("weather|marine-sensors|satellites", 120, 300),
+      browserCache("weather|marine-sensors|satellites|lora-gateways", 120, 300),
       // Dati in tempo reale: cache breve, solo per evitare richieste doppie ravvicinate
       browserCache("tide|alilaguna|ships", 30, 60),
       // Geometrie e simulazione: il nome del file contiene l'hash del contenuto, quindi non cambia mai

@@ -28,7 +28,8 @@ import {
   Layers,
   Plane,
   Info,
-  Construction
+  Construction,
+  Radio
 } from 'lucide-react';
 import {
   PollenMeasuredProfile,
@@ -71,6 +72,8 @@ import { useTranslation } from '@/lib/i18n';
 import { InfoClose, InfoPanel } from '@/components/ui/InfoPanel';
 import { BdapWorkDetails } from '@/components/BdapWorkDetails';
 import type { BdapProject } from '@/lib/bdap';
+import type { LoraGateway } from '@/lib/types';
+import { KeyValues } from '@/components/ui/InfoPanel';
 import type { LayerKey } from '@/lib/urlLayers';
 
 export type VeniceFeatureSelected =
@@ -110,7 +113,8 @@ export type VeniceFeatureSelected =
   | { type: 'civicPoi'; data: CivicPoiItem }
   | { type: 'lagoonMarker'; data: { lon: number; lat: number; kind: MarkerKind; osmId: number } }
   | { type: 'canal'; data: LagoonCanal }
-  | { type: 'bdapWork'; data: BdapProject };
+  | { type: 'bdapWork'; data: BdapProject }
+  | { type: 'loraGateway'; data: LoraGateway };
 
 interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
@@ -236,8 +240,13 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             {feature.type === 'canal' && (
               <div className="p-2 rounded-xl bg-sky-500/20 text-sky-400"><Waves className="w-5 h-5" /></div>
             )}
-            {feature.type === 'bdapWork' && (
+            {feature.type === 'loraGateway' && <LoraGatewayBody gateway={feature.data} />}
+
+          {feature.type === 'bdapWork' && (
               <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400"><Construction className="w-5 h-5" /></div>
+            )}
+            {feature.type === 'loraGateway' && (
+              <div className="p-2 rounded-xl bg-violet-500/20 text-violet-400"><Radio className="w-5 h-5" /></div>
             )}
             {feature.type === 'civicPoi' && (
               <div className={`p-2 rounded-xl ${feature.data.kind === 'recycling' ? 'bg-green-500/20 text-green-400' : 'bg-violet-500/20 text-violet-400'}`}>
@@ -284,6 +293,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'lagoonMarker' && t(`ui.feature.marker_${MARKER_KEY[feature.data.kind]}`)}
                 {feature.type === 'canal' && (feature.data.name ?? t('ui.feature.canalUnnamed'))}
                 {feature.type === 'bdapWork' && feature.data.object}
+                {feature.type === 'loraGateway' && t('ui.lora.title')}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
                 {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
@@ -306,6 +316,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'fountain' && `${feature.data.sestiere} · ${t('ui.feature.fountainSubtitle')}`}
                 {feature.type === 'fiberCell' && t('ui.feature.fiberSubtitle', { date: feature.data.dataDate.split('-').reverse().join('/') })}
                 {feature.type === 'bdapWork' && (feature.data.place ?? t('ui.bdap.publicWork'))}
+                {feature.type === 'loraGateway' && feature.data.network}
               </span>
             </div>
           </div>
@@ -1267,7 +1278,7 @@ const FEATURE_LAYER: Record<Exclude<VeniceFeatureSelected['type'], 'civicPoi'>, 
   pharmacy: 'showPharmacies', heatIsland: 'showHeatIslands', lagoonWater: 'showLagoonWater',
   accommodation: 'showAccommodations', bikeRoute: 'showBikeRoutes', pollenStation: 'showPollenStations',
   tributaryRiver: 'showTributaries', parking: 'showParkings', fountain: 'showCityAssets', fiberCell: 'showFiber',
-  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks',
+  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks', loraGateway: 'showLoraGateways',
 };
 
 function featureLayer(feature: VeniceFeatureSelected): LayerKey {
@@ -1283,7 +1294,7 @@ const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
 ]);
 
 /** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
-const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'bdapWork']);
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'bdapWork', 'loraGateway']);
 
 /** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
 const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {
@@ -1449,6 +1460,32 @@ const PollenCalendar: React.FC<{ profile: PollenMeasuredProfile }> = ({ profile 
         ))}
       </div>
       <span className="text-[10px] text-[var(--ink-3)]">{t('ui.feature.pollenMeasuredNote', { days: profile.days })}</span>
+    </div>
+  );
+};
+
+/** Scheda di un gateway LoRaWAN: solo dati non identificativi, posizione arrotondata. */
+const LoraGatewayBody: React.FC<{ gateway: LoraGateway }> = ({ gateway: g }) => {
+  const { t, language } = useTranslation();
+  const l = (key: string, params?: Record<string, string | number>) => t(`ui.lora.${key}`, params);
+  const updated = g.statusUpdatedAt
+    ? new Date(g.statusUpdatedAt).toLocaleString(language === 'it' ? 'it-IT' : 'en-GB', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' })
+    : null;
+  return (
+    <div className="flex flex-col gap-3">
+      <KeyValues
+        items={[
+          [l('status'), l('online'), 'text-emerald-400'],
+          [l('antenna'), g.antennaPlacement ? l(`placement_${g.antennaPlacement}`) : null],
+          [l('altitude'), g.altitudeM !== null ? `${g.altitudeM} m` : null],
+          [l('lastStatus'), updated],
+        ]}
+      />
+      <p className="text-[var(--ink-2)]">{l('what')}</p>
+      <p className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">{l('privacy')}</p>
+      <a href="https://www.thethingsnetwork.org/docs/gateways/" target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline self-start">
+        {l('community')}
+      </a>
     </div>
   );
 };

@@ -832,3 +832,47 @@ export function drawBdapWorks(rc: RenderContext): void {
     ctx.restore();
   }
 }
+
+/** Gateway LoRaWAN online: antenna con due archi di onde radio (posizione arrotondata a circa 100 m). */
+export function drawLoraGateways(rc: RenderContext): void {
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showLoraGateways, loraGateways } = rc;
+  if (!showLoraGateways || !loraGateways || loraGateways.length === 0) return;
+  const color = '#8b5cf6';
+  for (const g of loraGateways) {
+    const px = sx(mx(g.lon));
+    const py = sy(my(g.lat));
+    if (px < -40 || px > cw + 40 || py < -40 || py > ch + 40) continue;
+    ctx.save();
+    // Archi delle onde radio
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.6;
+    for (const r of [9, 14]) {
+      ctx.globalAlpha = r === 9 ? 0.9 : 0.55;
+      ctx.beginPath();
+      ctx.arc(px, py - 2, r, -Math.PI * 0.8, -Math.PI * 0.2);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    // Antenna
+    ctx.beginPath();
+    ctx.arc(px, py - 2, 4, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = isDark ? '#ffffff' : '#1e1b4b';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(px, py + 2);
+    ctx.lineTo(px, py + 8);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    if (camera.s > 0.03) {
+      ctx.font = '600 8px "DM Mono", monospace';
+      ctx.fillStyle = isDark ? '#ddd6fe' : '#4c1d95';
+      ctx.textAlign = 'start';
+      ctx.fillText(rc.t('ui.mapLabels.loraGateway'), px + 16, py + 1);
+    }
+    ctx.restore();
+  }
+}

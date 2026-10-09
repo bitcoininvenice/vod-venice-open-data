@@ -118,7 +118,8 @@ export const itUi = {
     regimeStaticTitle: "Dataset ufficiale o OpenStreetMap, aggiornato periodicamente",
     regimeCuratedTitle: "Elenco curato a mano: da verificare",
     liveWebcams: "{n} live",
-    bdapWorks: "Opere in corso (BDAP)"
+    bdapWorks: "Opere in corso (BDAP)",
+    loraGateways: "Gateway LoRaWAN"
   },
   map: {
     orarioUfficialeActv: "orario ufficiale ACTV",
@@ -1151,7 +1152,9 @@ export const itUi = {
     detailNoShips: "nessuna nave ricevuta nell’ultima lettura",
     detailAisNotConfigured: "chiave AISSTREAM_API_KEY non configurata",
     "name_bdap-mop": "Opere pubbliche del Comune dal monitoraggio BDAP (pipeline)",
-    "meta_bdap-mop": "CSV «Progetti Opere Pubbliche MOP – Veneto» della Ragioneria Generale dello Stato, filtrato sul Comune di Venezia una volta a settimana; la fonte si aggiorna ogni trimestre."
+    "meta_bdap-mop": "CSV «Progetti Opere Pubbliche MOP – Veneto» della Ragioneria Generale dello Stato, filtrato sul Comune di Venezia una volta a settimana; la fonte si aggiorna ogni trimestre.",
+    "name_packet-broker": "Gateway LoRaWAN (Packet Broker, The Things Network)",
+    "meta_packet-broker": "Gateway online con stato e posizione resi pubblici dai proprietari, letti ogni 10 minuti; VOD arrotonda la posizione a circa 100 m."
   },
   notFound: {
     subtitle: "Pagina non trovata",
@@ -1194,7 +1197,8 @@ export const itUi = {
     airForecast: "{name} · indice aria {aqi} (previsione)",
     airAnnual: "ARPAV {name} · PM10 {pm10} µg/m³ (media {year})",
     recyclingInitial: "E",
-    libraryInitial: "B"
+    libraryInitial: "B",
+    loraGateway: "LoRaWAN"
   },
   provenance: {
     live: "Dato live",
@@ -1372,6 +1376,19 @@ export const itUi = {
     topTitle: "Lavori in corso più costosi",
     endPlannedShort: "fine prevista {date}",
     metricsNote: "La fase deriva dalle date effettive dichiarate dall’ente nel monitoraggio; i finanziamenti sono quelli dichiarati, non i pagamenti. Le opere con un luogo preciso sono anche sulla mappa (livello «Opere in corso (BDAP)»)."
+  },
+  lora: {
+    title: "Gateway LoRaWAN",
+    status: "Stato",
+    online: "Online",
+    antenna: "Antenna",
+    placement_outdoor: "Esterna",
+    placement_indoor: "Interna",
+    altitude: "Altitudine dichiarata",
+    lastStatus: "Ultimo stato",
+    what: "Antenna della rete radio comunitaria The Things Network: riceve i messaggi di sensori a basso consumo (LoRaWAN) nel raggio di alcuni chilometri e li inoltra in Internet. Chiunque può installarne una e allargare la copertura.",
+    privacy: "Stato e posizione sono resi pubblici dal proprietario. Per riservatezza VOD arrotonda la posizione a circa 100 m e non mostra identificativi né nomi.",
+    community: "Come aggiungere un gateway alla rete"
   }
 };
 

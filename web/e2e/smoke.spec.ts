@@ -503,6 +503,19 @@ test.describe('API', () => {
     expect(body.meta.levels.kind).toBe('live');
   });
 
+  test('lora-gateways: solo gateway online, posizione arrotondata e nessun identificativo', async ({ request }) => {
+    const res = await request.get('/api/lora-gateways');
+    expect([200, 503]).toContain(res.status());
+    const body = await res.json();
+    expect(body.meta.source).toMatch(/Packet Broker/);
+    for (const g of body.data as Array<Record<string, unknown>>) {
+      expect(Object.keys(g).sort()).toEqual(['altitudeM', 'antennaCount', 'antennaPlacement', 'id', 'lat', 'lon', 'network', 'statusUpdatedAt']);
+      expect(String(g.id)).toMatch(/^lora-\d+$/);
+      expect(Number(g.lat) * 1000).toBeCloseTo(Math.round(Number(g.lat) * 1000), 6);
+      expect(Number(g.lon) * 1000).toBeCloseTo(Math.round(Number(g.lon) * 1000), 6);
+    }
+  });
+
   test('opere-bdap restituisce le opere in corso del Comune con fonte e riepilogo', async ({ request }) => {
     const res = await request.get('/api/opere-bdap');
     expect(res.ok()).toBeTruthy();

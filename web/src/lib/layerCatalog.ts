@@ -497,6 +497,22 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     endpointOrFile: '/api/cantieri'
   },
   {
+    id: 'gateway_lora',
+    nameIt: 'Gateway LoRaWAN (The Things Network)',
+    nameEn: 'LoRaWAN gateways (The Things Network)',
+    group: 'city',
+    regime: 'realtime',
+    acquisition: 'api',
+    institution: 'The Things Network – Packet Broker Mapper',
+    portalUrl: 'https://packetbroker.net',
+    portalName: 'mapper.packetbroker.net',
+    descriptionIt: 'Le antenne della rete radio comunitaria LoRaWAN The Things Network attive in questo momento nell\'area della mappa: ricevono i messaggi di sensori a basso consumo (meteo, livelli d\'acqua, parcheggi, contatori) e li inoltrano in Internet.',
+    descriptionEn: 'The antennas of The Things Network community LoRaWAN radio network currently active in the map area: they receive messages from low-power sensors (weather, water levels, parking, meters) and forward them to the Internet.',
+    technicalNotesIt: 'Lettura del Packet Broker Mapper ogni 10 minuti (cache server). Compaiono solo i gateway online i cui proprietari hanno reso pubblici stato e posizione. Per riservatezza VOD arrotonda la posizione a circa 100 m e non mostra identificativi né nomi. Il raggio di copertura reale dipende da antenna e ostacoli e non è indicato.',
+    technicalNotesEn: 'Packet Broker Mapper read every 10 minutes (server cache). Only online gateways whose owners made status and location public are listed. For privacy VOD rounds the position to about 100 m and shows no identifiers or names. The real coverage radius depends on antenna and obstacles and is not shown.',
+    endpointOrFile: '/api/lora-gateways'
+  },
+  {
     id: 'opere_bdap',
     nameIt: 'Opere in corso (BDAP)',
     nameEn: 'Works in progress (BDAP)',

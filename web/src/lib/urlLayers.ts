@@ -49,7 +49,8 @@ export type LayerKey =
   | 'showRecyclingCentres'
   | 'showLibraries'
   | 'showCanals'
-  | 'showBdapWorks';
+  | 'showBdapWorks'
+  | 'showLoraGateways';
 
 /**
  * Mapping from LayerKey to canonical Open Data catalog slug (matching /layers page IDs)
@@ -106,6 +107,7 @@ export const LAYER_SLUG_BY_KEY: Record<LayerKey, string> = {
   showLibraries: 'biblioteche',
   showCanals: 'canali_laguna',
   showBdapWorks: 'opere_bdap',
+  showLoraGateways: 'gateway_lora',
 };
 
 /**
@@ -164,9 +166,13 @@ export const SLUG_TO_LAYER_KEY: Record<string, LayerKey> = {
   biblioteche: 'showLibraries',
   canali_laguna: 'showCanals',
   opere_bdap: 'showBdapWorks',
+  gateway_lora: 'showLoraGateways',
 
   // Convenient aliases
   bdap: 'showBdapWorks',
+  lora: 'showLoraGateways',
+  lorawan: 'showLoraGateways',
+  ttn: 'showLoraGateways',
   opere_in_corso: 'showBdapWorks',
   cantieri_in_corso: 'showBdapWorks',
   fountains: 'showCityAssets',

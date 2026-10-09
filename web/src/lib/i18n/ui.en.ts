@@ -120,7 +120,8 @@ export const enUi: UiTranslations = {
     regimeStaticTitle: "Official dataset or OpenStreetMap, updated periodically",
     regimeCuratedTitle: "Hand-curated list: to be verified",
     liveWebcams: "{n} live",
-    bdapWorks: "Works in progress (BDAP)"
+    bdapWorks: "Works in progress (BDAP)",
+    loraGateways: "LoRaWAN gateways"
   },
   map: {
     orarioUfficialeActv: "official ACTV timetable",
@@ -1153,7 +1154,9 @@ export const enUi: UiTranslations = {
     detailNoShips: "no ships received in the last read",
     detailAisNotConfigured: "AISSTREAM_API_KEY key not configured",
     "name_bdap-mop": "City public works from the BDAP monitoring (pipeline)",
-    "meta_bdap-mop": "State General Accounting Office CSV “Public Works Projects MOP – Veneto”, filtered on the City of Venice once a week; the source updates quarterly."
+    "meta_bdap-mop": "State General Accounting Office CSV “Public Works Projects MOP – Veneto”, filtered on the City of Venice once a week; the source updates quarterly.",
+    "name_packet-broker": "LoRaWAN gateways (Packet Broker, The Things Network)",
+    "meta_packet-broker": "Online gateways whose owners made status and location public, read every 10 minutes; VOD rounds the position to about 100 m."
   },
   notFound: {
     subtitle: "Page not found",
@@ -1196,7 +1199,8 @@ export const enUi: UiTranslations = {
     airForecast: "{name} · air index {aqi} (forecast)",
     airAnnual: "ARPAV {name} · PM10 {pm10} µg/m³ ({year} mean)",
     recyclingInitial: "R",
-    libraryInitial: "L"
+    libraryInitial: "L",
+    loraGateway: "LoRaWAN"
   },
   provenance: {
     live: "Live data",
@@ -1374,5 +1378,18 @@ export const enUi: UiTranslations = {
     topTitle: "Most expensive works in progress",
     endPlannedShort: "due {date}",
     metricsNote: "The stage derives from the actual dates declared by the body in the monitoring; funding is as declared, not payments. Works with a precise place are also on the map (“Works in progress (BDAP)” layer)."
+  },
+  lora: {
+    title: "LoRaWAN gateway",
+    status: "Status",
+    online: "Online",
+    antenna: "Antenna",
+    placement_outdoor: "Outdoor",
+    placement_indoor: "Indoor",
+    altitude: "Declared altitude",
+    lastStatus: "Last status",
+    what: "Antenna of The Things Network community radio network: it receives messages from low-power (LoRaWAN) sensors within a few kilometres and forwards them to the Internet. Anyone can install one and extend the coverage.",
+    privacy: "Status and location are made public by the owner. For privacy VOD rounds the position to about 100 m and shows no identifiers or names.",
+    community: "How to add a gateway to the network"
   }
 };
