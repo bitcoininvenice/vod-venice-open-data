@@ -706,7 +706,6 @@ export default function HomePage() {
     root.dataset.theme = isLight ? 'carta' : 'notte';
     root.style.colorScheme = isLight ? 'light' : 'dark';
 
-    root.style.setProperty('--ground', pal.ground);
     root.style.setProperty('--surface', isLight ? '#f4eee0' : '#141d24');
     root.style.setProperty('--surface-card', isLight ? '#f9f5eb' : '#18232c');
     root.style.setProperty('--panel-bg', isLight ? 'rgba(247, 243, 232, 0.94)' : 'rgba(14, 21, 26, 0.88)');
@@ -718,10 +717,10 @@ export default function HomePage() {
     root.style.setProperty('--sea', pal.sea);
     root.style.setProperty('--land', pal.land);
     root.style.setProperty('--coast', pal.coast);
-    root.style.setProperty('--ink', pal.ink);
-    root.style.setProperty('--ink-2', pal.ink2);
-    root.style.setProperty('--ink-3', pal.ink3);
-    root.style.setProperty('--rule', pal.rule);
+    // Testi, bordi e fondo dell'interfaccia seguono il tema chiaro/scuro (valori in globals.css), non la
+    // palette sfumata della mappa: nelle ore di passaggio (alba, ora d'oro) il testo sfumato su pannelli
+    // già scuri o ancora chiari risultava illeggibile. La mappa usa la palette dinamica direttamente.
+    for (const v of ['--ground', '--ink', '--ink-2', '--ink-3', '--rule']) root.style.removeProperty(v);
 
     root.style.setProperty('--c-vaporetto', pal.cats.vaporetto);
     root.style.setProperty('--c-motoscafo', pal.cats.motoscafo);
