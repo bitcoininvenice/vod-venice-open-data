@@ -63,6 +63,8 @@ export interface Translations {
     metricsHint: string;
     sources: string;
     sourcesHint: string;
+    layersList: string;
+    layersListHint: string;
     exportHint: string;
     floodHint: string;
     language: string;

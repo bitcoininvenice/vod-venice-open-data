@@ -62,6 +62,8 @@ export const enTranslations: Translations = {
     metricsHint: 'KPI dashboard and forecasts',
     sources: 'Source status',
     sourcesHint: 'Data availability and freshness',
+    layersList: 'Layer List',
+    layersListHint: 'Every layer with its source and provenance',
     exportHint: 'GeoJSON, CSV and SHA-256',
     floodHint: 'Flooding and CPSM forecasts',
     language: 'Language / Lingua',

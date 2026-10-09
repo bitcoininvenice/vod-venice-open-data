@@ -234,6 +234,15 @@ export const Header: React.FC<HeaderProps> = ({
                   <Activity className="w-4 h-4 text-emerald-400" />
                   <span>{t('header.sources')}</span>
                 </Link>
+                <Link
+                  href="/layers"
+                  role="menuitem"
+                  onClick={() => setIsMoreOpen(false)}
+                  className="flex items-center gap-2.5 w-full px-2.5 py-2.5 rounded-lg text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none cursor-pointer"
+                >
+                  <Layers className="w-4 h-4 text-cyan-400" />
+                  <span>{t('header.layersList')}</span>
+                </Link>
                 {onOpenTutorial && (
                   <MobileMenuItem
                     icon={<HelpCircle className="w-4 h-4 text-amber-400" />}
@@ -439,6 +448,20 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="flex flex-col">
                   <span className="font-semibold">{t('header.sources')}</span>
                   <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('header.sourcesHint')}</span>
+                </div>
+              </Link>
+
+              {/* 3b. Elenco Livelli */}
+              <Link
+                href="/layers"
+                role="menuitem"
+                onClick={() => setIsDesktopMenuOpen(false)}
+                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none transition-all cursor-pointer"
+              >
+                <Layers className="w-4 h-4 text-cyan-400 shrink-0" />
+                <div className="flex flex-col">
+                  <span className="font-semibold">{t('header.layersList')}</span>
+                  <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('header.layersListHint')}</span>
                 </div>
               </Link>
 

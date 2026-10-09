@@ -62,6 +62,8 @@ export const itTranslations: Translations = {
     metricsHint: 'Cruscotto KPI e previsioni',
     sources: 'Stato fonti',
     sourcesHint: 'Disponibilità e freschezza dei dati',
+    layersList: 'Elenco Livelli',
+    layersListHint: 'Tutti i livelli con fonte e provenienza',
     exportHint: 'GeoJSON, CSV e SHA-256',
     floodHint: 'Allagamento e previsioni CPSM',
     language: 'Lingua / Language',

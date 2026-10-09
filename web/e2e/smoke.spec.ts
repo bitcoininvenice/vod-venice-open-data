@@ -74,6 +74,17 @@ test('il menu porta alla pagina delle metriche', async ({ page, isMobile }) => {
   await expect(page.getByRole('heading', { level: 1, name: /metriche/i })).toBeVisible();
 });
 
+test('il menu porta all\'elenco dei livelli', async ({ page, isMobile }) => {
+  await page.goto('/');
+  if (isMobile) {
+    await page.getByRole('button', { name: /altre azioni/i }).click();
+  } else {
+    await page.getByRole('button', { name: /menu strumenti/i }).click();
+  }
+  await page.getByRole('menuitem', { name: /elenco livelli/i }).first().click();
+  await expect(page).toHaveURL(/\/layers$/);
+});
+
 test('il menu strumenti si usa da tastiera', async ({ page, isMobile }) => {
   test.skip(isMobile, 'solo desktop');
   await page.goto('/');
