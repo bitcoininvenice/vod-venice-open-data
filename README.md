@@ -230,7 +230,7 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/health` | Stato ed età di ogni fonte live e dei dataset della pipeline (`ok` / `stale` / `down`). |
 | `GET` | `/api/satellites` | Satelliti con orbite SGP4 da TLE CelesTrak e prossimo passaggio sopra Venezia. |
 | `GET` | `/api/cantieri` | Opere pubbliche dell'Elenco Annuale dei Lavori 2026 (posizioni approssimate); il campo `bdap` aggiunge, per CUP, fase reale, date, costi e finanziamenti dal Monitoraggio Opere Pubbliche. |
-| `GET` | `/api/lora-gateways` | Gateway LoRaWAN online della rete comunitaria The Things Network nell'area della mappa (Packet Broker Mapper, cache 10 min): posizione arrotondata a ~100 m, nessun identificativo. |
+| `GET` | `/api/lora-gateways` | Gateway LoRaWAN online della rete comunitaria The Things Network nell'area della mappa (Packet Broker Mapper, cache 10 min): posizione come pubblicata dal proprietario, nessun identificativo né nome. |
 | `GET` | `/api/opere-bdap` | Opere del Comune con lavori in corso dal Monitoraggio Opere Pubbliche (BDAP – Ragioneria Generale dello Stato, CC BY) e riepilogo di tutti i progetti per fase, settore e finanziamento. |
 
 Le API sono pubbliche e in sola lettura, con cache server per ogni fonte e un limite di
@@ -241,7 +241,7 @@ Le API sono pubbliche e in sola lettura, con cache server per ogni fonte e un li
 ## 📄 Fonti, licenze e crediti
 * **ACTV S.p.A. / AVM**: GTFS Navigazione e Automobilistico (Open Data, CC BY – citazione obbligatoria). Il feed GTFS-RT è pubblico ma la licenza d'uso va confermata con AVM.
 * **Comune di Venezia – CPSM**: livelli e previsioni di marea da `dati.venezia.it`.
-* **The Things Network – Packet Broker Mapper**: gateway LoRaWAN con stato e posizione resi pubblici dai proprietari (VOD arrotonda la posizione e non mostra identificativi).
+* **The Things Network – Packet Broker Mapper**: gateway LoRaWAN con stato e posizione resi pubblici dai proprietari (VOD non mostra identificativi né nomi; il gateway sparisce se il proprietario rende privata la posizione).
 * **MEF – Ragioneria Generale dello Stato (BDAP OpenData)**: Monitoraggio Opere Pubbliche (MOP) Veneto, CC BY.
 * **NOAA Aviation Weather Center**: METAR LIPZ (pubblico dominio).
 * **OpenSky Network**: dati ADS-B, uso non commerciale/ricerca secondo i termini OpenSky.

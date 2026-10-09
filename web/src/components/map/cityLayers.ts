@@ -833,7 +833,7 @@ export function drawBdapWorks(rc: RenderContext): void {
   }
 }
 
-/** Gateway LoRaWAN online: antenna con due archi di onde radio (posizione arrotondata a circa 100 m). */
+/** Gateway LoRaWAN online: antenna con due archi di onde radio (posizione pubblicata dal proprietario). */
 export function drawLoraGateways(rc: RenderContext): void {
   const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showLoraGateways, loraGateways } = rc;
   if (!showLoraGateways || !loraGateways || loraGateways.length === 0) return;

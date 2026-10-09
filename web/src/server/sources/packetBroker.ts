@@ -4,7 +4,9 @@ import type { LoraGateway } from '@/lib/types';
 /**
  * Gateway LoRaWAN della rete comunitaria The Things Network nell'area della mappa, dal Packet Broker Mapper.
  * Compaiono solo i gateway i cui proprietari hanno scelto di rendere pubblici stato e posizione.
- * Tutele: solo gateway online, posizione arrotondata a circa 100 m, nessun identificativo o nome.
+ * Posizione con la stessa precisione delle mappe pubbliche di TTN (è quella pubblicata dal proprietario).
+ * Tutele: solo gateway online, nessun identificativo o nome; se il proprietario rende privata la posizione,
+ * il gateway sparisce da VOD alla lettura successiva (entro 10 minuti).
  */
 export const PACKET_BROKER_SOURCE = 'Packet Broker Mapper (The Things Network)';
 export const PACKET_BROKER_SITE = 'https://packetbroker.net';
@@ -22,8 +24,8 @@ export const PACKET_BROKER_URL =
     'distanceWithin[distance]': String(RADIUS_M),
   });
 
-/** Posizione arrotondata a 3 decimali (circa 110 m in latitudine, 80 m in longitudine). */
-export const roundCoord = (v: number): number => Math.round(v * 1000) / 1000;
+/** Coordinate a 6 decimali (circa 10 cm): la precisione della fonte, senza cifre spurie. */
+export const roundCoord = (v: number): number => Math.round(v * 1e6) / 1e6;
 
 const NETWORKS: Record<string, string> = { ttn: 'The Things Network', ttnv2: 'The Things Network (v2)' };
 

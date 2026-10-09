@@ -503,7 +503,7 @@ test.describe('API', () => {
     expect(body.meta.levels.kind).toBe('live');
   });
 
-  test('lora-gateways: solo gateway online, posizione arrotondata e nessun identificativo', async ({ request }) => {
+  test('lora-gateways: solo gateway online e nessun identificativo del proprietario', async ({ request }) => {
     const res = await request.get('/api/lora-gateways');
     expect([200, 503]).toContain(res.status());
     const body = await res.json();
@@ -511,8 +511,7 @@ test.describe('API', () => {
     for (const g of body.data as Array<Record<string, unknown>>) {
       expect(Object.keys(g).sort()).toEqual(['altitudeM', 'antennaCount', 'antennaPlacement', 'id', 'lat', 'lon', 'network', 'statusUpdatedAt']);
       expect(String(g.id)).toMatch(/^lora-\d+$/);
-      expect(Number(g.lat) * 1000).toBeCloseTo(Math.round(Number(g.lat) * 1000), 6);
-      expect(Number(g.lon) * 1000).toBeCloseTo(Math.round(Number(g.lon) * 1000), 6);
+      expect(Number.isFinite(Number(g.lat)) && Number.isFinite(Number(g.lon))).toBe(true);
     }
   });
 

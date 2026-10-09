@@ -1156,7 +1156,7 @@ export const enUi: UiTranslations = {
     "name_bdap-mop": "City public works from the BDAP monitoring (pipeline)",
     "meta_bdap-mop": "State General Accounting Office CSV “Public Works Projects MOP – Veneto”, filtered on the City of Venice once a week; the source updates quarterly.",
     "name_packet-broker": "LoRaWAN gateways (Packet Broker, The Things Network)",
-    "meta_packet-broker": "Online gateways whose owners made status and location public, read every 10 minutes; VOD rounds the position to about 100 m."
+    "meta_packet-broker": "Online gateways whose owners made status and location public, read every 10 minutes; same position as TTN maps, without identifiers."
   },
   notFound: {
     subtitle: "Page not found",
@@ -1389,7 +1389,7 @@ export const enUi: UiTranslations = {
     altitude: "Declared altitude",
     lastStatus: "Last status",
     what: "Antenna of The Things Network community radio network: it receives messages from low-power (LoRaWAN) sensors within a few kilometres and forwards them to the Internet. Anyone can install one and extend the coverage.",
-    privacy: "Status and location are made public by the owner. For privacy VOD rounds the position to about 100 m and shows no identifiers or names.",
+    privacy: "Status and location are published by the owner on The Things Network: VOD shows the same position as TTN public maps, without identifiers or names. An owner who makes the location private in the TTN console disappears from VOD within 10 minutes.",
     community: "How to add a gateway to the network"
   }
 };

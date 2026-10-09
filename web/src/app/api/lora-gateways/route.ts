@@ -19,7 +19,7 @@ export async function GET() {
         license: 'Dati pubblicati volontariamente dai proprietari dei gateway tramite Packet Broker (The Things Network)',
         fetchedAt: res.ok ? res.fetchedAt : null,
         error: res.ok ? undefined : res.error,
-        note: 'Solo i gateway online nell’area della mappa, con stato e posizione resi pubblici dai proprietari. Posizione arrotondata a circa 100 m e nessun identificativo, per riservatezza. La copertura radio reale non è indicata.',
+        note: 'Solo i gateway online nell’area della mappa, con stato e posizione resi pubblici dai proprietari. Posizione come pubblicata dal proprietario (stessa precisione delle mappe di TTN); nessun identificativo né nome. Se il proprietario rende privata la posizione, il gateway sparisce da VOD entro 10 minuti. La copertura radio reale non è indicata.',
       },
     },
     { status: res.ok ? 200 : 503 }

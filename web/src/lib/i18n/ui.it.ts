@@ -1154,7 +1154,7 @@ export const itUi = {
     "name_bdap-mop": "Opere pubbliche del Comune dal monitoraggio BDAP (pipeline)",
     "meta_bdap-mop": "CSV «Progetti Opere Pubbliche MOP – Veneto» della Ragioneria Generale dello Stato, filtrato sul Comune di Venezia una volta a settimana; la fonte si aggiorna ogni trimestre.",
     "name_packet-broker": "Gateway LoRaWAN (Packet Broker, The Things Network)",
-    "meta_packet-broker": "Gateway online con stato e posizione resi pubblici dai proprietari, letti ogni 10 minuti; VOD arrotonda la posizione a circa 100 m."
+    "meta_packet-broker": "Gateway online con stato e posizione resi pubblici dai proprietari, letti ogni 10 minuti; stessa posizione delle mappe di TTN, senza identificativi."
   },
   notFound: {
     subtitle: "Pagina non trovata",
@@ -1387,7 +1387,7 @@ export const itUi = {
     altitude: "Altitudine dichiarata",
     lastStatus: "Ultimo stato",
     what: "Antenna della rete radio comunitaria The Things Network: riceve i messaggi di sensori a basso consumo (LoRaWAN) nel raggio di alcuni chilometri e li inoltra in Internet. Chiunque può installarne una e allargare la copertura.",
-    privacy: "Stato e posizione sono resi pubblici dal proprietario. Per riservatezza VOD arrotonda la posizione a circa 100 m e non mostra identificativi né nomi.",
+    privacy: "Stato e posizione sono pubblicati dal proprietario sulla rete The Things Network: VOD mostra la stessa posizione delle mappe pubbliche di TTN, senza identificativi né nomi. Il proprietario che rende privata la posizione nella console TTN sparisce da VOD entro 10 minuti.",
     community: "Come aggiungere un gateway alla rete"
   }
 };

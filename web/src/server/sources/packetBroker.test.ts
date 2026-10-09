@@ -25,15 +25,15 @@ describe('gateway LoRaWAN (Packet Broker)', () => {
     expect(out).toHaveLength(1);
   });
 
-  it('arrotonda la posizione e non espone identificativi del proprietario', () => {
+  it('mantiene la posizione pubblicata e non espone identificativi del proprietario', () => {
     const [g] = parseGateways([gw()]);
-    expect(g.lat).toBe(45.431);
-    expect(g.lon).toBe(12.354);
+    expect(g.lat).toBe(45.43061);
+    expect(g.lon).toBe(12.354276);
     expect(JSON.stringify(g)).not.toMatch(/mario|B827EB/i);
     expect(g.id).toBe('lora-1');
     expect(g.network).toBe('The Things Network');
     expect(g.antennaPlacement).toBe('outdoor');
-    expect(roundCoord(12.20648961)).toBe(12.206);
+    expect(roundCoord(12.20648961)).toBe(12.20649);
   });
 
   it('rifiuta una risposta non valida', () => {

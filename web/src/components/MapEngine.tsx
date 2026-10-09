@@ -184,7 +184,7 @@ export interface MapEngineProps {
   /** Opere in esecuzione (BDAP); quelle senza posizione non vengono disegnate */
   showBdapWorks?: boolean;
   bdapWorks?: BdapProject[] | null;
-  /** Gateway LoRaWAN online (posizioni arrotondate) */
+  /** Gateway LoRaWAN online (posizione pubblicata dal proprietario) */
   showLoraGateways?: boolean;
   loraGateways?: LoraGateway[];
   /** Briccole, segnalamenti e canali da OpenStreetMap */

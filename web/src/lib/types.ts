@@ -1024,7 +1024,7 @@ export interface LagoonTributaryRiverItem {
 
 
 
-/** Gateway LoRaWAN online (posizione arrotondata a circa 100 m, nessun identificativo del proprietario). */
+/** Gateway LoRaWAN online (posizione pubblicata dal proprietario, nessun identificativo né nome). */
 export interface LoraGateway {
   id: string;
   lat: number;

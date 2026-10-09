@@ -1464,7 +1464,7 @@ const PollenCalendar: React.FC<{ profile: PollenMeasuredProfile }> = ({ profile 
   );
 };
 
-/** Scheda di un gateway LoRaWAN: solo dati non identificativi, posizione arrotondata. */
+/** Scheda di un gateway LoRaWAN: solo dati non identificativi, posizione pubblicata dal proprietario. */
 const LoraGatewayBody: React.FC<{ gateway: LoraGateway }> = ({ gateway: g }) => {
   const { t, language } = useTranslation();
   const l = (key: string, params?: Record<string, string | number>) => t(`ui.lora.${key}`, params);
