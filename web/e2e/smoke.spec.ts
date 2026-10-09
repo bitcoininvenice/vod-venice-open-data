@@ -218,6 +218,28 @@ test('metriche: sezione delle opere pubbliche dal monitoraggio BDAP', async ({ p
   await expect(section.getByText(/lavori in corso più costosi/i)).toBeVisible();
 });
 
+test('consumi: all\'avvio a mappa pulita parte solo la marea, le altre API con il loro livello', async ({ page }) => {
+  const api: string[] = [];
+  const data: string[] = [];
+  page.on('request', (r) => {
+    const u = new URL(r.url());
+    if (u.pathname.startsWith('/api/')) api.push(u.pathname);
+    if (u.pathname.startsWith('/data/')) data.push(u.pathname);
+  });
+  await page.goto('/');
+  await page.waitForTimeout(2500);
+  expect(api).toEqual(['/api/tide']);
+  // la simulazione dei mezzi non si scarica (le isole dettagliate sì, se la vista è già ravvicinata)
+  expect(data.filter((d) => d.startsWith('/data/sim-'))).toEqual([]);
+  // accendere le farmacie carica solo la loro API
+  await page.goto('/?layers=farmacie_turno');
+  await expect.poll(() => api.includes('/api/emergency-health')).toBe(true);
+  expect(api).not.toContain('/api/cameras');
+  // i mezzi ACTV scaricano la simulazione statica
+  await page.goto('/?preset=muoversi');
+  await expect.poll(() => data.some((d) => /^\/data\/sim-[0-9a-f]{12}\.json$/.test(d))).toBe(true);
+});
+
 test('la scheda informativa non copre il pannello livelli e non blocca la mappa', async ({ page, isMobile }) => {
   test.skip(isMobile, 'su mobile la scheda è un cassetto dal basso');
   await page.goto('/');

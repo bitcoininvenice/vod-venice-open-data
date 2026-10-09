@@ -53,10 +53,11 @@ import {
   LagoonTributaryRiverItem,
   VeniceCameraItem
 } from '@/lib/types';
-import { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
+import type { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import type { MapObjectSelected } from './MapObjectPanel';
 import type { BdapProject } from '@/lib/bdap';
-import { D, LAND } from '@/lib/simulation-data';
+import { GRID, LAND_LO } from '@/lib/simulation-data';
+import { drawBaseMap, isLandHiLoaded, requestLandHi } from './map/baseMap';
 import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { useTranslation } from '@/lib/i18n';
@@ -355,9 +356,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Map coordinate bounds
-  const W = D.W; // 26194
-  const H = D.H; // 38701
-  const [LON0, LON1, LAT0, LAT1] = D.frame;
+  const W = GRID.W; // 26194
+  const H = GRID.H; // 38701
+  const [LON0, LON1, LAT0, LAT1] = GRID.frame;
   const KX = W / (LON1 - LON0);
   const KY = H / (LAT1 - LAT0);
 
@@ -368,6 +369,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   // View Camera State (x0, y0, scale)
   const [camera, setCamera] = useState({ x0: 0, y0: 0, s: 0.02 });
   const [is3DView, setIs3DView] = useState(false);
+  // Ridisegno quando arrivano le isole dettagliate
+  const [landHiReady, setLandHiReady] = useState(false);
 
   /** Coordinate dello schermo -> piano della mappa (in 3D il canvas è inclinato via CSS). */
   const toMapPlane = (x: number, y: number, rect: DOMRect) =>
@@ -1335,8 +1338,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     // 4. Hit test Moving Vehicles (ACTV)
     if (showVehicles) {
       const sim = getSimulation();
-      const tripsData = sim.daysTrips[selectedDay];
-      if (tripsData) {
+      const tripsData = sim?.daysTrips[selectedDay];
+      if (sim && tripsData) {
         const { tP, t0, t1, count } = tripsData;
         const t = currentTimeSeconds;
         const ptNow: [number, number] = [0, 0];
@@ -1472,10 +1475,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       showCameras || showMarineSignals || showOceanStations || showLagoonWater ||
       (showMarineWind && windField !== null);
     let lastDraw = -Infinity;
+    // Con layer animati al massimo 30 fotogrammi al secondo: a velocità reale i mezzi si spostano di
+    // frazioni di pixel e la differenza non si vede, mentre il consumo di CPU e batteria si dimezza.
+    // Trascinamenti e zoom ricreano l'effetto e ridisegnano subito.
+    const minInterval = hasAnimatedLayers ? 1000 / 30 : 1000;
 
     const render = () => {
       const frameTime = performance.now();
-      if (!hasAnimatedLayers && frameTime - lastDraw < 1000) {
+      if (frameTime - lastDraw < minInterval) {
         animId = requestAnimationFrame(render);
         return;
       }
@@ -1497,53 +1504,15 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       ctx.save();
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      // 1. Water background
-      ctx.fillStyle = pal.water;
-      ctx.fillRect(0, 0, cw, ch);
-
       // Coordinate transforms: Virtual Map space -> Screen space
       const sx = (x: number) => (x - camera.x0) * camera.s;
       const sy = (y: number) => (y - camera.y0) * camera.s;
 
-      // 2. Render Land Polygons (Venice Islands & Mainland)
+      // 1-2. Acqua e isole: disegnate in una cache e ricopiate finché vista, dimensioni e colori non cambiano.
+      // Le isole dettagliate (circa 860 KB) si scaricano solo al primo zoom; nel frattempo resta la versione leggera.
       const zoomed = camera.s / (cw / W) > 1.6;
-      const landSet = zoomed ? LAND.hi : LAND.lo;
-
-      if (is3DView) {
-        ctx.save();
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-        for (const rings of landSet) {
-          ctx.beginPath();
-          for (const ring of rings) {
-            if (ring.length < 4) continue;
-            ctx.moveTo(sx(ring[0]), sy(ring[1]) + 4);
-            for (let i = 2; i < ring.length; i += 2) {
-              ctx.lineTo(sx(ring[i]), sy(ring[i + 1]) + 4);
-            }
-            ctx.closePath();
-          }
-          ctx.fill();
-        }
-        ctx.restore();
-      }
-
-      ctx.fillStyle = pal.land;
-      ctx.strokeStyle = pal.coast;
-      ctx.lineWidth = 1;
-
-      for (const rings of landSet) {
-        ctx.beginPath();
-        for (const ring of rings) {
-          if (ring.length < 4) continue;
-          ctx.moveTo(sx(ring[0]), sy(ring[1]));
-          for (let i = 2; i < ring.length; i += 2) {
-            ctx.lineTo(sx(ring[i]), sy(ring[i + 1]));
-          }
-          ctx.closePath();
-        }
-        ctx.fill();
-        ctx.stroke();
-      }
+      if (zoomed && !isLandHiLoaded()) requestLandHi(() => setLandHiReady(true));
+      drawBaseMap(ctx, { cw, ch, dpr, camera, pal, is3DView, zoomed: zoomed && isLandHiLoaded(), landLo: LAND_LO });
 
       // Contesto del frame condiviso dai layer di disegno (components/map/*)
       const rc: RenderContext = {
@@ -1904,6 +1873,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     tideLevel,
     simulatedTideLevel,
     is3DView,
+    landHiReady,
     W,
     mx,
     my,

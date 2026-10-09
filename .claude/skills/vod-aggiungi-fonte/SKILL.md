@@ -30,7 +30,9 @@ Completare **tutti** i passaggi nello stesso giro e verificare tutto prima del c
 ## 4. Mappa e interfaccia
 - Layer nuovo: chiave in `web/src/lib/urlLayers.ts` (tipo, slug, alias); voce nel pannello in `web/src/lib/layerGroups.ts`
   (gruppo, sottogruppo, etichetta i18n, icona, colore: pannello, ricerca, contatori e legenda si aggiornano da soli);
-  conteggio in `layerCounts` e stato/fetch in `web/src/app/page.tsx` (caricare solo quando il layer è attivo),
+  conteggio in `layerCounts` e stato in `web/src/app/page.tsx`; il fetch va in `loadResource` con la condizione in
+  `neededResources` (si carica solo quando il layer, la ricerca o una scheda lo richiedono, mai all'avvio);
+  nuove API: durata della cache del browser in `next.config.ts` (`browserCache`);
   prop in `MapEngine.tsx` + `map/renderContext.ts` (DataProps) + dipendenze dell'effetto di disegno,
   disegno in `web/src/components/map/*Layer*.ts` (le etichette passano dalla guardia anti-sovrapposizione `map/labelGuard.ts`), clic con `onSelectFeature`.
 - Preset (`PRESET_LAYERS` in `web/src/lib/layerState.ts`): scenari da 3-6 layer, mai layer `curated` (un test lo verifica).

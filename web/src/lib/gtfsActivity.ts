@@ -1,10 +1,9 @@
-import { D } from '@/lib/simulation-data';
 import { getSimulation } from '@/lib/simulationModel';
 import type { DayType } from '@/lib/types';
 
 /**
  * Numero di corse GTFS ACTV in servizio per ogni minuto della giornata, calcolato dagli orari
- * pre-elaborati in simulation-data (stessa base dati della simulazione dei mezzi in mappa).
+ * pre-elaborati (stessa base dati della simulazione dei mezzi in mappa, public/data/sim-<hash>.json).
  */
 export interface DayActivity {
   perMinute: Int32Array;
@@ -16,22 +15,20 @@ export interface DayActivity {
 const MINUTES = 1440;
 const cache = new Map<DayType, DayActivity>();
 
-type RawTrip = [profileIndex: number, departureSeconds: number];
-type RawProfile = [shape: number, route: number, times: number[], dists: number[]];
+const EMPTY: DayActivity = { perMinute: new Int32Array(MINUTES), peakCount: 0, peakTime: '--:--' };
 
+/** Attività del giorno; vuota finché la simulazione non è caricata (vedi useSimulation). */
 export function dayActivity(day: DayType): DayActivity {
   const cached = cache.get(day);
   if (cached) return cached;
-
-  const profiles = D.profiles as unknown as RawProfile[];
-  const trips = (D.days as unknown as Record<string, { trips: RawTrip[] }>)[day]?.trips ?? [];
+  const trips = getSimulation()?.daysTrips[day];
+  if (!trips) return EMPTY;
 
   // Array differenze: +1 al minuto di partenza, -1 dopo il minuto di arrivo
   const diff = new Int32Array(MINUTES + 1);
-  for (const [p, t0] of trips) {
-    const times = profiles[p]?.[2];
-    if (!times || times.length === 0) continue;
-    const t1 = t0 + times[times.length - 1];
+  for (let i = 0; i < trips.count; i++) {
+    const t0 = trips.t0[i];
+    const t1 = trips.t1[i];
     const start = Math.max(0, Math.floor(t0 / 60));
     const end = Math.min(MINUTES - 1, Math.floor(t1 / 60));
     if (end < 0 || start > MINUTES - 1 || end < start) continue;
@@ -69,9 +66,9 @@ export function activeTripsAt(day: DayType, secondsOfDay: number): number {
 /** Corse in servizio in quell'istante, per tipo di mezzo (stessa regola della simulazione in mappa). */
 export function activeTripsByCategory(day: DayType, secondsOfDay: number): Record<string, number> {
   const sim = getSimulation();
-  const trips = sim.daysTrips[day];
+  const trips = sim?.daysTrips[day];
   const out: Record<string, number> = {};
-  if (!trips) return out;
+  if (!sim || !trips) return out;
   const { tP, t0, t1, count } = trips;
   for (let i = 0; i < count; i++) {
     if (t0[i] > secondsOfDay || t1[i] < secondsOfDay) continue;

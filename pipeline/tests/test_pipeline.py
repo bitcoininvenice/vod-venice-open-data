@@ -348,3 +348,17 @@ def test_bdap_omonimi_e_punti_coincidenti():
 def test_bdap_data_osservazione():
     assert bdap.observed_at("Dati osservati al 30/09/2026. - [X]") == "2026-09-30"
     assert bdap.observed_at("") is None
+
+
+def test_simulazione_in_file_con_hash(tmp_path, monkeypatch):
+    monkeypatch.setattr(sim, "PUBLIC_DATA_DIR", str(tmp_path))
+    (tmp_path / "sim-000000000000.json").write_text("{}")  # versione precedente: va rimossa
+    (tmp_path / "land-hi-111111111111.json").write_text("[]")  # altro prefisso: resta
+    url = sim.write_hashed_json("sim", {"a": 1})
+    assert url.startswith("/data/sim-") and url.endswith(".json")
+    names = sorted(p.name for p in tmp_path.iterdir())
+    assert names == ["land-hi-111111111111.json", url.rsplit("/", 1)[1]]
+    # stesso contenuto, stesso nome
+    assert sim.write_hashed_json("sim", {"a": 1}) == url
+    stats = sim.sim_stats({"routes": [{"n": "1", "c": "vaporetto"}, {"n": "2", "c": "bus"}], "days": {"weekday": {"trips": [[0, 1], [0, 2]]}}})
+    assert stats == {"routeModes": ["vaporetto", "bus"], "trips": {"weekday": 2}}

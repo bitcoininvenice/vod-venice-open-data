@@ -86,7 +86,8 @@ vod-venice-open-data/
 │   │   └── lib/
 │   │       ├── types.ts            # Modelli di dominio TypeScript
 │   │       ├── solar.ts            # Calcolo effemeridi e interpolazione palette solare
-│   │       ├── simulation-data.ts  # Dataset lagunare e GTFS pre-baked
+│   │       ├── simulation-data.ts  # Griglia, isole leggere, configurazione e URL dei file in public/data
+│   ├── public/data/                # Simulazione GTFS e isole dettagliate (JSON con hash nel nome, cache immutabile)
 │   │       └── db.ts               # Dataset di riferimento e calcoli spaziali in memoria
 │   ├── src/server/                 # Accesso alle fonti esterne (fetch con timeout e cache, parser validati)
 │   ├── src/components/map/         # Layer di disegno della mappa (un modulo per tema) e contesto del frame
@@ -115,8 +116,8 @@ Prima dell'avvio copiare `.env.example` in `.env` e impostare `POSTGRES_PASSWORD
 (nessuna credenziale di default è inclusa nel codice). Il database è esposto solo su `127.0.0.1:5432`.
 
 ### 2. Aggiornare i dati (pipeline)
-I dataset statici dell'app sono generati dalla pipeline e versionati in `web/src/data/` e
-`web/src/lib/simulation-data.ts`. Il workflow `.github/workflows/refresh-data.yml` li rigenera ogni
+I dataset statici dell'app sono generati dalla pipeline e versionati in `web/src/data/`,
+`web/src/lib/simulation-data.ts` e `web/public/data/` (file con hash nel nome). Il workflow `.github/workflows/refresh-data.yml` li rigenera ogni
 lunedì e apre una pull request; in locale:
 
 ```bash
@@ -193,6 +194,7 @@ Apri il browser su: **`http://localhost:3000`**
 * **Pannello dei livelli**: ricerca (anche per nome inglese, ente o slug), "Attiva / Disattiva" per gruppo, "Pulisci mappa", bollino con la natura del dato (Live, Simulato, Dataset, Da verificare), elenchi curati raccolti in "Da verificare", avviso oltre 12 livelli attivi.
 * **Scheda informativa unica**: tutto ciò che si clicca sulla mappa si apre nella stessa scheda, a destra su desktop e dal basso su mobile, senza oscurare la mappa; nel piede natura del dato, ente e link alla scheda del livello in `/layers`.
 * **Guida (tutorial)**: alla prima visita spiega gruppi, ricerca, bollini, scheda informativa e legenda, e fa scegliere lo scenario di partenza; si riapre dal menu in alto a destra, voce "Guida".
+* **Consumi ridotti**: all'avvio parte solo la marea; ogni altra API si carica quando serve (livello acceso, ricerca, esportazione, schede) e una sola volta, con cache del browser proporzionata alla freschezza del dato. Simulazione ACTV (~220 KB compressi) e isole dettagliate (~390 KB) sono file statici scaricati solo con mezzi/rotte accesi o al primo zoom. La mappa di base è in cache su un canvas nascosto (si ridisegna solo se cambiano vista o colori), le isole fuori schermo sono scartate e l'animazione è limitata a 30 fps. Finestre e schede meno frequenti si scaricano all'apertura.
 * **Etichette diradate e legenda unica**: le etichette che si sovrappongono vengono saltate (massimo 70 per frame); la legenda "Livelli attivi" elenca i livelli attivi e permette di disattivarli.
 
 ### 2. Incrocio spaziale: opere pubbliche e fermate

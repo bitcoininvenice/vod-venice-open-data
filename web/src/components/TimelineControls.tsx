@@ -96,7 +96,8 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
 
   // Contextual calculations
   const isTransitActive = Boolean(showVehicles || showAlilaguna);
-  const effectiveActv = actvTripsCount ?? 0;
+  // "…" finché la simulazione da orario non è caricata
+  const effectiveActv = actvTripsCount ?? '…';
   const effectiveAli = alilagunaBoatsCount ?? 0;
   const isTideActive = Boolean(showTide);
 

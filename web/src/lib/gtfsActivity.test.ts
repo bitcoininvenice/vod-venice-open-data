@@ -1,5 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { activeTripsAt, activeTripsByCategory, dayActivity } from './gtfsActivity';
+import { initSimulation, type RawSimulation } from './simulationModel';
+import { SIM_URL } from './simulation-data';
+
+// Nel sito la simulazione si scarica da public/data; nei test si legge lo stesso file
+beforeAll(() => {
+  initSimulation(JSON.parse(readFileSync(join(__dirname, '../../public', SIM_URL), 'utf8')) as RawSimulation);
+});
 
 describe('attività GTFS', () => {
   it('il picco feriale è maggiore del servizio notturno', () => {

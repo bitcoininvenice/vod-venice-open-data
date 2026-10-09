@@ -5,8 +5,9 @@ Pipeline: genera il dataset di simulazione dei mezzi ACTV dai GTFS ufficiali.
 
 Input : pipeline/data/navigazione/*.txt e pipeline/data/automobilistico/*.txt
         (scaricati con download_gtfs.py; licenza CC BY - Open Data ACTV)
-Output: - la costante `D` in web/src/lib/simulation-data.ts (le geometrie LAND e la
-          configurazione CFG nello stesso file restano invariate)
+Output: - web/public/data/sim-<hash>.json: forme, linee, profili e corse (caricato dal sito solo
+          quando servono i mezzi); in web/src/lib/simulation-data.ts si aggiornano SIM_URL,
+          SIM_STATS e CFG (le geometrie della laguna restano invariate)
         - web/src/data/actv-gtfs-index.json: linee e corse, usato per abbinare le
           posizioni GTFS-Realtime alle linee
 
@@ -17,6 +18,7 @@ Uso: python export_simulation_data.py [--date YYYY-MM-DD]
 
 import argparse
 import csv
+import hashlib
 import json
 import logging
 import math
@@ -31,6 +33,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 SIM_FILE = os.path.join(BASE_DIR, "..", "web", "src", "lib", "simulation-data.ts")
+PUBLIC_DATA_DIR = os.path.join(BASE_DIR, "..", "web", "public", "data")
 INDEX_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "actv-gtfs-index.json")
 
 # Griglia virtuale condivisa con le geometrie LAND: non modificare senza rigenerare anche LAND.
@@ -317,10 +320,36 @@ def replace_const(content: str, name: str, value) -> str:
     return content[:start] + line + content[end:]
 
 
+def write_hashed_json(prefix: str, value) -> str:
+    """Scrive web/public/data/<prefix>-<hash>.json (nome che cambia solo se cambiano i dati, così il
+    browser lo tiene in cache senza scadenza) e rimuove le versioni precedenti. Restituisce l'URL pubblico."""
+    body = json.dumps(value, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    digest = hashlib.sha256(body).hexdigest()[:12]
+    os.makedirs(PUBLIC_DATA_DIR, exist_ok=True)
+    for old in os.listdir(PUBLIC_DATA_DIR):
+        if re.fullmatch(rf"{re.escape(prefix)}-[0-9a-f]{{12}}\.json", old) and old != f"{prefix}-{digest}.json":
+            os.remove(os.path.join(PUBLIC_DATA_DIR, old))
+    with open(os.path.join(PUBLIC_DATA_DIR, f"{prefix}-{digest}.json"), "wb") as f:
+        f.write(body)
+    return f"/data/{prefix}-{digest}.json"
+
+
+def sim_stats(data: dict) -> dict:
+    """Riepilogo leggero per il server e le statistiche, senza caricare la simulazione completa."""
+    return {
+        "routeModes": [r["c"] for r in data["routes"]],
+        "trips": {k: len(v["trips"]) for k, v in data["days"].items()},
+    }
+
+
 def write_simulation(data: dict, days: dict[str, date]) -> None:
+    """La simulazione completa va in un JSON statico caricato solo quando servono i mezzi;
+    nel modulo TypeScript restano griglia, configurazione, statistiche e l'URL del file."""
     with open(SIM_FILE, encoding="utf-8") as f:
         content = f.read()
-    content = replace_const(content, "D", data)
+    url = write_hashed_json("sim", data)
+    content = replace_const(content, "SIM_URL", url)
+    content = replace_const(content, "SIM_STATS", sim_stats(data))
     # CFG.dates riporta le date di riferimento usate per ciascun tipo di giorno
     cfg_start = content.index("export const CFG = ") + len("export const CFG = ")
     cfg_end = content.index("\n", cfg_start)
@@ -329,7 +358,7 @@ def write_simulation(data: dict, days: dict[str, date]) -> None:
     content = replace_const(content, "CFG", cfg)
     with open(SIM_FILE, "w", encoding="utf-8") as f:
         f.write(content)
-    logging.info("Aggiornato %s (%d KB)", os.path.relpath(SIM_FILE, BASE_DIR), os.path.getsize(SIM_FILE) // 1024)
+    logging.info("Simulazione in %s (%d KB); aggiornato %s", url, len(json.dumps(data, separators=(",", ":"))) // 1024, os.path.relpath(SIM_FILE, BASE_DIR))
 
 
 def write_index(feeds: list[Feed], trip_route: dict[str, str], generated_for: dict[str, date]) -> None:

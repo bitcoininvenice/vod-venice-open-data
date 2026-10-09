@@ -5,11 +5,12 @@ import { distAt, getSimulation, pointAt } from '@/lib/simulationModel';
 export function drawRoutes(rc: RenderContext): void {
   const { ctx, cw, pal, sx, sy, camera, W, showRoutes } = rc;
   // 3. Render ACTV Routes (Shapes)
-  if (showRoutes) {
+  const sim = getSimulation();
+  if (showRoutes && sim) {
     ctx.lineWidth = Math.max(1, 1.2 * (camera.s / (cw / W)));
     ctx.globalAlpha = 0.35;
 
-    for (const shape of getSimulation().shapes) {
+    for (const shape of sim.shapes) {
       const xy = shape.xy;
       ctx.beginPath();
       ctx.moveTo(sx(xy[0]), sy(xy[1]));
@@ -52,9 +53,9 @@ export function drawVehicles(rc: RenderContext): void {
   // 5. Render Moving Fleet (Vehicles with directional trails)
   if (showVehicles) {
     const sim = getSimulation();
-    const tripsData = sim.daysTrips[selectedDay];
+    const tripsData = sim?.daysTrips[selectedDay];
 
-    if (tripsData) {
+    if (sim && tripsData) {
       const { tP, t0, t1, count } = tripsData;
       const t = currentTimeSeconds;
       const trailSec = 45; // Ghosting trail duration
