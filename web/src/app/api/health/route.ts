@@ -26,6 +26,7 @@ import lagoonDataset from '@/data/osm-waterways.json';
 import pollenDataset from '@/data/arpav-pollen-venezia.json';
 import tourismDataset from '@/data/turismo-comuni.json';
 import lagoonProbeDataset from '@/data/arpav-lagoon.json';
+import cruscottoDataset from '@/data/cruscotto-comuni.json';
 
 export const revalidate = 60;
 
@@ -83,6 +84,7 @@ export async function GET() {
     assess('arpav-pollen', 'Pollini misurati ARPAV Venezia (pipeline)', 'dataset', new Date(pollenDataset.generatedAt), 400 * DAY, now),
     assess('cciaa-turismo', 'Turismo e popolazione dei comuni della laguna (pipeline)', 'dataset', new Date(tourismDataset.generatedAt), 400 * DAY, now),
     assess('arpav-lagoon', 'Sonde ARPAV della laguna e balneazione (pipeline)', 'dataset', new Date(lagoonProbeDataset.generatedAt), 120 * DAY, now),
+    assess('cruscotto-italia', 'Profilo dei comuni da Cruscotto Italia (pipeline)', 'dataset', new Date(cruscottoDataset.generatedAt), 31 * DAY, now),
     assess('agcom-fiber', 'Copertura rete fissa AGCOM (pipeline)', 'dataset', new Date(fiberDataset.generatedAt), 120 * DAY, now),
     assess('alilaguna-gtfs', 'Orario Alilaguna GTFS (pipeline)', 'dataset', new Date(ALILAGUNA_FEED_META.generatedAt), 31 * DAY, now,
       isAlilagunaTimetableValid(now) ? undefined : 'orario importato non più valido'),

@@ -56,4 +56,4 @@ jobs:
           cache-dependency-path: pipeline/requirements-dev.txt
       - run: pip install -r pipeline/requirements-dev.txt
       - run: python -m compileall -q pipeline
-      - run: python -m pytest -q pipeline/tests
+      - run: python -m pytest -q pipeline/tests skills/tests

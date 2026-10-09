@@ -49,7 +49,23 @@ export const MCP_DATASETS: McpDatasetMeta[] = [
   { id: 'fiber_coverage', title: 'Copertura della rete fissa (FTTH, FTTC, ADSL)', titleEn: 'Fixed network coverage (FTTH, FTTC, ADSL)', description: 'Tecnologia migliore su riquadri di circa 100 m e operatori FTTH.', kind: 'dataset', source: 'AGCOM BroadbandMap', license: 'CC BY 4.0 (citare “BroadbandMap di Agcom”)', geo: true, caveat: 'Copertura della rete, non servizi attivi.' },
   { id: 'public_works', title: 'Opere pubbliche del Comune', titleEn: 'City public works', description: 'Elenco annuale dei lavori con importo, stato e posizione approssimata.', kind: 'dataset', source: 'Comune di Venezia (dati.venezia.it)', license: 'CC BY', geo: true, caveat: 'Posizioni geocodificate in modo approssimato.' },
   { id: 'tourism', title: 'Turismo e popolazione dei comuni della laguna', titleEn: 'Tourism and population of lagoon municipalities', description: 'Arrivi, presenze e residenti annuali di Venezia, Chioggia e Cavallino-Treporti.', kind: 'dataset', source: 'Camera di Commercio Venezia Rovigo (dati Regione/ISTAT)', license: 'CC BY 4.0', geo: false, caveat: 'Non esistono dati aperti per sestiere.' },
+  { id: 'municipal_profile', title: 'Profilo socio-economico dei comuni della laguna', titleEn: 'Socio-economic profile of lagoon municipalities', description: 'Circa 55 indicatori per Venezia, Chioggia e Cavallino-Treporti: popolazione, redditi, lavoro, SIOPE, PNRR, opere pubbliche, ambiente, servizi, turismo, banda larga.', kind: 'dataset', source: 'Cruscotto Italia – AgID (aggregazione di fonti ufficiali)', license: 'CC BY 4.0', geo: false, caveat: 'Pagamenti e incassi SIOPE sono di cassa; i finanziamenti assegnati non sono pagamenti. Per gli altri comuni italiani usa il server MCP di Cruscotto Italia.' },
   { id: 'sources_status', title: 'Stato delle fonti', titleEn: 'Source status', description: 'Freschezza e disponibilità di ogni fonte usata da VOD.', kind: 'live', source: 'VOD', license: '—', geo: false, caveat: '' },
 ];
 
 export const MCP_DATASET_IDS = MCP_DATASETS.map((d) => d.id) as [string, ...string[]];
+
+/**
+ * Server MCP pubblici complementari: segnalati all'AI ma mai interrogati da VOD (nessun proxy,
+ * nessuna fusione automatica dei dati), come fanno DoveVannoINostriSoldi e Cruscotto Italia.
+ */
+export const MCP_RELATED_SERVICES = [
+  {
+    id: 'cruscotto-italia',
+    name: 'Cruscotto Italia (AgID)',
+    endpoint: 'https://cruscotto-italia-mcp.agid.workers.dev/mcp',
+    about: 'https://cruscotto-italia.dati.gov.it/about.html#accesso-mcp',
+    scope: 'Indicatori ufficiali per ogni comune italiano (demografia, redditi, SIOPE, PNRR, opere, scuole, sanità, turismo). Sequenza consigliata: search_comune, poi comune_kpi.',
+    license: 'CC BY 4.0',
+  },
+] as const;

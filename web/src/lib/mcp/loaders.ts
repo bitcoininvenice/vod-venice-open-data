@@ -18,6 +18,7 @@ import { GET as fiberGET } from '@/app/api/fiber/route';
 import { GET as cantieriGET } from '@/app/api/cantieri/route';
 import { GET as healthGET } from '@/app/api/health/route';
 import tourism from '@/data/turismo-comuni.json';
+import cruscotto from '@/data/cruscotto-comuni.json';
 import { canalLengthMeters } from '@/lib/lagoonNetwork';
 import { fiberCellBounds, fiberOperators } from '@/lib/fiber';
 
@@ -154,6 +155,10 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
     return { items: asRows(j.data), meta: j.meta as Row };
   },
   tourism: async () => ({ items: tourism.comuni as unknown as Row[], meta: { year: tourism.tourismYear, populationDate: tourism.populationDate, source: tourism.source } }),
+  municipal_profile: async () => ({
+    items: cruscotto.comuni as unknown as Row[],
+    meta: { source: cruscotto.source, sourceUrl: cruscotto.sourceUrl, license: cruscotto.license, retrievedAt: cruscotto.generatedAt },
+  }),
   sources_status: async () => {
     const j = await read(healthGET());
     return { items: asRows(j.sources), meta: { status: j.status, checkedAt: j.checkedAt } };

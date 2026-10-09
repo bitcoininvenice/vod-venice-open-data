@@ -5,6 +5,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import json  # noqa: E402
 import zipfile  # noqa: E402
 
 import export_simulation_data as sim  # noqa: E402
@@ -20,6 +21,7 @@ import import_osm_waterways as waterways  # noqa: E402
 import import_arpav_pollen as arpav_pollen  # noqa: E402
 import import_cciaa_turismo as cciaa  # noqa: E402
 import import_arpav_lagoon as arpav_lagoon  # noqa: E402
+import import_cruscotto_italia as cruscotto  # noqa: E402
 from download_gtfs import safe_extract  # noqa: E402
 from vod_common import redact  # noqa: E402
 
@@ -257,6 +259,17 @@ def test_arpav_bathing_summary_takes_last_year():
             "2025,N° PUNTI TOTALI,174,95\n2025,% punti Idonei,100,100\n2025,% in classe eccellente,93.7,88.4\n")
     b = arpav_lagoon.bathing_summary(text)
     assert b["year"] == 2025 and b["points"] == 95 and b["excellentPercent"] == 88.4
+
+
+def test_cruscotto_parse_rpc_json_and_sse():
+    payload = {"anagrafica": {"istat": "027042"}, "_generated_at": "x", "_etl_version": "0.3"}
+    msg = {"jsonrpc": "2.0", "id": 1, "result": {"content": [{"type": "text", "text": json.dumps(payload)}]}}
+    assert cruscotto.parse_rpc(json.dumps(msg))["anagrafica"]["istat"] == "027042"
+    assert cruscotto.parse_rpc("event: message\ndata: " + json.dumps(msg) + "\n\n")["anagrafica"]["istat"] == "027042"
+    assert cruscotto.compact(payload) == {"anagrafica": {"istat": "027042"}, "_generated_at": "x"}
+    import pytest
+    with pytest.raises(RuntimeError):
+        cruscotto.parse_rpc(json.dumps({"jsonrpc": "2.0", "id": 1, "error": {"code": -32602, "message": "x"}}))
 
 
 def test_safe_extract_rejects_path_traversal(tmp_path):

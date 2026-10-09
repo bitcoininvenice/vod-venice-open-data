@@ -5,6 +5,7 @@ import { MARKER_COLORS, MARKER_KEY, canalLengthMeters, type LagoonCanal, type Ma
 import React from 'react';
 import { PHARMACY_DUTY_URL } from '@/lib/pharmacies-data';
 import tourismData from '@/data/turismo-comuni.json';
+import cruscottoData from '@/data/cruscotto-comuni.json';
 import {
   X,
   ShieldAlert,
@@ -982,6 +983,18 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                     })}
                   </span>
                 ))}
+                {cruscottoData.comuni.map((c) => {
+                  const tur = (c.kpi as { turismo?: { anno?: number; totale_strutture?: number; totale_letti?: number } }).turismo;
+                  return tur?.totale_letti ? (
+                    <span key={`beds-${c.code}`} className="text-xs text-[var(--ink-2)]">
+                      <b className="text-[var(--ink)]">{c.name}</b>: {t('ui.feature.tourismBedsRow', {
+                        year: tur.anno ?? 'n.d.',
+                        structures: (tur.totale_strutture ?? 0).toLocaleString('it-IT'),
+                        beds: tur.totale_letti.toLocaleString('it-IT'),
+                      })}
+                    </span>
+                  ) : null;
+                })}
                 <span className="text-[10px] text-[var(--ink-3)]">{t('ui.feature.tourismRealNote')}</span>
               </div>
               <div className={`p-3 rounded-xl border ${feature.data.densityCategory === 'CRITICA' ? 'bg-rose-500/10 border-rose-500/40 text-rose-300' : 'bg-fuchsia-500/10 border-fuchsia-500/30 text-fuchsia-300'}`}>

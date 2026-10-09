@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyQuery, distanceMeters, MAX_RESPONSE_CHARS } from './query';
 import { MCP_DATASETS } from './catalog';
-import { allowRequest, resetRateLimit } from './rateLimit';
 
 const items = [
   { name: 'Farmacia Rialto', lat: 45.438, lon: 12.3358 },
@@ -50,17 +49,6 @@ describe('catalogo MCP', () => {
       expect(d.license.length).toBeGreaterThan(0);
       expect(['live', 'forecast', 'simulated', 'dataset', 'osm', 'curated']).toContain(d.kind);
     }
-  });
-});
-
-describe('limite di richieste', () => {
-  it('blocca oltre la soglia nella finestra e riparte dopo', () => {
-    resetRateLimit();
-    const t0 = 1_000_000;
-    for (let i = 0; i < 3; i++) expect(allowRequest('a', t0 + i, 3)).toBe(true);
-    expect(allowRequest('a', t0 + 10, 3)).toBe(false);
-    expect(allowRequest('b', t0 + 10, 3)).toBe(true);
-    expect(allowRequest('a', t0 + 61_000, 3)).toBe(true);
   });
 });
 

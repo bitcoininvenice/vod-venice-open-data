@@ -35,3 +35,8 @@ export function createRateLimiter({ limit, windowMs, maxKeys = 10_000 }: { limit
     };
   };
 }
+
+/** Chiave del client per i limiti: primo indirizzo di X-Forwarded-For, poi X-Real-IP. */
+export function clientKey(headers: Headers): string {
+  return headers.get('x-forwarded-for')?.split(',')[0]?.trim() || headers.get('x-real-ip') || 'unknown';
+}

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createRateLimiter } from '@/server/rateLimit';
+import { clientKey, createRateLimiter } from '@/server/rateLimit';
 
 // Un caricamento della pagina esegue circa 22 richieste alle API, poi circa 6 al minuto con i
 // layer live attivi: 600 richieste al minuto per IP lasciano ampio margine all'uso normale
@@ -9,24 +9,23 @@ const checkLimit = createRateLimiter({
   windowMs: 60_000,
 });
 
-function clientKey(request: NextRequest): string {
-  const forwarded = request.headers.get('x-forwarded-for');
-  return forwarded?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
-}
-
 export function proxy(request: NextRequest) {
-  const result = checkLimit(clientKey(request));
+  // /mcp: GET mostra la pagina con le istruzioni, le richieste MCP (POST, OPTIONS, DELETE) vanno al server
+  const isMcpAlias = request.nextUrl.pathname === '/mcp' && request.method !== 'GET' && request.method !== 'HEAD';
+  if (request.nextUrl.pathname === '/mcp' && !isMcpAlias) return NextResponse.next();
+
+  const result = checkLimit(clientKey(request.headers));
   if (!result.allowed) {
     return NextResponse.json(
       { ok: false, error: 'rate_limited', retryAfterSeconds: result.retryAfter },
       { status: 429, headers: { 'Retry-After': String(result.retryAfter) } },
     );
   }
-  const response = NextResponse.next();
+  const response = isMcpAlias ? NextResponse.rewrite(new URL('/api/mcp', request.url)) : NextResponse.next();
   response.headers.set('X-RateLimit-Remaining', String(result.remaining));
   return response;
 }
 
 export const config = {
-  matcher: '/api/:path*',
+  matcher: ['/api/:path*', '/mcp'],
 };

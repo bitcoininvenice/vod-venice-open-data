@@ -1,11 +1,14 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Bot, Check, Copy, Database, ShieldCheck, Terminal } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bot, Check, Copy, Database, Download, Link2, ShieldCheck, Terminal } from 'lucide-react';
 import { SiteFooter, SiteHeader } from '@/components/site/SiteChrome';
 import { useTranslation } from '@/lib/i18n';
 import { copyToClipboard } from '@/lib/dataExport';
-import { MCP_DATASETS, type McpDatasetKind } from '@/lib/mcp/catalog';
+import { MCP_DATASETS, MCP_RELATED_SERVICES, type McpDatasetKind } from '@/lib/mcp/catalog';
+import { MCP_ENDPOINT, SITE_URL } from '@/lib/site';
+
+const SKILL_ZIP = `${SITE_URL}/downloads/venice-open-data-skill.zip`;
 
 const KIND_CLS: Record<McpDatasetKind, string> = {
   live: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
@@ -42,13 +45,8 @@ function CopyBlock({ text, label }: { text: string; label: string }) {
 export default function McpPage() {
   const { t, language } = useTranslation();
   const p = (key: string, params?: Record<string, string | number>) => t(`ui.mcpPage.${key}`, params);
-  // L'indirizzo dipende dal dominio su cui gira il sito (anteprime comprese)
-  const [origin, setOrigin] = useState('https://venice-open-data.vercel.app');
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- valore disponibile solo nel browser
-    setOrigin(window.location.origin);
-  }, []);
-  const endpoint = `${origin}/api/mcp`;
+  // Sempre l'indirizzo pubblico, anche aprendo la pagina in locale o in anteprima
+  const endpoint = MCP_ENDPOINT;
 
   const clients = [
     { id: 'claude', title: p('claudeTitle'), body: p('claudeBody'), code: endpoint },
@@ -89,6 +87,28 @@ export default function McpPage() {
           ))}
         </section>
 
+        <section className="glass-panel rounded-2xl p-5 border border-cyan-500/30 flex flex-col gap-3">
+          <h2 className="font-bold flex items-center gap-2">
+            <Download className="w-4 h-4 text-cyan-400" />
+            {p('skillTitle')}
+          </h2>
+          <p className="text-xs text-[var(--ink-2)] leading-relaxed">{p('skillIntro')}</p>
+          <a
+            href="/downloads/venice-open-data-skill.zip"
+            download
+            className="flex items-center gap-2 w-max px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-semibold"
+          >
+            <Download className="w-4 h-4" />
+            {p('skillDownload')}
+          </a>
+          <ul className="text-xs text-[var(--ink-2)] flex flex-col gap-1.5">
+            <li>• {p('skillClaudeAi')}</li>
+            <li>• {p('skillClaudeCode')}</li>
+            <li>• {p('skillCli')}</li>
+          </ul>
+          <CopyBlock text={`curl -L -o vod-skill.zip ${SKILL_ZIP} && unzip vod-skill.zip -d ~/.claude/skills/`} label={p('copy')} />
+        </section>
+
         <section className="flex flex-col gap-2">
           <h2 className="text-sm font-bold uppercase font-mono text-[var(--ink-3)]">{p('examplesTitle')}</h2>
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
@@ -113,6 +133,30 @@ export default function McpPage() {
               </div>
             ))}
           </div>
+        </section>
+
+        <section className="flex flex-col gap-2">
+          <h2 className="text-sm font-bold uppercase font-mono text-[var(--ink-3)] flex items-center gap-2">
+            <Link2 className="w-4 h-4" />
+            {p('relatedTitle')}
+          </h2>
+          <p className="text-xs text-[var(--ink-2)]">{p('relatedIntro')}</p>
+          {MCP_RELATED_SERVICES.map((s) => (
+            <div key={s.id} className="p-3 rounded-xl border border-[var(--rule)] bg-[var(--rule)]/20 flex flex-col gap-1.5 text-xs">
+              <a href={s.about} target="_blank" rel="noopener noreferrer" className="font-bold text-cyan-400 hover:underline">{s.name}</a>
+              <span className="text-[var(--ink-2)]">{p('relatedCruscotto')}</span>
+              <CopyBlock text={s.endpoint} label={p('copy')} />
+            </div>
+          ))}
+        </section>
+
+        <section className="flex flex-col gap-2">
+          <h2 className="text-sm font-bold uppercase font-mono text-[var(--ink-3)]">{p('practicesTitle')}</h2>
+          <ul className="text-xs text-[var(--ink-2)] flex flex-col gap-1.5">
+            {['practice1', 'practice2', 'practice3', 'practice4'].map((k) => (
+              <li key={k}>• {p(k, { site: SITE_URL })}</li>
+            ))}
+          </ul>
         </section>
 
         <section className="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 flex flex-col gap-1.5 text-xs text-[var(--ink-2)]">

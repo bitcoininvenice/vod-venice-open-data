@@ -140,7 +140,9 @@ Desktop.ini
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
-.claude/
+.claude/*
+# le skill di progetto sono condivise con chi contribuisce
+!.claude/skills/
 *.swp
 *.swo
 *~

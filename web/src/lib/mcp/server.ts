@@ -1,16 +1,24 @@
 import 'server-only';
 import { McpServer } from '@modelcontextprotocol/server';
 import { z } from 'zod';
-import { MCP_DATASETS, MCP_DATASET_IDS } from './catalog';
+import { MCP_DATASETS, MCP_DATASET_IDS, MCP_RELATED_SERVICES } from './catalog';
 import { MCP_LOADERS } from './loaders';
 import { applyQuery } from './query';
 
 const INSTRUCTIONS = `VOD – Venice Open Data espone in sola lettura dati pubblici su Venezia e la laguna: marea, meteo, aria, pollini, laguna, trasporti, servizi e patrimonio.
 Usa prima list_datasets per vedere cosa c'è, poi query_dataset con filtri piccoli (limit basso, near per una zona, text per un nome).
 Ogni risposta indica la natura del dato (live, forecast, simulated, dataset, osm, curated), la fonte, la licenza e le avvertenze: riportale all'utente.
-Non presentare previsioni come misure né elenchi curati come dati ufficiali. Coordinate WGS84; Piazza San Marco è circa lat 45.4341, lon 12.3388.`;
+Non presentare previsioni come misure né elenchi curati come dati ufficiali. Coordinate WGS84; Piazza San Marco è circa lat 45.4341, lon 12.3388.
+Per indicatori socio-economici di altri comuni italiani esiste il server MCP di Cruscotto Italia (AgID): vedi vod://related-mcp-services. VOD non lo interroga per te.`;
 
 const DATASETS_URI = 'vod://datasets';
+const RELATED_URI = 'vod://related-mcp-services';
+/** Tempo massimo per leggere un dataset: oltre si risponde con un errore esplicito invece di restare appesi. */
+const LOAD_TIMEOUT_MS = 12_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([promise, new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
+}
 
 function textResult(payload: unknown) {
   return { content: [{ type: 'text' as const, text: JSON.stringify(payload) }] };
@@ -27,7 +35,7 @@ export function createVodMcpServer(): McpServer {
       description: 'Catalogo dei dataset su Venezia e la laguna: id, natura del dato, fonte, licenza, se accetta il filtro geografico e avvertenze.',
       annotations: { readOnlyHint: true, openWorldHint: false, idempotentHint: true },
     },
-    async () => textResult({ datasets: MCP_DATASETS }),
+    async () => textResult({ datasets: MCP_DATASETS, relatedServices: MCP_RELATED_SERVICES }),
   );
 
   server.registerTool(
@@ -58,7 +66,7 @@ export function createVodMcpServer(): McpServer {
         return { ...textResult({ error: 'near_not_supported', message: `Il dataset ${dataset} non ha coordinate: usa text o la paginazione.` }), isError: true };
       }
       try {
-        const loaded = await MCP_LOADERS[dataset]();
+        const loaded = await withTimeout(MCP_LOADERS[dataset](), LOAD_TIMEOUT_MS);
         const result = applyQuery(loaded.items, { text, near, limit, offset });
         return textResult({
           dataset: { id: meta.id, title: meta.title, kind: meta.kind, source: meta.source, license: meta.license, caveat: meta.caveat },
@@ -77,6 +85,13 @@ export function createVodMcpServer(): McpServer {
     DATASETS_URI,
     { title: 'Catalogo dei dataset VOD', description: 'Copia JSON del catalogo restituito da list_datasets.', mimeType: 'application/json' },
     async () => ({ contents: [{ uri: DATASETS_URI, mimeType: 'application/json', text: JSON.stringify({ datasets: MCP_DATASETS }) }] }),
+  );
+
+  server.registerResource(
+    'related-mcp-services',
+    RELATED_URI,
+    { title: 'Server MCP complementari', description: 'Altri server MCP pubblici utili insieme a VOD. VOD non li interroga.', mimeType: 'application/json' },
+    async () => ({ contents: [{ uri: RELATED_URI, mimeType: 'application/json', text: JSON.stringify({ services: MCP_RELATED_SERVICES }) }] }),
   );
 
   const prompt = (text: string) => async () => ({ messages: [{ role: 'user' as const, content: { type: 'text' as const, text } }] });

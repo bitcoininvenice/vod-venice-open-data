@@ -166,7 +166,8 @@ test('layers, metriche e fonti mostrano lo stesso numero di layer', async ({ pag
 test('la pagina Collega la tua AI mostra l\'indirizzo del server MCP', async ({ page }) => {
   await page.goto('/mcp');
   await expect(page.getByRole('heading', { level: 1, name: /collega la tua ai/i })).toBeVisible();
-  await expect(page.getByText(/\/api\/mcp$/).first()).toBeVisible();
+  await expect(page.getByText('https://venice-open-data.vercel.app/api/mcp', { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole('link', { name: /scarica la skill/i })).toBeVisible();
 });
 
 test('llms.txt descrive il sito e il server MCP', async ({ request }) => {
@@ -178,6 +179,39 @@ test('llms.txt descrive il sito e il server MCP', async ({ request }) => {
 });
 
 test.describe('API', () => {
+  test('API REST dei dataset: catalogo, filtro geografico ed errori espliciti', async ({ request }) => {
+    const cat = await (await request.get('/api/datasets')).json();
+    expect(cat.datasets.length).toBeGreaterThan(20);
+    expect(cat.relatedServices[0].endpoint).toContain('cruscotto-italia');
+    const res = await request.get('/api/datasets/fiber_coverage?lat=45.438&lon=12.3358&radius=200&limit=3');
+    expect(res.ok()).toBe(true);
+    const body = await res.json();
+    expect(body.items[0].technology).toBe('FTTH');
+    expect((await request.get('/api/datasets/nope')).status()).toBe(404);
+    expect((await request.get('/api/datasets/tourism?lat=45.4&lon=12.3')).status()).toBe(400);
+    expect((await request.get('/api/datasets/canals?foo=1')).status()).toBe(400);
+    const profile = await (await request.get('/api/datasets/municipal_profile?text=Venezia')).json();
+    expect(profile.items[0].kpi.anagrafica.istat).toBe('027042');
+  });
+
+  test('POST /mcp è un alias del server MCP, GET /mcp resta la pagina', async ({ request }) => {
+    const res = await request.post('/mcp', {
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream', 'MCP-Protocol-Version': '2025-06-18' },
+      data: { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'e2e', version: '1' } } },
+    });
+    expect(res.ok()).toBe(true);
+    expect(await res.text()).toContain('vod-venice-open-data');
+    const page = await request.get('/mcp');
+    expect(page.headers()['content-type']).toContain('text/html');
+  });
+
+  test('la skill è scaricabile come ZIP', async ({ request }) => {
+    const res = await request.get('/downloads/venice-open-data-skill.zip');
+    expect(res.ok()).toBe(true);
+    const bytes = await res.body();
+    expect(bytes.subarray(0, 2).toString()).toBe('PK');
+  });
+
   test('il server MCP si inizializza, elenca gli strumenti e risponde a una query', async ({ request }) => {
     const headers = { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream', 'MCP-Protocol-Version': '2025-06-18' };
     const rpc = async (id: number, method: string, params: Record<string, unknown> = {}) => {

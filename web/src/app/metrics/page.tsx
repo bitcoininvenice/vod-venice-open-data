@@ -28,9 +28,11 @@ import {
   Trees,
   LifeBuoy,
   Info,
-  Users
+  Users,
+  Landmark
 } from 'lucide-react';
 import tourismData from '@/data/turismo-comuni.json';
+import { MunicipalProfile } from '@/components/metrics/MunicipalProfile';
 import arpavLagoon from '@/data/arpav-lagoon.json';
 
 /** Riepilogo ARPAV della balneazione sul mare Adriatico veneto (ultimo anno pubblicato) */
@@ -409,6 +411,14 @@ export default function MetricsPage() {
             />
           </div>
         </div>
+
+        {/* ===================== PROFILO DEL COMUNE (Cruscotto Italia) ===================== */}
+        {showKpi && (
+          <section className="flex flex-col gap-5">
+            <SectionHeader icon={Landmark} iconCls="text-cyan-400" title={t('ui.municipalProfile.title')} aside={t('ui.municipalProfile.aside')} />
+            <MunicipalProfile />
+          </section>
+        )}
 
         {/* ===================== SEZIONE 1: INDICATORI TERRITORIALI ===================== */}
         {showKpi && (

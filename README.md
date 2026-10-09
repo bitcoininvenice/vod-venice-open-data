@@ -52,6 +52,7 @@ vod-venice-open-data/
 │   ├── import_alilaguna_gtfs.py    # Orario ufficiale Alilaguna (GTFS dell'operatore)
 │   ├── import_osm_waterways.py     # Briccole, segnalamenti e canali della laguna (OSM)
 │   ├── import_arpav_pollen.py      # Pollini misurati da ARPAV a Venezia (calendario mensile)
+│   ├── import_cruscotto_italia.py  # Profilo socio-economico dei comuni della laguna (Cruscotto Italia, AgID)
 │   ├── import_arpav_lagoon.py      # Sonde ARPAV della laguna (ultimo campionamento) e riepilogo balneazione
 │   ├── import_cciaa_turismo.py     # Arrivi, presenze e residenti dei comuni della laguna (CCIAA, CC BY)
 │   ├── import_agcom_fiber.py       # Copertura rete fissa FTTH/FTTC/ADSL (AGCOM BroadbandMap, CC BY 4.0)
@@ -135,6 +136,7 @@ python import_alilaguna_gtfs.py             # Orario Alilaguna (simulazione dell
 python import_agcom_fiber.py                # Copertura fibra AGCOM su celle di ~100 m
 python import_osm_waterways.py              # Briccole, segnalamenti e canali della laguna (OSM)
 python import_arpav_pollen.py               # Pollini misurati ARPAV a Venezia
+python import_cruscotto_italia.py           # Profilo dei comuni da Cruscotto Italia (MCP AgID, CC BY 4.0)
 python import_arpav_lagoon.py               # Sonde ARPAV della laguna e balneazione (anche --probe-file/--year/--bathing-file per file locali)
 python import_cciaa_turismo.py              # Turismo e popolazione dei comuni della laguna
 
@@ -205,6 +207,8 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/tide` | Livelli di marea reali, previsione CPSM con data di emissione, anagrafica MOSE. |
 | `GET` | `/api/weather` | METAR LIPZ reale e stazioni vento di riferimento. |
 | `GET` | `/api/flights` | Aerei rilevati da OpenSky nell'area di Venezia (cache 15 s). |
+| `GET` | `/api/datasets` | Catalogo dei dataset (lo stesso del server MCP) e servizi MCP correlati. |
+| `GET` | `/api/datasets/<id>` | Voci di un dataset con filtri `text`, `lat`/`lon`/`radius`, `limit` (≤100), `offset`: per script e scaricamenti in blocco. |
 | `POST` | `/api/mcp` | Server MCP in sola lettura (Streamable HTTP): strumenti `list_datasets` e `query_dataset` per collegare Claude, ChatGPT, Cursor e altri assistenti. Istruzioni in `/mcp`, descrizione per AI in `/llms.txt`, dettagli in `docs/MCP.md`. |
 | `GET` | `/api/lagoon-network` | Briccole, pali, segnali, boe, fanali e canali della laguna da OpenStreetMap (ODbL). Non per la navigazione. |
 | `GET` | `/api/fiber` | Copertura della rete fissa (FTTH, FTTC, ADSL) su celle di ~100 m da AGCOM BroadbandMap, CC BY 4.0. |
@@ -231,3 +235,10 @@ Le API sono pubbliche e in sola lettura, con cache server per ogni fonte e un li
 * **ARPAV**: medie annue validate di PM10, PM2.5 e NO2 (CC BY 4.0).
 * **CelesTrak**: elementi orbitali TLE.
 * **OpenStreetMap contributors**: geometrie della laguna (ODbL – © OpenStreetMap contributors).
+
+## Collegare la propria AI
+
+- **Server MCP** in sola lettura: `https://venice-open-data.vercel.app/api/mcp` (alias `POST /mcp`). Istruzioni per Claude, ChatGPT, Claude Code e Cursor nella pagina `/mcp`; dettagli tecnici in `docs/MCP.md`.
+- **Skill "venice-open-data"** per Claude (istruzioni + script CLI senza dipendenze): sorgenti in `skills/venice-open-data/`, ZIP pubblicato in `web/public/downloads/venice-open-data-skill.zip`. Dopo ogni modifica: `python skills/build_skill_zip.py` (un test verifica che lo ZIP sia aggiornato).
+- **Skill di sviluppo** per chi contribuisce con un'AI: `.claude/skills/vod-aggiungi-fonte/` descrive la procedura completa per integrare una fonte.
+- **`/llms.txt`**: descrizione del sito per gli assistenti, generata dal catalogo.

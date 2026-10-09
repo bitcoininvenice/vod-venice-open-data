@@ -2,7 +2,9 @@
 
 VOD espone i propri dati agli assistenti AI con il [Model Context Protocol](https://modelcontextprotocol.io), in sola lettura.
 
-- **Endpoint:** `POST /api/mcp` (Streamable HTTP, stateless, risposte JSON). Compatibile anche con i client della generazione precedente (`legacy: 'stateless'`).
+- **Endpoint:** `POST https://venice-open-data.vercel.app/api/mcp` (Streamable HTTP, stateless, risposte JSON), con alias `POST /mcp` (il `GET /mcp` resta la pagina di istruzioni). Compatibile anche con i client della generazione precedente (`legacy: 'stateless'`).
+- **API REST equivalente:** `GET /api/datasets` e `GET /api/datasets/<id>` (limit fino a 100) per script e scaricamenti in blocco.
+- **Skill per Claude:** `skills/venice-open-data/` (SKILL.md, riferimenti, CLI `scripts/vod.py`), pubblicata come `/downloads/venice-open-data-skill.zip`.
 - **Istruzioni per gli utenti:** pagina `/mcp` (Claude, ChatGPT, Claude Code, Cursor/VS Code).
 - **Descrizione per AI:** `/llms.txt`, generato dal catalogo.
 
@@ -13,6 +15,7 @@ VOD espone i propri dati agli assistenti AI con il [Model Context Protocol](http
 | Tool `list_datasets` | Catalogo: id, natura del dato (`live`, `forecast`, `simulated`, `dataset`, `osm`, `curated`), fonte, licenza, filtro geografico, avvertenze |
 | Tool `query_dataset` | `dataset` (enum), `text` (2-80 caratteri), `near` (lat/lon nell'area di Venezia, raggio 10 m – 20 km), `limit` (1-50), `offset` |
 | Resource `vod://datasets` | Copia JSON del catalogo |
+| Resource `vod://related-mcp-services` | Server MCP complementari (Cruscotto Italia di AgID), mai interrogati da VOD: niente proxy, niente fusione automatica dei dati |
 | Prompt | `marea_oggi`, `servizi_vicini`, `ambiente_laguna` |
 
 Ogni risposta riporta fonte, licenza, natura del dato, avvertenze, data di lettura e i totali (`total`, `matched`, `returned`). Le risposte oltre 120.000 caratteri vengono ridotte e segnalate con `truncatedForSize`.
@@ -23,13 +26,18 @@ Ogni risposta riporta fonte, licenza, natura del dato, avvertenze, data di lettu
 - `web/src/lib/mcp/loaders.ts`: per ogni dataset richiama l'endpoint del sito già esistente: stessa cache, stessa logica, nessuna copia dei dati.
 - `web/src/lib/mcp/query.ts`: filtri e limiti, funzioni pure testate offline.
 - `web/src/lib/mcp/server.ts`: registrazione di tool, resource e prompt (SDK ufficiale `@modelcontextprotocol/server`).
-- `web/src/app/api/mcp/route.ts`: handler HTTP, CORS aperto (dati pubblici, nessun cookie), limite di 60 richieste al minuto per client e corpo massimo di 256 KB.
+- `web/src/app/api/mcp/route.ts`: handler HTTP, CORS aperto (dati pubblici, nessun cookie), 60 richieste al minuto per client (limitatore condiviso `server/rateLimit.ts`, oltre al limite generale di `proxy.ts`), al massimo 8 richieste in parallelo per istanza (poi 503 con `Retry-After`), corpo massimo di 256 KB; ogni lettura di dataset ha un tempo massimo di 12 secondi.
+- `web/src/lib/site.ts`: indirizzo pubblico usato da guida, llms.txt e skill (mai localhost).
 
 ## Aggiungere un dataset
 
 1. Aggiungere il descrittore in `catalog.ts` (id stabile, natura, fonte, licenza, avvertenze).
 2. Aggiungere il loader in `loaders.ts`, riusando l'endpoint esistente.
 3. I test verificano che catalogo e loader coincidano; l'e2e esegue `initialize`, `tools/list` e `tools/call`.
+
+## Buone pratiche per chi integra
+
+Riprese da Cruscotto Italia e DoveVannoINostriSoldi: User-Agent riconoscibile; dopo 429/503 rispettare `Retry-After` con attese crescenti; per volumi alti usare l'API REST invece di tante chiamate MCP; per la disponibilità delle fonti usare `/api/health`.
 
 ## Sicurezza e privacy
 
