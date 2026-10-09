@@ -507,7 +507,8 @@ test.describe('API', () => {
     const body = await (await request.get('/api/sports')).json();
     expect(body.data.length).toBeGreaterThan(100);
     const [campo, osm] = body.meta.sources;
-    expect(campo.license).toBe('CC BY 4.0');
+    expect(campo.license).toMatch(/CC BY 4\.0/);
+    expect(campo.licensePage).toMatch(/\/licenza$/);
     expect(osm.attribution).toMatch(/OpenStreetMap/);
     // CAMPO può essere temporaneamente irraggiungibile: allora restano solo gli impianti OSM
     expect(body.data.filter((p: { source: string }) => p.source === 'CAMPO').length).toBe(campo.count);

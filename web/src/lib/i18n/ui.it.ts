@@ -1443,7 +1443,7 @@ export const itUi = {
     access_unknown: "Non indicato",
     parishNote: "Spazio di una parrocchia: si accede negli orari del patronato e rispettando le regole del luogo.",
     note: "Orari e condizioni non sono verificati da VOD: in caso di dubbio controlla sul posto.",
-    sourceCampo: "© CAMPO – segnalazioni di comunità (CC BY 4.0)",
+    sourceCampo: "Dati forniti dalla comunità di CAMPO Venezia (CC BY 4.0)",
     kind_pitch: "Campo sportivo",
     kind_sportsCentre: "Centro sportivo",
     kind_fitness: "Fitness all’aperto",
@@ -1483,7 +1483,10 @@ export const itUi = {
     filter_fitness: "Fitness",
     filter_rowing: "Voga",
     filter_swimming: "Nuoto",
-    filter_other: "Altro"
+    filter_other: "Altro",
+    campoLicense: "Licenza, avvertenze e richieste di rettifica o rimozione",
+    updated: "Segnalazione aggiornata il {date}.",
+    accessUnclear: "Accesso da verificare: la segnalazione cita gli orari di un patronato o di un istituto."
   }
 };
 

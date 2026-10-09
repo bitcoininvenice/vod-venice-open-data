@@ -1077,4 +1077,8 @@ export interface SportPlace {
   lit: boolean | null;
   operator: string | null;
   sourceUrl: string | null;
+  /** avviso del gestore della fonte (es. regole di accesso dei patronati) */
+  notice?: string | null;
+  /** ultimo aggiornamento della segnalazione (ISO 8601) */
+  updatedAt?: string | null;
 }

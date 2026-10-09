@@ -243,7 +243,7 @@ Le API sono pubbliche e in sola lettura, con cache server per ogni fonte e un li
 ## 📄 Fonti, licenze e crediti
 * **ACTV S.p.A. / AVM**: GTFS Navigazione e Automobilistico (Open Data, CC BY – citazione obbligatoria). Il feed GTFS-RT è pubblico ma la licenza d'uso va confermata con AVM.
 * **Comune di Venezia – CPSM**: livelli e previsioni di marea da `dati.venezia.it`.
-* **CAMPO – segnalazioni di comunità**: spazi sportivi di Venezia (CC BY 4.0).
+* **CAMPO – Dati forniti dalla comunità di CAMPO Venezia**: spazi sportivi di Venezia (CC BY 4.0; licenza, avvertenze e richieste di rimozione nella pagina `/licenza` di CAMPO).
 * **The Things Network – Packet Broker Mapper**: gateway LoRaWAN con stato e posizione resi pubblici dai proprietari (VOD non mostra identificativi né nomi; il gateway sparisce se il proprietario rende privata la posizione).
 * **MEF – Ragioneria Generale dello Stato (BDAP OpenData)**: Monitoraggio Opere Pubbliche (MOP) Veneto, CC BY.
 * **NOAA Aviation Weather Center**: METAR LIPZ (pubblico dominio).

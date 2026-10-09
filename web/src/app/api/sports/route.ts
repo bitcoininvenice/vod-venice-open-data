@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { fetchUpstream } from '@/server/upstream';
-import { CAMPO_API_URL, CAMPO_ATTRIBUTION, CAMPO_SITE, parseCampo } from '@/server/sources/campo';
+import { CAMPO_API_URL, CAMPO_ATTRIBUTION, CAMPO_LICENSE_PAGE, CAMPO_SITE, parseCampo } from '@/server/sources/campo';
 import { OPEN_SPORT_PLACES, OSM_POI_META } from '@/lib/osmPoi';
 import { mergeSportPlaces } from '@/lib/sports';
 
@@ -9,7 +9,7 @@ export const revalidate = 3600;
 
 export async function GET() {
   const campo = await fetchUpstream(CAMPO_API_URL, parseCampo, { revalidate: 3600, timeoutMs: 8000 });
-  const campoPlaces = campo.ok ? campo.data : [];
+  const campoPlaces = campo.ok ? campo.data.places : [];
   const data = mergeSportPlaces(campoPlaces, OPEN_SPORT_PLACES);
   return NextResponse.json({
     success: true,
@@ -21,8 +21,11 @@ export async function GET() {
         {
           name: 'CAMPO – mappa della comunità degli spazi sportivi di Venezia',
           url: CAMPO_SITE,
-          license: 'CC BY 4.0',
-          attribution: CAMPO_ATTRIBUTION,
+          license: campo.ok ? campo.data.meta.license : 'CC BY 4.0',
+          licenseUrl: campo.ok ? campo.data.meta.licenseUrl : null,
+          attribution: campo.ok ? campo.data.meta.attribution : CAMPO_ATTRIBUTION,
+          disclaimer: campo.ok ? campo.data.meta.disclaimer : null,
+          licensePage: CAMPO_LICENSE_PAGE,
           count: campoPlaces.length,
           fetchedAt: campo.ok ? campo.fetchedAt : null,
           error: campo.ok ? undefined : campo.error,

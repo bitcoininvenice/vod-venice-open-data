@@ -1445,7 +1445,7 @@ export const enUi: UiTranslations = {
     access_unknown: "Not stated",
     parishNote: "Parish space: access during the patronato opening hours and following the rules of the place.",
     note: "Hours and conditions are not verified by VOD: if in doubt, check on site.",
-    sourceCampo: "© CAMPO – community reports (CC BY 4.0)",
+    sourceCampo: "Data provided by the CAMPO Venezia community (CC BY 4.0)",
     kind_pitch: "Sports pitch",
     kind_sportsCentre: "Sports centre",
     kind_fitness: "Outdoor fitness",
@@ -1485,6 +1485,9 @@ export const enUi: UiTranslations = {
     filter_fitness: "Fitness",
     filter_rowing: "Rowing",
     filter_swimming: "Swimming",
-    filter_other: "Other"
+    filter_other: "Other",
+    campoLicense: "Licence, disclaimer and correction or removal requests",
+    updated: "Report updated on {date}.",
+    accessUnclear: "Access to be checked: the report mentions the hours of a patronato or an institute."
   }
 };

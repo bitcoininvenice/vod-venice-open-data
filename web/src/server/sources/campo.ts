@@ -7,7 +7,9 @@ import type { SportPlace } from '@/lib/types';
  */
 export const CAMPO_SITE = 'http://217.160.143.203';
 export const CAMPO_API_URL = `${CAMPO_SITE}/api/v1/markers/geojson`;
-export const CAMPO_ATTRIBUTION = '© CAMPO – segnalazioni di comunità (CC BY 4.0)';
+export const CAMPO_ATTRIBUTION = 'Dati forniti dalla comunità di CAMPO Venezia (CC BY 4.0)';
+/** Licenza, esclusione di responsabilità e richieste di rettifica o rimozione */
+export const CAMPO_LICENSE_PAGE = `${CAMPO_SITE}/licenza`;
 
 /** Sport di CAMPO nelle stesse chiavi usate da OpenStreetMap (sport=*) */
 const SPORT_KEYS: Record<string, string> = {
@@ -29,12 +31,17 @@ const SPORT_KEYS: Record<string, string> = {
 
 const str = (v: unknown): string | null => (typeof v === 'string' && v.trim() ? v.trim() : null);
 
+const mentionsParish = (p: Record<string, unknown>) =>
+  /patronat|parrocch/i.test(`${str(p.schedule_info) ?? ''} ${str(p.location_name) ?? ''} ${str(p.title) ?? ''}`);
+
 function accessOf(p: Record<string, unknown>): SportPlace['access'] {
   const declared = str(p.access)?.toLowerCase();
-  if (declared === 'public' || declared === 'parish' || declared === 'club') return declared;
+  if (declared === 'parish' || declared === 'club') return declared;
+  // Prudenza: un punto dichiarato pubblico ma con orari "del patronato" (scuole, istituti religiosi)
+  // non viene mostrato come "aperto a tutti" finché la fonte non chiarisce
+  if (declared === 'public') return mentionsParish(p) ? 'unknown' : 'public';
   if (p.marker_type === 'partner') return 'club';
-  // Prima che CAMPO pubblichi il campo `access`: i patronati si riconoscono dagli orari
-  if (/patronat|parrocch/i.test(`${str(p.schedule_info) ?? ''} ${str(p.location_name) ?? ''} ${str(p.title) ?? ''}`)) return 'parish';
+  if (p.marker_type === 'patronage' || mentionsParish(p)) return 'parish';
   return 'public';
 }
 
@@ -44,9 +51,30 @@ function kindOf(p: Record<string, unknown>, sport: string): SportPlace['kind'] {
   return sport === 'fitness' ? 'fitness' : 'pitch';
 }
 
-export function parseCampo(raw: unknown): SportPlace[] {
-  const fc = raw as { type?: string; features?: unknown[] };
+/** Metadati legali dichiarati da CAMPO in testa al GeoJSON (licenza, attribuzione, esclusione di responsabilità). */
+export interface CampoMeta {
+  license: string;
+  licenseUrl: string | null;
+  attribution: string;
+  disclaimer: string | null;
+  licensePage: string;
+}
+
+export interface CampoData {
+  places: SportPlace[];
+  meta: CampoMeta;
+}
+
+export function parseCampo(raw: unknown): CampoData {
+  const fc = raw as { type?: string; features?: unknown[]; license?: unknown; license_name?: unknown; attribution?: unknown; disclaimer?: unknown };
   if (fc?.type !== 'FeatureCollection' || !Array.isArray(fc.features)) throw new Error('risposta CAMPO non valida');
+  const meta: CampoMeta = {
+    license: str(fc.license_name) ?? 'CC BY 4.0',
+    licenseUrl: str(fc.license),
+    attribution: str(fc.attribution) ?? CAMPO_ATTRIBUTION,
+    disclaimer: str(fc.disclaimer),
+    licensePage: CAMPO_LICENSE_PAGE,
+  };
   const out: SportPlace[] = [];
   for (const f of fc.features as { geometry?: { type?: string; coordinates?: unknown[] }; properties?: Record<string, unknown> }[]) {
     const c = f.geometry?.type === 'Point' ? f.geometry.coordinates : null;
@@ -73,7 +101,9 @@ export function parseCampo(raw: unknown): SportPlace[] {
       lit: typeof p.lit === 'boolean' ? p.lit : null,
       operator: null,
       sourceUrl: str(p.url) ?? CAMPO_SITE,
+      notice: str(p.access_notice),
+      updatedAt: str(p.updated_at),
     });
   }
-  return out;
+  return { places: out, meta };
 }

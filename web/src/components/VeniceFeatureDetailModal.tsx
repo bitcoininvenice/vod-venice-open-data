@@ -75,6 +75,7 @@ import { BdapWorkDetails } from '@/components/BdapWorkDetails';
 import type { BdapProject } from '@/lib/bdap';
 import type { LoraGateway, SportPlace, WifiVenue } from '@/lib/types';
 import { sportColor } from '@/lib/sports';
+import { CAMPO_LICENSE_PAGE } from '@/server/sources/campo';
 import { KeyValues } from '@/components/ui/InfoPanel';
 import type { LayerKey } from '@/lib/urlLayers';
 
@@ -1560,8 +1561,9 @@ const SPORT_ACCESS_CLASS: Record<SportPlace['access'], string> = {
 
 /** Scheda di uno spazio sportivo: segnalazione CAMPO o impianto OpenStreetMap. */
 const SportPlaceBody: React.FC<{ place: SportPlace }> = ({ place: p }) => {
-  const { t } = useTranslation();
-  const s = (key: string) => t(`ui.sport.${key}`);
+  const { t, language } = useTranslation();
+  const s = (key: string, params?: Record<string, string | number>) => t(`ui.sport.${key}`, params);
+  const updated = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString(language === 'it' ? 'it-IT' : 'en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : null;
   return (
     <div className="flex flex-col gap-3">
       <KeyValues
@@ -1576,12 +1578,25 @@ const SportPlaceBody: React.FC<{ place: SportPlace }> = ({ place: p }) => {
       />
       {p.address && <p className="text-[var(--ink-2)]">{p.address}</p>}
       {p.description && <p className="text-[var(--ink)]">{p.description}</p>}
-      {p.access === 'parish' && <p className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px]">{s('parishNote')}</p>}
-      <p className="text-[11px] text-[var(--ink-3)]">{s('note')}</p>
+      {(p.access === 'parish' || p.notice) && (
+        <p className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px]">{p.notice ?? s('parishNote')}</p>
+      )}
+      {p.access === 'unknown' && p.source === 'CAMPO' && <p className="text-[11px] text-amber-300">{s('accessUnclear')}</p>}
+      <p className="text-[11px] text-[var(--ink-3)]">
+        {s('note')}
+        {updated && <> {s('updated', { date: updated })}</>}
+      </p>
       {p.sourceUrl && (
-        <a href={p.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2">
-          {p.source === 'CAMPO' ? s('sourceCampo') : '© OpenStreetMap contributors (ODbL)'}
-        </a>
+        <div className="flex flex-col gap-1 border-t border-[var(--rule)] pt-2 text-[11px]">
+          <a href={p.sourceUrl} target="_blank" rel="noopener noreferrer" className="font-mono text-cyan-400 hover:underline">
+            {p.source === 'CAMPO' ? s('sourceCampo') : '© OpenStreetMap contributors (ODbL)'}
+          </a>
+          {p.source === 'CAMPO' && (
+            <a href={CAMPO_LICENSE_PAGE} target="_blank" rel="noopener noreferrer" className="text-[var(--ink-3)] hover:text-cyan-400 hover:underline">
+              {s('campoLicense')}
+            </a>
+          )}
+        </div>
       )}
     </div>
   );
