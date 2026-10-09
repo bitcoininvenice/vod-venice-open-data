@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { ALL_LAYER_KEYS } from '@/lib/urlLayers';
-import { copyToClipboard, downloadBlob } from '@/lib/dataExport';
+import { downloadBlob } from '@/lib/dataExport';
 import { useTranslation } from '@/lib/i18n';
 import {
   Compass,
@@ -22,9 +22,7 @@ import {
   Search,
   Download,
   Info,
-  ExternalLink,
-  Copy,
-  Check
+  ExternalLink
 } from 'lucide-react';
 import type { SourceHealth } from '@/server/sourceHealth';
 
@@ -92,8 +90,6 @@ export default function SourcesPage() {
   const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedFilter, setSelectedFilter] = useState<FilterCategory>('all');
-  const [copiedHash, setCopiedHash] = useState<boolean>(false);
-  const [sha256Hash, setSha256Hash] = useState<string>('');
 
   // Nessun setState sincrono: chiamabile dall'effetto di mount
   const loadHealth = () =>
@@ -122,29 +118,12 @@ export default function SourcesPage() {
     void loadHealth();
   }, []);
 
-  // Impronta SHA-256 dello stato delle fonti
-  useEffect(() => {
-    if (!data || typeof window === 'undefined' || !window.crypto?.subtle) return;
-    crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(data))).then((buffer) => {
-      setSha256Hash(Array.from(new Uint8Array(buffer), (b) => b.toString(16).padStart(2, '0')).join(''));
-    });
-  }, [data]);
-
-  const copyHashToClipboard = async () => {
-    if (!sha256Hash) return;
-    if (await copyToClipboard(sha256Hash)) {
-      setCopiedHash(true);
-      setTimeout(() => setCopiedHash(false), 2000);
-    }
-  };
-
   const exportJsonData = () => {
     if (!data) return;
     const report = {
       platform: 'Venice Open Data (VOD)',
       reportType: 'Source health and data freshness',
       exportTimestampIso: new Date().toISOString(),
-      sha256VerificationHash: sha256Hash,
       healthReport: data,
       metadataCatalog: SOURCES_METADATA
     };
@@ -283,23 +262,6 @@ export default function SourcesPage() {
                   : s_('inProgress')}
               </strong>
             </span>
-            {sha256Hash && (
-              <div className="flex items-center gap-1.5 text-[11px] font-mono bg-[var(--rule)]/40 px-2 py-1 rounded-lg border border-[var(--rule)]">
-                <span className="text-[var(--ink-3)]">SHA-256:</span>
-                <span className="text-cyan-400 font-bold">
-                  {sha256Hash.slice(0, 10)}…{sha256Hash.slice(-6)}
-                </span>
-                <button
-                  type="button"
-                  onClick={copyHashToClipboard}
-                  className="p-0.5 hover:text-white transition-colors cursor-pointer"
-                  title={s_('copyHash')}
-                  aria-label={s_('copyHash')}
-                >
-                  {copiedHash ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-[var(--ink-2)]" />}
-                </button>
-              </div>
-            )}
           </div>
         </div>
 

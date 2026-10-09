@@ -20,7 +20,7 @@ export const OCEAN_STATIONS_DATA: OceanStationItem[] = [
     windSpeedKnots: null,
     windDirectionDeg: null,
     depthMeters: 16.0,
-    lastUpdate: 'Misure non pubblicate come open data',
+    observedAt: null,
     officialSource: 'CNR - Istituto di Scienze Marine (Venezia)',
     portalLink: 'https://www.ismar.cnr.it/'
   },
@@ -40,7 +40,7 @@ export const OCEAN_STATIONS_DATA: OceanStationItem[] = [
     windSpeedKnots: null,
     windDirectionDeg: null,
     depthMeters: 11.5,
-    lastUpdate: 'Misure non pubblicate come open data',
+    observedAt: null,
     officialSource: 'ISPRA - Rete Mareografica della Laguna',
     portalLink: 'https://www.mareografico.it/'
   },
@@ -60,7 +60,7 @@ export const OCEAN_STATIONS_DATA: OceanStationItem[] = [
     windSpeedKnots: null,
     windDirectionDeg: null,
     depthMeters: 14.0,
-    lastUpdate: 'Misure non pubblicate come open data',
+    observedAt: null,
     officialSource: 'CPSM Centro Maree / Provveditorato OO.PP.',
     portalLink: 'https://www.comune.venezia.it/it/content/centro-previsioni-e-segnalazioni-maree'
   },
@@ -80,7 +80,7 @@ export const OCEAN_STATIONS_DATA: OceanStationItem[] = [
     windSpeedKnots: null,
     windDirectionDeg: null,
     depthMeters: 10.0,
-    lastUpdate: 'Misure non pubblicate come open data',
+    observedAt: null,
     officialSource: 'ISPRA RML',
     portalLink: 'https://www.isprambiente.gov.it/'
   }

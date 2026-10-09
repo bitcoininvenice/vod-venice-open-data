@@ -7,13 +7,6 @@ import { useTranslation } from '@/lib/i18n';
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge';
 import { useDialogA11y } from '@/components/ui/useDialogA11y';
 
-const FLIGHT_CATEGORY_LABEL: Record<AirportMetarData['flightCategory'], { it: string; en: string }> = {
-  VFR: { it: 'Volo a vista', en: 'Visual flight rules' },
-  MVFR: { it: 'Volo a vista marginale', en: 'Marginal VFR' },
-  IFR: { it: 'Volo strumentale', en: 'Instrument flight rules' },
-  LIFR: { it: 'Strumentale, condizioni basse', en: 'Low IFR' },
-};
-
 interface AirportDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -28,7 +21,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
   flights,
   metar
 }) => {
-  const { language, t } = useTranslation();
+  const { t } = useTranslation();
   const [copiedMetar, setCopiedMetar] = useState(false);
   const panelRef = useDialogA11y(isOpen, onClose);
   if (!isOpen) return null;
@@ -118,7 +111,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
               </span>
               <div className="flex items-center gap-1.5">
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-bold border border-emerald-500/30">
-                  {metar.flightCategory} ({FLIGHT_CATEGORY_LABEL[metar.flightCategory][language]})
+                  {metar.flightCategory} ({t(`ui.airport.flightCat_${metar.flightCategory}`)})
                 </span>
                 <span className="text-[10px] font-mono text-[var(--ink-3)]">
                   QNH {metar.qnhHpa} hPa

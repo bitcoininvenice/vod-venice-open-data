@@ -21,7 +21,7 @@ export async function GET() {
           waterTempC: live.waterTempC,
           windSpeedKnots: live.windSpeedKnots,
           windDirectionDeg: live.windDirectionDeg,
-          lastUpdate: live.observedAt ? `Misura CPSM delle ${live.observedAt.slice(11, 16)} (ora locale)` : 'Misura CPSM',
+          observedAt: live.observedAt ? live.observedAt.slice(11, 16) : null,
           officialSource: 'Comune di Venezia – CPSM (dati.venezia.it), piattaforma CNR-ISMAR "Acqua Alta"',
         }
       : st,

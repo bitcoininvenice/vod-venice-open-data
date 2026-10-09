@@ -20,13 +20,6 @@ export interface Provenance {
   note?: string;
 }
 
-export const PROVENANCE_LABEL: Record<ProvenanceKind, { it: string; en: string }> = {
-  live: { it: 'Dato live', en: 'Live data' },
-  'schedule-simulation': { it: 'Simulato da orario ufficiale', en: 'Simulated from official timetable' },
-  'static-reference': { it: 'Censimento statico', en: 'Static reference data' },
-  community: { it: 'Mappatura collaborativa', en: 'Community mapping' },
-};
-
 export function staticReference(source: string, note?: string, sourceUrl?: string): Provenance {
   return { kind: 'static-reference', source, sourceUrl, note };
 }

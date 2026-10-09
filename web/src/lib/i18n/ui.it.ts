@@ -7,7 +7,11 @@ export const itUi = {
     principale: "Principale",
     secondaria: "Secondaria",
     nessunAereoRilevatoOpenskyNell: "Nessun aereo rilevato da OpenSky nell'area in questo momento (o servizio non raggiungibile).",
-    dimensionsSecondary: "Dimensioni: 2.780 m × 45 m"
+    dimensionsSecondary: "Dimensioni: 2.780 m × 45 m",
+    flightCat_VFR: "Volo a vista",
+    flightCat_MVFR: "Volo a vista marginale",
+    flightCat_IFR: "Volo strumentale",
+    flightCat_LIFR: "Strumentale, condizioni basse"
   },
   alilaguna: {
     sourceTransitland: "Fonte: GTFS pubblicato da Alilaguna S.p.A. (alilaguna.it), registrato su Transitland",
@@ -45,7 +49,10 @@ export const itUi = {
     cartelloInformativa: "Cartello Informativa",
     nonRichiesta: "Non richiesta",
     nonIndicato: "Non indicato",
-    fonteMappatura: "Fonte Mappatura"
+    fonteMappatura: "Fonte Mappatura",
+    imagesOwnedBy: "Le immagini sono di proprietà di {operator} e si vedono solo sulla pagina ufficiale, nel rispetto dei termini d'uso del fornitore.",
+    surveillanceNote: "Le telecamere di videosorveglianza non hanno un flusso video pubblico (Regolamento UE 2016/679 - GDPR). Posizione e tipologia vengono dalla mappatura collaborativa {source} e non sono verificate da un ente{owner}.",
+    ownerUnknownSuffix: ": il titolare dell'impianto non è noto"
   },
   publicWork: {
     operaPubblica: "Opera pubblica",
@@ -59,7 +66,8 @@ export const itUi = {
     tipologia: "Tipologia",
     finalita: "Finalità",
     operaSenzaPosizioneTitoloNon: "Opera senza posizione: il titolo non indica un luogo localizzabile.",
-    fonteComuneVeneziaDatiVenezia: "Fonte: Comune di Venezia – dati.venezia.it (CC BY)"
+    fonteComuneVeneziaDatiVenezia: "Fonte: Comune di Venezia – dati.venezia.it (CC BY)",
+    approxPosition: "Posizione approssimata: il dataset del Comune non contiene coordinate, il luogo \"{place}\" citato nel titolo è stato geocodificato con OpenStreetMap."
   },
   header: {
     altreAzioni: "Altre azioni",
@@ -67,7 +75,9 @@ export const itUi = {
     paletteMappa: "Palette mappa",
     notte: "Notte",
     carta: "Carta",
-    dinamica: "Dinamica"
+    dinamica: "Dinamica",
+    currentLanguage: "Italiano (IT)",
+    switchTarget: "EN"
   },
   layerPanel: {
     motoscafo: "Motoscafo",
@@ -115,7 +125,12 @@ export const itUi = {
     reteMareograficaCpsm: "Rete mareografica CPSM",
     datiNonDisponibili: "Dati non disponibili.",
     tendenzaRicavataDalProssimoEstremale: "La tendenza è ricavata dal prossimo estremale previsto.",
-    fonteComuneVeneziaCpsmDati: "Fonte: Comune di Venezia – CPSM (dati.venezia.it)"
+    fonteComuneVeneziaCpsmDati: "Fonte: Comune di Venezia – CPSM (dati.venezia.it)",
+    forecastMaybeOld: "La previsione pubblicata su dati.venezia.it risale al {issued} e potrebbe non essere aggiornata. Per la previsione ufficiale corrente consultare il sito del Centro Maree.",
+    cat_NORMALE: "Normale",
+    cat_SOSTENUTA: "Sostenuta",
+    cat_MOLTO_SOSTENUTA: "Molto sostenuta",
+    cat_ECCEZIONALE: "Eccezionale"
   },
   onboarding: {
     lagunaMareeSubsidenza: "Laguna, Maree & Subsidenza",
@@ -146,7 +161,8 @@ export const itUi = {
     calendarioFerialeFestivo: "Calendario Feriale / Festivo:",
     orariGtfsUfficialiActv: "Orari GTFS ufficiali ACTV",
     puoiRiaprireQuestaGuidaQualsiasi: "Puoi riaprire questa guida in qualsiasi momento cliccando sul tasto Guida nella barra superiore.",
-    vaiAlPasso: "Vai al passo"
+    vaiAlPasso: "Vai al passo",
+    introBody: "VOD è una mappa che incrocia **{n} livelli di dati** su Venezia, la laguna e la terraferma: misure in tempo reale (marea, METAR, voli), mezzi pubblici simulati dagli orari ufficiali, dataset aperti ed elenchi curati da verificare. Ogni livello indica la propria fonte."
   },
   satellite: {
     orbitaNonDisponibile: "orbita non disponibile",
@@ -178,7 +194,9 @@ export const itUi = {
     lunghezza: "Lunghezza",
     pescaggio: "Pescaggio",
     velocitaNavigazione: "Velocità Navigazione",
-    rottaHeading: "Rotta (Heading)"
+    rottaHeading: "Rotta (Heading)",
+    restrictedNote: "Questa nave ha una stazza di **{gt} GT (oltre 25.000 GT)**. Dal 2021 non può passare per il Bacino di San Marco e il Canale della Giudecca: è instradata via Canale dei Petroli verso **Porto Marghera**.",
+    allowedNote: "Questa nave ha una stazza di **{gt} GT (sotto 25.000 GT)**. Rientra nei limiti e può attraccare alla **Stazione Marittima del Tronchetto** o a San Basilio."
   },
   spatial: {
     nessunaFermataRaggio: "Nessuna fermata ACTV entro {radius} metri dalle opere pubbliche localizzate.",
@@ -457,7 +475,9 @@ export const itUi = {
     curatedExampleValues: "Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata. Non sono misure aggiornate né dati in tempo reale.",
     curatedToVerify: "Elenco curato del progetto: dato da verificare, nessun riscontro su OpenStreetMap nelle vicinanze.",
     wellPositionConfirmed: "Posizione confermata: c'è un pozzo mappato su OpenStreetMap entro 25 m.",
-    wellPositionUnconfirmed: "Posizione non confermata da OpenStreetMap."
+    wellPositionUnconfirmed: "Posizione non confermata da OpenStreetMap.",
+    cpsmMeasuredAt: "misura CPSM delle {time} (ora locale)",
+    noOpenMeasures: "misure non pubblicate come open data"
   },
   layersPage: {
     tornaAllaMappa: "Torna alla Mappa",
@@ -635,7 +655,7 @@ export const itUi = {
     selectAll: "Seleziona tutti",
     deselectAll: "Deseleziona tutti",
     hashTitle: "Impronta SHA-256 del file",
-    hashNote: "Permette di verificare che il file scaricato non sia stato modificato.",
+    hashNote: "Serve a controllare che il file scaricato sia integro (per esempio con \"shasum -a 256\"). Non è una firma: non prova da dove viene il file.",
     copyHash: "Copia SHA-256",
     copied: "Copiato",
     copyFailed: "Copia non riuscita",
@@ -674,9 +694,6 @@ export const itUi = {
     refreshedAt: "Aggiornato alle {time}",
     title: "Metriche, analisi spaziale e stime",
     intro: "Indicatori ricavati dai dati del progetto e dalle fonti live (CPSM, ACTV, ARPAV, OpenSky, METAR). Ogni sezione dichiara se il valore è calcolato, una stima o illustrativo.",
-    hashTitle: "Impronta SHA-256 del report",
-    copy: "Copia",
-    copied: "Copiato",
     basis_calcolato: "Calcolato",
     basis_stima: "Stima",
     basis_illustrativo: "Illustrativo",
@@ -896,7 +913,6 @@ export const itUi = {
     intro: "Disponibilità ed età del dato per i {n} canali live e dataset usati da Venice Open Data, verificate da /api/health.",
     lastCheck: "Ultimo controllo:",
     inProgress: "in corso…",
-    copyHash: "Copia l'hash SHA-256 completo",
     loadFailed: "Impossibile leggere /api/health (rete o limite di richieste). Riprova con \"Aggiorna\".",
     transparencyTitle: "Niente valori di ripiego",
     transparencyBody: "Se una fonte non risponde o il suo dato è troppo vecchio, la piattaforma lo dichiara (\"in ritardo\" o \"offline\") invece di mostrare valori inventati. Così è chiaro se un problema dipende dal fornitore del dato o dalla piattaforma.",
@@ -1005,6 +1021,12 @@ export const itUi = {
     pollenRisk: "Pollini: rischio {risk}",
     airportDock: "Darsena aeroporto VCE (Alilaguna)",
     freightDock: "Riva merci ({min} min)"
+  },
+  provenance: {
+    live: "Dato live",
+    "schedule-simulation": "Simulato da orario ufficiale",
+    "static-reference": "Dato di riferimento",
+    community: "Mappatura collaborativa"
   }
 };
 

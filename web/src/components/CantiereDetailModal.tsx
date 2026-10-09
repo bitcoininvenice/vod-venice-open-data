@@ -16,10 +16,9 @@ const SOURCE_URL = 'https://dati.venezia.it/?q=area-tematica/opere-pubbliche';
 
 /** Scheda di un'opera pubblica dall'Elenco Annuale dei Lavori del Comune di Venezia. */
 export const CantiereDetailModal: React.FC<CantiereDetailModalProps> = ({ cantiere, onClose }) => {
-  const { language, t } = useTranslation();
+  const { t } = useTranslation();
   const panelRef = useDialogA11y(cantiere !== null, onClose);
   if (!cantiere) return null;
-  const it = language === 'it';
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 sm:p-4">
@@ -127,9 +126,7 @@ export const CantiereDetailModal: React.FC<CantiereDetailModalProps> = ({ cantie
           <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
           <span>
             {cantiere.posizioneApprossimata
-              ? it
-                ? `Posizione approssimata: il dataset del Comune non contiene coordinate, il luogo "${cantiere.localizzazione}" citato nel titolo è stato geocodificato con OpenStreetMap.`
-                : `Approximate position: the City dataset has no coordinates; the place "${cantiere.localizzazione}" named in the title was geocoded with OpenStreetMap.`
+              ? t('ui.publicWork.approxPosition', { place: cantiere.localizzazione })
               : t('ui.publicWork.operaSenzaPosizioneTitoloNon')}
           </span>
         </div>

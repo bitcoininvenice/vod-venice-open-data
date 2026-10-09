@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { ALL_LAYER_KEYS } from '@/lib/urlLayers';
-import { copyToClipboard, downloadBlob } from '@/lib/dataExport';
+import { downloadBlob } from '@/lib/dataExport';
 import {
   Compass,
   ArrowLeft,
@@ -19,7 +19,6 @@ import {
   Clock,
   ThermometerSun,
   AlertTriangle,
-  CheckCircle2,
   Layers,
   Search,
   Download,
@@ -33,8 +32,6 @@ import {
   Trees,
   LifeBuoy,
   Activity,
-  Check,
-  Copy,
   Info
 } from 'lucide-react';
 import { PlatformMetrics } from '@/lib/types';
@@ -169,8 +166,6 @@ export default function MetricsPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [viewSection, setViewSection] = useState<ViewSection>('all');
   const [platformSector, setPlatformSector] = useState<PlatformMetricSector | 'all'>('all');
-  const [copiedHash, setCopiedHash] = useState<boolean>(false);
-  const [sha256Hash, setSha256Hash] = useState<string>('');
 
   /** Valore formattato o segnaposto ("…" in caricamento, "n.d." se la fonte non lo fornisce). */
   const fmt = (val: number | string | null | undefined): string => {
@@ -226,28 +221,10 @@ export default function MetricsPage() {
   const heatStress = useMemo(() => calculateUrbanHeatStressForecast(metarTempC, metarDewPointC), [metarTempC, metarDewPointC]);
   const highestPressure = tourism.sestieri.find((s) => s.sestiere === tourism.highestPressureSestiere);
 
-  // Impronta SHA-256 del report esportabile
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.crypto?.subtle) return;
-    const payload = JSON.stringify({ metrics, accessibility, tourism, transit, barrierFree, tideForecastAnalysis, bottlenecks, heatStress });
-    crypto.subtle.digest('SHA-256', new TextEncoder().encode(payload)).then((buffer) => {
-      setSha256Hash(Array.from(new Uint8Array(buffer), (b) => b.toString(16).padStart(2, '0')).join(''));
-    });
-  }, [metrics, accessibility, tourism, transit, barrierFree, tideForecastAnalysis, bottlenecks, heatStress]);
-
-  const copyHashToClipboard = async () => {
-    if (!sha256Hash) return;
-    if (await copyToClipboard(sha256Hash)) {
-      setCopiedHash(true);
-      setTimeout(() => setCopiedHash(false), 2000);
-    }
-  };
-
   const exportJsonData = () => {
     const report = {
       platform: 'Venice Open Data (VOD)',
       exportTimestampIso: new Date().toISOString(),
-      sha256VerificationHash: sha256Hash,
       notes: {
         basis: 'Ogni sezione riporta basis (calcolato / stima / illustrativo) e basisNote.',
         licenses: 'Ogni dato segue la licenza della fonte originale (vedi /sources).'
@@ -385,27 +362,6 @@ export default function MetricsPage() {
             <p className="text-xs sm:text-sm text-[var(--ink-2)] mt-1 max-w-3xl leading-relaxed">{m('intro')}</p>
           </div>
 
-          {sha256Hash && (
-            <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1 shrink-0 max-w-md">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  {m('hashTitle')}
-                </span>
-                <button
-                  type="button"
-                  onClick={copyHashToClipboard}
-                  className="text-[10px] font-mono text-[var(--ink-2)] hover:text-cyan-400 flex items-center gap-1 cursor-pointer"
-                >
-                  {copiedHash ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                  <span>{copiedHash ? m('copied') : m('copy')}</span>
-                </button>
-              </div>
-              <code className="text-[10px] font-mono text-[var(--ink-3)] break-all select-all bg-[var(--ground)] p-1 rounded border border-[var(--rule)]">
-                {sha256Hash}
-              </code>
-            </div>
-          )}
         </div>
 
         {/* Indicatori principali */}

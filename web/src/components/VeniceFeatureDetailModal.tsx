@@ -730,7 +730,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 </div>
               </div>
               <div className="text-[11px] text-[var(--ink-3)]">
-                {t('ui.feature.operatore')} <b>{feature.data.operator}</b> · {feature.data.lastUpdate}
+                {t('ui.feature.operatore')} <b>{feature.data.operator}</b> · {feature.data.observedAt ? t('ui.feature.cpsmMeasuredAt', { time: feature.data.observedAt }) : t('ui.feature.noOpenMeasures')}
               </div>
             </>
           )}

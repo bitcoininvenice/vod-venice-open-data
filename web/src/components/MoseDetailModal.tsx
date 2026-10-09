@@ -23,11 +23,11 @@ interface MoseDetailModalProps {
   };
 }
 
-const CATEGORY_LABEL: Record<TideCategory, { it: string; en: string; className: string }> = {
-  NORMALE: { it: 'Normale', en: 'Normal', className: 'text-blue-400' },
-  SOSTENUTA: { it: 'Sostenuta', en: 'High', className: 'text-amber-400' },
-  MOLTO_SOSTENUTA: { it: 'Molto sostenuta', en: 'Very high', className: 'text-orange-400' },
-  ECCEZIONALE: { it: 'Eccezionale', en: 'Exceptional', className: 'text-rose-400' },
+const CATEGORY_CLASS: Record<TideCategory, string> = {
+  NORMALE: 'text-blue-400',
+  SOSTENUTA: 'text-amber-400',
+  MOLTO_SOSTENUTA: 'text-orange-400',
+  ECCEZIONALE: 'text-rose-400',
 };
 
 /** Soglia di riferimento per l'attivazione del MOSE (previsione di marea). */
@@ -41,8 +41,7 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
   tideLevel,
   tideInfo
 }) => {
-  const { language, t } = useTranslation();
-  const it = language === 'it';
+  const { t } = useTranslation();
   const panelRef = useDialogA11y(isOpen, onClose);
   if (!isOpen) return null;
 
@@ -98,8 +97,8 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-bold font-mono text-[var(--ink)]">{formatSignedCm(tideLevel)}</span>
               {category && (
-                <span className={`text-xs font-semibold ${CATEGORY_LABEL[category].className}`}>
-                  ({CATEGORY_LABEL[category][language]})
+                <span className={`text-xs font-semibold ${CATEGORY_CLASS[category]}`}>
+                  ({t(`ui.mose.cat_${category}`)})
                 </span>
               )}
             </div>
@@ -150,9 +149,7 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
             {forecast.stale && (
               <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-300">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                {it
-                  ? `La previsione pubblicata su dati.venezia.it risale al ${formatLocalStamp(forecast.issuedAt)} e potrebbe non essere aggiornata. Per la previsione ufficiale corrente consultare il sito del Centro Maree.`
-                  : `The forecast published on dati.venezia.it was issued on ${formatLocalStamp(forecast.issuedAt)} and may be out of date. Check the Tide Centre website for the current official forecast.`}
+                {t('ui.mose.forecastMaybeOld', { issued: formatLocalStamp(forecast.issuedAt) })}
               </div>
             )}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">

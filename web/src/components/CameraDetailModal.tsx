@@ -25,7 +25,7 @@ interface CameraDetailModalProps {
 }
 
 export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, onClose }) => {
-  const { language, t } = useTranslation();
+  const { t } = useTranslation();
   const panelRef = useDialogA11y(camera !== null, onClose);
 
   if (!camera) return null;
@@ -120,9 +120,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                 {t('ui.camera.direttaDisponibileSulSitoFornitore')}
               </p>
               <p className="text-xs text-[var(--ink-2)] max-w-md mt-1 leading-relaxed">
-                {language === 'it'
-                  ? `Le immagini sono di proprietà di ${camera.operator} e vengono visualizzate esclusivamente sulla pagina ufficiale, nel rispetto dei termini d'uso del fornitore.`
-                  : `Images are owned by ${camera.operator} and are shown only on the official page, in compliance with the provider's terms of use.`}
+                {t('ui.camera.imagesOwnedBy', { operator: camera.operator })}
               </p>
             </div>
             {camera.streamPageUrl && (
@@ -147,9 +145,10 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                 {t('ui.camera.videoMonitoraggioUrbanoCircuitoChiuso')}
               </strong>
               <p className="text-[11px] leading-relaxed text-[var(--ink-2)]">
-                {language === 'it'
-                  ? `Le telecamere di videosorveglianza non hanno un flusso video pubblico (Regolamento UE 2016/679 - GDPR). Posizione e tipologia provengono dalla mappatura collaborativa ${camera.source === 'OPENSTREETMAP' ? 'OpenStreetMap (© OpenStreetMap contributors, ODbL)' : 'Anopticon'} e non sono verificate da un ente${camera.operator === 'Non indicato' || camera.operator === 'Non verificato' ? ': il titolare dell’impianto non è noto' : ''}.`
-                  : `Surveillance cameras have no public video feed (EU GDPR). Position and type come from the ${camera.source === 'OPENSTREETMAP' ? 'OpenStreetMap (© OpenStreetMap contributors, ODbL)' : 'Anopticon'} community mapping and are not verified by any authority${camera.operator === 'Non indicato' || camera.operator === 'Non verificato' ? '; the system owner is unknown' : ''}.`}
+                {t('ui.camera.surveillanceNote', {
+                  source: camera.source === 'OPENSTREETMAP' ? 'OpenStreetMap (© OpenStreetMap contributors, ODbL)' : 'Anopticon',
+                  owner: camera.operator === 'Non indicato' || camera.operator === 'Non verificato' ? t('ui.camera.ownerUnknownSuffix') : '',
+                })}
               </p>
             </div>
           </div>

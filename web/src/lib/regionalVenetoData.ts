@@ -26,7 +26,6 @@ export const REGIONAL_LAGOON_WATER_QUALITY: LagoonWaterQualityItem[] = [
     conductivityMsCm: 47.8,
     trophicState: 'BUONO',
     monitoringDepthMeters: 1.5,
-    lastUpdated: 'Oggi (Telemetria continua ARPAV)',
     officialSource: 'ARPAV - Monitoraggio Acque di Transizione Laguna di Venezia (dati.veneto.it)'
   },
   {
@@ -44,7 +43,6 @@ export const REGIONAL_LAGOON_WATER_QUALITY: LagoonWaterQualityItem[] = [
     conductivityMsCm: 50.6,
     trophicState: 'ELEVATO',
     monitoringDepthMeters: 3.0,
-    lastUpdated: 'Oggi (Telemetria continua ARPAV)',
     officialSource: 'ARPAV - Dati Sonda Marino-Costieri (dati.veneto.it)'
   },
   {
@@ -62,7 +60,6 @@ export const REGIONAL_LAGOON_WATER_QUALITY: LagoonWaterQualityItem[] = [
     conductivityMsCm: 43.1,
     trophicState: 'BUONO',
     monitoringDepthMeters: 1.2,
-    lastUpdated: 'Oggi (Telemetria continua ARPAV)',
     officialSource: 'ARPAV - Acque di Transizione Laguna Nord (dati.veneto.it)'
   },
   {
@@ -80,7 +77,6 @@ export const REGIONAL_LAGOON_WATER_QUALITY: LagoonWaterQualityItem[] = [
     conductivityMsCm: 49.0,
     trophicState: 'BUONO',
     monitoringDepthMeters: 2.0,
-    lastUpdated: 'Oggi (Telemetria continua ARPAV)',
     officialSource: 'ARPAV - Monitoraggio Acque Laguna Sud (dati.veneto.it)'
   },
   {
@@ -98,7 +94,6 @@ export const REGIONAL_LAGOON_WATER_QUALITY: LagoonWaterQualityItem[] = [
     conductivityMsCm: 40.8,
     trophicState: 'SUFFICIENTE',
     monitoringDepthMeters: 0.8,
-    lastUpdated: 'Oggi (Telemetria continua ARPAV)',
     officialSource: 'ARPAV - Ecosistemi di Barena e Palude (dati.veneto.it)'
   },
   {
@@ -116,7 +111,6 @@ export const REGIONAL_LAGOON_WATER_QUALITY: LagoonWaterQualityItem[] = [
     conductivityMsCm: 42.4,
     trophicState: 'SUFFICIENTE',
     monitoringDepthMeters: 1.8,
-    lastUpdated: 'Oggi (Telemetria continua ARPAV)',
     officialSource: 'ARPAV - Acque di Transizione Gronda Lagunare (dati.veneto.it)'
   }
 ];

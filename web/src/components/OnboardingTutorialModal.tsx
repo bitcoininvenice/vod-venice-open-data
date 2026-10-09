@@ -21,6 +21,8 @@ import {
   FastForward
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { ALL_LAYER_KEYS } from '@/lib/urlLayers';
+import { RichText } from './ui/RichText';
 import { useDialogA11y } from '@/components/ui/useDialogA11y';
 
 export type MapPresetType = 'mobility' | 'lagoon' | 'city' | 'satellites' | 'regional' | 'clean' | 'all';
@@ -36,7 +38,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
   onClose,
   onSelectPreset
 }) => {
-  const { language, t } = useTranslation();
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [selectedPreset, setSelectedPreset] = useState<MapPresetType>('clean');
 
@@ -58,11 +60,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
       content: (
         <div className="flex flex-col gap-3 text-xs leading-relaxed text-[var(--ink-2)]">
           <p>
-            {language === 'it' ? (
-              <>VOD è una piattaforma cartografica che incrocia oltre <strong className="text-[var(--ink)]">40 livelli di dati</strong> su Venezia centro storico, la Laguna e la Terraferma: misure in tempo reale (maree, METAR, voli), mezzi pubblici simulati dagli orari ufficiali e censimenti statici. Ogni livello indica la propria fonte.</>
-            ) : (
-              <>VOD is a mapping platform that combines over <strong className="text-[var(--ink)]">40 data layers</strong> across Venice historic center, Lagoon, and Mainland: real-time measurements (tides, METAR, flights), public transport simulated from official timetables, and static reference data. Each layer states its source.</>
-            )}
+            <RichText text={t('ui.onboarding.introBody', { n: ALL_LAYER_KEYS.length })} strongClassName="text-[var(--ink)]" />
           </p>
           <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] font-mono">
             <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-1">

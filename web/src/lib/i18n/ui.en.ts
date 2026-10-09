@@ -9,7 +9,11 @@ export const enUi: UiTranslations = {
     principale: "Main",
     secondaria: "Secondary",
     nessunAereoRilevatoOpenskyNell: "No aircraft currently detected by OpenSky in the area (or service unreachable).",
-    dimensionsSecondary: "Dimensions: 2,780 m × 45 m"
+    dimensionsSecondary: "Dimensions: 2,780 m × 45 m",
+    flightCat_VFR: "Visual flight rules",
+    flightCat_MVFR: "Marginal VFR",
+    flightCat_IFR: "Instrument flight rules",
+    flightCat_LIFR: "Low IFR"
   },
   alilaguna: {
     sourceTransitland: "Source: GTFS published by Alilaguna S.p.A. (alilaguna.it), listed on Transitland",
@@ -47,7 +51,10 @@ export const enUi: UiTranslations = {
     cartelloInformativa: "Privacy Sign",
     nonRichiesta: "Not required",
     nonIndicato: "Not reported",
-    fonteMappatura: "Mapping Source"
+    fonteMappatura: "Mapping Source",
+    imagesOwnedBy: "Images are owned by {operator} and are shown only on the official page, in line with the provider's terms of use.",
+    surveillanceNote: "Surveillance cameras have no public video feed (EU GDPR). Position and type come from the {source} community mapping and are not verified by any authority{owner}.",
+    ownerUnknownSuffix: "; the system owner is unknown"
   },
   publicWork: {
     operaPubblica: "Public work",
@@ -61,7 +68,8 @@ export const enUi: UiTranslations = {
     tipologia: "Type",
     finalita: "Purpose",
     operaSenzaPosizioneTitoloNon: "No position: the title does not name a locatable place.",
-    fonteComuneVeneziaDatiVenezia: "Source: City of Venice – dati.venezia.it (CC BY)"
+    fonteComuneVeneziaDatiVenezia: "Source: City of Venice – dati.venezia.it (CC BY)",
+    approxPosition: "Approximate position: the City dataset has no coordinates; the place \"{place}\" named in the title was geocoded with OpenStreetMap."
   },
   header: {
     altreAzioni: "More actions",
@@ -69,7 +77,9 @@ export const enUi: UiTranslations = {
     paletteMappa: "Map palette",
     notte: "Night",
     carta: "Paper",
-    dinamica: "Dynamic"
+    dinamica: "Dynamic",
+    currentLanguage: "English (EN)",
+    switchTarget: "IT"
   },
   layerPanel: {
     motoscafo: "Motorboat",
@@ -117,7 +127,12 @@ export const enUi: UiTranslations = {
     reteMareograficaCpsm: "CPSM tide gauge network",
     datiNonDisponibili: "Data not available.",
     tendenzaRicavataDalProssimoEstremale: "Trend is derived from the next forecast extreme.",
-    fonteComuneVeneziaCpsmDati: "Source: City of Venice – CPSM (dati.venezia.it)"
+    fonteComuneVeneziaCpsmDati: "Source: City of Venice – CPSM (dati.venezia.it)",
+    forecastMaybeOld: "The forecast published on dati.venezia.it was issued on {issued} and may be out of date. Check the Tide Centre website for the current official forecast.",
+    cat_NORMALE: "Normal",
+    cat_SOSTENUTA: "High",
+    cat_MOLTO_SOSTENUTA: "Very high",
+    cat_ECCEZIONALE: "Exceptional"
   },
   onboarding: {
     lagunaMareeSubsidenza: "Lagoon, Tides & Subsidence",
@@ -148,7 +163,8 @@ export const enUi: UiTranslations = {
     calendarioFerialeFestivo: "Weekday / Holiday Calendar:",
     orariGtfsUfficialiActv: "Official ACTV GTFS schedules",
     puoiRiaprireQuestaGuidaQualsiasi: "You can reopen this guide anytime by clicking the Guide button in the top navigation bar.",
-    vaiAlPasso: "Go to step"
+    vaiAlPasso: "Go to step",
+    introBody: "VOD is a map combining **{n} data layers** on Venice, the lagoon and the mainland: live measurements (tide, METAR, flights), public transport simulated from official timetables, open datasets and curated lists to be verified. Every layer states its source."
   },
   satellite: {
     orbitaNonDisponibile: "orbit unavailable",
@@ -180,7 +196,9 @@ export const enUi: UiTranslations = {
     lunghezza: "Length",
     pescaggio: "Draught",
     velocitaNavigazione: "Speed",
-    rottaHeading: "Heading"
+    rottaHeading: "Heading",
+    restrictedNote: "This ship measures **{gt} GT (over 25,000 GT)**. Since 2021 it may not pass through St Mark's Basin and the Giudecca Canal: it is routed via the Canale dei Petroli to **Porto Marghera**.",
+    allowedNote: "This ship measures **{gt} GT (under 25,000 GT)**. It is within the limits and can berth at the **Tronchetto passenger terminal** or San Basilio."
   },
   spatial: {
     nessunaFermataRaggio: "No ACTV stops within {radius} meters of located public works.",
@@ -459,7 +477,9 @@ export const enUi: UiTranslations = {
     curatedExampleValues: "Curated project list: positions and values are indicative and must be checked against the cited source. They are not current measurements or live data.",
     curatedToVerify: "Curated project list: to be verified, no matching OpenStreetMap point nearby.",
     wellPositionConfirmed: "Position confirmed: an OpenStreetMap well lies within 25 m.",
-    wellPositionUnconfirmed: "Position not confirmed by OpenStreetMap."
+    wellPositionUnconfirmed: "Position not confirmed by OpenStreetMap.",
+    cpsmMeasuredAt: "CPSM reading at {time} (local time)",
+    noOpenMeasures: "readings not published as open data"
   },
   layersPage: {
     tornaAllaMappa: "Back to Map",
@@ -637,7 +657,7 @@ export const enUi: UiTranslations = {
     selectAll: "Select all",
     deselectAll: "Deselect all",
     hashTitle: "File SHA-256 fingerprint",
-    hashNote: "Lets you verify that the downloaded file has not been altered.",
+    hashNote: "Lets you check the downloaded file is intact (for example with \"shasum -a 256\"). It is not a signature: it does not prove where the file came from.",
     copyHash: "Copy SHA-256",
     copied: "Copied",
     copyFailed: "Copy failed",
@@ -676,9 +696,6 @@ export const enUi: UiTranslations = {
     refreshedAt: "Updated at {time}",
     title: "Metrics, spatial analysis and estimates",
     intro: "Indicators derived from project data and live sources (CPSM, ACTV, ARPAV, OpenSky, METAR). Each section states whether the value is computed, an estimate or illustrative.",
-    hashTitle: "Report SHA-256 fingerprint",
-    copy: "Copy",
-    copied: "Copied",
     basis_calcolato: "Computed",
     basis_stima: "Estimate",
     basis_illustrativo: "Illustrative",
@@ -898,7 +915,6 @@ export const enUi: UiTranslations = {
     intro: "Availability and data age for the {n} live feeds and datasets used by Venice Open Data, checked by /api/health.",
     lastCheck: "Last check:",
     inProgress: "in progress…",
-    copyHash: "Copy the full SHA-256 hash",
     loadFailed: "Could not read /api/health (network or rate limit). Try \"Refresh\" again.",
     transparencyTitle: "No fallback values",
     transparencyBody: "If a source does not respond or its data is too old, the platform says so (\"delayed\" or \"offline\") instead of showing made-up values. This makes it clear whether a problem lies with the data provider or with the platform.",
@@ -1007,5 +1023,11 @@ export const enUi: UiTranslations = {
     pollenRisk: "Pollen: {risk} risk",
     airportDock: "VCE airport dock (Alilaguna)",
     freightDock: "Freight dock ({min} min)"
+  },
+  provenance: {
+    live: "Live data",
+    "schedule-simulation": "Simulated from official timetable",
+    "static-reference": "Reference data",
+    community: "Community mapping"
   }
 };

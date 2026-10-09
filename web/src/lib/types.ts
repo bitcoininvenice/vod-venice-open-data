@@ -494,7 +494,8 @@ export interface OceanStationItem {
   windSpeedKnots: number | null;
   windDirectionDeg: number | null;
   depthMeters: number;
-  lastUpdate: string;
+  /** Ora locale (HH:MM) dell'ultima misura aperta; null se la stazione non ha misure pubblicate */
+  observedAt: string | null;
   officialSource: string;
   portalLink: string;
 }
@@ -855,7 +856,6 @@ export interface LagoonWaterQualityItem {
   conductivityMsCm: number; // Conducibilità mS/cm
   trophicState: 'BUONO' | 'ELEVATO' | 'SUFFICIENTE' | 'CRITICO';
   monitoringDepthMeters: number;
-  lastUpdated: string;
   officialSource: string;
 }
 

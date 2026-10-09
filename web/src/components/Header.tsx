@@ -41,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
   tideObservedAt,
   tideTrend,
 }) => {
-  const { language, toggleLanguage, t } = useTranslation();
+  const { toggleLanguage, t } = useTranslation();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
@@ -498,12 +498,12 @@ export const Header: React.FC<HeaderProps> = ({
                   <div className="flex flex-col">
                     <span className="font-semibold">{t('header.language')}</span>
                     <span className="text-[10px] text-[var(--ink-3)] font-mono">
-                      {language === 'it' ? 'Italiano (IT)' : 'English (EN)'}
+                      {t('ui.header.currentLanguage')}
                     </span>
                   </div>
                 </div>
                 <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-[var(--rule)] text-cyan-400 border border-[var(--rule)]">
-                  {language === 'it' ? 'EN' : 'IT'}
+                  {t('ui.header.switchTarget')}
                 </span>
               </button>
             </div>

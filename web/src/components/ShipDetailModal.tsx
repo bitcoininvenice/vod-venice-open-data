@@ -4,6 +4,7 @@ import React from 'react';
 import { X, Anchor, ShieldCheck, AlertTriangle, MapPin } from 'lucide-react';
 import { ShipItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
+import { RichText } from './ui/RichText';
 import { useDialogA11y } from '@/components/ui/useDialogA11y';
 
 interface ShipDetailModalProps {
@@ -96,19 +97,11 @@ export const ShipDetailModal: React.FC<ShipDetailModalProps> = ({
               )}
             </div>
             <p className="text-[11px] leading-relaxed opacity-90 text-[var(--ink)]">
-              {ship.isRestrictedLagoonRoute ? (
-                language === 'it' ? (
-                  <>Questa nave ha stazza <strong>{ship.grossTonnage.toLocaleString()} GT (&gt;25.000 GT)</strong>. Dal 2021 è vietato il passaggio nel Bacino di San Marco e Canale della Giudecca. La nave è instradata via Canale dei Petroli a <strong>Porto Marghera</strong>.</>
-                ) : (
-                  <>This ship measures <strong>{ship.grossTonnage.toLocaleString()} GT (&gt;25,000 GT)</strong>. Since 2021, passing through San Marco Basin and Giudecca Channel is prohibited. Rerouted via Canale dei Petroli to <strong>Porto Marghera</strong>.</>
-                )
-              ) : (
-                language === 'it' ? (
-                  <>Questa nave ha stazza <strong>{ship.grossTonnage.toLocaleString()} GT (&lt;25.000 GT)</strong>. Rientra nei limiti di salvaguardia e può attraccare regolarmente alla <strong>Stazione Marittima del Tronchetto</strong> o a San Basilio.</>
-                ) : (
-                  <>This ship measures <strong>{ship.grossTonnage.toLocaleString()} GT (&lt;25,000 GT)</strong>. It complies with safeguarding limits and docks at <strong>Tronchetto Passenger Terminal</strong> or San Basilio.</>
-                )
-              )}
+              <RichText
+                text={t(ship.isRestrictedLagoonRoute ? 'ui.ship.restrictedNote' : 'ui.ship.allowedNote', {
+                  gt: ship.grossTonnage.toLocaleString(language === 'it' ? 'it-IT' : 'en-GB'),
+                })}
+              />
             </p>
           </div>
         )}
