@@ -1055,3 +1055,26 @@ export interface WifiVenue {
   source: 'OPENSTREETMAP';
   sourceUrl: string;
 }
+
+/** Spazio sportivo: segnalazione della comunità CAMPO oppure impianto mappato su OpenStreetMap. */
+export interface SportPlace {
+  id: string;
+  source: 'CAMPO' | 'OPENSTREETMAP';
+  name: string | null;
+  /** sport praticati (chiavi normalizzate, es. basketball, soccer, tennis) */
+  sports: string[];
+  kind: 'pitch' | 'sportsCentre' | 'fitness' | 'track' | 'stadium' | 'hall' | 'hub' | 'club';
+  /** public: aperto a tutti; parish: spazio parrocchiale (patronato); club: società sportiva */
+  access: 'public' | 'parish' | 'club' | 'customers' | 'private' | 'unknown';
+  lat: number;
+  lon: number;
+  /** sestiere o zona */
+  area: string | null;
+  address: string | null;
+  schedule: string | null;
+  description: string | null;
+  surface: string | null;
+  lit: boolean | null;
+  operator: string | null;
+  sourceUrl: string | null;
+}

@@ -497,6 +497,22 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     endpointOrFile: '/api/cantieri'
   },
   {
+    id: 'sport',
+    nameIt: 'Sport e spazi per allenarsi (CAMPO + OpenStreetMap)',
+    nameEn: 'Sport and training spaces (CAMPO + OpenStreetMap)',
+    group: 'city',
+    regime: 'static',
+    acquisition: 'api',
+    institution: 'Comunità CAMPO (CC BY 4.0) e OpenStreetMap contributors (ODbL)',
+    portalUrl: 'http://217.160.143.203',
+    portalName: 'CAMPO – mappa della comunità degli spazi sportivi',
+    descriptionIt: 'Campi da basket, calcio, tennis, pallavolo, spazi fitness all\'aperto, palestre e società sportive. Le segnalazioni della comunità CAMPO aggiungono orari reali, descrizioni e i campi dei patronati; OpenStreetMap completa il resto della città.',
+    descriptionEn: 'Basketball, football, tennis and volleyball courts, outdoor fitness spaces, gyms and sports clubs. CAMPO community reports add real schedules, descriptions and parish courts; OpenStreetMap covers the rest of the city.',
+    technicalNotesIt: 'CAMPO letto dalla sua API GeoJSON al massimo una volta all\'ora (indirizzo in CAMPO_API_URL); impianti OSM dalla pipeline settimanale import_osm_poi.py (leisure=pitch, sports_centre, fitness_station, track, stadium, sports_hall). Una segnalazione CAMPO prevale su un impianto OSM dello stesso sport entro 60 m. Gli spazi parrocchiali seguono orari e regole del luogo; orari e condizioni non sono verificati da VOD.',
+    technicalNotesEn: 'CAMPO read from its GeoJSON API at most once an hour (address in CAMPO_API_URL); OSM facilities from the weekly pipeline import_osm_poi.py (leisure=pitch, sports_centre, fitness_station, track, stadium, sports_hall). A CAMPO report prevails over an OSM facility of the same sport within 60 m. Parish spaces follow the place\'s schedule and rules; schedules and conditions are not verified by VOD.',
+    endpointOrFile: '/api/sports'
+  },
+  {
     id: 'wifi_locali',
     nameIt: 'Wi-Fi in hotel, bar e luoghi pubblici (OpenStreetMap)',
     nameEn: 'Wi-Fi in hotels, bars and public places (OpenStreetMap)',

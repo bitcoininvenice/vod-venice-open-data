@@ -1,4 +1,4 @@
-import type { CityAssetItem, CivicPoiItem, EvChargingItem, ParkingItem, UrbanTreeItem, VeniceWellItem, WifiVenue } from './types';
+import type { CityAssetItem, CivicPoiItem, EvChargingItem, ParkingItem, UrbanTreeItem, VeniceWellItem, WifiVenue, SportPlace } from './types';
 import osmPoi from '@/data/osm-poi.json';
 import fountainsDataset from '@/data/fountains.json';
 import { calculateDistanceMeters } from './geo';
@@ -137,4 +137,30 @@ export const OPEN_WIFI_VENUES: WifiVenue[] = (osmPoi.wifiVenues as Omit<WifiVenu
   address: w.address ?? null,
   website: w.website ?? null,
   source: 'OPENSTREETMAP',
+}));
+
+type RawSport = {
+  id: string; sourceUrl: string; lat: number; lon: number; name?: string | null; kind: SportPlace['kind'];
+  sports: string[]; access: SportPlace['access']; surface?: string | null; lit?: boolean | null;
+  operator?: string | null; openingHours?: string | null; zone: string;
+};
+
+/** Impianti e spazi sportivi (leisure=pitch, sports_centre, fitness_station, track, stadium, sports_hall). */
+export const OPEN_SPORT_PLACES: SportPlace[] = (osmPoi.sportPlaces as RawSport[]).map((s) => ({
+  id: s.id,
+  source: 'OPENSTREETMAP',
+  name: s.name ?? null,
+  sports: s.sports,
+  kind: s.kind,
+  access: s.access,
+  lat: s.lat,
+  lon: s.lon,
+  area: s.zone,
+  address: null,
+  schedule: s.openingHours ?? null,
+  description: null,
+  surface: s.surface ?? null,
+  lit: s.lit ?? null,
+  operator: s.operator ?? null,
+  sourceUrl: s.sourceUrl,
 }));

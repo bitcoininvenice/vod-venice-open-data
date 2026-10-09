@@ -408,3 +408,15 @@ def test_osm_wifi_luoghi():
     item = osm_poi.wifi_venue(el, tags, 45.437, 12.33)
     assert item["kind"] == "cafe" and item["access"] == "customers" and item["ssid"] == "CaffeX_Guest"
     assert "segreta" not in json.dumps(item)  # le password non vengono mai salvate
+
+
+def test_osm_impianti_sportivi():
+    assert osm_poi.sport_access({"access": "yes"}) == "public"
+    assert osm_poi.sport_access({"access": "customers"}) == "customers"
+    assert osm_poi.sport_access({"access": "private"}) == "private"
+    assert osm_poi.sport_access({}) == "unknown"
+    el = {"type": "way", "id": 9}
+    p = osm_poi.sport_place(el, {"leisure": "pitch", "sport": "basketball;volleyball", "lit": "yes", "surface": "asphalt"}, 45.43, 12.35)
+    assert p["kind"] == "pitch" and p["sports"] == ["basketball", "volleyball"] and p["lit"] is True
+    assert osm_poi.sport_place(el, {"leisure": "fitness_station"}, 45.43, 12.35)["kind"] == "fitness"
+    assert osm_poi.sport_place(el, {"leisure": "pitch", "lit": "maybe"}, 45.43, 12.35)["lit"] is None

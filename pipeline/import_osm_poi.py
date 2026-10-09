@@ -12,6 +12,8 @@ Pipeline: punti di interesse da OpenStreetMap che sostituiscono elenchi compilat
 - biblioteche (amenity=library)
 - luoghi con Wi-Fi (internet_access=wlan o wifi=yes/free): hotel, bar, ristoranti, biblioteche, musei...
   con tipo di accesso (gratuito, per i clienti, a pagamento) e nome della rete se mappato; mai password
+- impianti e spazi sportivi (leisure=pitch, sports_centre, fitness_station, track, stadium, sports_hall):
+  base del livello Sport, a cui VOD aggiunge le segnalazioni della comunità CAMPO
 
 Licenza dei dati: ODbL 1.0 - © OpenStreetMap contributors.
 Output: web/src/data/osm-poi.json (letto da web/src/lib/osmPoi.ts).
@@ -48,6 +50,7 @@ QUERY = f"""[out:json][timeout:120];
   nwr["amenity"="library"]({B});
   nwr["internet_access"="wlan"]({B});
   nwr["wifi"~"^(yes|free)$"]({B});
+  nwr["leisure"~"^(pitch|sports_centre|fitness_station|track|stadium|sports_hall)$"]({B});
 );
 out tags center;"""
 
@@ -231,6 +234,41 @@ def wifi_venue(el, tags, lat, lon):
     }
 
 
+SPORT_KINDS = {
+    "pitch": "pitch", "sports_centre": "sportsCentre", "fitness_station": "fitness",
+    "track": "track", "stadium": "stadium", "sports_hall": "hall",
+}
+
+
+def sport_access(tags: dict) -> str:
+    """Accesso dichiarato: public, customers, private o unknown (i patronati non sono distinguibili su OSM)."""
+    a = (tags.get("access") or "").lower()
+    if a in ("yes", "permissive", "public"):
+        return "public"
+    if a in ("customers", "permit", "members"):
+        return "customers"
+    if a in ("private", "no"):
+        return "private"
+    return "unknown"
+
+
+def sport_place(el, tags, lat, lon):
+    rid, url = osm_ref(el)
+    sports = [s.strip() for s in (tags.get("sport") or "").split(";") if s.strip()]
+    return {
+        "id": rid, "sourceUrl": url, "lat": lat, "lon": lon,
+        "name": tags.get("name"),
+        "kind": SPORT_KINDS.get(tags.get("leisure", ""), "pitch"),
+        "sports": sports,
+        "access": sport_access(tags),
+        "surface": tags.get("surface"),
+        "lit": tags.get("lit") == "yes" if tags.get("lit") in ("yes", "no") else None,
+        "operator": tags.get("operator"),
+        "openingHours": tags.get("opening_hours"),
+        "zone": zone(lat, lon),
+    }
+
+
 def main() -> int:
     try:
         payload = fetch_overpass(QUERY)
@@ -238,7 +276,7 @@ def main() -> int:
         logging.error("%s", e)
         return 1
 
-    out = {"evCharging": [], "parkings": [], "wells": [], "monumentalTrees": [], "recyclingCentres": [], "libraries": [], "wifiVenues": []}
+    out = {"evCharging": [], "parkings": [], "wells": [], "monumentalTrees": [], "recyclingCentres": [], "libraries": [], "wifiVenues": [], "sportPlaces": []}
     seen = set()
     for el in payload.get("elements", []):
         tags = el.get("tags", {})
@@ -250,6 +288,8 @@ def main() -> int:
         # Il Wi-Fi è un attributo: un luogo può essere anche biblioteca, ecc.
         if has_wifi(tags) and tags.get("internet_access") != "no":
             out["wifiVenues"].append(wifi_venue(el, tags, lat, lon))
+        if tags.get("leisure") in SPORT_KINDS:
+            out["sportPlaces"].append(sport_place(el, tags, lat, lon))
         if tags.get("amenity") == "charging_station":
             out["evCharging"].append(ev(el, tags, lat, lon))
         elif tags.get("amenity") == "parking":

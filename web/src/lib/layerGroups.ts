@@ -19,7 +19,7 @@ export type LayerIconName =
   | 'train' | 'trash' | 'car' | 'bike' | 'shieldAlert' | 'wind' | 'lifeBuoy' | 'trees' | 'layers'
   | 'droplets' | 'gitBranch' | 'flower' | 'thermometer' | 'pill' | 'heartPulse' | 'wifi' | 'cable'
   | 'recycle' | 'library' | 'zap' | 'construction' | 'sliders' | 'camera' | 'footprints' | 'landmark'
-  | 'bell' | 'satellite' | 'building';
+  | 'bell' | 'satellite' | 'building' | 'dumbbell';
 
 export interface LayerEntry {
   key: LayerKey;
@@ -172,6 +172,10 @@ export const LAYER_GROUPS: LayerGroup[] = [
           e('showSpatialBuffer', 'ui.layerPanel.bufferSpazialeCantieri', 'sliders', 'amber'),
           e('showPedestrianFlows', 'layers.layerPedestrianFlows', 'footprints', 'rose'),
         ],
+      },
+      {
+        id: 'sportLeisure', label: 'ui.layerPanel.subSport', icon: 'dumbbell', tone: 'orange',
+        layers: [e('showSports', 'ui.layerPanel.sports', 'dumbbell', 'orange')],
       },
       {
         id: 'heritage', label: 'layers.subHeritage', icon: 'landmark', tone: 'amber',

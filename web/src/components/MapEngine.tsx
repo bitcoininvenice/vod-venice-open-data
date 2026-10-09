@@ -56,7 +56,8 @@ import {
 import type { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import type { MapObjectSelected } from './MapObjectPanel';
 import type { BdapProject } from '@/lib/bdap';
-import type { LoraGateway, WifiVenue } from '@/lib/types';
+import type { LoraGateway, SportPlace, WifiVenue } from '@/lib/types';
+import { matchesSportFilter, type SportFilter } from '@/lib/sports';
 import { GRID, LAND_LO } from '@/lib/simulation-data';
 import { drawBaseMap, isLandHiLoaded, requestLandHi } from './map/baseMap';
 import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
@@ -68,7 +69,7 @@ import type { RenderContext } from './map/renderContext';
 import { drawRoutes, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, drawMarineSignals, drawOceanStations, drawCanalLimits, drawBridges, drawGondolas, drawDocks, drawMarineWind } from './map/lagoonLayers';
-import { bdapRadius, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
+import { bdapRadius, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 import { drawFloodLayer } from './map/floodLayer';
 import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
@@ -190,6 +191,10 @@ export interface MapEngineProps {
   /** Luoghi con Wi-Fi da OpenStreetMap */
   showWifiVenues?: boolean;
   wifiVenues?: WifiVenue[];
+  /** Spazi sportivi (CAMPO + OpenStreetMap) e filtro per sport */
+  showSports?: boolean;
+  sportPlaces?: SportPlace[];
+  sportFilter?: SportFilter;
   /** Briccole, segnalamenti e canali da OpenStreetMap */
   showCanals?: boolean;
   lagoonNetwork?: LagoonNetwork | null;
@@ -324,6 +329,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   loraGateways = [],
   showWifiVenues = false,
   wifiVenues = [],
+  showSports = false,
+  sportPlaces = [],
+  sportFilter = 'all',
   showCanals = false,
   lagoonNetwork = null,
   showTrains = false,
@@ -1292,6 +1300,19 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
     }
 
+    // 1a7. Spazi sportivi (le segnalazioni CAMPO hanno la precedenza perché sono le prime dell'elenco)
+    if (showSports && onSelectFeature) {
+      for (const p of sportPlaces) {
+        if (!matchesSportFilter(p, sportFilter)) continue;
+        const px = (mx(p.lon) - camera.x0) * camera.s;
+        const py = (my(p.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - px, clickY - py) <= 12) {
+          onSelectFeature({ type: 'sportPlace', data: p });
+          return;
+        }
+      }
+    }
+
     // 1a8. Luoghi con Wi-Fi (OSM)
     if (showWifiVenues && onSelectFeature) {
       for (const w of wifiVenues) {
@@ -1623,6 +1644,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         loraGateways,
         showWifiVenues,
         wifiVenues,
+        showSports,
+        sportPlaces,
+        sportFilter,
         showCanals,
         lagoonNetwork,
         moseGates,
@@ -1731,6 +1755,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         drawBdapWorks(rc);
         drawLoraGateways(rc);
         drawWifiVenues(rc);
+        drawSports(rc);
 
         drawParkings(rc);
 
@@ -1895,6 +1920,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     loraGateways,
     showWifiVenues,
     wifiVenues,
+    showSports,
+    sportPlaces,
+    sportFilter,
     showCanals,
     lagoonNetwork,
     showTrains,

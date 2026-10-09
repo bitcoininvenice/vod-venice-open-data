@@ -1,5 +1,6 @@
 // Layer di disegno della mappa estratti da MapEngine (cityLayers). Ogni funzione riceve il contesto del frame.
 import type { RenderContext } from './renderContext';
+import { matchesSportFilter, sportColor } from '@/lib/sports';
 
 export function drawCityAssets(rc: RenderContext): void {
   const { ctx, isDark, sx, sy, mx, my, camera, showCityAssets, fountains, accessibleBridges, veritasServices } = rc;
@@ -918,6 +919,43 @@ export function drawWifiVenues(rc: RenderContext): void {
       ctx.fillStyle = isDark ? '#ccfbf1' : '#134e4a';
       ctx.textAlign = 'start';
       ctx.fillText(w.name.slice(0, 28), px + 9, py + 3);
+    }
+    ctx.restore();
+  }
+}
+
+/** Spazi sportivi: pallino colorato per sport; le segnalazioni CAMPO hanno un anello in più. */
+export function drawSports(rc: RenderContext): void {
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showSports, sportPlaces, sportFilter } = rc;
+  if (!showSports || !sportPlaces || sportPlaces.length === 0) return;
+  for (const p of sportPlaces) {
+    if (!matchesSportFilter(p, sportFilter)) continue;
+    const px = sx(mx(p.lon));
+    const py = sy(my(p.lat));
+    if (px < -30 || px > cw + 30 || py < -30 || py > ch + 30) continue;
+    const color = sportColor(p);
+    ctx.save();
+    if (p.source === 'CAMPO') {
+      ctx.beginPath();
+      ctx.arc(px, py, 9, 0, Math.PI * 2);
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = 0.55;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    ctx.beginPath();
+    ctx.arc(px, py, p.kind === 'club' || p.kind === 'sportsCentre' || p.kind === 'hall' ? 6 : 5, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+    ctx.lineWidth = 1.1;
+    ctx.stroke();
+    if (camera.s > 0.04 && p.name) {
+      ctx.font = '600 8px "DM Mono", monospace';
+      ctx.fillStyle = isDark ? '#ffedd5' : '#7c2d12';
+      ctx.textAlign = 'start';
+      ctx.fillText(p.name.slice(0, 30), px + 11, py + 3);
     }
     ctx.restore();
   }

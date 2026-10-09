@@ -39,7 +39,7 @@ interface SourceMetadata {
   license: string;
   format: string;
   /** Chiave di traduzione della frequenza di aggiornamento in VOD */
-  refresh: 'r15s' | 'r20s' | 'r60s' | 'r5min' | 'r10min' | 'r30min' | 'weekly';
+  refresh: 'r15s' | 'r20s' | 'r60s' | 'r5min' | 'r10min' | 'r30min' | 'r60min' | 'weekly';
   hasNote?: boolean;
 }
 
@@ -70,6 +70,7 @@ const SOURCES_METADATA: Record<string, SourceMetadata> = {
   'cciaa-turismo': { institution: 'Camera di Commercio Venezia Rovigo', portalUrl: 'https://opengovernment.unioncamere.gov.it', portalName: 'opengovernment.unioncamere.gov.it', license: 'CC BY 4.0', format: 'CSV', refresh: 'weekly', hasNote: true },
   'arpav-lagoon': { institution: 'ARPAV', portalUrl: 'https://www.arpa.veneto.it/dati-ambientali/open-data/file-e-allegati/soaml/laguna-di-venezia/dati-sonda', portalName: 'arpa.veneto.it', license: 'CC BY 4.0', format: 'CSV', refresh: 'weekly', hasNote: true },
   'cruscotto-italia': { institution: 'Cruscotto Italia – AgID', portalUrl: 'https://cruscotto-italia.dati.gov.it', portalName: 'cruscotto-italia.dati.gov.it', license: 'CC BY 4.0', format: 'MCP (comune_kpi)', refresh: 'weekly', hasNote: true },
+  campo: { institution: 'Comunità CAMPO', portalUrl: 'http://217.160.143.203', portalName: 'CAMPO (API GeoJSON)', license: 'CC BY 4.0', format: 'GeoJSON', refresh: 'r60min', hasNote: true },
   'packet-broker': { institution: 'The Things Network – Packet Broker', portalUrl: 'https://packetbroker.net', portalName: 'mapper.packetbroker.net', license: 'Dati pubblicati dai proprietari', format: 'REST JSON', refresh: 'r10min', hasNote: true },
   'bdap-mop': { institution: 'MEF – Ragioneria Generale dello Stato (BDAP)', portalUrl: 'https://bdap-opendata.rgs.mef.gov.it/opendata/spd_mop_prg_mon_reg05_01_9999', portalName: 'bdap-opendata.rgs.mef.gov.it', license: 'CC BY', format: 'CSV (CKAN)', refresh: 'weekly', hasNote: true },
   'agcom-fiber': { institution: 'AGCOM – BroadbandMap', portalUrl: 'https://maps.agcom.it', portalName: 'maps.agcom.it', license: 'CC BY 4.0', format: 'ArcGIS REST (griglia 20 m)', refresh: 'weekly', hasNote: true },

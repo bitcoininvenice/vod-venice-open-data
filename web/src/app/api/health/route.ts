@@ -8,6 +8,7 @@ import { CPSM_METEO_URLS, parseCpsmFeed } from '@/server/sources/cpsmMeteo';
 import { OPENSKY_STATES_URL, parseOpenSkyStates } from '@/server/sources/opensky';
 import { getShipsSnapshot } from '@/server/sources/aisstream';
 import { PACKET_BROKER_URL, parseGateways } from '@/server/sources/packetBroker';
+import { CAMPO_API_URL, parseCampo } from '@/server/sources/campo';
 import { openMeteoWindUrl, parseOpenMeteoWind } from '@/server/sources/openMeteoWind';
 import { airQualityUrl, parseAirQuality } from '@/server/sources/openMeteoAir';
 import { marineUrl, parseMarine } from '@/server/sources/openMeteoMarine';
@@ -42,7 +43,7 @@ const ACQUA_ALTA = OCEAN_STATIONS_DATA.find((s) => s.id === 'CNR-PLAT-01') ?? { 
  */
 export async function GET() {
   const now = new Date();
-  const [levels, forecast, metar, rtNav, rtAut, wind, flights, windField, cams, marine, ais, lora] = await Promise.all([
+  const [levels, forecast, metar, rtNav, rtAut, wind, flights, windField, cams, marine, ais, lora, campo] = await Promise.all([
     fetchUpstream(TIDE_LEVELS_URL, parseTideLevels, { revalidate: 60 }),
     fetchUpstream(TIDE_FORECAST_URL, (raw) => parseTideForecast(raw, now), { revalidate: 600 }),
     fetchUpstream(LIPZ_METAR_URL, parseLipzMetar, { revalidate: 300 }),
@@ -55,6 +56,7 @@ export async function GET() {
     fetchUpstream(marineUrl(ACQUA_ALTA.lat, ACQUA_ALTA.lon), parseMarine, { revalidate: 1800, timeoutMs: 8000 }),
     getShipsSnapshot(5_000),
     fetchUpstream(PACKET_BROKER_URL, parseGateways, { revalidate: 600, timeoutMs: 8000 }),
+    fetchUpstream(CAMPO_API_URL, parseCampo, { revalidate: 3600, timeoutMs: 8000 }),
   ]);
 
   const newestVehicle = (r: typeof rtNav) =>
@@ -74,6 +76,8 @@ export async function GET() {
     assess('cpsm-meteo', 'Rete meteo-marina CPSM', 'live', newestWind, 30, now),
     assess('aisstream', 'Navi AIS (aisstream.io)', 'live', ais.ships[0] ? new Date(ais.ships[0].lastSeen) : null, 30, now,
       ais.configured ? (ais.ships.length ? undefined : 'nessuna nave ricevuta nell’ultima lettura') : 'AISSTREAM_API_KEY non configurata'),
+    assess('campo', 'Spazi sportivi CAMPO', 'live', campo.ok ? new Date(campo.fetchedAt) : null, 120, now,
+      campo.ok ? undefined : 'API CAMPO non raggiungibile'),
     assess('packet-broker', 'Gateway LoRaWAN (Packet Broker)', 'live', lora.ok ? new Date(lora.fetchedAt) : null, 30, now,
       lora.ok ? undefined : 'Packet Broker Mapper non raggiungibile'),
     assess('opensky', 'OpenSky Network', 'live', flights.ok ? now : null, 5, now, flights.ok ? undefined : 'quota esaurita o servizio non raggiungibile'),

@@ -42,6 +42,7 @@ import {
   type LayerGroupId,
 } from '@/lib/layerGroups';
 import { LayerIcon, RegimeBadge, TONE_CLASSES } from './layerVisuals';
+import { SPORT_FILTERS, type SportFilter } from '@/lib/sports';
 
 interface LayerPanelProps {
   layers: LayerVisibility;
@@ -51,6 +52,9 @@ interface LayerPanelProps {
   /** Numero di elementi caricati per layer (mostrato quando il layer è acceso) */
   counts: Partial<Record<LayerKey, number>>;
   liveWebcamsCount?: number;
+  /** Filtro per sport del livello Sport */
+  sportFilter?: SportFilter;
+  onSportFilterChange?: (f: SportFilter) => void;
   bufferRadiusMeters: number;
   onBufferRadiusChange: (radius: number) => void;
   selectedCategory: TransportModeCategory | 'all';
@@ -86,6 +90,8 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   onApplyPreset,
   counts,
   liveWebcamsCount = 0,
+  sportFilter = 'all',
+  onSportFilterChange,
   bufferRadiusMeters,
   onBufferRadiusChange,
   selectedCategory,
@@ -159,6 +165,23 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             {on ? <Eye className="w-3.5 h-3.5" aria-hidden /> : <EyeOff className="w-3.5 h-3.5 opacity-60" aria-hidden />}
           </span>
         </button>
+        {entry.key === 'showSports' && on && onSportFilterChange && (
+          <div className="flex flex-wrap gap-1 px-2 pb-1" role="group" aria-label={t('ui.layerPanel.sportFilter')}>
+            {(['all', ...SPORT_FILTERS, 'other'] as SportFilter[]).map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => onSportFilterChange(f)}
+                aria-pressed={sportFilter === f}
+                className={`px-2 py-0.5 rounded-full border text-[10px] font-mono cursor-pointer ${
+                  sportFilter === f ? 'bg-orange-500/20 border-orange-500/50 text-orange-200' : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)]'
+                }`}
+              >
+                {t(`ui.sport.filter_${f}`)}
+              </button>
+            ))}
+          </div>
+        )}
         {entry.key === 'showSpatialBuffer' && on && (
           <div className="flex flex-col gap-1 px-2.5 pb-1">
             <div className="flex justify-between text-[11px]">

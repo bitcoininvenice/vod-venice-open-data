@@ -503,6 +503,17 @@ test.describe('API', () => {
     expect(body.meta.levels.kind).toBe('live');
   });
 
+  test('sports unisce CAMPO e OpenStreetMap con fonti e licenze dichiarate', async ({ request }) => {
+    const body = await (await request.get('/api/sports')).json();
+    expect(body.data.length).toBeGreaterThan(100);
+    const [campo, osm] = body.meta.sources;
+    expect(campo.license).toBe('CC BY 4.0');
+    expect(osm.attribution).toMatch(/OpenStreetMap/);
+    // CAMPO può essere temporaneamente irraggiungibile: allora restano solo gli impianti OSM
+    expect(body.data.filter((p: { source: string }) => p.source === 'CAMPO').length).toBe(campo.count);
+    for (const p of body.data.slice(0, 50)) expect(['CAMPO', 'OPENSTREETMAP']).toContain(p.source);
+  });
+
   test('city-assets include i luoghi con Wi-Fi da OpenStreetMap, senza password', async ({ request }) => {
     const body = await (await request.get('/api/city-assets')).json();
     expect(body.wifiVenues.length).toBeGreaterThan(50);
