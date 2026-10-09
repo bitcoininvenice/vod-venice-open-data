@@ -1490,7 +1490,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             const spanSec = Math.min(30, Math.max(1, dtNow));
             const speedKmh = Math.round(((distAt(prof, dtNow) - distAt(prof, dtNow - spanSec)) / spanSec) * 3.6 * 10) / 10;
             const lineName = prof.route.n || 'ACTV';
-            const longName = `Linea ${lineName} · ${tr('ui.map.orarioUfficialeActv')}`;
+            const longName = `${tr('ui.mapLabels.line', { line: lineName })} · ${tr('ui.map.orarioUfficialeActv')}`;
             setSelectedVehicle({
               line: lineName,
               category: rCat.toUpperCase(),
@@ -1523,7 +1523,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             screenX: clickX,
             screenY: clickY,
             color: paletteAt(currentTimeSeconds).cats[cat] || '#34d399',
-            headsign: v.line ? `Linea ${v.line} · ${v.network === 'navigazione' ? 'navigazione' : 'automobilistico'}` : `Mezzo ${v.label || v.id} · linea non riconosciuta`,
+            headsign: v.line ? `${tr('ui.mapLabels.line', { line: v.line })} · ${tr(v.network === 'navigazione' ? 'ui.mapLabels.networkNav' : 'ui.mapLabels.networkBus')}` : tr('ui.mapLabels.unknownLine', { id: v.label || v.id }),
             source: 'gps',
             updatedAt: v.timestamp
           });
@@ -1639,6 +1639,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
       // Contesto del frame condiviso dai layer di disegno (components/map/*)
       const rc: RenderContext = {
+        t: tr,
         ctx,
         cw,
         ch,
@@ -1966,7 +1967,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     is3DView,
     W,
     mx,
-    my
+    my,
+    tr
   ]);
 
   return (

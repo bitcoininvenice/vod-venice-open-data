@@ -44,7 +44,7 @@ export function drawCityAssets(rc: RenderContext): void {
         if (camera.s > 0.035) {
           ctx.font = '600 9px "DM Mono", monospace';
           ctx.fillStyle = isDark ? '#10b981' : '#047857';
-          ctx.fillText(`${b.name} (Rampa)`, bx + 7, by + 3);
+          ctx.fillText(`${b.name} (${rc.t('ui.mapLabels.ramp')})`, bx + 7, by + 3);
         }
       }
     }
@@ -143,7 +143,7 @@ export function drawPedestrianFlows(rc: RenderContext): void {
       ctx.font = '700 9px "DM Mono", monospace';
       const pfTxt = pf.hourlyFlow != null
         ? `${pf.sensorName}: ${pf.hourlyFlow.toLocaleString()} p/h`
-        : `Varco SCR: ${pf.sensorName}`;
+        : `${rc.t('ui.mapLabels.scrGate')}: ${pf.sensorName}`;
       const pfW = ctx.measureText(pfTxt).width;
 
       ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)';
@@ -384,7 +384,7 @@ export function drawEvCharging(rc: RenderContext): void {
       if (camera.s > 0.035) {
         ctx.font = '600 8px "DM Mono", monospace';
         ctx.fillStyle = isDark ? '#fde047' : '#a16207';
-        ctx.fillText(`${ev.availableSockets}/${ev.totalSockets} EV`, ex + 8, ey + 3);
+        if (ev.totalSockets !== null) ctx.fillText(rc.t('ui.mapLabels.evSockets', { n: ev.totalSockets }), ex + 8, ey + 3);
       }
       ctx.restore();
     }
@@ -597,7 +597,7 @@ export function drawBellTowers(rc: RenderContext): void {
       if (camera.s > 0.03) {
         ctx.font = 'bold 8px "DM Mono", monospace';
         ctx.fillStyle = isDark ? '#fdba74' : '#c2410c';
-        ctx.fillText(bt.isLeaning ? `${bt.name} (Pendente ${bt.tiltAngleDeg}°)` : bt.name, bx + 8, by + 3);
+        ctx.fillText(bt.isLeaning ? `${bt.name} (${rc.t('ui.mapLabels.leaning')} ${bt.tiltAngleDeg}°)` : bt.name, bx + 8, by + 3);
       }
       ctx.restore();
     }

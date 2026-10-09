@@ -190,7 +190,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
               type="button"
               onClick={onOpenTideModal}
               className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-mono bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/25 text-[var(--ink-2)] shrink-0 animate-in fade-in duration-150 cursor-pointer transition-all"
-              title="Centro Previsioni e Segnalazioni Maree (CPSM) - Punta della Salute (Clicca per simulatore)"
+              title={t('ui.timeline.tideButtonTitle')}
             >
               <Waves className="w-3.5 h-3.5 text-blue-400 shrink-0" />
               <span className="text-[var(--ink-3)]">{t('ui.timeline.mareaPuntaSalute')}:</span>

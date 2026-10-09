@@ -354,7 +354,7 @@ export function drawAccommodations(rc: RenderContext): void {
       if (camera.s > 0.02) {
         ctx.font = 'bold 8px "DM Mono", monospace';
         ctx.fillStyle = isCritical ? (isDark ? '#f472b6' : '#be185d') : (isDark ? '#c084fc' : '#7e22ce');
-        ctx.fillText(`${acc.totalBeds.toLocaleString()} letti (${acc.bedsPerResidentRatio}x res)`, ax + 9, ay + 3);
+        ctx.fillText(rc.t('ui.mapLabels.beds', { beds: acc.totalBeds.toLocaleString(), ratio: acc.bedsPerResidentRatio }), ax + 9, ay + 3);
       }
       ctx.restore();
     }
@@ -442,7 +442,7 @@ export function drawPollenStations(rc: RenderContext): void {
       if (camera.s > 0.02) {
         ctx.font = 'bold 8px "DM Mono", monospace';
         ctx.fillStyle = isHigh ? (isDark ? '#fbbf24' : '#b45309') : (isDark ? '#a3e635' : '#4d7c0f');
-        ctx.fillText(`Pollini: Rischio ${pol.overallAllergyRisk}`, px + 8, py + 3);
+        ctx.fillText(rc.t('ui.mapLabels.pollenRisk', { risk: pol.overallAllergyRisk }), px + 8, py + 3);
       }
       ctx.restore();
     }

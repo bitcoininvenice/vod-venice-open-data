@@ -337,7 +337,7 @@ export function drawAlilaguna(rc: RenderContext): void {
 
           // Hub Label Tag
           ctx.font = '700 9.5px "Bricolage Grotesque", sans-serif';
-          const hubTxt = 'Darsena VCE Aeroporto (Alilaguna Hub)';
+          const hubTxt = rc.t('ui.mapLabels.airportDock');
           const hubW = ctx.measureText(hubTxt).width;
           ctx.fillStyle = 'rgba(0, 85, 165, 0.92)';
           ctx.beginPath();
@@ -806,7 +806,7 @@ export function drawDocks(rc: RenderContext): void {
       if (camera.s > 0.04) {
         ctx.font = '600 8px "DM Mono", monospace';
         ctx.fillStyle = isDark ? '#60a5fa' : '#1d4ed8';
-        ctx.fillText(`Riva Merci (${d.maxStayMinutes}m)`, dx + 8, dy + 3);
+        ctx.fillText(rc.t('ui.mapLabels.freightDock', { min: d.maxStayMinutes }), dx + 8, dy + 3);
       }
       ctx.restore();
     }

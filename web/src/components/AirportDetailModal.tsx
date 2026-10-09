@@ -227,7 +227,7 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
                   {t('ui.airport.secondaria')}
                 </span>
               </div>
-              <span className="text-[11px] text-[var(--ink-2)]">Dimensioni: 2,780 m × 45 m</span>
+              <span className="text-[11px] text-[var(--ink-2)]">{t('ui.airport.dimensionsSecondary')}</span>
               <span className="text-[11px] text-[var(--ink-2)]">{t('airportModal.surface')}</span>
               <span className="text-[10px] text-[var(--ink-3)] font-mono font-medium">{t('airportModal.parallelUse')}</span>
             </div>

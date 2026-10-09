@@ -155,7 +155,7 @@ const LAYER_CATALOG: LayerDocItem[] = [
     institution: 'OpenSky Network (ADS-B)',
     portalUrl: 'https://opensky-network.org',
     portalName: 'opensky-network.org (ADS-B Live)',
-    descriptionIt: 'Traffico aereo in tempo reale nello spazio aereo e nell\\\'area terminale di controllo (TMA) di Venezia Marco Polo.',
+    descriptionIt: 'Traffico aereo in tempo reale nello spazio aereo e nell\'area terminale di controllo (TMA) di Venezia Marco Polo.',
     descriptionEn: 'Live air traffic in the terminal maneuvering area (TMA) of Venice Marco Polo Airport.',
     technicalNotesIt: 'Telemetria ADS-B autentica in tempo reale acquisita via API OpenSky Network. Riporta esclusivamente i velivoli fisicamente captati dai ricevitori terrestri nel bounding box di Venezia, senza voli sintetici simulati di fallback.',
     technicalNotesEn: 'Authentic real-time ADS-B telemetry acquired via OpenSky Network API. Reports strictly aircraft physically detected by terrestrial receivers within the Venice bounding box, without simulated fallback flights.',
@@ -267,7 +267,7 @@ const LAYER_CATALOG: LayerDocItem[] = [
     institution: 'Elenco curato del progetto · rif. Gruppo Veritas',
     portalUrl: 'https://www.gruppoveritas.it',
     portalName: 'gruppoveritas.it',
-    descriptionIt: 'Pontili e ormeggi dei battelli compattatori adibiti all\\\'asporto rifiuti nei canali con fasce orarie mattutine (06:30 - 08:30).',
+    descriptionIt: 'Pontili e ormeggi dei battelli compattatori adibiti all\'asporto rifiuti nei canali con fasce orarie mattutine (06:30 - 08:30).',
     descriptionEn: 'Canal collection docks and waste barge moorings with official morning schedules (06:30 - 08:30).',
     technicalNotesIt: 'Pontili, orari e frazioni sono indicativi; nessuna posizione dei battelli in tempo reale. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
     technicalNotesEn: 'Docks, times and waste streams are indicative; no live boat positions. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
@@ -893,7 +893,7 @@ export default function LayersDocumentationPage() {
               type="button"
               onClick={toggleLanguage}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold bg-[var(--rule)]/60 hover:bg-[var(--rule)] text-[var(--ink)] border border-[var(--rule)] transition-all cursor-pointer"
-              title="Switch Language (IT / EN)"
+              title={t('ui.layersPage.switchLanguage')}
             >
               <Globe className="w-3.5 h-3.5 text-cyan-400" />
               <span>{language.toUpperCase()}</span>

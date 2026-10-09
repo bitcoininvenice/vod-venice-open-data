@@ -8,7 +8,8 @@ export const enUi: UiTranslations = {
     itIt: "en-GB",
     principale: "Main",
     secondaria: "Secondary",
-    nessunAereoRilevatoOpenskyNell: "No aircraft currently detected by OpenSky in the area (or service unreachable)."
+    nessunAereoRilevatoOpenskyNell: "No aircraft currently detected by OpenSky in the area (or service unreachable).",
+    dimensionsSecondary: "Dimensions: 2,780 m × 45 m"
   },
   alilaguna: {
     sourceTransitland: "Source: GTFS published by Alilaguna S.p.A. (alilaguna.it), listed on Transitland",
@@ -297,7 +298,8 @@ export const enUi: UiTranslations = {
     flottaActv: "ACTV",
     flottaAlilaguna: "Alilaguna",
     battelliServizio: "scheduled boats",
-    orologioUrbanoVenezia: "Solar clock and ephemeris of Venice (45.437° N, 12.335° E)"
+    orologioUrbanoVenezia: "Solar clock and ephemeris of Venice (45.437° N, 12.335° E)",
+    tideButtonTitle: "Tide at Punta della Salute (CPSM): open the simulator"
   },
   feature: {
     stelleHotel: "5-star: {five}, 4-star: {four}, 3-star: {three}",
@@ -510,7 +512,8 @@ export const enUi: UiTranslations = {
     group_mobility: "Water, air and rail mobility",
     group_lagoon: "Lagoon, hydrography and sea defence",
     group_city: "Historic city, heritage and services",
-    target: "File / endpoint:"
+    target: "File / endpoint:",
+    switchLanguage: "Switch language (IT / EN)"
   },
   search: {
     placeholder: "Search stops, pharmacies, AEDs, fountains, street signs, worksites...",
@@ -987,5 +990,22 @@ export const enUi: UiTranslations = {
     cardMetricsBody: "AED coverage, 72-96 hour flooding estimates and platform indicators.",
     cardSourcesTitle: "Source status",
     cardSourcesBody: "Availability and data age for every live source and dataset."
+  },
+  mapLabels: {
+    line: "Line {line}",
+    networkNav: "waterbus",
+    networkBus: "bus and tram",
+    unknownLine: "Vehicle {id} · line not recognised",
+    airport: "Marco Polo Airport (VCE / LIPZ)",
+    airportSub: "Runway 04R/22L · Alilaguna dock",
+    kmToVce: "{km} km from VCE",
+    ramp: "ramp",
+    scrGate: "SCR gate",
+    evSockets: "{n} sockets",
+    leaning: "leaning",
+    beds: "{beds} beds ({ratio}× residents)",
+    pollenRisk: "Pollen: {risk} risk",
+    airportDock: "VCE airport dock (Alilaguna)",
+    freightDock: "Freight dock ({min} min)"
   }
 };

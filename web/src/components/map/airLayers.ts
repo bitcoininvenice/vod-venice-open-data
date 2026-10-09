@@ -138,7 +138,7 @@ export function drawFlights(rc: RenderContext): void {
 
     ctx.save();
     ctx.font = '700 11px "Bricolage Grotesque", sans-serif';
-    const txt = 'Aeroporto Marco Polo (VCE / LIPZ)';
+    const txt = rc.t('ui.mapLabels.airport');
     const txtWidth = ctx.measureText(txt).width;
 
     ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.92)';
@@ -155,7 +155,7 @@ export function drawFlights(rc: RenderContext): void {
     if (camera.s > 0.025) {
       ctx.font = '500 9px "DM Mono", monospace';
       ctx.fillStyle = paletteTheme === 'notte' ? '#94a3b8' : '#64748b';
-      const subTxt = 'Pista 04R/22L · Darsena Alilaguna';
+      const subTxt = rc.t('ui.mapLabels.airportSub');
       ctx.fillText(subTxt, badgeX - ctx.measureText(subTxt).width / 2, badgeY + 14);
     }
     ctx.restore();
@@ -293,7 +293,7 @@ export function drawFlights(rc: RenderContext): void {
           const distToVceKm = (Math.hypot(live.lon - 12.3519, live.lat - 45.5053) * 111).toFixed(1);
           ctx.font = '700 10px "DM Mono", monospace';
           ctx.fillStyle = '#fbbf24';
-          ctx.fillText(`${distToVceKm} km a VCE`, fx + 14, fy - 10);
+          ctx.fillText(rc.t('ui.mapLabels.kmToVce', { km: distToVceKm }), fx + 14, fy - 10);
         }
       }
     }

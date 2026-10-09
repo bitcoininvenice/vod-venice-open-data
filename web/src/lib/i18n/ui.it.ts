@@ -6,7 +6,8 @@ export const itUi = {
     itIt: "it-IT",
     principale: "Principale",
     secondaria: "Secondaria",
-    nessunAereoRilevatoOpenskyNell: "Nessun aereo rilevato da OpenSky nell'area in questo momento (o servizio non raggiungibile)."
+    nessunAereoRilevatoOpenskyNell: "Nessun aereo rilevato da OpenSky nell'area in questo momento (o servizio non raggiungibile).",
+    dimensionsSecondary: "Dimensioni: 2.780 m × 45 m"
   },
   alilaguna: {
     sourceTransitland: "Fonte: GTFS pubblicato da Alilaguna S.p.A. (alilaguna.it), registrato su Transitland",
@@ -295,7 +296,8 @@ export const itUi = {
     flottaActv: "ACTV",
     flottaAlilaguna: "Alilaguna",
     battelliServizio: "battelli da orario",
-    orologioUrbanoVenezia: "Orologio solare ed effemeridi di Venezia (45.437° N, 12.335° E)"
+    orologioUrbanoVenezia: "Orologio solare ed effemeridi di Venezia (45.437° N, 12.335° E)",
+    tideButtonTitle: "Marea a Punta della Salute (CPSM): apri il simulatore"
   },
   feature: {
     stelleHotel: "5 stelle: {five}, 4 stelle: {four}, 3 stelle: {three}",
@@ -508,7 +510,8 @@ export const itUi = {
     group_mobility: "Mobilità acquea, aerea e ferroviaria",
     group_lagoon: "Laguna, idrografia e difesa dal mare",
     group_city: "Città storica, patrimonio e servizi",
-    target: "File / endpoint:"
+    target: "File / endpoint:",
+    switchLanguage: "Cambia lingua (IT / EN)"
   },
   search: {
     placeholder: "Cerca fermate, farmacie, DAE, fontanelle, nizioleti, cantieri...",
@@ -985,6 +988,23 @@ export const itUi = {
     cardMetricsBody: "Copertura dei DAE, stime di allagamento a 72-96 ore e indicatori della piattaforma.",
     cardSourcesTitle: "Stato delle fonti",
     cardSourcesBody: "Disponibilità ed età del dato di ogni fonte live e dataset."
+  },
+  mapLabels: {
+    line: "Linea {line}",
+    networkNav: "navigazione",
+    networkBus: "autobus e tram",
+    unknownLine: "Mezzo {id} · linea non riconosciuta",
+    airport: "Aeroporto Marco Polo (VCE / LIPZ)",
+    airportSub: "Pista 04R/22L · Darsena Alilaguna",
+    kmToVce: "{km} km da VCE",
+    ramp: "rampa",
+    scrGate: "Varco SCR",
+    evSockets: "{n} prese",
+    leaning: "pendente",
+    beds: "{beds} letti ({ratio}× residenti)",
+    pollenRisk: "Pollini: rischio {risk}",
+    airportDock: "Darsena aeroporto VCE (Alilaguna)",
+    freightDock: "Riva merci ({min} min)"
   }
 };
 

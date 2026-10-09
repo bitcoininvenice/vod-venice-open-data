@@ -29,4 +29,6 @@ export interface RenderContext extends Required<Pick<MapEngineProps, DataProps>>
   selectedShipOnMap: ShipItem | null;
   selectedAlilagunaBoat: AlilagunaBoat | null;
   selectedSatellite: SatelliteItem | null;
+  /** traduzione delle etichette disegnate sulla mappa */
+  t: (path: string, params?: Record<string, string | number>) => string;
 }
