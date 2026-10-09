@@ -17,6 +17,8 @@ import import_osm_poi as osm_poi  # noqa: E402
 import import_alilaguna_gtfs as ali  # noqa: E402
 import import_agcom_fiber as fiber  # noqa: E402
 import import_osm_waterways as waterways  # noqa: E402
+import import_arpav_pollen as arpav_pollen  # noqa: E402
+import import_cciaa_turismo as cciaa  # noqa: E402
 from download_gtfs import safe_extract  # noqa: E402
 from vod_common import redact  # noqa: E402
 
@@ -201,6 +203,33 @@ def test_osm_waterways_marker_kind_and_simplify():
     assert waterways.marker_kind({"seamark:type": "light_minor"}) == "fanale"
     line = [[12.0, 45.0], [12.00001, 45.000001], [12.001, 45.0]]
     assert waterways.simplify(line, 4.0) == [[12.0, 45.0], [12.001, 45.0]]
+
+
+def test_arpav_pollen_monthly_profile():
+    csv_text = (
+        ",URTICACEAE,GRAMINEAE,Altri,GRAMINEAE\n"
+        "01/05/2025,2.00,10.00,1,99\n"
+        "02/05/2025,4.00,30.00,1,99\n"
+        "01/06/2025,,5.00,1,99\n"
+        ",,,,\n"
+    )
+    p = arpav_pollen.monthly_profile(csv_text)
+    assert p["days"] == 3
+    assert p["families"]["urticaceae"]["mean"][4] == 3.0 and p["families"]["urticaceae"]["max"][4] == 4.0
+    assert p["families"]["gramineae"]["mean"][4] == 20.0  # prima colonna GRAMINEAE, non il duplicato
+    assert p["families"]["gramineae"]["mean"][5] == 5.0
+    assert p["families"]["urticaceae"]["mean"][0] is None
+
+
+def test_cciaa_turismo_build():
+    tourism = "CODICE COMUNE;DENOMINAZIONE Comune;ARRIVI 2024;PRESENZE 2024\n027042;VENEZIA;100;250\n027008;CHIOGGIA;10;20\n027044;CAVALLINO TREPORTI;5;50\n"
+    pop = ("CODICE COMUNE;DENOMINAZIONE;POPOLAZIONE AL 1/01/2024 Maschi;POPOLAZIONE AL 1/01/2024 Femmine;"
+           "POPOLAZIONE AL 1/01/2024 Totale;POPOLAZIONE AL 1/01/2024 di cui stranieri\n"
+           "027042;VENEZIA;1;1;50;5\n027008;CHIOGGIA;1;1;10;1\n027044;CAVALLINO TREPORTI;1;1;25;2\n")
+    d = cciaa.build(tourism, pop)
+    assert d["tourismYear"] == 2024 and d["populationDate"] == "2024-01-01"
+    ve = d["comuni"][0]
+    assert ve["name"] == "Venezia" and ve["presencesPerResident"] == 5.0 and ve["avgStayNights"] == 2.5
 
 
 def test_safe_extract_rejects_path_traversal(tmp_path):

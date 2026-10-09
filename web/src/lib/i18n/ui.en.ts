@@ -554,7 +554,21 @@ export const enUi: UiTranslations = {
     markerHint_fanale: "Night navigation light.",
     canalUnnamed: "Unnamed canal",
     canalLength: "Mapped section: {km} km",
-    lagoonOsmNote: "Position from OpenStreetMap: there is no official open dataset of channel markers and canals. Not for navigation: nautical charts and Coast Guard notices prevail."
+    lagoonOsmNote: "Position from OpenStreetMap: there is no official open dataset of channel markers and canals. Not for navigation: nautical charts and Coast Guard notices prevail.",
+    monthInitials: "J,F,M,A,M,J,J,A,S,O,N,D",
+    pollenMeasuredTitle: "Measured by ARPAV in Venice in {year} (monthly mean)",
+    pollenMeasured_urticaceae: "Pellitory",
+    pollenMeasured_gramineae: "Grasses",
+    pollenMeasured_cupressaceae: "Cypress",
+    pollenMeasured_betulaceae: "Birch family",
+    pollenMeasured_corylaceae: "Hazel family",
+    pollenMeasured_oleaceae: "Olive family",
+    pollenMeasured_compositae: "Compositae",
+    pollenMeasured_pinaceae: "Pine family",
+    pollenMeasuredNote: "ARPAV aerobiological station in Venice, {days} days of measurement, CC BY 4.0. Colours: grey < 0.5 · green < 5 · yellow < 20 · orange < 50 · red ≥ 50 grains/m³.",
+    tourismRealTitle: "Real data by municipality ({year})",
+    tourismRealRow: "{presences} overnight stays, {arrivals} arrivals, {ratio} stays per resident",
+    tourismRealNote: "Venice Rovigo Chamber of Commerce on Veneto Region and ISTAT data (CC BY 4.0). The area values below remain indicative: there is no open dataset by sestiere."
   },
   layersPage: {
     tornaAllaMappa: "Back to Map",
@@ -978,7 +992,10 @@ export const enUi: UiTranslations = {
     methodologyMethodsBody: "Flooding at 72-96 h interpolates the Tide Centre's forecast highs and lows against an indicative flooding table. Heat stress uses Steadman apparent temperature (without wind) from the Tessera METAR.",
     methodologyMissingTitle: "Unavailable sources",
     methodologyMissingBody: "No value is randomly generated. If a live source does not respond, or a figure is not published as open data, the page shows \"n/a\" instead of a fallback value.",
-    footer: "Venice Open Data (VOD) · map, analysis and open data for Venice and its lagoon"
+    footer: "Venice Open Data (VOD) · map, analysis and open data for Venice and its lagoon",
+    card_tourism_title: "Tourist overnight stays in Venice",
+    card_tourism_unit: "nights per year",
+    card_tourism_note: "{year}: {arrivals} arrivals, {residents} residents, {ratio} stays per resident (Chamber of Commerce, Region/ISTAT data)"
   },
   sourcesPage: {
     brandSubtitle: "Source status and data freshness",
@@ -1077,7 +1094,11 @@ export const enUi: UiTranslations = {
     "name_open-meteo-marine": "Open-Meteo marine forecast",
     "meta_open-meteo-marine": "Forecast waves and sea temperature at the Acqua Alta platform, alongside CPSM readings.",
     "name_osm-waterways": "OpenStreetMap channel markers and canals (pipeline)",
-    "meta_osm-waterways": "There is no official open dataset of channel markers and canals: OpenStreetMap is the most complete source. Not for navigation."
+    "meta_osm-waterways": "There is no official open dataset of channel markers and canals: OpenStreetMap is the most complete source. Not for navigation.",
+    "name_arpav-pollen": "ARPAV measured pollen, Venice (pipeline)",
+    "meta_arpav-pollen": "Daily concentrations for the latest published year; ARPAV does not publish the current year as open data.",
+    "name_cciaa-turismo": "Tourism and population of lagoon municipalities (pipeline)",
+    "meta_cciaa-turismo": "Annual arrivals, stays and residents by municipality: no open data exists by sestiere."
   },
   notFound: {
     subtitle: "Page not found",

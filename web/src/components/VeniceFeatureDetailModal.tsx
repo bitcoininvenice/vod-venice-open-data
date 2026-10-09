@@ -4,6 +4,7 @@ import { FIBER_CLASS_KEY, FIBER_COLORS, fiberOperators, type FiberCell } from '@
 import { MARKER_COLORS, MARKER_KEY, canalLengthMeters, type LagoonCanal, type MarkerKind } from '@/lib/lagoonNetwork';
 import React from 'react';
 import { PHARMACY_DUTY_URL } from '@/lib/pharmacies-data';
+import tourismData from '@/data/turismo-comuni.json';
 import {
   X,
   ShieldAlert,
@@ -29,6 +30,7 @@ import {
   Info
 } from 'lucide-react';
 import {
+  PollenMeasuredProfile,
   AirQualityItem,
   CivicPoiItem,
   PasserellaItem,
@@ -989,6 +991,19 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
 
           {feature.type === 'accommodation' && (
             <div className="flex flex-col gap-3">
+              <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 flex flex-col gap-1">
+                <span className="text-[10px] uppercase font-mono text-sky-400 font-bold">{t('ui.feature.tourismRealTitle', { year: tourismData.tourismYear })}</span>
+                {tourismData.comuni.map((c) => (
+                  <span key={c.code} className="text-xs text-[var(--ink-2)]">
+                    <b className="text-[var(--ink)]">{c.name}</b>: {t('ui.feature.tourismRealRow', {
+                      presences: (c.presences ?? 0).toLocaleString('it-IT'),
+                      arrivals: (c.arrivals ?? 0).toLocaleString('it-IT'),
+                      ratio: c.presencesPerResident ?? 'n.d.',
+                    })}
+                  </span>
+                ))}
+                <span className="text-[10px] text-[var(--ink-3)]">{t('ui.feature.tourismRealNote')}</span>
+              </div>
               <div className={`p-3 rounded-xl border ${feature.data.densityCategory === 'CRITICA' ? 'bg-rose-500/10 border-rose-500/40 text-rose-300' : 'bg-fuchsia-500/10 border-fuchsia-500/30 text-fuchsia-300'}`}>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] uppercase font-mono font-bold">{t('ui.feature.indiceOvertourism')}</span>
@@ -1094,6 +1109,8 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               ) : (
                 <p className="text-[var(--ink-2)]">{t('ui.feature.forecastUnavailable')}</p>
               )}
+
+              {feature.data.measured && <PollenCalendar profile={feature.data.measured} />}
 
               <p className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">{t('ui.feature.pollenNote')}</p>
             </div>
@@ -1372,6 +1389,48 @@ const AirStationBody: React.FC<{ station: AirQualityItem }> = ({ station }) => {
       ) : (
         <p className="text-[var(--ink-2)]">{t('ui.feature.forecastUnavailable')}</p>
       )}
+    </div>
+  );
+};
+
+const POLLEN_CAL_ORDER = ['urticaceae', 'gramineae', 'cupressaceae', 'betulaceae', 'corylaceae', 'oleaceae', 'compositae', 'pinaceae'];
+
+/** Colore della cella: scala per media mensile (granuli/m³). */
+function pollenCellClass(v: number | null): string {
+  if (v === null) return 'bg-transparent';
+  if (v >= 50) return 'bg-rose-500/80';
+  if (v >= 20) return 'bg-orange-500/70';
+  if (v >= 5) return 'bg-amber-400/60';
+  if (v >= 0.5) return 'bg-lime-400/40';
+  return 'bg-[var(--rule)]/40';
+}
+
+/** Calendario pollinico misurato da ARPAV a Venezia: famiglie × mesi. */
+const PollenCalendar: React.FC<{ profile: PollenMeasuredProfile }> = ({ profile }) => {
+  const { t } = useTranslation();
+  const months = t('ui.feature.monthInitials').split(',');
+  return (
+    <div className="flex flex-col gap-1.5 border-t border-[var(--rule)] pt-2">
+      <span className="text-[11px] font-mono text-[var(--ink-3)] uppercase">{t('ui.feature.pollenMeasuredTitle', { year: profile.year })}</span>
+      <div className="grid gap-px text-[9px] font-mono" style={{ gridTemplateColumns: '6.5rem repeat(12, minmax(0, 1fr))' }}>
+        <span />
+        {months.map((m, i) => (
+          <span key={i} className="text-center text-[var(--ink-3)]">{m}</span>
+        ))}
+        {POLLEN_CAL_ORDER.filter((k) => profile.families[k]).map((k) => (
+          <React.Fragment key={k}>
+            <span className="truncate text-[var(--ink-2)]">{t(`ui.feature.pollenMeasured_${k}`)}</span>
+            {profile.families[k].mean.map((v, i) => (
+              <span
+                key={i}
+                className={`h-3.5 rounded-sm ${pollenCellClass(v)}`}
+                title={v === null ? 'n.d.' : `${v} gr/m³ (max ${profile.families[k].max[i]})`}
+              />
+            ))}
+          </React.Fragment>
+        ))}
+      </div>
+      <span className="text-[10px] text-[var(--ink-3)]">{t('ui.feature.pollenMeasuredNote', { days: profile.days })}</span>
     </div>
   );
 };

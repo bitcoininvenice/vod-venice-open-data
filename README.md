@@ -51,6 +51,8 @@ vod-venice-open-data/
 │   ├── import_osm_poi.py           # Colonnine, parcheggi, vere da pozzo, alberi monumentali, ecocentri, biblioteche (OSM)
 │   ├── import_alilaguna_gtfs.py    # Orario ufficiale Alilaguna (GTFS dell'operatore)
 │   ├── import_osm_waterways.py     # Briccole, segnalamenti e canali della laguna (OSM)
+│   ├── import_arpav_pollen.py      # Pollini misurati da ARPAV a Venezia (calendario mensile)
+│   ├── import_cciaa_turismo.py     # Arrivi, presenze e residenti dei comuni della laguna (CCIAA, CC BY)
 │   ├── import_agcom_fiber.py       # Copertura rete fissa FTTH/FTTC/ADSL (AGCOM BroadbandMap, CC BY 4.0)
 │   ├── enrich_fountains.py         # Toponimo di prossimità per le fontanelle senza nome
 │   └── tests/                      # Test pytest
@@ -131,6 +133,8 @@ python import_osm_poi.py                    # Colonnine, parcheggi ≥100 posti,
 python import_alilaguna_gtfs.py             # Orario Alilaguna (simulazione delle barche dall'orario)
 python import_agcom_fiber.py                # Copertura fibra AGCOM su celle di ~100 m
 python import_osm_waterways.py              # Briccole, segnalamenti e canali della laguna (OSM)
+python import_arpav_pollen.py               # Pollini misurati ARPAV a Venezia
+python import_cciaa_turismo.py              # Turismo e popolazione dei comuni della laguna
 
 # Test della pipeline
 python -m pytest -q tests

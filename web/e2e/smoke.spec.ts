@@ -155,6 +155,13 @@ test('il catalogo dei layer dichiara la natura dei dati', async ({ page }) => {
 });
 
 test.describe('API', () => {
+  test('il punto pollini di Venezia include il calendario misurato da ARPAV', async ({ request }) => {
+    const body = await (await request.get('/api/regional-data')).json();
+    const ve = body.data.pollenStations.find((s: { id: string }) => s.id === 'POL_VENEZIA');
+    expect(ve.measured.year).toBeGreaterThanOrEqual(2024);
+    expect(ve.measured.families.urticaceae.mean).toHaveLength(12);
+  });
+
   test('lagoon-network restituisce briccole e canali OpenStreetMap', async ({ request }) => {
     const body = await (await request.get('/api/lagoon-network')).json();
     expect(body.data.license).toBe('ODbL 1.0');

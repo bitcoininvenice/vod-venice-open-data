@@ -552,7 +552,21 @@ export const itUi = {
     markerHint_fanale: "Luce di segnalamento notturno.",
     canalUnnamed: "Canale senza nome",
     canalLength: "Tratto mappato: {km} km",
-    lagoonOsmNote: "Posizione da OpenStreetMap: non esiste un dataset ufficiale aperto di briccole e canali. Non usare per la navigazione: fanno fede carte nautiche e avvisi della Capitaneria."
+    lagoonOsmNote: "Posizione da OpenStreetMap: non esiste un dataset ufficiale aperto di briccole e canali. Non usare per la navigazione: fanno fede carte nautiche e avvisi della Capitaneria.",
+    monthInitials: "G,F,M,A,M,G,L,A,S,O,N,D",
+    pollenMeasuredTitle: "Misurato da ARPAV a Venezia nel {year} (media mensile)",
+    pollenMeasured_urticaceae: "Parietaria",
+    pollenMeasured_gramineae: "Graminacee",
+    pollenMeasured_cupressaceae: "Cipressi",
+    pollenMeasured_betulaceae: "Betulacee",
+    pollenMeasured_corylaceae: "Corilacee",
+    pollenMeasured_oleaceae: "Oleacee",
+    pollenMeasured_compositae: "Composite",
+    pollenMeasured_pinaceae: "Pinacee",
+    pollenMeasuredNote: "Stazione aerobiologica ARPAV di Venezia, {days} giorni di misura, licenza CC BY 4.0. Colori: grigio < 0,5 · verde < 5 · giallo < 20 · arancione < 50 · rosso ≥ 50 granuli/m³.",
+    tourismRealTitle: "Dati reali per comune ({year})",
+    tourismRealRow: "{presences} presenze, {arrivals} arrivi, {ratio} presenze per residente",
+    tourismRealNote: "Camera di Commercio Venezia Rovigo su dati Regione del Veneto e ISTAT (CC BY 4.0). I valori per zona qui sotto restano indicativi: non esiste un dataset aperto per sestiere."
   },
   layersPage: {
     tornaAllaMappa: "Torna alla Mappa",
@@ -976,7 +990,10 @@ export const itUi = {
     methodologyMethodsBody: "L'allagamento a 72-96 h interpola gli estremali previsti dal Centro Maree e li confronta con una tabella indicativa di allagamento. Lo stress termico usa la temperatura apparente di Steadman (senza vento) calcolata dal METAR di Tessera.",
     methodologyMissingTitle: "Fonti non disponibili",
     methodologyMissingBody: "Nessun valore è generato casualmente. Se una fonte live non risponde, o se un dato non è pubblicato come open data, la pagina mostra \"n.d.\" invece di un valore di ripiego.",
-    footer: "Venice Open Data (VOD) · mappa, analisi e open data per Venezia e la laguna"
+    footer: "Venice Open Data (VOD) · mappa, analisi e open data per Venezia e la laguna",
+    card_tourism_title: "Presenze turistiche a Venezia",
+    card_tourism_unit: "notti nell'anno",
+    card_tourism_note: "{year}: {arrivals} arrivi, {residents} residenti, {ratio} presenze per residente (Camera di Commercio, dati Regione/ISTAT)"
   },
   sourcesPage: {
     brandSubtitle: "Stato delle fonti e freschezza dei dati",
@@ -1075,7 +1092,11 @@ export const itUi = {
     "name_open-meteo-marine": "Previsione marina Open-Meteo",
     "meta_open-meteo-marine": "Onde e temperatura del mare previste alla piattaforma Acqua Alta, accanto alle misure CPSM.",
     "name_osm-waterways": "Briccole e canali OpenStreetMap (pipeline)",
-    "meta_osm-waterways": "Non esiste un dataset ufficiale aperto di briccole e canali: OpenStreetMap è la fonte più completa. Non per la navigazione."
+    "meta_osm-waterways": "Non esiste un dataset ufficiale aperto di briccole e canali: OpenStreetMap è la fonte più completa. Non per la navigazione.",
+    "name_arpav-pollen": "Pollini misurati ARPAV Venezia (pipeline)",
+    "meta_arpav-pollen": "Concentrazioni giornaliere dell'ultimo anno pubblicato; ARPAV non pubblica l'anno in corso come open data.",
+    "name_cciaa-turismo": "Turismo e popolazione dei comuni della laguna (pipeline)",
+    "meta_cciaa-turismo": "Arrivi, presenze e residenti annuali per comune: non esistono dati aperti per sestiere."
   },
   notFound: {
     subtitle: "Pagina non trovata",

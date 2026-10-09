@@ -757,8 +757,8 @@ const LAYER_CATALOG: LayerDocItem[] = [
     portalName: 'dati.veneto.it (Open Data Regione Veneto)',
     descriptionIt: 'Strutture ricettive e posti letto per zona con rapporto turisti/residenti (valori indicativi).',
     descriptionEn: 'Accommodation and beds per area with tourist/resident ratio (indicative values).',
-    technicalNotesIt: 'Conteggi indicativi: per i dati ufficiali consultare l\'Osservatorio del Turismo della Regione Veneto. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
-    technicalNotesEn: 'Indicative counts: see the Veneto Region Tourism Observatory for official figures. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
+    technicalNotesIt: 'La scheda mostra i dati reali per comune (arrivi, presenze e residenti dell\'ultimo anno pubblicato dalla Camera di Commercio Venezia Rovigo su dati Regione e ISTAT, CC BY 4.0, pipeline/import_cciaa_turismo.py). I valori per zona restano indicativi: non esiste un dataset aperto di posti letto per sestiere. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
+    technicalNotesEn: 'The card shows real data by municipality (arrivals, overnight stays and residents for the latest year published by the Venice Rovigo Chamber of Commerce on Region and ISTAT data, CC BY 4.0, pipeline/import_cciaa_turismo.py). Area values remain indicative: there is no open dataset of beds by sestiere. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
     endpointOrFile: 'regionalVenetoData.ts (REGIONAL_TOURIST_ACCOMMODATIONS)'
   },
   {
@@ -773,8 +773,8 @@ const LAYER_CATALOG: LayerDocItem[] = [
     portalName: 'open-meteo.com · atmosphere.copernicus.eu',
     descriptionIt: 'Previsione oraria dei pollini di ontano, betulla, graminacee, artemisia, olivo e ambrosia in quattro punti (Venezia, Mestre, Lido, Chioggia), con livello basso/medio/alto per famiglia.',
     descriptionEn: 'Hourly forecast of alder, birch, grass, mugwort, olive and ragweed pollen at four points (Venice, Mestre, Lido, Chioggia), with low/moderate/high level per family.',
-    technicalNotesIt: 'Modello europeo Copernicus CAMS letto da /api/regional-data tramite Open-Meteo (cache 30 minuti). È una previsione, non un campionamento: le soglie dei livelli sono indicative, sul modello delle classi ARPAV. Parietaria e cupressacee non sono nel modello; per il bollettino misurato fa fede ARPAV.',
-    technicalNotesEn: 'European Copernicus CAMS model read by /api/regional-data via Open-Meteo (30-minute cache). It is a forecast, not a sample: level thresholds are indicative, modelled on ARPAV classes. Pellitory and cypress are not in the model; the measured ARPAV bulletin prevails.',
+    technicalNotesIt: 'Previsione: modello europeo Copernicus CAMS letto da /api/regional-data tramite Open-Meteo (cache 30 minuti), con soglie dei livelli indicative sul modello delle classi ARPAV. Misure: nel punto di Venezia la scheda mostra anche il calendario pollinico misurato dalla stazione aerobiologica ARPAV nell\'ultimo anno pubblicato (pipeline/import_arpav_pollen.py, CC BY 4.0), comprese parietaria e cupressacee che il modello non prevede.',
+    technicalNotesEn: 'Forecast: European Copernicus CAMS model read by /api/regional-data via Open-Meteo (30-minute cache), with indicative level thresholds modelled on ARPAV classes. Measurements: at the Venice point the card also shows the pollen calendar measured by the ARPAV aerobiological station in the latest published year (pipeline/import_arpav_pollen.py, CC BY 4.0), including pellitory and cypress, which the model does not forecast.',
     endpointOrFile: '/api/regional-data (pollenStations)'
   },
   {

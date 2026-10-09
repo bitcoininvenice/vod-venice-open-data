@@ -983,6 +983,15 @@ export interface PollenMonitoringStationItem {
   validTime: string | null;
   pollens: PollenFamilyItem[];
   overallAllergyRisk: PollenLevel | null;
+  /** Calendario misurato da ARPAV (solo per il punto di Venezia, stazione aerobiologica) */
+  measured?: PollenMeasuredProfile | null;
+}
+
+/** Medie e massimi mensili (granuli/m³) misurati da ARPAV a Venezia nell'ultimo anno pubblicato. */
+export interface PollenMeasuredProfile {
+  year: number;
+  days: number;
+  families: Record<string, { mean: Array<number | null>; max: Array<number | null> }>;
 }
 
 export interface LagoonTributaryRiverItem {

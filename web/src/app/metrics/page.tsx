@@ -32,8 +32,13 @@ import {
   Trees,
   LifeBuoy,
   Activity,
-  Info
+  Info,
+  Users
 } from 'lucide-react';
+import tourismData from '@/data/turismo-comuni.json';
+
+/** Arrivi e presenze dell'ultimo anno pubblicato (Camera di Commercio, CC BY 4.0) */
+const VENICE_TOURISM = tourismData.comuni.find((c) => c.code === '027042');
 import { PlatformMetrics } from '@/lib/types';
 import type { TideForecast } from '@/lib/contracts/tide';
 import { formatSignedCm } from '@/lib/time';
@@ -137,6 +142,16 @@ const PLATFORM_CARDS: PlatformCard[] = [
   { id: 'satellites', sector: 'satelliti', keywords: 'satelliti satellites tle sentinel iss', icon: Satellite, color: 'purple', badge: 'CelesTrak', value: (m) => m?.activeSatellitesCount },
   { id: 'sar', sector: 'satelliti', keywords: 'sar radar sentinel-1 swath', icon: Compass, color: 'purple', badge: 'ESA', value: (m) => (m?.radarEarthObservationSwathKm ? `${m.radarEarthObservationSwathKm} km` : null) },
   // Città
+  {
+    id: 'tourism', sector: 'pedoni_citta', keywords: 'turismo tourism presenze arrivi residenti overtourism', icon: Users, color: 'purple', badge: 'CCIAA',
+    value: () => VENICE_TOURISM?.presences,
+    noteParams: (_m, f) => ({
+      year: String(tourismData.tourismYear),
+      arrivals: f(VENICE_TOURISM?.arrivals),
+      residents: f(VENICE_TOURISM?.residents),
+      ratio: String(VENICE_TOURISM?.presencesPerResident ?? 'n.d.'),
+    }),
+  },
   { id: 'pedestrians', sector: 'pedoni_citta', keywords: 'pedoni pedestrians flussi smart control room', icon: Footprints, color: 'amber', badge: 'n.d.', value: (m) => m?.pedestrianSensorsCount },
   { id: 'cantieri', sector: 'pedoni_citta', keywords: 'cantieri worksites opere pubbliche public works', icon: Building2, color: 'amber', badge: 'Comune VE', value: (m) => m?.activeCantieri, noteParams: (m, f) => ({ near: f(m?.stopsNearWorksites200m) }) },
   { id: 'fountains', sector: 'pedoni_citta', keywords: 'fontanelle fountains acqua water', icon: Droplets, color: 'cyan', badge: 'OSM', value: (m) => m?.drinkingFountainsCount },

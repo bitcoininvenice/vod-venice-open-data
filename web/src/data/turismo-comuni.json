@@ -1,0 +1,40 @@
+{
+ "generatedAt": "2026-10-09T10:28:21+00:00",
+ "source": "Camera di Commercio Venezia Rovigo su dati Regione del Veneto (turismo) e ISTAT (popolazione)",
+ "sourceUrl": "https://opengovernment.unioncamere.gov.it",
+ "license": "CC BY 4.0",
+ "tourismYear": 2024,
+ "populationDate": "2024-01-01",
+ "comuni": [
+  {
+   "code": "027042",
+   "name": "Venezia",
+   "arrivals": 5876797,
+   "presences": 13290973,
+   "residents": 250290,
+   "foreignResidents": 39348,
+   "presencesPerResident": 53.1,
+   "avgStayNights": 2.26
+  },
+  {
+   "code": "027008",
+   "name": "Chioggia",
+   "arrivals": 350563,
+   "presences": 1651277,
+   "residents": 47581,
+   "foreignResidents": 1976,
+   "presencesPerResident": 34.7,
+   "avgStayNights": 4.71
+  },
+  {
+   "code": "027044",
+   "name": "Cavallino-Treporti",
+   "arrivals": 874858,
+   "presences": 6761224,
+   "residents": 13266,
+   "foreignResidents": 1110,
+   "presencesPerResident": 509.7,
+   "avgStayNights": 7.73
+  }
+ ]
+}
