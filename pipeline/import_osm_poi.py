@@ -8,6 +8,8 @@ Pipeline: punti di interesse da OpenStreetMap che sostituiscono elenchi compilat
 - vere da pozzo del centro storico e delle isole (man_made=water_well)
 - alberi monumentali (natural=tree con denotation; molti riportano ref:masaf, il codice
   dell'Elenco nazionale degli alberi monumentali del Ministero dell'agricoltura)
+- ecocentri per rifiuti ingombranti e differenziati (amenity=recycling + recycling_type=centre)
+- biblioteche (amenity=library)
 
 Licenza dei dati: ODbL 1.0 - © OpenStreetMap contributors.
 Output: web/src/data/osm-poi.json (letto da web/src/lib/osmPoi.ts).
@@ -39,6 +41,9 @@ QUERY = f"""[out:json][timeout:120];
   nwr["amenity"="parking"]["capacity"]({B});
   nwr["man_made"="water_well"]({WELLS_BBOX[0]},{WELLS_BBOX[1]},{WELLS_BBOX[2]},{WELLS_BBOX[3]});
   nwr["natural"="tree"]["denotation"~"natural_monument|landmark"]({B});
+  nwr["amenity"="recycling"]["recycling_type"="centre"]({B});
+  nwr["amenity"="waste_transfer_station"]["name"~"[Ee]cocentro"]({B});
+  nwr["amenity"="library"]({B});
 );
 out tags center;"""
 
@@ -155,6 +160,21 @@ def tree(el, tags, lat, lon):
     }
 
 
+def civic(el, tags, lat, lon, default_name):
+    rid, url = osm_ref(el)
+    street = tags.get("addr:street")
+    address = f"{street} {tags.get('addr:housenumber', '')}".strip() if street else None
+    return {
+        "id": rid, "sourceUrl": url, "lat": lat, "lon": lon,
+        "name": tags.get("name") or default_name,
+        "operator": tags.get("operator"),
+        "openingHours": tags.get("opening_hours"),
+        "website": tags.get("website") or tags.get("contact:website"),
+        "address": address,
+        "zone": zone(lat, lon),
+    }
+
+
 def main() -> int:
     try:
         payload = fetch_overpass(QUERY)
@@ -162,7 +182,7 @@ def main() -> int:
         logging.error("%s", e)
         return 1
 
-    out = {"evCharging": [], "parkings": [], "wells": [], "monumentalTrees": []}
+    out = {"evCharging": [], "parkings": [], "wells": [], "monumentalTrees": [], "recyclingCentres": [], "libraries": []}
     seen = set()
     for el in payload.get("elements", []):
         tags = el.get("tags", {})
@@ -181,6 +201,10 @@ def main() -> int:
             out["wells"].append(well(el, tags, lat, lon))
         elif tags.get("natural") == "tree":
             out["monumentalTrees"].append(tree(el, tags, lat, lon))
+        elif tags.get("amenity") in ("recycling", "waste_transfer_station"):
+            out["recyclingCentres"].append(civic(el, tags, lat, lon, "Ecocentro"))
+        elif tags.get("amenity") == "library":
+            out["libraries"].append(civic(el, tags, lat, lon, "Biblioteca"))
 
     for items in out.values():
         items.sort(key=lambda x: x["id"])

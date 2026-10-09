@@ -792,6 +792,38 @@ const LAYER_CATALOG: LayerDocItem[] = [
     technicalNotesIt: 'Import con pipeline/import_agcom_fiber.py dalla pubblicazione più recente della Broadband Map AGCOM (celle da 20 m con velocità massima attesa, tecnologia e operatori), aggregate a ~100 m tenendo la tecnologia migliore. Indica la copertura della rete, non i servizi attivi. Licenza CC BY 4.0 con attribuzione e logo.',
     technicalNotesEn: 'Imported with pipeline/import_agcom_fiber.py from the latest AGCOM Broadband Map release (20 m cells with expected maximum speed, technology and operators), aggregated to ~100 m keeping the best technology. It shows network coverage, not active services. CC BY 4.0 licence with attribution and logo.',
     endpointOrFile: '/api/fiber (src/data/agcom-fiber.json)'
+  },
+  {
+    id: 'ecocentri',
+    nameIt: 'Ecocentri (Rifiuti Ingombranti)',
+    nameEn: 'Recycling Centres (Bulky Waste)',
+    group: 'city',
+    regime: 'static',
+    acquisition: 'api',
+    institution: 'OpenStreetMap contributors (ODbL)',
+    portalUrl: 'https://www.openstreetmap.org',
+    portalName: 'openstreetmap.org · comune.venezia.it',
+    descriptionIt: 'Ecocentri dove portare ingombranti e rifiuti differenziati, in centro storico, al Lido e in terraferma, con il link alla pagina del Comune su orari, ecocentri mobili e ritiro a domicilio.',
+    descriptionEn: 'Recycling centres for bulky and separated waste in the historic centre, Lido and mainland, linked to the City page on opening hours, mobile centres and home collection.',
+    technicalNotesIt: 'Import con pipeline/import_osm_poi.py (amenity=recycling con recycling_type=centre e stazioni di trasferimento chiamate Ecocentro, ODbL). Gli orari vanno verificati sulla pagina del Comune, che elenca anche gli ecocentri mobili settimanali.',
+    technicalNotesEn: 'Imported with pipeline/import_osm_poi.py (amenity=recycling with recycling_type=centre and transfer stations named Ecocentro, ODbL). Check opening hours on the City page, which also lists the weekly mobile centres.',
+    endpointOrFile: '/api/city-assets (src/data/osm-poi.json)'
+  },
+  {
+    id: 'biblioteche',
+    nameIt: 'Biblioteche',
+    nameEn: 'Libraries',
+    group: 'city',
+    regime: 'static',
+    acquisition: 'api',
+    institution: 'OpenStreetMap contributors (ODbL)',
+    portalUrl: 'https://www.openstreetmap.org',
+    portalName: 'openstreetmap.org · comune.venezia.it',
+    descriptionIt: 'Biblioteche civiche, universitarie e di fondazioni a Venezia, nelle isole e in terraferma, con il link ai servizi della Rete Biblioteche Venezia.',
+    descriptionEn: 'Civic, university and foundation libraries in Venice, the islands and the mainland, linked to the Venice Library Network services.',
+    technicalNotesIt: 'Import con pipeline/import_osm_poi.py (amenity=library, ODbL). Orari e accesso solo se presenti in OSM; non tutte le biblioteche sono aperte al pubblico.',
+    technicalNotesEn: 'Imported with pipeline/import_osm_poi.py (amenity=library, ODbL). Hours and access only when tagged in OSM; not every library is open to the public.',
+    endpointOrFile: '/api/city-assets (src/data/osm-poi.json)'
   }
 ];
 

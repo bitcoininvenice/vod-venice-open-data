@@ -147,6 +147,14 @@ def test_osm_poi_ev_mapping():
     assert item["totalSockets"] == 2 and item["powerKw"] == 22 and item["socketTypes"] == ["Type 2"]
 
 
+def test_osm_poi_civic_mapping():
+    el = {"type": "way", "id": 9, "center": {"lat": 45.43, "lon": 12.32}}
+    tags = {"amenity": "library", "name": "Biblioteca di Castello", "addr:street": "Via Garibaldi", "addr:housenumber": "1"}
+    item = osm_poi.civic(el, tags, 45.43, 12.32, "Biblioteca")
+    assert item["id"] == "osm_way_9" and item["address"] == "Via Garibaldi 1"
+    assert osm_poi.civic(el, {}, 45.43, 12.32, "Ecocentro")["name"] == "Ecocentro"
+
+
 def test_alilaguna_gtfs_helpers():
     assert ali.gtfs_seconds("25:10:30") == 25 * 3600 + 10 * 60 + 30
     shape = [[12.0, 45.0], [12.01, 45.0], [12.02, 45.0]]

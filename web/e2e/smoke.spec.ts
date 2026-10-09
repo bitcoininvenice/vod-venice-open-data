@@ -155,6 +155,14 @@ test('il catalogo dei layer dichiara la natura dei dati', async ({ page }) => {
 });
 
 test.describe('API', () => {
+  test('city-assets include ecocentri e biblioteche da OpenStreetMap', async ({ request }) => {
+    const body = await (await request.get('/api/city-assets')).json();
+    for (const key of ['recyclingCentres', 'libraries']) {
+      expect(body[key].length).toBeGreaterThan(0);
+      for (const p of body[key]) expect(p.sourceUrl).toMatch(/^https:\/\/www\.openstreetmap\.org\//);
+    }
+  });
+
   test('environment unisce medie ARPAV e previsione CAMS', async ({ request }) => {
     const body = await (await request.get('/api/environment')).json();
     expect(body.data.airStations.length).toBeGreaterThan(0);

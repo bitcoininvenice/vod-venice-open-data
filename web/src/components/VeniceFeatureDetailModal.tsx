@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import {
   AirQualityItem,
+  CivicPoiItem,
   PasserellaItem,
   BriccolaSignalItem,
   OceanStationItem,
@@ -98,7 +99,8 @@ export type VeniceFeatureSelected =
   | { type: 'parking'; data: ParkingItem }
   | { type: 'fountain'; data: CityAssetItem }
   | { type: 'fiberCell'; data: { cell: FiberCell; dataDate: string } }
-  | { type: 'airStation'; data: AirQualityItem };
+  | { type: 'airStation'; data: AirQualityItem }
+  | { type: 'civicPoi'; data: CivicPoiItem };
 
 interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
@@ -226,6 +228,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             {feature.type === 'airStation' && (
               <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400"><Wind className="w-5 h-5" /></div>
             )}
+            {feature.type === 'civicPoi' && (
+              <div className={`p-2 rounded-xl ${feature.data.kind === 'recycling' ? 'bg-green-500/20 text-green-400' : 'bg-violet-500/20 text-violet-400'}`}>
+                {feature.data.kind === 'recycling' ? <Trash2 className="w-5 h-5" /> : <Landmark className="w-5 h-5" />}
+              </div>
+            )}
 
             <div>
               <h2 id="feature-modal-title" className="text-base font-bold leading-tight">
@@ -262,6 +269,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'fountain' && feature.data.name}
                 {feature.type === 'fiberCell' && t('ui.feature.fiberTitle')}
                 {feature.type === 'airStation' && `ARPAV · ${feature.data.stationName}`}
+                {feature.type === 'civicPoi' && feature.data.name}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
                 {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
@@ -276,6 +284,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'bikeRoute' && `${t('ui.feature.lunghezza')}: ${feature.data.lengthKm} km · ${feature.data.section}`}
                 {feature.type === 'pollenStation' && t('ui.feature.pollenSubtitle')}
                 {feature.type === 'airStation' && `${feature.data.location} · ${feature.data.stationType}`}
+                {feature.type === 'civicPoi' && `${t(feature.data.kind === 'recycling' ? 'ui.feature.recyclingCentre' : 'ui.feature.library')} · ${feature.data.zone}`}
                 {feature.type === 'tributaryRiver' && `${t('ui.feature.portata')}: ${feature.data.avgFlowM3s} m³/s · ${feature.data.mouthZone}`}
                 {feature.type === 'parking' && `${feature.data.location} · ${feature.data.operator}`}
                 {feature.type === 'fountain' && `${feature.data.sestiere} · ${t('ui.feature.fountainSubtitle')}`}
@@ -908,6 +917,14 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <span className="text-[11px] text-[var(--ink-3)]">
                 {t('ui.feature.frazioneRaccolta')} <b>{feature.data.collectionType.replace(/_/g, ' ')}</b> · {t('ui.feature.orario')} <b>{feature.data.scheduleHours}</b>
               </span>
+              <a
+                href="https://www.comune.venezia.it/it/content/raccolta-rifiuti-centro-storico-e-isole"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] text-cyan-400 hover:underline"
+              >
+                {t('ui.feature.wasteOfficialLink')}
+              </a>
             </div>
           )}
 
@@ -1158,6 +1175,28 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           )}
 
           {feature.type === 'airStation' && <AirStationBody station={feature.data} />}
+
+          {feature.type === 'civicPoi' && (
+            <div className="flex flex-col gap-2">
+              {feature.data.address && <p className="text-[var(--ink-2)]">{t('ui.feature.indirizzo')} <b>{feature.data.address}</b></p>}
+              {feature.data.operator && <p className="text-[var(--ink-2)]">{t('ui.feature.gestore')} <b>{feature.data.operator}</b></p>}
+              {feature.data.openingHours && <span className="text-[11px] font-mono text-[var(--ink-3)]">{feature.data.openingHours}</span>}
+              {feature.data.website && (
+                <a href={feature.data.website} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline break-all">
+                  {feature.data.website}
+                </a>
+              )}
+              <a
+                href={feature.data.kind === 'recycling' ? 'https://www.comune.venezia.it/it/content/gestione-rifiuti-ingombranti' : 'https://www.comune.venezia.it/it/content/vuoi-avere-prestito-un-ebook'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-xl border bg-cyan-500/10 border-cyan-500/30 text-cyan-300 text-xs hover:underline"
+              >
+                {t(feature.data.kind === 'recycling' ? 'ui.feature.recyclingOfficialLink' : 'ui.feature.libraryOfficialLink')}
+              </a>
+              <p className="text-[11px] text-[var(--ink-3)]">{t('ui.feature.civicPoiNote')}</p>
+            </div>
+          )}
 
           <FeatureProvenance feature={feature} />
         </div>

@@ -95,7 +95,9 @@ export const itUi = {
     flottaActvTipo: "Flotta ACTV per Tipo",
     mostraTuttiITipi: "Mostra tutti i tipi",
     fiber: "Copertura fibra (AGCOM)",
-    subTerritory: "Territorio & turismo"
+    subTerritory: "Territorio & turismo",
+    recyclingCentres: "Ecocentri (ingombranti)",
+    libraries: "Biblioteche"
   },
   map: {
     orarioUfficialeActv: "orario ufficiale ACTV",
@@ -530,7 +532,13 @@ export const itUi = {
     aqiNext24h: "Indice europeo previsto nelle prossime 24 ore",
     uvIndex: "Indice UV",
     uvMaxToday: "massimo di oggi",
-    camsNote: "Previsione oraria del modello Copernicus CAMS (via Open-Meteo, CC BY 4.0) nel punto della stazione: non è una misura ARPAV."
+    camsNote: "Previsione oraria del modello Copernicus CAMS (via Open-Meteo, CC BY 4.0) nel punto della stazione: non è una misura ARPAV.",
+    recyclingCentre: "Ecocentro",
+    library: "Biblioteca",
+    recyclingOfficialLink: "Orari, ecocentri mobili e ritiro a domicilio degli ingombranti (Comune di Venezia)",
+    libraryOfficialLink: "Rete Biblioteche Venezia: prestito digitale e servizi (Comune di Venezia)",
+    civicPoiNote: "Punto mappato su OpenStreetMap: orari e servizi vanno verificati sulla pagina ufficiale.",
+    wasteOfficialLink: "Calendario ufficiale della raccolta nel centro storico e nelle isole (Comune di Venezia)"
   },
   layersPage: {
     tornaAllaMappa: "Torna alla Mappa",
@@ -1092,7 +1100,9 @@ export const itUi = {
     fiber_1: "solo ADSL",
     fiberAttribution: "BroadbandMap di Agcom - Autorità per le garanzie nelle comunicazioni, CC BY 4.0. Copertura della rete, non servizi attivi.",
     airForecast: "{name} · indice aria {aqi} (previsione)",
-    airAnnual: "ARPAV {name} · PM10 {pm10} µg/m³ (media {year})"
+    airAnnual: "ARPAV {name} · PM10 {pm10} µg/m³ (media {year})",
+    recyclingInitial: "E",
+    libraryInitial: "B"
   },
   provenance: {
     live: "Dato live",

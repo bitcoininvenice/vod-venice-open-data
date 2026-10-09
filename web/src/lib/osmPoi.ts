@@ -1,4 +1,4 @@
-import type { CityAssetItem, EvChargingItem, ParkingItem, UrbanTreeItem, VeniceWellItem } from './types';
+import type { CityAssetItem, CivicPoiItem, EvChargingItem, ParkingItem, UrbanTreeItem, VeniceWellItem } from './types';
 import osmPoi from '@/data/osm-poi.json';
 import fountainsDataset from '@/data/fountains.json';
 import { calculateDistanceMeters } from './geo';
@@ -103,3 +103,28 @@ export const OPEN_FOUNTAINS: CityAssetItem[] = (fountainsDataset.data as CityAss
   sourceUrl: 'osmId' in f ? `https://www.openstreetmap.org/node/${(f as { osmId: number }).osmId}` : undefined,
 }));
 export const OPEN_CITY_ASSETS: CityAssetItem[] = [...OPEN_FOUNTAINS, ...CURATED_CITY_ASSETS];
+
+type RawCivic = {
+  id: string; sourceUrl: string; lat: number; lon: number; name: string;
+  operator?: string | null; openingHours?: string | null; website?: string | null; address?: string | null; zone: string;
+};
+const toCivic = (kind: CivicPoiItem['kind']) => (c: RawCivic): CivicPoiItem => ({
+  id: c.id,
+  kind,
+  name: c.name,
+  lat: c.lat,
+  lon: c.lon,
+  operator: c.operator ?? null,
+  openingHours: c.openingHours ?? null,
+  website: c.website ?? null,
+  address: c.address ?? null,
+  zone: c.zone,
+  source: 'OPENSTREETMAP',
+  sourceUrl: c.sourceUrl,
+});
+
+/** Ecocentri per ingombranti e differenziata (amenity=recycling, recycling_type=centre). */
+export const OPEN_RECYCLING_CENTRES: CivicPoiItem[] = (osmPoi.recyclingCentres as RawCivic[]).map(toCivic('recycling'));
+
+/** Biblioteche (amenity=library). */
+export const OPEN_LIBRARIES: CivicPoiItem[] = (osmPoi.libraries as RawCivic[]).map(toCivic('library'));

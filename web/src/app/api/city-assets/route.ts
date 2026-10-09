@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import fountainsDataset from '@/data/fountains.json';
-import { OPEN_CITY_ASSETS, OPEN_FOUNTAINS, OPEN_PARKINGS, OSM_POI_META } from '@/lib/osmPoi';
+import { OPEN_CITY_ASSETS, OPEN_FOUNTAINS, OPEN_LIBRARIES, OPEN_PARKINGS, OPEN_RECYCLING_CENTRES, OSM_POI_META } from '@/lib/osmPoi';
 
 // Fontanelle e parcheggi da OpenStreetMap (ODbL); ponti accessibili e punti Veritas da elenco curato
 export const revalidate = 86400;
@@ -22,6 +22,9 @@ export async function GET() {
     accessibleBridges: OPEN_CITY_ASSETS.filter((a) => a.type === 'ACCESSIBLE_BRIDGE'),
     veritasServices: OPEN_CITY_ASSETS.filter((a) => a.type === 'VERITAS_WASTE' || a.type === 'VERITAS_BOAT'),
     parkings: OPEN_PARKINGS,
+    // Ecocentri e biblioteche da OpenStreetMap (ODbL)
+    recyclingCentres: OPEN_RECYCLING_CENTRES,
+    libraries: OPEN_LIBRARIES,
     data: {
       assets: OPEN_CITY_ASSETS,
       parkings: OPEN_PARKINGS

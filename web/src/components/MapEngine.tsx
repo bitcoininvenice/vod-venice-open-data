@@ -35,6 +35,7 @@ import {
   LagoonMorphologyItem,
   MeteoMarineWindItem,
   WindField,
+  CivicPoiItem,
   TrainLiveItem,
   VeritasWasteBoatItem,
   NizioletoCivicoItem,
@@ -63,7 +64,7 @@ import type { RenderContext } from './map/renderContext';
 import { drawRoutes, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, drawMarineSignals, drawOceanStations, drawCanalLimits, drawBridges, drawGondolas, drawDocks, drawMarineWind } from './map/lagoonLayers';
-import { drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
+import { drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 import { drawFloodLayer } from './map/floodLayer';
 import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
@@ -160,6 +161,11 @@ export interface MapEngineProps {
   /** Copertura della rete fissa (AGCOM) */
   showFiber?: boolean;
   fiberData?: FiberDataset | null;
+  /** Ecocentri e biblioteche (OpenStreetMap) */
+  showRecyclingCentres?: boolean;
+  recyclingCentres?: CivicPoiItem[];
+  showLibraries?: boolean;
+  libraries?: CivicPoiItem[];
   showTrains?: boolean;
   liveTrains?: TrainLiveItem[];
   showWasteBoats?: boolean;
@@ -277,6 +283,10 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   windField = null,
   showFiber = false,
   fiberData = null,
+  showRecyclingCentres = false,
+  recyclingCentres = [],
+  showLibraries = false,
+  libraries = [],
   showTrains = false,
   liveTrains = [],
   showWasteBoats = false,
@@ -1445,6 +1455,24 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       }
     }
 
+    // 1ab0. Ecocentri e biblioteche (OpenStreetMap)
+    if (onSelectFeature) {
+      const civic = [...(showRecyclingCentres ? recyclingCentres : []), ...(showLibraries ? libraries : [])];
+      for (const p of civic) {
+        const px = (mx(p.lon) - camera.x0) * camera.s;
+        const py = (my(p.lat) - camera.y0) * camera.s;
+        if (Math.hypot(clickX - px, clickY - py) <= 14) {
+          onSelectFeature({ type: 'civicPoi', data: p });
+          setSelectedVehicle(null);
+          setSelectedFlight(null);
+          setSelectedShipOnMap(null);
+          setSelectedAlilagunaBoat(null);
+          setSelectedSatellite(null);
+          return;
+        }
+      }
+    }
+
     // 1ab. Hit test Fontanelle Potabili (City Assets - Fountains)
     if (showCityAssets && fountains && fountains.length > 0) {
       for (const f of fountains) {
@@ -1735,6 +1763,10 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         windField,
         showFiber,
         fiberData,
+        showRecyclingCentres,
+        recyclingCentres,
+        showLibraries,
+        libraries,
         moseGates,
         nizioleti,
         oceanStations,
@@ -1834,6 +1866,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       drawShips(rc);
 
       drawCityAssets(rc);
+      drawCivicPois(rc);
 
       drawParkings(rc);
 
@@ -1987,6 +2020,10 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     windField,
     showFiber,
     fiberData,
+    showRecyclingCentres,
+    recyclingCentres,
+    showLibraries,
+    libraries,
     showTrains,
     liveTrains,
     showWasteBoats,

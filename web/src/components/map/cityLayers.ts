@@ -748,3 +748,41 @@ export function drawPharmacies(rc: RenderContext): void {
     }
   }
 }
+
+/** Ecocentri e biblioteche (OpenStreetMap): cerchio colorato con iniziale e nome da vicino. */
+export function drawCivicPois(rc: RenderContext): void {
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showRecyclingCentres, recyclingCentres, showLibraries, libraries } = rc;
+  const groups = [
+    { show: showRecyclingCentres, items: recyclingCentres, color: '#16a34a', initial: rc.t('ui.mapLabels.recyclingInitial') },
+    { show: showLibraries, items: libraries, color: '#8b5cf6', initial: rc.t('ui.mapLabels.libraryInitial') },
+  ];
+  for (const g of groups) {
+    if (!g.show || !g.items || g.items.length === 0) continue;
+    for (const p of g.items) {
+      const px = sx(mx(p.lon));
+      const py = sy(my(p.lat));
+      if (px < -40 || px > cw + 40 || py < -40 || py > ch + 40) continue;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(px, py, 6.5, 0, Math.PI * 2);
+      ctx.fillStyle = g.color;
+      ctx.fill();
+      ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.font = 'bold 8px "DM Sans", sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(g.initial, px, py + 0.5);
+      if (camera.s > 0.03) {
+        ctx.textAlign = 'start';
+        ctx.textBaseline = 'alphabetic';
+        ctx.font = '600 8px "DM Mono", monospace';
+        ctx.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
+        ctx.fillText(p.name.slice(0, 32), px + 9, py + 3);
+      }
+      ctx.restore();
+    }
+  }
+}

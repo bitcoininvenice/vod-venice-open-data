@@ -48,7 +48,7 @@ vod-venice-open-data/
 │   ├── import_osm_defibrillators.py # Defibrillatori (DAE) da OpenStreetMap
 │   ├── import_osm_pharmacies.py    # Farmacie da OpenStreetMap (i turni non sono open data)
 │   ├── import_osm_fountains.py     # Fontanelle da OpenStreetMap
-│   ├── import_osm_poi.py           # Colonnine, parcheggi, vere da pozzo, alberi monumentali (OSM)
+│   ├── import_osm_poi.py           # Colonnine, parcheggi, vere da pozzo, alberi monumentali, ecocentri, biblioteche (OSM)
 │   ├── import_alilaguna_gtfs.py    # Orario ufficiale Alilaguna (GTFS dell'operatore)
 │   ├── import_agcom_fiber.py       # Copertura rete fissa FTTH/FTTC/ADSL (AGCOM BroadbandMap, CC BY 4.0)
 │   ├── enrich_fountains.py         # Toponimo di prossimità per le fontanelle senza nome
@@ -126,7 +126,7 @@ python import_osm_surveillance.py           # Telecamere da OpenStreetMap
 python import_osm_defibrillators.py         # Defibrillatori da OpenStreetMap (non esiste un dataset ufficiale aperto)
 python import_osm_pharmacies.py             # Farmacie da OpenStreetMap
 python import_osm_fountains.py && python enrich_fountains.py  # Fontanelle da OpenStreetMap
-python import_osm_poi.py                    # Colonnine, parcheggi ≥100 posti, vere da pozzo, alberi monumentali (OSM)
+python import_osm_poi.py                    # Colonnine, parcheggi ≥100 posti, vere da pozzo, alberi monumentali, ecocentri, biblioteche (OSM)
 python import_alilaguna_gtfs.py             # Orario Alilaguna (simulazione delle barche dall'orario)
 python import_agcom_fiber.py                # Copertura fibra AGCOM su celle di ~100 m
 

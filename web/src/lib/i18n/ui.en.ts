@@ -97,7 +97,9 @@ export const enUi: UiTranslations = {
     flottaActvTipo: "ACTV Fleet by Vessel Type",
     mostraTuttiITipi: "Show all types",
     fiber: "Fibre coverage (AGCOM)",
-    subTerritory: "Territory & tourism"
+    subTerritory: "Territory & tourism",
+    recyclingCentres: "Recycling centres (bulky waste)",
+    libraries: "Libraries"
   },
   map: {
     orarioUfficialeActv: "official ACTV timetable",
@@ -532,7 +534,13 @@ export const enUi: UiTranslations = {
     aqiNext24h: "European index forecast for the next 24 hours",
     uvIndex: "UV index",
     uvMaxToday: "today's maximum",
-    camsNote: "Hourly forecast from the Copernicus CAMS model (via Open-Meteo, CC BY 4.0) at the station location: not an ARPAV measurement."
+    camsNote: "Hourly forecast from the Copernicus CAMS model (via Open-Meteo, CC BY 4.0) at the station location: not an ARPAV measurement.",
+    recyclingCentre: "Recycling centre",
+    library: "Library",
+    recyclingOfficialLink: "Opening hours, mobile centres and home collection of bulky waste (City of Venice)",
+    libraryOfficialLink: "Venice Library Network: digital lending and services (City of Venice)",
+    civicPoiNote: "Point mapped on OpenStreetMap: check opening hours and services on the official page.",
+    wasteOfficialLink: "Official collection calendar for the historic centre and islands (City of Venice)"
   },
   layersPage: {
     tornaAllaMappa: "Back to Map",
@@ -1094,7 +1102,9 @@ export const enUi: UiTranslations = {
     fiber_1: "ADSL only",
     fiberAttribution: "BroadbandMap by Agcom (Italian Communications Authority), CC BY 4.0. Network coverage, not active services.",
     airForecast: "{name} · air index {aqi} (forecast)",
-    airAnnual: "ARPAV {name} · PM10 {pm10} µg/m³ ({year} mean)"
+    airAnnual: "ARPAV {name} · PM10 {pm10} µg/m³ ({year} mean)",
+    recyclingInitial: "R",
+    libraryInitial: "L"
   },
   provenance: {
     live: "Live data",

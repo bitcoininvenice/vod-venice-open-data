@@ -555,6 +555,22 @@ export interface UrbanTreeItem {
   sourceUrl?: string;
 }
 
+/** Ecocentro o biblioteca mappati su OpenStreetMap. */
+export interface CivicPoiItem {
+  id: string;
+  kind: 'recycling' | 'library';
+  name: string;
+  lat: number;
+  lon: number;
+  operator: string | null;
+  openingHours: string | null;
+  website: string | null;
+  address: string | null;
+  zone: string;
+  source: 'OPENSTREETMAP';
+  sourceUrl: string;
+}
+
 /** Origine di un punto: OpenStreetMap (ODbL) o elenco compilato nel progetto, da verificare. */
 export type PointSource = 'OPENSTREETMAP' | 'ELENCO_CURATO';
 

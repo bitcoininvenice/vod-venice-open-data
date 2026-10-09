@@ -27,6 +27,8 @@ import {
   Trees,
   Wifi,
   Cable,
+  Recycle,
+  Library,
   Zap,
   LifeBuoy,
   ShieldAlert,
@@ -101,6 +103,12 @@ interface LayerPanelProps {
   onToggleWifiHotspots?: () => void;
   showFiber?: boolean;
   onToggleFiber?: () => void;
+  showRecyclingCentres?: boolean;
+  onToggleRecyclingCentres?: () => void;
+  recyclingCentresCount?: number;
+  showLibraries?: boolean;
+  onToggleLibraries?: () => void;
+  librariesCount?: number;
   wifiHotspotsCount?: number;
   showEvCharging?: boolean;
   onToggleEvCharging?: () => void;
@@ -269,6 +277,12 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   onToggleWifiHotspots,
   showFiber = false,
   onToggleFiber,
+  showRecyclingCentres = false,
+  onToggleRecyclingCentres,
+  recyclingCentresCount = 0,
+  showLibraries = false,
+  onToggleLibraries,
+  librariesCount = 0,
   wifiHotspotsCount = 0,
   showEvCharging = true,
   onToggleEvCharging,
@@ -1439,7 +1453,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           </span>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-mono text-[var(--ink-3)] lowercase">
-              {[showCantieri, showCameras, showCityAssets, showWifiHotspots, showEvCharging, showPedestrianFlows, showSatellites, showNizioleti, showWells, showBellTowers, showEmergencyDocks, showDae, showPharmacies, showAccommodations, showFiber].filter(Boolean).length}/15
+              {[showCantieri, showCameras, showCityAssets, showWifiHotspots, showEvCharging, showPedestrianFlows, showSatellites, showNizioleti, showWells, showBellTowers, showEmergencyDocks, showDae, showPharmacies, showAccommodations, showFiber, showRecyclingCentres, showLibraries].filter(Boolean).length}/17
             </span>
             {sectionOpen.city ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </div>
@@ -1591,6 +1605,56 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                   <span>{t('ui.layerPanel.fiber')}</span>
                 </div>
                 {showFiber ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              </button>
+            )}
+
+            {/* Ecocentri (OpenStreetMap) */}
+            {onToggleRecyclingCentres && (
+              <button
+                type="button"
+                onClick={onToggleRecyclingCentres}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showRecyclingCentres
+                    ? 'bg-green-500/15 text-green-300 border-green-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Recycle className="w-3.5 h-3.5 text-green-400" />
+                  <span>{t('ui.layerPanel.recyclingCentres')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {recyclingCentresCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-green-500/20 text-green-300 font-bold">
+                      {recyclingCentresCount}
+                    </span>
+                  )}
+                  {showRecyclingCentres ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            )}
+
+            {/* Biblioteche (OpenStreetMap) */}
+            {onToggleLibraries && (
+              <button
+                type="button"
+                onClick={onToggleLibraries}
+                className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${showLibraries
+                    ? 'bg-violet-500/15 text-violet-300 border-violet-500/40 shadow-sm'
+                    : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Library className="w-3.5 h-3.5 text-violet-400" />
+                  <span>{t('ui.layerPanel.libraries')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {librariesCount > 0 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-violet-500/20 text-violet-300 font-bold">
+                      {librariesCount}
+                    </span>
+                  )}
+                  {showLibraries ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </div>
               </button>
             )}
 

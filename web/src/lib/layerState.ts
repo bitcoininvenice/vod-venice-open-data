@@ -42,7 +42,7 @@ const PRESET_LAYERS: Record<Exclude<MapPreset, 'clean' | 'all'>, LayerKey[]> = {
     'showCityAssets', 'showWifiHotspots', 'showEvCharging', 'showCameras', 'showParkings',
     'showCantieri', 'showPedestrianFlows', 'showNizioleti', 'showWells', 'showBellTowers',
     'showEmergencyDocks', 'showDae', 'showPharmacies', 'showAccommodations',
-    'showFiber',
+    'showFiber', 'showRecyclingCentres', 'showLibraries',
   ],
   satellites: ['showSatellites', 'showSubsidence', 'showHeatIslands'],
   regional: ['showLagoonWater', 'showAccommodations', 'showBikeRoutes', 'showPollenStations', 'showTributaries'],
