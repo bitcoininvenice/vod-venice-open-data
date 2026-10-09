@@ -6,6 +6,7 @@ import { StopItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { InfoPanel } from '@/components/ui/InfoPanel';
 import { DELAY_COLORS, delayMinutes, type StopArrival } from '@/lib/realtimeDelay';
+import { startPolling } from '@/lib/polling';
 
 interface StopDetailModalProps {
   stop: StopItem | null;
@@ -125,11 +126,10 @@ const RealtimeArrivals: React.FC<{ lat: number; lon: number; gtfsIds?: string[] 
         .then((r) => r.json())
         .then((j) => !cancelled && setState({ key, arrivals: Array.isArray(j.data) ? j.data : [], failed: !j.success }))
         .catch(() => !cancelled && setState({ key, arrivals: [], failed: true }));
-    load();
-    const id = setInterval(load, 30_000);
+    const stop = startPolling(load, 30_000);
     return () => {
       cancelled = true;
-      clearInterval(id);
+      stop();
     };
   }, [lat, lon, ids, key]);
 

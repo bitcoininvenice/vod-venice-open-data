@@ -1,9 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { clientKey, createRateLimiter } from '@/server/rateLimit';
 
-// Un caricamento della pagina esegue circa 22 richieste alle API, poi circa 6 al minuto con i
-// layer live attivi: 600 richieste al minuto per IP lasciano ampio margine all'uso normale
-// (anche più utenti dietro lo stesso NAT) e bloccano le raffiche automatiche.
+// Il limite serve solo per le route calcolate a ogni richiesta (vedi `matcher`): le altre API sono
+// rigenerate in background (ISR) e servite dalla CDN, quindi le raffiche non arrivano al server.
+// 600 richieste al minuto per IP lasciano ampio margine all'uso normale (anche più utenti dietro
+// lo stesso NAT) e bloccano le raffiche automatiche.
 const checkLimit = createRateLimiter({
   limit: Number(process.env.API_RATE_LIMIT_PER_MINUTE) || 600,
   windowMs: 60_000,
@@ -26,6 +27,8 @@ export function proxy(request: NextRequest) {
   return response;
 }
 
+// Solo le route dinamiche (parametri nella richiesta o POST): escludere le API in cache evita
+// un'esecuzione del proxy, cioè una funzione sul server, per ogni richiesta servita dalla CDN.
 export const config = {
-  matcher: ['/api/:path*', '/mcp'],
+  matcher: ['/api/mcp', '/mcp', '/api/datasets/:path*', '/api/realtime/arrivals', '/api/spatial/:path*', '/api/stops'],
 };

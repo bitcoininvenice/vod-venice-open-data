@@ -17,5 +17,9 @@ export async function GET(request: Request) {
 
   const all = await fetchStops();
   const stops = parsed.data.mode ? all.filter((s) => s.mode === parsed.data.mode) : all;
-  return NextResponse.json({ success: true, count: stops.length, data: stops });
+  // Dati statici della build: la CDN li tiene in cache per ogni valore di `mode`
+  return NextResponse.json(
+    { success: true, count: stops.length, data: stops },
+    { headers: { 'Vercel-CDN-Cache-Control': 'max-age=86400, stale-while-revalidate=86400' } },
+  );
 }

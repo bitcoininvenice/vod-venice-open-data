@@ -701,4 +701,13 @@ test.describe('API', () => {
     expect(res.headers()['content-security-policy']).toContain("default-src 'self'");
     expect(res.headers()['x-content-type-options']).toBe('nosniff');
   });
+
+  test('il proxy del rate limit gira solo sulle route dinamiche', async ({ request }) => {
+    const dynamicRes = await request.get('/api/stops');
+    expect(dynamicRes.headers()['x-ratelimit-remaining']).toBeDefined();
+    expect(dynamicRes.headers()['vercel-cdn-cache-control']).toContain('max-age=86400');
+    const cachedRes = await request.get('/api/tide');
+    expect(cachedRes.ok()).toBe(true);
+    expect(cachedRes.headers()['x-ratelimit-remaining']).toBeUndefined();
+  });
 });

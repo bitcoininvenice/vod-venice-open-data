@@ -40,6 +40,10 @@ export async function GET(request: Request) {
         note: 'Orari previsti e ritardi stimati da ACTV. Il ritardo attuale deriva dalla posizione GPS; gli orari alle fermate successive sono stime (estimate=constant: ACTV ripete il ritardo attuale). Licenza del feed realtime da confermare con AVM S.p.A.',
       },
     },
-    { status: ok ? 200 : 503, headers: { 'Cache-Control': 'public, max-age=15' } }
+    {
+      status: ok ? 200 : 503,
+      // Stessi parametri dalla stessa fermata: la CDN risponde per 15 s senza ricalcolare
+      headers: ok ? { 'Cache-Control': 'public, max-age=15', 'Vercel-CDN-Cache-Control': 'max-age=15' } : { 'Cache-Control': 'no-store' },
+    }
   );
 }

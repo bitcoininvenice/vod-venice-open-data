@@ -39,7 +39,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const result = applyQuery(loaded.items, { text: q.text, near, limit: q.limit, offset: q.offset });
     return NextResponse.json(
       { success: true, dataset: meta, context: loaded.meta ?? null, ...result, retrievedAt: new Date().toISOString() },
-      { headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=60' } },
+      { headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=60', 'Vercel-CDN-Cache-Control': 'max-age=60' } },
     );
   } catch {
     return NextResponse.json({ success: false, error: 'source_unavailable' }, { status: 503, headers: { 'Retry-After': '60' } });

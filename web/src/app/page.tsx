@@ -132,6 +132,7 @@ type DataResource =
   | 'railLogistics' | 'heritage' | 'emergencyHealth' | 'urbanMicroclimate' | 'regionalData' | 'loraGateways' | 'sports' | 'nautical';
 import type { TideResponse, TideStation, TideForecast, TideTrend, TideCategory } from '@/lib/contracts/tide';
 import type { RealtimeVehicleDto } from '@/lib/contracts/realtime';
+import { startPolling } from '@/lib/polling';
 
 export default function HomePage() {
   const { t } = useTranslation();
@@ -299,9 +300,7 @@ export default function HomePage() {
           if (data.success && Array.isArray(data.data)) setShips(data.data);
         })
         .catch((err) => console.warn('Navi AIS non disponibili:', err));
-    void load();
-    const id = setInterval(load, 60 * 1000);
-    return () => clearInterval(id);
+    return startPolling(load, 60 * 1000);
   }, [showShips]);
 
   useEffect(() => {
@@ -343,9 +342,7 @@ export default function HomePage() {
           if (json.success && json.data) setWindField(json.data as WindField);
         })
         .catch((err) => console.warn('Campo di vento non disponibile:', err));
-    void load();
-    const id = setInterval(load, 30 * 60 * 1000);
-    return () => clearInterval(id);
+    return startPolling(load, 30 * 60 * 1000);
   }, [showMarineWind]);
 
   useEffect(() => {
@@ -419,11 +416,10 @@ export default function HomePage() {
         })
         .catch((err) => console.warn('GTFS-RT unavailable:', err));
     };
-    load();
-    const id = setInterval(load, 20000);
+    const stop = startPolling(load, 20000);
     return () => {
       cancelled = true;
-      clearInterval(id);
+      stop();
     };
   }, [showRealtimeVehicles]);
 
@@ -762,9 +758,7 @@ export default function HomePage() {
         })
         .catch((err) => console.warn('Tide source unavailable:', err));
     };
-    loadTide();
-    const tideInterval = setInterval(loadTide, 5 * 60 * 1000);
-    return () => clearInterval(tideInterval);
+    return startPolling(loadTide, 5 * 60 * 1000);
   }, []);
 
   // Voli: solo con il livello o la scheda dell'aeroporto aperti, aggiornati ogni 15 s
@@ -779,9 +773,7 @@ export default function HomePage() {
         })
         .catch((err) => console.warn('Voli non disponibili:', err));
     };
-    loadFlights();
-    const id = setInterval(loadFlights, 15000);
-    return () => clearInterval(id);
+    return startPolling(loadFlights, 15000);
   }, [flightsNeeded]);
 
   // Update CSS Variables when palette changes

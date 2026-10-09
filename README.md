@@ -92,7 +92,7 @@ vod-venice-open-data/
 │   ├── src/server/                 # Accesso alle fonti esterne (fetch con timeout e cache, parser validati)
 │   ├── src/components/map/         # Layer di disegno della mappa (un modulo per tema) e contesto del frame
 │   ├── src/data/                   # Dataset generati dalla pipeline (opere, WiFi, ARPAV, telecamere, indice GTFS)
-│   ├── src/proxy.ts                # Rate limit delle API
+│   ├── src/proxy.ts                # Rate limit delle API dinamiche (le altre sono in cache CDN)
 │   └── e2e/                        # Test end-to-end Playwright
 └── README.md
 ```

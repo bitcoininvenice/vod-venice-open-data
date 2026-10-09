@@ -17,10 +17,9 @@ export async function GET(request: Request) {
   }
 
   const results = await findStopsNearCantieri(parsed.data.radius);
-  return NextResponse.json({
-    success: true,
-    radiusMeters: parsed.data.radius,
-    count: results.length,
-    data: results,
-  });
+  // Calcolo su dati statici della build: la CDN tiene in cache il risultato per ogni raggio
+  return NextResponse.json(
+    { success: true, radiusMeters: parsed.data.radius, count: results.length, data: results },
+    { headers: { 'Cache-Control': 'public, max-age=3600', 'Vercel-CDN-Cache-Control': 'max-age=86400, stale-while-revalidate=86400' } },
+  );
 }
