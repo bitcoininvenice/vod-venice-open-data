@@ -4,7 +4,7 @@ import { ACTV_GTFS_RT_FEEDS, parseVehiclePositions, type RealtimeVehicle } from 
 import { lookupRoute, lookupTrip, type RealtimeCategory } from '@/server/sources/gtfsIndex';
 import { actvCurrentDelay, fetchTripDelays, findTrip, vehicleDelay } from '@/server/sources/actvDelays';
 import { isFresh, type VehicleDelay } from '@/lib/realtimeDelay';
-import { matchTrip, parseGtfsTime, positionDelay, trustDelay, type TripIndex } from '@/server/sources/positionDelay';
+import { matchTrip, parseGtfsTime, positionDelay, trustDelay, type TripIndex } from '@/lib/positionDelay';
 import { serverSimulation } from '@/server/sources/simulationServer';
 import { romeDayType, romeLocalToDate } from '@/lib/time';
 import type { TripDelay } from '@/server/sources/gtfsRt';

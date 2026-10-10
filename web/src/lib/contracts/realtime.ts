@@ -7,6 +7,9 @@ export interface RealtimeVehicleDto {
   id: string;
   tripId: string | null;
   routeId: string | null;
+  /** partenza programmata "HH:MM:SS" e giorno di servizio "YYYYMMDD" della corsa, se indicati */
+  startTime?: string | null;
+  startDate?: string | null;
   label: string | null;
   lat: number;
   lon: number;

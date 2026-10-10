@@ -3,7 +3,8 @@ import type { RenderContext } from './renderContext';
 import { distAt, getSimulation, pointAt } from '@/lib/simulationModel';
 import { DELAY_COLORS, isFresh } from '@/lib/realtimeDelay';
 import { lineColor, needsDarkOutline } from '@/lib/actvLines';
-import type { SimModel } from '@/lib/simulationCore';
+import type { SimModel, SimProfile } from '@/lib/simulationCore';
+import { clock, tripStops, type TripStop } from '@/lib/tripView';
 
 /** Linea e categoria di ogni forma (dalla prima corsa che la usa), calcolate una volta per modello. */
 const shapeRoutes = new WeakMap<SimModel, Map<object, { n: string; cat: string }>>();
@@ -40,7 +41,8 @@ export function drawRoutes(rc: RenderContext): void {
         ctx.lineWidth = width + 1.5;
         ctx.stroke();
       }
-      ctx.globalAlpha = 0.5;
+      // con una corsa selezionata il resto della rete resta sullo sfondo
+      ctx.globalAlpha = rc.selectedTrip ? 0.12 : 0.5;
       ctx.strokeStyle = col;
       ctx.lineWidth = width;
       ctx.stroke();
@@ -231,4 +233,59 @@ export function drawCantieri(rc: RenderContext): void {
       }
     }
   }
+}
+
+/** Fermate della corsa, calcolate una volta per profilo e partenza. */
+const stopsCache = new WeakMap<SimProfile, Map<number, TripStop[]>>();
+function cachedStops(profile: SimProfile, departure: number): TripStop[] {
+  let byDeparture = stopsCache.get(profile);
+  if (!byDeparture) stopsCache.set(profile, (byDeparture = new Map()));
+  let stops = byDeparture.get(departure);
+  if (!stops) byDeparture.set(departure, (stops = tripStops({ profile, departure })));
+  return stops;
+}
+
+/**
+ * Corsa del mezzo selezionato: tracciato nel colore della linea sopra la rete attenuata, fermate già
+ * servite in grigio e successive con l'orario previsto (ritardo del mezzo compreso).
+ */
+export function drawSelectedTrip(rc: RenderContext): void {
+  const { ctx, sx, sy, mx, my, isDark, camera, selectedTrip: trip } = rc;
+  if (!trip) return;
+  const { profile, departure, color, delaySeconds, now } = trip;
+  const xy = profile.sh.xy;
+  ctx.save();
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(sx(xy[0]), sy(xy[1]));
+  for (let i = 1; i < profile.sh.n; i++) ctx.lineTo(sx(xy[2 * i]), sy(xy[2 * i + 1]));
+  ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.55)' : 'rgba(15,23,42,0.45)';
+  ctx.lineWidth = 7;
+  ctx.stroke();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  const showLabels = camera.s > 0.02;
+  for (const st of cachedStops(profile, departure)) {
+    const expected = st.scheduled + delaySeconds;
+    const passed = expected < now - 30;
+    const px = sx(mx(st.lon));
+    const py = sy(my(st.lat));
+    ctx.beginPath();
+    ctx.arc(px, py, passed ? 3.5 : 5, 0, Math.PI * 2);
+    ctx.fillStyle = passed ? '#94a3b8' : isDark ? '#0f172a' : '#ffffff';
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = passed ? '#64748b' : color;
+    ctx.stroke();
+    if (showLabels && st.name) {
+      ctx.font = passed ? '500 9px "DM Mono", monospace' : '700 9px "DM Mono", monospace';
+      ctx.textAlign = 'start';
+      ctx.fillStyle = passed ? '#94a3b8' : isDark ? '#ffffff' : '#0f172a';
+      ctx.fillText(passed ? st.name : `${clock(expected)} ${st.name}`, px + 8, py + 3);
+    }
+  }
+  ctx.restore();
 }

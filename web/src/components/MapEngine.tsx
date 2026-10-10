@@ -14,7 +14,7 @@ import { useTranslation } from '@/lib/i18n';
 import { simClock } from '@/lib/simClock';
 import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
-import { drawRoutes, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
+import { drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, drawMarineSignals, drawOceanStations, drawCanalLimits, drawBridges, drawGondolas, drawDocks, drawMarineWind } from './map/lagoonLayers';
 import { bdapRadius, drawParks, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
@@ -33,7 +33,9 @@ import { FIBER_COLORS, fiberCellAt, indexFiberCells } from '@/lib/fiber';
 import { MAP_3D_CSS_TRANSFORM, unprojectFrom3D } from '@/lib/map3d';
 
 
-import { distAt, getSimulation, pointAt } from '@/lib/simulationModel';
+import { distAt, getSimulation, pointAt, useSimulation } from '@/lib/simulationModel';
+import { resolveTrip } from '@/lib/tripView';
+import { romeSecondsOfDay } from '@/lib/time';
 
 export interface MapEngineProps {
   /** Livelli accesi */
@@ -131,6 +133,10 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   const selectedFlight = selectedObject?.type === 'flight' ? selectedObject.data : null;
   const selectedShipOnMap = selectedObject?.type === 'ship' ? selectedObject.data : null;
   const selectedAlilagunaBoat = selectedObject?.type === 'alilagunaBoat' ? selectedObject.data : null;
+  // Corsa del mezzo ACTV selezionato: evidenziata sulla mappa con le sue fermate (l'orario si scarica se serve)
+  const selectedVehicle = selectedObject?.type === 'vehicle' ? selectedObject.data : null;
+  const simForTrip = useSimulation(Boolean(selectedVehicle?.trip));
+  const selectedTrip = useMemo(() => resolveTrip(simForTrip, selectedVehicle?.trip), [simForTrip, selectedVehicle]);
   const dragStartRef = useRef({ x: 0, y: 0, camX: 0, camY: 0 });
 
   // Hover & Selection state
@@ -516,6 +522,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               color: lineColor(lineName, rCat) ?? paletteAt(currentTimeSeconds).cats[rCat] ?? '#5cc8ff',
               headsign: `${tr('ui.mapLabels.line', { line: lineName })} · ${tr('ui.map.orarioUfficialeActv')}`,
               source: 'schedule',
+              trip: { line: lineName, profileIndex: tP[i], departure: t0[i], day: selectedDay },
             },
           });
       }
@@ -679,6 +686,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
                   updatedAt: v.timestamp,
                   delay: v.delay ?? null,
                   delayConflict: v.delayConflict ?? false,
+                  trip: v.line ? { line: v.line, startTime: v.startTime, startDate: v.startDate } : undefined,
                 },
               });
             },
@@ -795,6 +803,15 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         paletteTheme,
         sportFilter,
         tideLevel: simulatedTideLevel ?? data.tideLevel ?? 0,
+        selectedTrip: selectedTrip && selectedVehicle
+          ? {
+              ...selectedTrip,
+              color: selectedVehicle.color,
+              delaySeconds: selectedVehicle.delay?.seconds ?? 0,
+              // mezzi GPS: ora reale; mezzi da orario: ora della simulazione
+              now: selectedVehicle.source === 'gps' ? romeSecondsOfDay() : currentTimeSeconds,
+            }
+          : null,
       };
 
       // Vento animato sotto tutti gli altri layer, come sfondo
@@ -806,6 +823,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         drawParks(rc);
         drawLagoonNetwork(rc);
         drawRoutes(rc);
+        drawSelectedTrip(rc);
 
         drawSpatialBuffer(rc);
 
@@ -915,7 +933,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   }, [
     camera, KY, H, W, mx, my, tr, layers, data, cantieri, selectedDay, paletteTheme, bufferRadiusMeters, selectedCategory,
     sportFilter, simulatedTideLevel, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
-    alilagunaBoats, is3DView, landHiReady,
+    alilagunaBoats, is3DView, landHiReady, selectedTrip, selectedVehicle,
 ]);
 
   return (

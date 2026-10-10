@@ -7,6 +7,9 @@ import { useTranslation } from '@/lib/i18n';
 import { InfoHeader, InfoPanel, KeyValues, MoreDetails } from '@/components/ui/InfoPanel';
 import { DELAY_COLORS, delayMinutes, type VehicleDelay } from '@/lib/realtimeDelay';
 import { lineTextColor } from '@/lib/actvLines';
+import { clock, resolveTrip, tripStops, type TripRef } from '@/lib/tripView';
+import { useSimulation } from '@/lib/simulationModel';
+import { romeSecondsOfDay } from '@/lib/time';
 
 /** Mezzo ACTV selezionato: posizione simulata dall'orario o reale (GTFS-RT). */
 export interface VehicleSelection {
@@ -22,6 +25,8 @@ export interface VehicleSelection {
   delay?: VehicleDelay | null;
   /** posizione e dato ACTV non coerenti: il ritardo non viene mostrato */
   delayConflict?: boolean;
+  /** riferimento alla corsa dell'orario (per evidenziarla e mostrarne le fermate) */
+  trip?: TripRef;
 }
 
 /** Oggetti in movimento cliccati sulla mappa (le schede dei punti fissi sono in VeniceFeatureDetailModal). */
@@ -36,11 +41,13 @@ interface MapObjectPanelProps {
   onClose: () => void;
   onOpenAirport?: () => void;
   onOpenAlilaguna?: () => void;
+  /** ora della simulazione (s dalla mezzanotte), per le fermate già servite dai mezzi da orario */
+  timeSeconds?: number;
 }
 
 const VCE = { lat: 45.5053, lon: 12.3519 };
 
-export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose, onOpenAirport, onOpenAlilaguna }) => {
+export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose, onOpenAirport, onOpenAlilaguna, timeSeconds }) => {
   const { t, language } = useTranslation();
   if (!object) return null;
   const locale = language === 'it' ? 'it-IT' : 'en-GB';
@@ -184,6 +191,7 @@ export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose,
           ]}
         />
         {gps && !v.delay && <p className="text-[11px] text-[var(--ink-3)]">{t(v.delayConflict ? 'ui.delay.conflict' : 'ui.delay.noDelay')}</p>}
+        {v.trip && <TripStopsList vehicle={v} timeSeconds={timeSeconds} />}
       </InfoPanel>
     );
   }
@@ -275,3 +283,54 @@ function useNow(intervalMs: number): number {
   }, [intervalMs]);
   return now;
 }
+
+/**
+ * Fermate della corsa del mezzo: già servite in grigio, successive con l'orario programmato e quello
+ * previsto (ritardo attuale del mezzo applicato a tutte le fermate: è una stima semplice).
+ */
+const TripStopsList: React.FC<{ vehicle: VehicleSelection; timeSeconds?: number }> = ({ vehicle: v, timeSeconds }) => {
+  const { t } = useTranslation();
+  const sim = useSimulation(true);
+  const nowMs = useNow(15000);
+  const trip = React.useMemo(() => resolveTrip(sim, v.trip), [sim, v.trip]);
+  const stops = React.useMemo(() => (trip ? tripStops(trip) : []), [trip]);
+  if (!sim) return <p className="text-[11px] text-[var(--ink-3)]">{t('ui.trip.loading')}</p>;
+  if (!trip || stops.length === 0) return <p className="text-[11px] text-[var(--ink-3)]">{t('ui.trip.notFound')}</p>;
+  const delay = v.delay?.seconds ?? 0;
+  const now = v.source === 'gps' ? romeSecondsOfDay(new Date(nowMs)) : (timeSeconds ?? romeSecondsOfDay(new Date(nowMs)));
+  const nextIdx = stops.findIndex((s) => s.scheduled + delay >= now - 30);
+  return (
+    <div className="flex flex-col gap-1.5" data-testid="trip-stops">
+      <span className="text-[11px] font-mono uppercase text-[var(--ink-3)]">{t('ui.trip.title')}</span>
+      <ol className="flex flex-col">
+        {stops.map((s, i) => {
+          const passed = nextIdx === -1 || i < nextIdx;
+          const isNext = i === nextIdx;
+          return (
+            <li key={`${i}-${s.scheduled}`} className="flex items-center gap-2 text-xs py-0.5">
+              <span
+                className="w-2.5 h-2.5 rounded-full shrink-0 border-2"
+                style={{ borderColor: passed ? '#64748b' : v.color, background: passed ? '#94a3b8' : isNext ? v.color : 'transparent' }}
+                aria-hidden
+              />
+              <span className={`flex-1 min-w-0 truncate ${passed ? 'text-[var(--ink-3)]' : isNext ? 'font-bold text-[var(--ink)]' : 'text-[var(--ink-2)]'}`}>
+                {s.name ?? t('ui.trip.unnamedStop')}
+              </span>
+              <span className={`font-mono tabular ${passed ? 'text-[var(--ink-3)]' : 'text-[var(--ink)]'}`}>
+                {delay !== 0 && !passed ? (
+                  <>
+                    <s className="text-[var(--ink-3)] mr-1">{clock(s.scheduled)}</s>
+                    {clock(s.scheduled + delay)}
+                  </>
+                ) : (
+                  clock(s.scheduled)
+                )}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+      <span className="text-[10px] text-[var(--ink-3)]">{t(delay !== 0 ? 'ui.trip.noteDelay' : 'ui.trip.note')}</span>
+    </div>
+  );
+};

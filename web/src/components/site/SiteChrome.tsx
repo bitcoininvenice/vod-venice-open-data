@@ -66,9 +66,9 @@ export function SiteHeader({ page, subtitle, actions }: SiteHeaderProps) {
               <span className="text-[10px] font-mono text-[var(--ink-3)] block -mt-0.5">{subtitle}</span>
             </div>
           </Link>
-          <span className={`hidden sm:inline-block text-[11px] font-mono px-2 py-0.5 rounded-full border font-semibold ${BADGE_CLS[page]}`}>
+          {/* <span className={`hidden sm:inline-block text-[11px] font-mono px-2 py-0.5 rounded-full border font-semibold ${BADGE_CLS[page]}`}>
             {BADGE_TEXT[page]}
-          </span>
+          </span> */}
         </div>
 
         <nav className="flex items-center gap-2 flex-wrap">

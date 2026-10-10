@@ -567,6 +567,7 @@ export default function HomePage() {
           onClose={() => setSelectedObject(null)}
           onOpenAirport={() => showDetail(() => setIsAirportModalOpen(true))}
           onOpenAlilaguna={() => showDetail(() => setIsAlilagunaModalOpen(true))}
+          timeSeconds={currentTimeSeconds}
         />
 
         {isMoseModalOpen && (

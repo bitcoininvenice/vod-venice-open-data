@@ -1590,5 +1590,13 @@ export const enUi: UiTranslations = {
     methodNote: "The City of Venice does not publish residents by sestiere as open data. Values by sestiere and island are the sum of the ISTAT census sections whose centroid falls within the area's OpenStreetMap outline; municipalities are those given by ISTAT. Areas mapped separately on OpenStreetMap are assigned to their sestiere: Giudecca and Sacca Fisola to Dorsoduro, Sant'Elena to Castello, San Giorgio Maggiore to San Marco, Tronchetto to Santa Croce. Density is computed on the inhabited outlines' area.",
     emptyDefinition: "\"Empty or non-resident\" is ISTAT variable A3: empty homes and homes occupied only by non-residents (second homes, short-term and tourist rentals, vacant units). It does not distinguish between these uses.",
     unassigned: "{n} residents of insular and coastal Venice live in sections outside the outlines considered (minor islands, San Michele, boundary areas): they are in the municipality totals but not in the area tables."
+  },
+  trip: {
+    title: "Stops of this trip",
+    loading: "Loading the trip timetable…",
+    notFound: "Trip not found in the official timetable: its route cannot be highlighted.",
+    unnamedStop: "Stop",
+    note: "Times from the official ACTV timetable (GTFS).",
+    noteDelay: "Official time struck through and expected time with the vehicle's current delay applied to every stop: it is an estimate."
   }
 };

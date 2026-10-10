@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { SIM_URL } from '../src/lib/simulation-data';
 
 // Le fonti esterne sono reali: i test verificano struttura e comportamento, non i valori.
 
@@ -296,6 +297,11 @@ test('ritardi ACTV: scheda del mezzo e prossimi arrivi alla fermata', async ({ p
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   const RIALTO = { lat: 45.43727, lon: 12.335071 };
   const now = Math.floor(Date.now() / 1000);
+  // Una corsa feriale reale della linea 2 dall'orario della simulazione (per evidenziarne il percorso)
+  const sim = await (await page.request.get(SIM_URL)).json();
+  const route2 = sim.routes.findIndex((r: { n: string }) => r.n === '2');
+  const trip2 = sim.days.weekday.trips.find(([p, t]: [number, number]) => sim.profiles[p][1] === route2 && t >= 6 * 3600 && t < 22 * 3600) as [number, number];
+  const hms = (s: number) => [Math.floor(s / 3600), Math.floor((s % 3600) / 60), s % 60].map((n) => String(n).padStart(2, '0')).join(':');
   // Dati in tempo reale simulati: un vaporetto della linea 2 in ritardo di 4 minuti, fermo a Rialto
   await page.route('**/api/realtime/vehicles', (route) =>
     route.fulfill({
@@ -305,6 +311,7 @@ test('ritardi ACTV: scheda del mezzo e prossimi arrivi alla fermata', async ({ p
         meta: {},
         data: [{
           id: 'test-1', tripId: 'NAV_ACTV_653_1', routeId: '2_UN', label: null, ...RIALTO, bearing: 0, timestamp: now,
+          startTime: hms(trip2[1]), startDate: '20261012', // lunedì: orario feriale
           network: 'navigazione', line: '2', category: 'vaporetto',
           delay: { seconds: 240, status: 'late', updatedAt: now - 5, nextStopId: '5038', nextStopName: 'Rialto "A"', nextStopTime: now + 120, estimate: 'predicted', source: 'position', actvSeconds: 180 },
         }],
@@ -360,6 +367,12 @@ test('ritardi ACTV: scheda del mezzo e prossimi arrivi alla fermata', async ({ p
   // fonte del ritardo: calcolato dalla posizione, con il dato ACTV come verifica
   await expect(info.getByTestId('delay-source')).toContainText('Calcolato dalla posizione GPS');
   await expect(info.getByTestId('delay-source')).toContainText('ACTV indica +3 min');
+  // fermate della corsa, dall'orario ufficiale, con la corsa evidenziata sulla mappa
+  const stops = info.getByTestId('trip-stops');
+  await expect(stops).toContainText('Fermate della corsa');
+  expect(await stops.locator('li').count()).toBeGreaterThan(3);
+  // la linea 2 serve sempre San Marco o Piazzale Roma, secondo la variante
+  await expect(stops).toContainText(/S\. Marco|P\.le Roma/);
 });
 
 test('colori ufficiali delle linee ACTV nella scheda della fermata', async ({ page }) => {

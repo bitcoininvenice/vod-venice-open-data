@@ -4,6 +4,15 @@ import type { MapEngineProps } from '../MapEngine';
 import type { CityData } from '@/lib/cityData';
 import type { LayerVisibility } from '@/lib/layerState';
 import type { SportFilter } from '@/lib/sports';
+import type { SelectedTrip } from '@/lib/tripView';
+
+export interface HighlightTrip extends SelectedTrip {
+  color: string;
+  /** ritardo del mezzo (s), per segnare le fermate già servite */
+  delaySeconds: number;
+  /** ora corrente in secondi dalla mezzanotte */
+  now: number;
+}
 
 /** Tutto ciò che serve per disegnare un frame: canvas, trasformazioni, palette, stato e dati dei layer. */
 export interface RenderContext
@@ -15,6 +24,8 @@ export interface RenderContext
   /** livello di marea disegnato (simulato se il simulatore è attivo) */
   tideLevel: number;
   sportFilter: SportFilter;
+  /** corsa del mezzo selezionato da evidenziare (null se nessuna) */
+  selectedTrip: HighlightTrip | null;
   ctx: CanvasRenderingContext2D;
   /** dimensioni del canvas in pixel CSS */
   cw: number;

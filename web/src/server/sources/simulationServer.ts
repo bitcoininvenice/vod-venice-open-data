@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { SIM_URL } from '@/lib/simulation-data';
 import { buildSimulation, type RawSimulation, type SimModel } from '@/lib/simulationCore';
-import { indexTrips, type TripIndex } from './positionDelay';
+import { indexTrips, type TripIndex } from '@/lib/positionDelay';
 
 let loading: Promise<{ model: SimModel; index: TripIndex } | null> | null = null;
 

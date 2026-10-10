@@ -34,6 +34,11 @@ export function toGrid(lon: number, lat: number): [number, number] {
   return [(lon - LON0) * KX, (LAT1 - lat) * KY];
 }
 
+/** Coordinate della griglia -> [longitudine, latitudine]. */
+export function fromGrid(x: number, y: number): [number, number] {
+  return [LON0 + x / KX, LAT1 - y / KY];
+}
+
 export interface Pass {
   /** distanza lungo il percorso (m) */
   d: number;

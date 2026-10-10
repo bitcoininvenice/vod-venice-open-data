@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { SimProfile, SimShape } from '@/lib/simulationCore';
 import {
   DISAGREE_SECONDS, indexTrips, matchTrip, nearStop, parseGtfsTime, passesNear, positionDelay, scheduledOffsetAt, toGrid, trustDelay,
-} from './positionDelay';
+} from '@/lib/positionDelay';
 
 /** Percorso rettilineo da (lon0, lat) verso est lungo `meters`, con fermate a 0 e alla fine. */
 function straightProfile(lon0: number, lat: number, meters: number, seconds: number, line = '1'): SimProfile {
