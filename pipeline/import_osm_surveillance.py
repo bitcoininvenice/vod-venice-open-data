@@ -14,16 +14,14 @@ import json
 import logging
 import os
 import sys
-import urllib.parse
-import urllib.request
 from datetime import datetime, timezone
+from vod_http import overpass
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "osm-surveillance.json")
 
-OVERPASS_URL = os.environ.get("OVERPASS_URL", "https://overpass-api.de/api/interpreter")
 # Stesso riquadro della mappa VOD (Laguna, centro storico, Lido, Pellestrina, Mestre, Tessera)
 BBOX = (45.18, 12.10, 45.58, 12.62)
 QUERY = f'[out:json][timeout:60];(node["man_made"="surveillance"]({BBOX[0]},{BBOX[1]},{BBOX[2]},{BBOX[3]}););out body;'
@@ -119,15 +117,8 @@ def to_camera(node: dict) -> dict:
 
 
 def main() -> int:
-    data = urllib.parse.urlencode({"data": QUERY}).encode()
-    req = urllib.request.Request(
-        OVERPASS_URL,
-        data=data,
-        headers={"User-Agent": "VOD-VeniceOpenData/1.0 (pipeline)", "Accept": "application/json"},
-    )
     try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            payload = json.load(resp)
+        payload = overpass(QUERY)
     except Exception as e:
         logging.error("Query Overpass fallita: %s", e)
         return 1

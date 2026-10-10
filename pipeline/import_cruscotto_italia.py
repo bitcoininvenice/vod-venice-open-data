@@ -22,6 +22,7 @@ import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
+from vod_http import USER_AGENT
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -29,7 +30,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "cruscotto-comuni.json")
 MCP_URL = "https://cruscotto-italia-mcp.agid.workers.dev/mcp"
 ABOUT_URL = "https://cruscotto-italia.dati.gov.it/about.html"
-USER_AGENT = "VOD-VeniceOpenData/1.0 (+https://venice-open-data.vercel.app; pipeline settimanale)"
 
 # Comuni affacciati sulla laguna di Venezia (codici ISTAT)
 COMUNI = {"027042": "Venezia", "027008": "Chioggia", "027044": "Cavallino-Treporti"}

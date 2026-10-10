@@ -15,10 +15,8 @@ import json
 import logging
 import os
 import sys
-import time
-import urllib.parse
-import urllib.request
 from datetime import datetime, timezone
+from vod_http import overpass
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -26,14 +24,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "osm-defibrillators.json")
 
 # Più istanze Overpass: quella principale è spesso sovraccarica.
-OVERPASS_URLS = [
-    u for u in [
-        os.environ.get("OVERPASS_URL"),
-        "https://overpass-api.de/api/interpreter",
-        "https://overpass.private.coffee/api/interpreter",
-        "https://overpass.kumi.systems/api/interpreter",
-    ] if u
-]
 # Stesso riquadro della mappa VOD (Laguna, centro storico, Lido, Pellestrina, Mestre, Tessera)
 BBOX = (45.18, 12.10, 45.58, 12.62)
 QUERY = (
@@ -86,30 +76,11 @@ def to_dae(node: dict) -> dict:
     return dae
 
 
-def fetch_overpass(query: str = QUERY) -> dict:
-    """Interroga Overpass provando più istanze; usata anche dagli altri import OSM."""
-    data = urllib.parse.urlencode({"data": query}).encode()
-    last_error = None
-    for url in OVERPASS_URLS:
-        for attempt in range(2):
-            req = urllib.request.Request(
-                url,
-                data=data,
-                headers={"User-Agent": "VOD-VeniceOpenData/1.0 (pipeline)", "Accept": "application/json"},
-            )
-            try:
-                with urllib.request.urlopen(req, timeout=120) as resp:
-                    return json.load(resp)
-            except Exception as e:  # noqa: BLE001 - si prova l'istanza successiva
-                last_error = e
-                logging.warning("Overpass %s (tentativo %d) fallito: %s", url, attempt + 1, e)
-                time.sleep(5)
-    raise RuntimeError(f"tutte le istanze Overpass hanno fallito: {last_error}")
 
 
 def main() -> int:
     try:
-        payload = fetch_overpass()
+        payload = overpass(QUERY)
     except Exception as e:
         logging.error("%s", e)
         return 1

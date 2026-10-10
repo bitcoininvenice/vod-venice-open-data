@@ -16,7 +16,10 @@ Completare **tutti** i passaggi nello stesso giro e verificare tutto prima del c
 
 ## 2. Pipeline (`pipeline/import_<nome>.py`)
 - Solo libreria standard se possibile (eventuali dipendenze in `pipeline/requirements.txt`).
-- Tentativi con attese crescenti; controllo di completezza: se i dati sono incompleti **non** sovrascrivere il file.
+- Rete sempre da `pipeline/vod_http.py`: `fetch_bytes`/`fetch_text`/`fetch_json` (User-Agent del progetto, `retries`/`backoff`,
+  `Retry-After` dopo 429), `overpass(query)` con istanze di riserva, `nominatim(endpoint, params)` a 1 richiesta al secondo.
+  Niente `urllib.request` diretto nelle pipeline.
+- Controllo di completezza: se i dati sono incompleti **non** sovrascrivere il file.
 - Output in `web/src/data/<nome>.json` con `generatedAt`, `source`, `sourceUrl`, `license`.
 - Se il sito della fonte è instabile: opzione per file locali (`--file`).
 - Test in `pipeline/tests/test_pipeline.py` sulle funzioni pure (parsing, aggregazione).
@@ -30,15 +33,19 @@ Completare **tutti** i passaggi nello stesso giro e verificare tutto prima del c
 ## 4. Mappa e interfaccia
 - Layer nuovo: chiave in `web/src/lib/urlLayers.ts` (tipo, slug, alias); voce nel pannello in `web/src/lib/layerGroups.ts`
   (gruppo, sottogruppo, etichetta i18n, icona, colore: pannello, ricerca, contatori e legenda si aggiornano da soli);
-  conteggio in `layerCounts` e stato in `web/src/app/page.tsx`; il fetch va in `loadResource` con la condizione in
-  `neededResources` (si carica solo quando il layer, la ricerca o una scheda lo richiedono, mai all'avvio);
+  dati in `web/src/lib/cityData.ts`: campo in `CityData` + valore iniziale in `INITIAL_CITY_DATA`, risorsa in `RESOURCES`
+  (URL, `pick` dei campi dalla risposta, `refreshMs` se è un dato live), condizione in `neededResources` (si carica solo
+  quando il layer, la ricerca o una scheda lo richiedono, mai all'avvio) e conteggio in `layerCounts`. `useCityData` e
+  `MapEngine` non vanno toccati: il disegno riceve `rc.<campo>` e `rc.show<Layer>` dal contesto del frame;
   nuove API: durata della cache del browser in `next.config.ts` (`browserCache`);
-  prop in `MapEngine.tsx` + `map/renderContext.ts` (DataProps) + dipendenze dell'effetto di disegno,
-  disegno in `web/src/components/map/*Layer*.ts` (le etichette passano dalla guardia anti-sovrapposizione `map/labelGuard.ts`), clic con `onSelectFeature`.
+  disegno in `web/src/components/map/*Layer*.ts` (le etichette passano dalla guardia anti-sovrapposizione `map/labelGuard.ts`);
+  clic: una riga nella tabella di `handlePointClick` in `MapEngine.tsx` (`target({ items, radius, select: feature('<tipo>') })`,
+  vedi `map/hitTest.ts`), nella posizione che ne decide la priorità.
 - Preset (`PRESET_LAYERS` in `web/src/lib/layerState.ts`): scenari da 3-6 layer, mai layer `curated` (un test lo verifica).
 - Scheda nella scheda informativa unica (`components/ui/InfoPanel.tsx`): tipo in `VeniceFeatureDetailModal.tsx`
   (+ `FEATURE_LAYER` per natura del dato e fonte nel piede, nota di provenienza con `FeatureProvenance`, `OWN_PROVENANCE`, `CURATED_TYPES`);
-  oggetti in movimento in `MapObjectPanel.tsx`. Niente nuovi modali o tooltip flottanti sulla mappa.
+  oggetti in movimento in `MapObjectPanel.tsx`. Niente nuovi modali o tooltip flottanti sulla mappa; le finestre a tutto
+  schermo (ricerca, esportazione, tutorial) usano `components/ui/Modal.tsx`.
 - Layer animati: aggiungerli a `hasAnimatedLayers` in `MapEngine.tsx`.
 
 ## 5. Traduzioni

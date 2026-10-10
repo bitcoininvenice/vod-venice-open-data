@@ -5,10 +5,8 @@ Pipeline: Ingest ACTV GTFS files into PostgreSQL + PostGIS
 """
 
 import os
-import sys
 import csv
 import logging
-import psycopg2
 
 from vod_common import connect
 from psycopg2.extras import execute_batch, execute_values

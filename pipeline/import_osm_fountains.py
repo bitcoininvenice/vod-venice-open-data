@@ -11,10 +11,8 @@ Output: web/src/data/fountains.json
 import json
 import logging
 import os
-import urllib.parse
-import time
-import urllib.request
 from datetime import datetime, timezone
+from vod_http import nominatim, overpass
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -23,14 +21,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CACHE_FILE = os.path.join(BASE_DIR, "geocode-cache.json")
 OUT_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "fountains.json")
 
-OVERPASS_URLS = [
-    u for u in [
-        os.environ.get("OVERPASS_URL"),
-        "https://overpass-api.de/api/interpreter",
-        "https://overpass.private.coffee/api/interpreter",
-        "https://overpass.kumi.systems/api/interpreter",
-    ] if u
-]
 
 # Bounding box Laguna di Venezia & Centro Storico (ottimizzato e concentrato)
 BBOX = (45.30, 12.28, 45.50, 12.44)
@@ -61,8 +51,6 @@ SMALL_ISLANDS = [
     ("San Michele (cimitero)", (45.4445, 12.3435, 45.4495, 12.3515)),
 ]
 SESTIERI = {"Cannaregio", "Castello", "San Marco", "San Polo", "Santa Croce", "Dorsoduro"}
-NOMINATIM_REVERSE = "https://nominatim.openstreetmap.org/reverse"
-NOMINATIM_UA = "VOD-VeniceOpenData/1.0 (+https://venice-open-data.vercel.app)"
 
 
 def zone_from_address(addr: dict) -> str | None:
@@ -134,16 +122,12 @@ def reverse_zone(lat: float, lon: float, cache: dict) -> str:
         return island
     key = f"reverse:{lat:.5f},{lon:.5f}"
     if key not in cache:
-        params = urllib.parse.urlencode({"format": "jsonv2", "lat": lat, "lon": lon, "zoom": 17, "addressdetails": 1})
         try:
-            req = urllib.request.Request(f"{NOMINATIM_REVERSE}?{params}", headers={"User-Agent": NOMINATIM_UA})
-            with urllib.request.urlopen(req, timeout=20) as resp:
-                cache[key] = zone_from_address(json.load(resp).get("address", {}))
+            result = nominatim("reverse", {"lat": lat, "lon": lon, "zoom": 17, "addressdetails": 1})
+            cache[key] = zone_from_address(result.get("address", {}))
         except Exception as e:  # noqa: BLE001
             logging.warning("Geocodifica inversa fallita per %s: %s", key, e)
             return determine_sestiere(lat, lon)
-        finally:
-            time.sleep(1.1)
     return cache[key] or determine_sestiere(lat, lon)
 
 
@@ -164,33 +148,10 @@ def format_fountain_name(tags: dict, sestiere: str, index: int) -> str:
 
 def main():
     logging.info("Interrogazione Overpass API per fontanelle potabili...")
-    data = None
-    last_err = None
-    
-    # Due giri sulle istanze: Overpass risponde spesso 504 quando è sovraccarico
-    for url in OVERPASS_URLS * 2:
-        if data:
-            break
-        try:
-            logging.info(f"Tentativo con endpoint {url}...")
-            req = urllib.request.Request(
-                url,
-                data=QUERY.encode("utf-8"),
-                headers={
-                    "User-Agent": "VOD-Venice/1.0"
-                }
-            )
-            with urllib.request.urlopen(req, timeout=120) as res:
-                data = json.loads(res.read().decode("utf-8"))
-                logging.info(f"Ricevuta risposta valida da {url}")
-                break
-        except Exception as e:
-            logging.warning(f"Errore su {url}: {e}")
-            last_err = e
-            time.sleep(10)
-            
-    if not data or "elements" not in data:
-        logging.error(f"Impossibile scaricare dati fontanelle: {last_err}")
+    try:
+        data = overpass(QUERY)
+    except Exception as e:  # noqa: BLE001
+        logging.error("Impossibile scaricare dati fontanelle: %s", e)
         return 1
 
     elements = data["elements"]

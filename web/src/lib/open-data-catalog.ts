@@ -1,23 +1,4 @@
-import {
-  CanalSpeedLimitItem,
-  BridgeClearanceItem,
-  GondolaStationItem,
-  PublicDockItem,
-  SubsidenceInSARItem,
-  LagoonMorphologyItem,
-  MeteoMarineWindItem,
-  TrainLiveItem,
-  VeritasWasteBoatItem,
-  NizioletoCivicoItem,
-  VeniceWellItem,
-  BellTowerItem,
-  LagoonFortressIslandItem,
-  EmergencyWaterDockItem,
-  PublicDaeItem,
-  PharmacyItem,
-  HeatIslandSurfaceTempItem
-} from './types';
-import { METEO_MARINE_WIND_STATIONS } from './weatherWindData';
+import { CanalSpeedLimitItem, BridgeClearanceItem, GondolaStationItem, PublicDockItem, SubsidenceInSARItem, LagoonMorphologyItem, TrainLiveItem, VeritasWasteBoatItem, NizioletoCivicoItem, VeniceWellItem, BellTowerItem, LagoonFortressIslandItem, EmergencyWaterDockItem, PublicDaeItem, PharmacyItem, HeatIslandSurfaceTempItem } from './types';
 
 // ==========================================
 // 1. VIABILITÀ ACQUEA & CANALI
@@ -872,7 +853,6 @@ export const OPEN_LAGOON_MORPHOLOGY: LagoonMorphologyItem[] = [
   }
 ];
 
-export const OPEN_METEO_MARINE_WIND: MeteoMarineWindItem[] = METEO_MARINE_WIND_STATIONS;
 
 // ==========================================
 // 3. FERROVIA & LOGISTICA URBANA

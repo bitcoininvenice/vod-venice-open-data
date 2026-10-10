@@ -120,7 +120,7 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     descriptionEn: 'Deep-draft navigable commercial fairways across the lagoon and port inlets.',
     technicalNotesIt: 'Tracciati semplificati dei canali; i fondali indicati sono valori nominali. Elenco curato del progetto: posizioni e valori sono indicativi, da verificare presso la fonte citata; non è un download automatico né una misura aggiornata.',
     technicalNotesEn: 'Simplified channel tracks; depths are nominal values. Curated project list: positions and values are indicative and must be checked against the cited source; it is not an automated download or a current measurement.',
-    endpointOrFile: 'simulation-data.ts (MARITIME_CHANNELS)'
+    endpointOrFile: 'lib/shipsData.ts (MARITIME_ROUTES), anche in /api/ships'
   },
   {
     id: 'alilaguna',

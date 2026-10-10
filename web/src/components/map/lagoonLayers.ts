@@ -2,7 +2,7 @@
 import type { RenderContext } from './renderContext';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 
-import { MARITIME_CHANNELS } from './mapHelpers';
+import { MARITIME_ROUTES } from '@/lib/shipsData';
 import type { ShipCategory } from '@/lib/types';
 
 export function drawMose(rc: RenderContext): void {
@@ -63,7 +63,7 @@ export function drawShipRoutes(rc: RenderContext): void {
   const { ctx, isDark, sx, sy, mx, my, camera, showShipRoutes } = rc;
   // 11b. Render Maritime Navigational Channels & Fairways (Canale dei Petroli & Bocca di Lido -> Tronchetto)
   if (showShipRoutes) {
-    for (const ch of MARITIME_CHANNELS) {
+    for (const ch of MARITIME_ROUTES) {
       const wps = ch.waypoints;
       if (wps.length < 2) continue;
 

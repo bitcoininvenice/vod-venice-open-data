@@ -20,6 +20,3 @@ export interface Provenance {
   note?: string;
 }
 
-export function staticReference(source: string, note?: string, sourceUrl?: string): Provenance {
-  return { kind: 'static-reference', source, sourceUrl, note };
-}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Waves,
   X,
@@ -21,6 +21,7 @@ import type { TideForecast } from '@/lib/contracts/tide';
 import type { MeteoMarineWindItem } from '@/lib/types';
 import { getFloodedGroundPercentage, meanDirectionDeg, romeLocalNow } from '@/lib/flood';
 import { PASSERELLE_DATA } from '@/lib/passerelleData';
+import { Modal } from '@/components/ui/Modal';
 
 interface TideFloodModalProps {
   isOpen: boolean;
@@ -104,16 +105,6 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
     };
   }, [marineWindStations]);
 
-  // Escape chiude il modal
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [isOpen, onClose]);
-
   if (!isOpen) return null;
 
   const floodedPercent = getFloodedGroundPercentage(simulatedCm);
@@ -148,17 +139,7 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
   const codeInfo = getTideCode(simulatedCm);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150"
-      onClick={onClose}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={t('ui.floodModal.title')}
-        className="relative w-full max-w-2xl bg-[var(--ground)] border border-[var(--rule)] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Modal onClose={onClose} label={t('ui.floodModal.title')} panelClassName="relative w-full max-w-2xl bg-[var(--ground)] border border-[var(--rule)] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--rule)] bg-[var(--rule)]/20">
           <div className="flex items-center gap-3">
@@ -704,7 +685,6 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
             </button>
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };

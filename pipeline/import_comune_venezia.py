@@ -9,9 +9,7 @@ Occupazioni di suolo pubblico e POI sono ancora esempi statici, non dati del Com
 
 import json
 import os
-import sys
 import logging
-import psycopg2
 
 from vod_common import connect
 from psycopg2.extras import execute_values

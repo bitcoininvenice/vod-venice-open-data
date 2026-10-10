@@ -70,13 +70,12 @@ import {
 } from '@/lib/types';
 import { Droplet, Building2, Bike, Flower2, GitBranch, Car } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
-import { InfoClose, InfoPanel } from '@/components/ui/InfoPanel';
+import { InfoClose, InfoPanel, KeyValues } from '@/components/ui/InfoPanel';
 import { BdapWorkDetails } from '@/components/BdapWorkDetails';
 import type { BdapProject } from '@/lib/bdap';
 import type { LoraGateway, NauticalPlace, SportPlace, WifiVenue } from '@/lib/types';
 import { sportColor } from '@/lib/sports';
 import { CAMPO_LICENSE_PAGE } from '@/server/sources/campo';
-import { KeyValues } from '@/components/ui/InfoPanel';
 import type { LayerKey } from '@/lib/urlLayers';
 
 export type VeniceFeatureSelected =

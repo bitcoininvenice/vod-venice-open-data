@@ -36,6 +36,8 @@ vod-venice-open-data/
 │   └── 02_spatial_queries.sql      # Funzioni spaziali (ST_DWithin buffer, viste GeoJSON)
 ├── pipeline/
 │   ├── requirements.txt            # Dipendenze Python
+│   ├── vod_http.py                 # Richieste HTTP condivise: User-Agent, tentativi, Overpass di riserva, Nominatim a 1 req/s
+│   ├── vod_common.py               # Connessione al database e log senza credenziali
 │   ├── download_gtfs.py            # Download automatico archivi GTFS ACTV
 │   ├── import_gtfs.py              # Ingestione e conversione shapes in LineString PostGIS
 │   ├── import_comune_venezia.py    # Ingestione cantieri e opere pubbliche georeferenziate
@@ -78,19 +80,21 @@ vod-venice-open-data/
 │   │   │   ├── LayerPanel.tsx       # Scenari, ricerca, gruppi con natura del dato, voci "da verificare"
 │   │   │   ├── ActiveLayersLegend.tsx # Legenda unica dei livelli attivi
 │   │   │   ├── ui/InfoPanel.tsx     # Scheda informativa unica (destra su desktop, cassetto su mobile)
+│   │   │   ├── ui/Modal.tsx         # Finestra modale condivisa (ricerca, esportazione, tutorial, marea, analisi)
 │   │   │   ├── MapObjectPanel.tsx   # Schede di navi, voli, mezzi ACTV e Alilaguna
 │   │   │   ├── StopDetailModal.tsx  # Dettagli fermata e prossime corse programmate
 │   │   │   ├── CantiereDetailModal.tsx # Scheda cantiere, budget e impatto mobilità
-│   │   │   ├── SpatialAnalysisModal.tsx # Dashboard intersezioni spaziali buffer
-│   │   │   └── StatsModal.tsx       # Cruscotto metriche e statistiche generali
+│   │   │   └── SpatialAnalysisModal.tsx # Dashboard intersezioni spaziali buffer
 │   │   └── lib/
 │   │       ├── types.ts            # Modelli di dominio TypeScript
+│   │       ├── cityData.ts         # Dati della mappa (CityData) e registro delle API: cosa caricare, quando, come
+│   │       ├── useCityData.ts      # Caricamento su richiesta e aggiornamento periodico dei dati live
 │   │       ├── solar.ts            # Calcolo effemeridi e interpolazione palette solare
 │   │       ├── simulation-data.ts  # Griglia, isole leggere, configurazione e URL dei file in public/data
-│   ├── public/data/                # Simulazione GTFS e isole dettagliate (JSON con hash nel nome, cache immutabile)
 │   │       └── db.ts               # Dataset di riferimento e calcoli spaziali in memoria
+│   ├── public/data/                # Simulazione GTFS e isole dettagliate (JSON con hash nel nome, cache immutabile)
 │   ├── src/server/                 # Accesso alle fonti esterne (fetch con timeout e cache, parser validati)
-│   ├── src/components/map/         # Layer di disegno della mappa (un modulo per tema) e contesto del frame
+│   ├── src/components/map/         # Layer di disegno della mappa (un modulo per tema), contesto del frame e hit-test dei clic
 │   ├── src/data/                   # Dataset generati dalla pipeline (opere, WiFi, ARPAV, telecamere, indice GTFS)
 │   ├── src/proxy.ts                # Rate limit delle API dinamiche (le altre sono in cache CDN)
 │   └── e2e/                        # Test end-to-end Playwright

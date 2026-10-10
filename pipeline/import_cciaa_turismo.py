@@ -16,8 +16,8 @@ import logging
 import os
 import re
 import sys
-import urllib.request
 from datetime import datetime, timezone
+from vod_http import fetch_text
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -31,9 +31,7 @@ COMUNI = {"027042": "Venezia", "027008": "Chioggia", "027044": "Cavallino-Trepor
 
 
 def download(url: str) -> str:
-    req = urllib.request.Request(url, headers={"User-Agent": "VOD-VeniceOpenData/1.0 (pipeline)"})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return resp.read().decode("utf-8-sig")
+    return fetch_text(url)
 
 
 def to_int(value: str | None) -> int | None:

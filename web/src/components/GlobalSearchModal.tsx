@@ -17,6 +17,7 @@ import { useTranslation } from '@/lib/i18n';
 import { LayerKey } from '@/lib/urlLayers';
 import { isLocated } from '@/lib/types';
 import type { CityData } from '@/lib/cityData';
+import { Modal } from '@/components/ui/Modal';
 
 export type SearchCategory = 'transit' | 'health' | 'services' | 'heritage' | 'lagoon';
 
@@ -292,12 +293,9 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape è gestito da Modal
       if (!isOpen) return;
-
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        handleClose();
-      } else if (e.key === 'ArrowDown') {
+      if (e.key === 'ArrowDown') {
         e.preventDefault();
         setSelectedIndex((prev) => (prev < filteredResults.length - 1 ? prev + 1 : 0));
       } else if (e.key === 'ArrowUp') {
@@ -334,17 +332,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-12 sm:pt-20 px-3 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150"
-      onClick={handleClose}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={t('ui.search.title')}
-        className="relative w-full max-w-2xl bg-[var(--ground)] border border-[var(--rule)] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Modal onClose={handleClose} label={t('ui.search.title')} align="top" panelClassName="relative w-full max-w-2xl bg-[var(--ground)] border border-[var(--rule)] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
         {/* Search Input Bar */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--rule)] bg-[var(--ground)]">
           <Search className="w-5 h-5 text-cyan-400 shrink-0" />
@@ -479,7 +467,6 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
           </div>
           <span className="text-[10px]">{indexedItems.length} {t('ui.exportModal.featuresCount')}</span>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };

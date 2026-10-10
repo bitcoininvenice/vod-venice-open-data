@@ -16,11 +16,11 @@ import json
 import logging
 import os
 import sys
-import urllib.request
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from import_opere_pubbliche import CACHE_FILE, geocode
+from vod_http import fetch_text
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -48,9 +48,7 @@ STATION_TYPES = {"TU": "Traffico urbano", "BU": "Fondo urbano", "IS": "Industria
 
 
 def fetch_csv(url: str) -> list[dict]:
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (VOD-VeniceOpenData pipeline)"})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return list(csv.DictReader(io.StringIO(resp.read().decode("utf-8-sig"))))
+    return list(csv.DictReader(io.StringIO(fetch_text(url))))
 
 
 def number(value: str | None) -> float | None:

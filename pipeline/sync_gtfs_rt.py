@@ -11,12 +11,12 @@ Nota: la licenza del feed realtime va confermata con AVM S.p.A. prima di un uso 
 import logging
 import os
 import sys
-import urllib.request
 
 from google.transit import gtfs_realtime_pb2
 from psycopg2.extras import execute_values
 
 from vod_common import connect
+from vod_http import fetch_bytes
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -29,10 +29,8 @@ STATUS = {0: "INCOMING_AT", 1: "STOPPED_AT", 2: "IN_TRANSIT_TO"}
 
 
 def fetch_feed(url: str) -> bytes | None:
-    req = urllib.request.Request(url, headers={"User-Agent": "VOD-VeniceOpenData/1.0"})
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            return resp.read()
+        return fetch_bytes(url, timeout=10)
     except Exception as e:
         logging.warning("Feed non raggiungibile %s: %s", url, e)
         return None

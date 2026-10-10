@@ -1,9 +1,8 @@
-import type { AlilagunaBoat, FlightItem, SatelliteItem, ShipItem } from '@/lib/types';
+import type { AlilagunaBoat, FlightItem, LocatedCantiere, SatelliteItem, ShipItem } from '@/lib/types';
 import type { ColorScheme } from '@/lib/solar';
 import type { MapEngineProps } from '../MapEngine';
 import type { CityData } from '@/lib/cityData';
 import type { LayerVisibility } from '@/lib/layerState';
-import type { LocatedCantiere } from '@/lib/types';
 import type { SportFilter } from '@/lib/sports';
 
 /** Tutto ciò che serve per disegnare un frame: canvas, trasformazioni, palette, stato e dati dei layer. */

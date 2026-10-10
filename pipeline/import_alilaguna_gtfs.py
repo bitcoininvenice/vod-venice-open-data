@@ -19,9 +19,9 @@ import logging
 import math
 import os
 import sys
-import urllib.request
 import zipfile
 from datetime import datetime, timezone
+from vod_http import fetch_bytes
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -73,9 +73,7 @@ def project_on_shape(shape, cum, lon, lat, min_dist):
 def load_zip(path):
     if path:
         return zipfile.ZipFile(path)
-    req = urllib.request.Request(FEED_URL, headers={"User-Agent": "VOD-VeniceOpenData/1.0 (pipeline)"})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return zipfile.ZipFile(io.BytesIO(resp.read()))
+    return zipfile.ZipFile(io.BytesIO(fetch_bytes(FEED_URL)))
 
 
 def main() -> int:

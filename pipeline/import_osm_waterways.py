@@ -23,7 +23,7 @@ import os
 import sys
 from datetime import datetime, timezone
 
-from import_osm_defibrillators import fetch_overpass
+from vod_http import overpass
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -90,8 +90,8 @@ def simplify(points: list, tol_m: float) -> list:
 
 def main() -> int:
     try:
-        markers_raw = fetch_overpass(MARKERS_QUERY)
-        canals_raw = fetch_overpass(CANALS_QUERY)
+        markers_raw = overpass(MARKERS_QUERY)
+        canals_raw = overpass(CANALS_QUERY)
     except Exception as e:  # noqa: BLE001
         logging.error("%s", e)
         return 1

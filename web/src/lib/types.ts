@@ -16,36 +16,7 @@ export type PaletteTheme = 'notte' | 'carta' | 'dynamic';
 
 export type CameraViewPreset = 'lagoon' | 'venezia' | 'mestre' | 'lido' | 'aeroporto';
 
-export interface AirportInfo {
-  iata: string;
-  icao: string;
-  name: string;
-  operator: string;
-  elevationMeters: number;
-  lat: number;
-  lon: number;
-  runways: Array<{
-    id: string;
-    dimensions: string;
-    surface: string;
-    ils: string;
-    heading: string;
-  }>;
-  terminal: string;
-  actvConnections: string[];
-  alilagunaConnections: string[];
-  annualPassengers: string;
-}
 
-export interface RouteItem {
-  id: string;
-  shortName: string;
-  longName: string;
-  type: number; // 0=Tram, 3=Bus, 4=Ferry
-  category: TransportModeCategory;
-  color: string;
-  textColor: string;
-}
 
 export interface StopItem {
   id: string;
@@ -92,18 +63,6 @@ export type LocatedCantiere = CantiereItem & { lat: number; lon: number };
 
 export const isLocated = (c: CantiereItem): c is LocatedCantiere => c.lat !== null && c.lon !== null;
 
-export interface OccupazioneItem {
-  id: number;
-  protocollo: string;
-  richiedente: string;
-  motivo: string;
-  dataInizio: string;
-  dataFine: string;
-  superficieMq: number;
-  via: string;
-  lat: number;
-  lon: number;
-}
 
 export interface StopNearCantiere {
   stopId: string;
@@ -133,23 +92,6 @@ export interface FlightItem {
   status: 'APPROACH' | 'DEPARTURE' | 'CRUISE' | 'TAXI';
 }
 
-export interface TideData {
-  livelloCm: number;
-  stazione: string;
-  dataOra: string;
-  tendenza: 'IN_AUMENTO' | 'STAZIONARIA' | 'IN_CALO';
-  categoria: 'NORMALE' | 'SOSTENUTA' | 'MOLTO_SOSTENUTA' | 'ECCEZIONALE';
-  moseStatus: {
-    lido: 'ABBASSATO' | 'ATTIVATO';
-    malamocco: 'ABBASSATO' | 'ATTIVATO';
-    chioggia: 'ABBASSATO' | 'ATTIVATO';
-  };
-  prossimoPicco: {
-    ora: string;
-    livelloPrevistoCm: number;
-  };
-  percentualeAllagamentoVenezia: number;
-}
 
 /** I campi null indicano misure per cui non è collegata una fonte in tempo reale. */
 export interface PlatformMetrics {

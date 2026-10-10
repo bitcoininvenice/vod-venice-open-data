@@ -18,8 +18,7 @@ import type {
 } from './types';
 import type { TideCategory, TideForecast, TideResponse, TideStation, TideTrend } from './contracts/tide';
 import type { RealtimeVehicleDto } from './contracts/realtime';
-import type { BdapProject } from './bdap';
-import { isLocatedBdap } from './bdap';
+import { isLocatedBdap, type BdapProject } from './bdap';
 import type { FiberDataset } from './fiber';
 import type { LagoonNetwork } from './lagoonNetwork';
 import type { LayerVisibility } from './layerState';

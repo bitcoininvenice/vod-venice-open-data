@@ -17,7 +17,8 @@ import os
 import sys
 from datetime import datetime, timezone
 
-from import_osm_defibrillators import BBOX, fetch_overpass
+from import_osm_defibrillators import BBOX
+from vod_http import overpass
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -68,7 +69,7 @@ def to_pharmacy(el: dict):
 
 def main() -> int:
     try:
-        payload = fetch_overpass(QUERY)
+        payload = overpass(QUERY)
     except Exception as e:
         logging.error("%s", e)
         return 1

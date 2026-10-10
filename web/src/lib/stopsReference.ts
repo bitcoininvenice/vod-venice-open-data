@@ -9,9 +9,3 @@ import actvStops from '@/data/actv-stops.json';
  */
 export const ACTV_STOPS_REFERENCE: StopItem[] = actvStops.stops as StopItem[];
 
-export const ACTV_STOPS_META = {
-  generatedAt: actvStops.generatedAt,
-  source: actvStops.source,
-  license: actvStops.license,
-  note: actvStops.note,
-};

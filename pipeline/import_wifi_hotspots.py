@@ -10,9 +10,9 @@ import json
 import logging
 import os
 import sys
-import urllib.request
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from vod_http import fetch_json
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -26,10 +26,8 @@ STATUS = {"ok": "ATTIVO", "iok": "ATTIVO", "ko": "NON_ATTIVO"}
 
 
 def main() -> int:
-    req = urllib.request.Request(SOURCE_URL, headers={"User-Agent": "VOD-VeniceOpenData/1.0 (pipeline)"})
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            data = json.load(resp)
+        data = fetch_json(SOURCE_URL)
     except Exception as e:
         logging.error("Download fallito: %s", e)
         return 1

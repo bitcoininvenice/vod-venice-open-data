@@ -30,12 +30,12 @@ import math
 import os
 import re
 import sys
-import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 
 from import_opere_pubbliche import CACHE_FILE, geocode
+from vod_http import fetch_bytes
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -47,7 +47,6 @@ DATASET_NAME = "spd_mop_prg_mon_reg05_01_9999"
 DATASET_PAGE = f"https://bdap-opendata.rgs.mef.gov.it/opendata/{DATASET_NAME}"
 # Risorsa CSV nota (usata se la ricerca nel catalogo non risponde)
 FALLBACK_CSV = "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/datastore/dump/213f9fd6-1e98-4feb-a68a-94cf9346fa92.csv"
-USER_AGENT = "VOD-VeniceOpenData/1.0 (+https://venice-open-data.vercel.app; pipeline settimanale)"
 TITOLARE = "COMUNE DI VENEZIA"
 MIN_PROJECTS = 500  # il Comune ha oltre 1.600 CUP: meno di così indica un file incompleto
 
@@ -228,17 +227,7 @@ def observed_at(notes: str) -> str | None:
 
 
 def fetch(url: str, timeout: int = 60, retries: int = 3) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    for attempt in range(1, retries + 1):
-        try:
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
-                return resp.read()
-        except Exception as e:  # noqa: BLE001
-            if attempt == retries:
-                raise
-            logging.warning("Tentativo %d per %s fallito (%s), riprovo", attempt, url, e)
-            time.sleep(15 * attempt)
-    raise RuntimeError("irraggiungibile")
+    return fetch_bytes(url, timeout=timeout, retries=retries, backoff=15)
 
 
 def discover() -> tuple[str, str | None]:

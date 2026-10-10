@@ -10,6 +10,7 @@ import shutil
 import sys
 import urllib.request
 import zipfile
+from vod_http import USER_AGENT
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -38,7 +39,7 @@ def download_file(url: str, dest_path: str) -> bool:
         logging.error("URL non HTTPS rifiutato: %s", url)
         return False
     logging.info("Download %s -> %s", url, dest_path)
-    req = urllib.request.Request(url, headers={"User-Agent": "VOD-VeniceOpenData/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     tmp_path = dest_path + ".part"
     try:
         with urllib.request.urlopen(req, timeout=60) as response, open(tmp_path, "wb") as out_file:

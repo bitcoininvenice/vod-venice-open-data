@@ -20,11 +20,9 @@ import logging
 import os
 import re
 import sys
-import time
-import urllib.parse
-import urllib.request
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from vod_http import fetch_text, nominatim
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -39,8 +37,6 @@ SOURCE_URL = os.environ.get(
     "https://dati.venezia.it/sites/default/files/dataset/opendata/PEC_EA2026_v8_OD_001.csv",
 )
 SOURCE_PAGE = "https://dati.venezia.it/?q=content/elenco-annuale-dei-lavori-2026-variazione-di-bilancio-0"
-NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
-USER_AGENT = "VOD-VeniceOpenData/1.0 (pipeline opere pubbliche)"
 
 # Area della mappa VOD (lon0, lat0, lon1, lat1)
 BBOX = (12.135, 45.205, 12.47, 45.555)
@@ -102,23 +98,18 @@ def geocode(query: str, cache: dict) -> tuple[float, float] | None:
     if query in cache:
         hit = cache[query]
         return tuple(hit) if hit else None
-    params = urllib.parse.urlencode({
+    params = {
         "q": query,
-        "format": "jsonv2",
         "limit": 1,
         "countrycodes": "it",
         "viewbox": ",".join(str(v) for v in BBOX),
         "bounded": 1,
-    })
-    req = urllib.request.Request(f"{NOMINATIM_URL}?{params}", headers={"User-Agent": USER_AGENT})
+    }
     try:
-        with urllib.request.urlopen(req, timeout=20) as resp:
-            results = json.load(resp)
-    except Exception as e:
+        results = nominatim("search", params)
+    except Exception as e:  # noqa: BLE001
         logging.warning("Geocodifica fallita per %r: %s", query, e)
         return None
-    finally:
-        time.sleep(1.1)  # policy Nominatim: massimo una richiesta al secondo
     point = None
     if results:
         lat, lon = float(results[0]["lat"]), float(results[0]["lon"])
@@ -142,10 +133,8 @@ def main() -> int:
     parser.add_argument("--no-geocode", action="store_true", help="non interrogare Nominatim (usa solo la cache)")
     args = parser.parse_args()
 
-    req = urllib.request.Request(SOURCE_URL, headers={"User-Agent": USER_AGENT})
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            text = resp.read().decode("utf-8-sig")
+        text = fetch_text(SOURCE_URL)
     except Exception as e:
         logging.error("Download fallito: %s", e)
         return 1

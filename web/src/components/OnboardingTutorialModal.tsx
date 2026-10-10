@@ -29,7 +29,7 @@ import { ALL_LAYER_KEYS } from '@/lib/urlLayers';
 import { DEFAULT_PRESET, SCENARIO_PRESETS, type MapPreset } from '@/lib/layerState';
 import { RichText } from './ui/RichText';
 import { RegimeBadge } from './layerVisuals';
-import { useDialogA11y } from '@/components/ui/useDialogA11y';
+import { Modal } from '@/components/ui/Modal';
 
 
 const PRESET_CARD: Record<MapPreset, { icon: LucideIcon; text: string; on: string }> = {
@@ -56,7 +56,6 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [selectedPreset, setSelectedPreset] = useState<MapPreset>(DEFAULT_PRESET);
 
-  const panelRef = useDialogA11y(isOpen, onClose);
   if (!isOpen) return null;
 
   const handleFinish = (preset: MapPreset = selectedPreset) => {
@@ -267,14 +266,7 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
   const step = steps[currentStep];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="onboarding-modal-title"
-        tabIndex={-1}
-        className="bg-[var(--surface)] text-[var(--ink)] border border-[var(--rule)] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] outline-none">
+    <Modal onClose={onClose} labelledBy="onboarding-modal-title" closeOnBackdrop={false} panelClassName="bg-[var(--surface)] text-[var(--ink)] border border-[var(--rule)] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Top Header */}
         <div className="p-4 sm:p-5 border-b border-[var(--rule)] flex items-center justify-between bg-black/10">
           <div className="flex items-center gap-3">
@@ -359,7 +351,6 @@ export const OnboardingTutorialModal: React.FC<OnboardingTutorialModalProps> = (
             )}
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };

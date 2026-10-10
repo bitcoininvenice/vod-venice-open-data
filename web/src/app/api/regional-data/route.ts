@@ -3,11 +3,10 @@ import { fetchUpstream } from '@/server/upstream';
 import { airQualityUrl, CAMS_LICENSE, CAMS_SOURCE, overallPollenLevel, parseAirQuality } from '@/server/sources/openMeteoAir';
 import arpavPollen from '@/data/arpav-pollen-venezia.json';
 import arpavLagoon from '@/data/arpav-lagoon.json';
-import type { LagoonWaterQualityItem } from '@/lib/types';
+import type { LagoonWaterQualityItem, PollenMeasuredProfile } from '@/lib/types';
 
 // Sonde ARPAV della laguna: ultimo campionamento in superficie per stazione (misure reali)
 const LAGOON_STATIONS = arpavLagoon.stations as LagoonWaterQualityItem[];
-import type { PollenMeasuredProfile } from '@/lib/types';
 
 const MEASURED: PollenMeasuredProfile = { year: arpavPollen.year, days: arpavPollen.days, families: arpavPollen.families };
 import {

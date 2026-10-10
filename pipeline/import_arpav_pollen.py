@@ -16,8 +16,8 @@ import json
 import logging
 import os
 import sys
-import urllib.request
 from datetime import datetime, timezone
+from vod_http import fetch_text
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -40,12 +40,8 @@ FAMILIES = {
 
 
 def download(url: str) -> str | None:
-    req = urllib.request.Request(url, headers={"User-Agent": "VOD-VeniceOpenData/1.0 (pipeline)"})
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            if resp.status != 200:
-                return None
-            return resp.read().decode("utf-8-sig", errors="replace")
+        return fetch_text(url)
     except Exception:  # noqa: BLE001 - anno non ancora pubblicato
         return None
 

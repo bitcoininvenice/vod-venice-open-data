@@ -21,16 +21,14 @@ import os
 import re
 import sys
 import time
-import urllib.parse
-import urllib.request
 from datetime import datetime, timezone
+from vod_http import fetch_json
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "agcom-fiber.json")
 SERVICES = "https://geo3.agcom.it/MapET-SFS/rest/services"
-USER_AGENT = "VOD-VeniceOpenData/1.0 (pipeline)"
 
 # Cornice della mappa VOD (lon/lat) e passo dell'aggregazione (~100 m a questa latitudine)
 FRAME = (12.135, 45.205, 12.47, 45.555)
@@ -46,21 +44,10 @@ OTHER_OPERATOR_BIT = 4
 
 
 def get_json(url: str, params: dict | None = None, retries: int = 3) -> dict:
-    full = f"{url}?{urllib.parse.urlencode({**(params or {}), 'f': 'json'})}"
-    for attempt in range(1, retries + 1):
-        try:
-            req = urllib.request.Request(full, headers={"User-Agent": USER_AGENT})
-            with urllib.request.urlopen(req, timeout=90) as resp:
-                data = json.loads(resp.read())
-            if "error" in data:
-                raise RuntimeError(data["error"])
-            return data
-        except Exception as e:  # noqa: BLE001 - rete instabile: si riprova
-            if attempt == retries:
-                raise
-            logging.warning("Tentativo %d fallito (%s), riprovo", attempt, e)
-            time.sleep(5 * attempt)
-    raise RuntimeError("irraggiungibile")
+    data = fetch_json(url, params={**(params or {}), "f": "json"}, timeout=90, retries=retries, backoff=5)
+    if "error" in data:
+        raise RuntimeError(data["error"])
+    return data
 
 
 def latest_service(folders: list[str], services_by_folder: dict[str, list[str]]) -> str | None:

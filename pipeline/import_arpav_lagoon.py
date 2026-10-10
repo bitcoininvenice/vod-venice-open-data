@@ -22,11 +22,10 @@ import logging
 import os
 import re
 import sys
-import time
-import urllib.request
 from datetime import datetime, timezone
 
 from pyproj import Transformer
+from vod_http import fetch_text
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -51,17 +50,7 @@ TO_WGS84 = Transformer.from_crs(3003, 4326, always_xy=True)
 
 def fetch(url: str, retries: int = 4) -> str:
     """Il sito ARPAV a volte non risponde: si riprova con attese crescenti."""
-    req = urllib.request.Request(url, headers={"User-Agent": "VOD-VeniceOpenData/1.0 (pipeline)"})
-    for attempt in range(1, retries + 1):
-        try:
-            with urllib.request.urlopen(req, timeout=90) as resp:
-                return resp.read().decode("utf-8-sig", errors="replace")
-        except Exception as e:  # noqa: BLE001
-            if attempt == retries:
-                raise
-            logging.warning("Tentativo %d per %s fallito (%s), riprovo", attempt, url, e)
-            time.sleep(10 * attempt)
-    raise RuntimeError("irraggiungibile")
+    return fetch_text(url, timeout=90, retries=retries, backoff=10)
 
 
 def files_by_year(folder_html: str) -> dict[int, str]:
