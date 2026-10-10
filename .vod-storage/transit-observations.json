@@ -1,0 +1,17 @@
+[
+  {
+    "timestamp": "2026-10-10T12:00:00.000Z",
+    "observedTrips": 15,
+    "scheduledTrips": 80,
+    "coveragePercent": 18.75,
+    "isCoverageSufficient": false,
+    "onTimePercent": null,
+    "minorDelayPercent": null,
+    "majorDelayPercent": null,
+    "avgDelaySeconds": null,
+    "source": "AVM S.p.A. / ACTV",
+    "license": "CC BY 4.0",
+    "nature": "measured",
+    "status": "insufficient_coverage"
+  }
+]

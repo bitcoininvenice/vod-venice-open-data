@@ -1,0 +1,62 @@
+[
+  {
+    "timestamp": "2026-10-10T12:00:00.000Z",
+    "observedTrips": 15,
+    "scheduledTrips": 80,
+    "coveragePercent": 18.75,
+    "isCoverageSufficient": false,
+    "onTimePercent": null,
+    "minorDelayPercent": null,
+    "majorDelayPercent": null,
+    "avgDelaySeconds": null,
+    "source": "AVM S.p.A. / ACTV",
+    "license": "CC BY 4.0",
+    "nature": "measured",
+    "status": "insufficient_coverage"
+  },
+  {
+    "timestamp": "2026-10-10T20:42:02.622Z",
+    "observedTrips": 50,
+    "scheduledTrips": 80,
+    "coveragePercent": 62.5,
+    "isCoverageSufficient": true,
+    "onTimePercent": 50,
+    "minorDelayPercent": 50,
+    "majorDelayPercent": 0,
+    "avgDelaySeconds": 140,
+    "source": "ACTV S.p.A. / AVM S.p.A. – GTFS-Realtime TripUpdates",
+    "license": "Licenza realtime in verifica con AVM S.p.A. / CC BY 4.0",
+    "nature": "measured",
+    "status": "published"
+  },
+  {
+    "timestamp": "2026-10-10T20:42:02.626Z",
+    "observedTrips": 5,
+    "scheduledTrips": 80,
+    "coveragePercent": 6.3,
+    "isCoverageSufficient": false,
+    "onTimePercent": null,
+    "minorDelayPercent": null,
+    "majorDelayPercent": null,
+    "avgDelaySeconds": null,
+    "source": "ACTV S.p.A. / AVM S.p.A. – GTFS-Realtime TripUpdates",
+    "license": "Licenza realtime in verifica con AVM S.p.A. / CC BY 4.0",
+    "nature": "measured",
+    "status": "insufficient_coverage"
+  },
+  {
+    "timestamp": "2026-10-10T20:42:02.793Z",
+    "observedTrips": 50,
+    "scheduledTrips": 80,
+    "coveragePercent": 62.5,
+    "isCoverageSufficient": true,
+    "onTimePercent": 50,
+    "minorDelayPercent": 50,
+    "majorDelayPercent": 0,
+    "avgDelaySeconds": 140,
+    "source": "ACTV S.p.A. / AVM S.p.A. – GTFS-Realtime TripUpdates",
+    "license": "Licenza realtime in verifica con AVM S.p.A. / CC BY 4.0",
+    "nature": "measured",
+    "status": "published"
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2026-08-01T12:00:00.000Z",
+    "stationId": "1025",
+    "stationName": "Punta della Salute",
+    "levelCm": 55,
+    "trend": "stabile",
+    "source": "CPSM",
+    "license": "CC BY 4.0",
+    "nature": "measured"
+  }
+]
