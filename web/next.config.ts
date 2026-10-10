@@ -29,9 +29,18 @@ const securityHeaders = [
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];
 
+// Il ritardo dalla posizione legge l'orario ACTV (public/data/sim-*.json) dal disco: va incluso
+// nelle funzioni che rispondono con i mezzi in tempo reale (API, server MCP e API dei dataset).
+const SIM_FILES = ["./public/data/sim-*.json"];
+
 const nextConfig: NextConfig = {
   reactStrictMode: false,
   poweredByHeader: false,
+  outputFileTracingIncludes: {
+    "/api/realtime/vehicles": SIM_FILES,
+    "/api/mcp": SIM_FILES,
+    "/api/datasets/[id]": SIM_FILES,
+  },
   async headers() {
     // La cache condivisa (CDN) delle API è governata da `revalidate` in ogni route. Qui si aggiunge la
     // cache del browser, proporzionata a quanto spesso cambia il dato: tornando sul sito o riattivando

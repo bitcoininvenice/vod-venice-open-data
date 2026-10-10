@@ -8,6 +8,9 @@ const NOW = 1_800_000_000;
 const trip = (over: Partial<TripDelay> = {}): TripDelay => ({
   tripId: 'AUT_ACTV_653_20839',
   routeId: '1_UN',
+  startTime: '12:30:00',
+  startDate: '20271015',
+  delay: null,
   timestamp: NOW - 10,
   stops: [
     { seq: 2, stopId: '5001', delay: 99, time: NOW + 300 },
@@ -25,6 +28,20 @@ describe('ritardi ACTV (server)', () => {
     expect(d.status).toBe('onTime');
     expect(d.nextStopName).toMatch(/Lido/);
     expect(d.estimate).toBe('predicted');
+    expect(d.source).toBe('actv');
+  });
+
+  it('usa il ritardo della corsa dichiarato da ACTV anche senza dettagli per fermata', () => {
+    const d = vehicleDelay(trip({ delay: 420, stops: [] }), NOW)!;
+    expect(d.seconds).toBe(420);
+    expect(d.nextStopName).toBeNull();
+    expect(d.actvSeconds).toBe(420);
+  });
+
+  it('con un valore verificato dalla posizione mostra quello e tiene il dato ACTV come verifica', () => {
+    const d = vehicleDelay(trip({ delay: 120 }), NOW, { seconds: 150, source: 'position', updatedAt: NOW - 5 })!;
+    expect(d).toMatchObject({ seconds: 150, source: 'position', actvSeconds: 120, updatedAt: NOW - 5 });
+    expect(d.nextStopName).toMatch(/Lido/);
   });
 
   it('non mostra il ritardo se l’aggiornamento è vecchio', () => {

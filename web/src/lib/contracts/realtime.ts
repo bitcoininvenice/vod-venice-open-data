@@ -16,6 +16,8 @@ export interface RealtimeVehicleDto {
   network: 'navigazione' | 'automobilistico';
   line: string | null;
   category: RealtimeCategory | null;
-  /** ritardo rispetto all'orario stimato da ACTV, solo se recente */
+  /** ritardo rispetto all'orario (dalla posizione GPS verificata con ACTV, oppure di ACTV), solo se recente */
   delay?: VehicleDelay | null;
+  /** posizione e dato ACTV non coerenti: il ritardo non viene mostrato */
+  delayConflict?: boolean;
 }

@@ -20,18 +20,36 @@ export function findTrip(trips: Map<string, TripDelay>, tripId: string | null): 
   return tripId ? trips.get(tripKey(tripId)) : undefined;
 }
 
-/** Ritardo attuale di un mezzo: quello alla prossima fermata; null se l'aggiornamento è vecchio. */
-export function vehicleDelay(trip: TripDelay | undefined, nowSec: number = Date.now() / 1000): VehicleDelay | null {
+/** Ritardo attuale dichiarato da ACTV: quello della corsa, altrimenti quello alla prossima fermata. */
+export function actvCurrentDelay(trip: TripDelay | undefined, nowSec: number = Date.now() / 1000): number | null {
   if (!trip || !isFresh(trip.timestamp, nowSec)) return null;
-  const next = trip.stops[0];
+  return trip.delay ?? trip.stops[0]?.delay ?? null;
+}
+
+/**
+ * Ritardo di un mezzo. `trusted` è il valore già verificato (dalla posizione o di ACTV); senza, si usa
+ * quello di ACTV. La prossima fermata e il suo orario previsto vengono sempre dalla stima di ACTV.
+ */
+export function vehicleDelay(
+  trip: TripDelay | undefined,
+  nowSec: number = Date.now() / 1000,
+  trusted?: { seconds: number; source: 'position' | 'actv'; updatedAt: number } | null,
+): VehicleDelay | null {
+  const actv = actvCurrentDelay(trip, nowSec);
+  const value = trusted ?? (actv !== null && trip ? { seconds: actv, source: 'actv' as const, updatedAt: trip.timestamp as number } : null);
+  if (!value) return null;
+  const fresh = trip && isFresh(trip.timestamp, nowSec) ? trip : undefined;
+  const next = fresh?.stops[0];
   return {
-    seconds: next.delay,
-    status: delayStatus(next.delay),
-    updatedAt: trip.timestamp as number,
-    nextStopId: next.stopId,
-    nextStopName: stopName(next.stopId),
-    nextStopTime: next.time,
-    estimate: estimateKind(trip.stops.map((s) => s.delay)),
+    seconds: value.seconds,
+    status: delayStatus(value.seconds),
+    updatedAt: value.updatedAt,
+    nextStopId: next?.stopId ?? null,
+    nextStopName: next ? stopName(next.stopId) : null,
+    nextStopTime: next?.time ?? null,
+    estimate: fresh && fresh.stops.length > 0 ? estimateKind(fresh.stops.map((s) => s.delay)) : 'constant',
+    source: value.source,
+    actvSeconds: actv,
   };
 }
 

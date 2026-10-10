@@ -37,6 +37,10 @@ export interface VehicleDelay {
   /** orario previsto alla prossima fermata (epoch seconds) */
   nextStopTime: number | null;
   estimate: 'constant' | 'predicted';
+  /** da dove viene il valore: calcolato dalla posizione GPS sull'orario, oppure dichiarato da ACTV */
+  source: 'position' | 'actv';
+  /** ritardo dichiarato da ACTV (s), se presente: con source=position è la verifica */
+  actvSeconds: number | null;
 }
 
 /** Arrivo previsto a una fermata (scheda della fermata). */

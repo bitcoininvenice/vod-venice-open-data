@@ -306,7 +306,7 @@ test('ritardi ACTV: scheda del mezzo e prossimi arrivi alla fermata', async ({ p
         data: [{
           id: 'test-1', tripId: 'NAV_ACTV_653_1', routeId: '2_UN', label: null, ...RIALTO, bearing: 0, timestamp: now,
           network: 'navigazione', line: '2', category: 'vaporetto',
-          delay: { seconds: 240, status: 'late', updatedAt: now - 5, nextStopId: '5038', nextStopName: 'Rialto "A"', nextStopTime: now + 120, estimate: 'predicted' },
+          delay: { seconds: 240, status: 'late', updatedAt: now - 5, nextStopId: '5038', nextStopName: 'Rialto "A"', nextStopTime: now + 120, estimate: 'predicted', source: 'position', actvSeconds: 180 },
         }],
       },
     })
@@ -357,6 +357,9 @@ test('ritardi ACTV: scheda del mezzo e prossimi arrivi alla fermata', async ({ p
   await expect(info).toContainText('In ritardo di 4 min');
   await expect(info).toContainText('Prossima fermata: Rialto');
   await expect(info).toContainText('stima ACTV');
+  // fonte del ritardo: calcolato dalla posizione, con il dato ACTV come verifica
+  await expect(info.getByTestId('delay-source')).toContainText('Calcolato dalla posizione GPS');
+  await expect(info.getByTestId('delay-source')).toContainText('ACTV indica +3 min');
 });
 
 test('nautica: il clic su una marina apre la sua scheda', async ({ page, isMobile }) => {
@@ -684,6 +687,20 @@ test.describe('API', () => {
       for (const r of p.rings) expect(r[0]).toEqual(r[r.length - 1]);
     }
     expect(body.data.some((p: { name: string | null }) => p.name === 'Parco San Giuliano')).toBe(true);
+  });
+
+  test('mezzi in tempo reale: ritardo dalla posizione verificato con ACTV, mai valori incoerenti', async ({ request }) => {
+    const body = await (await request.get('/api/realtime/vehicles')).json();
+    console.log('ritardi:', JSON.stringify({ mezzi: body.count, conRitardo: body.meta.withDelay, daPosizione: body.meta.delayFromPosition, conflitti: body.meta.delayConflicts }));
+    for (const v of body.data) {
+      if (v.delayConflict) expect(v.delay).toBeNull();
+      if (!v.delay) continue;
+      expect(['position', 'actv']).toContain(v.delay.source);
+      expect(Math.abs(v.delay.seconds)).toBeLessThanOrEqual(7200);
+      if (v.delay.source === 'position' && v.delay.actvSeconds !== null) {
+        expect(Math.abs(v.delay.seconds - v.delay.actvSeconds)).toBeLessThanOrEqual(900);
+      }
+    }
   });
 
   test('census: residenti ISTAT 2021 coerenti tra Comune, municipalità e sestieri', async ({ request }) => {

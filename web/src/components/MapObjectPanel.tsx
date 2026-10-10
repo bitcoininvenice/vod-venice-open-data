@@ -17,8 +17,10 @@ export interface VehicleSelection {
   source: 'gps' | 'schedule';
   /** secondi Unix dell'ultima posizione GPS */
   updatedAt?: number | null;
-  /** ritardo stimato da ACTV (solo mezzi GPS che indicano la corsa) */
+  /** ritardo (dalla posizione verificata con ACTV, oppure di ACTV): solo mezzi GPS che indicano la corsa */
   delay?: VehicleDelay | null;
+  /** posizione e dato ACTV non coerenti: il ritardo non viene mostrato */
+  delayConflict?: boolean;
 }
 
 /** Oggetti in movimento cliccati sulla mappa (le schede dei punti fissi sono in VeniceFeatureDetailModal). */
@@ -177,7 +179,7 @@ export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose,
             [t('ui.map.fonte'), gps ? t('ui.map.posizioneGpsRealeGtfsRt') : t('ui.map.simulatoOrario'), gps ? 'text-emerald-400' : 'text-sky-400'],
           ]}
         />
-        {gps && !v.delay && <p className="text-[11px] text-[var(--ink-3)]">{t('ui.delay.noDelay')}</p>}
+        {gps && !v.delay && <p className="text-[11px] text-[var(--ink-3)]">{t(v.delayConflict ? 'ui.delay.conflict' : 'ui.delay.noDelay')}</p>}
       </InfoPanel>
     );
   }
@@ -230,6 +232,10 @@ const DelayBox: React.FC<{ delay: VehicleDelay }> = ({ delay: d }) => {
   const min = delayMinutes(d.seconds);
   const label =
     d.status === 'onTime' ? t('ui.delay.onTime') : d.status === 'early' ? t('ui.delay.early', { min: Math.abs(min) }) : t('ui.delay.late', { min });
+  const formatDelay = (s: number) => {
+    const m = delayMinutes(s);
+    return m === 0 ? t('ui.delay.onTime').toLowerCase() : m > 0 ? `+${m} min` : `−${Math.abs(m)} min`;
+  };
   const now = useNow(5000);
   const ago = Math.max(0, Math.round(now / 1000 - d.updatedAt));
   const eta = d.nextStopTime ? new Date(d.nextStopTime * 1000).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' }) : null;
@@ -245,7 +251,13 @@ const DelayBox: React.FC<{ delay: VehicleDelay }> = ({ delay: d }) => {
           {eta && <> · <strong className="text-[var(--ink)]">{eta}</strong> <span className="text-[var(--ink-3)]">({t('ui.delay.estimateActv')})</span></>}
         </span>
       )}
-      {d.estimate === 'constant' && <span className="text-[10px] text-[var(--ink-3)]">{t('ui.delay.constantNote')}</span>}
+      <span className="text-[10px] text-[var(--ink-3)]" data-testid="delay-source">
+        {d.source === 'position' ? t('ui.delay.sourcePosition') : t('ui.delay.sourceActv')}
+        {d.source === 'position' && d.actvSeconds !== null && (
+          <> · {t('ui.delay.sourcePositionCheck', { value: formatDelay(d.actvSeconds) })}</>
+        )}
+      </span>
+      {d.estimate === 'constant' && d.nextStopName && <span className="text-[10px] text-[var(--ink-3)]">{t('ui.delay.constantNote')}</span>}
     </div>
   );
 };

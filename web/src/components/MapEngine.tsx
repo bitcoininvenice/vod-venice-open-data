@@ -677,6 +677,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
                   source: 'gps',
                   updatedAt: v.timestamp,
                   delay: v.delay ?? null,
+                  delayConflict: v.delayConflict ?? false,
                 },
               });
             },

@@ -9,6 +9,9 @@ export interface RealtimeVehicle {
   id: string;
   tripId: string | null;
   routeId: string | null;
+  /** partenza programmata della corsa "HH:MM:SS" e giorno di servizio "YYYYMMDD" */
+  startTime: string | null;
+  startDate: string | null;
   label: string | null;
   lat: number;
   lon: number;
@@ -29,6 +32,8 @@ export function parseVehiclePositions(buffer: ArrayBuffer): RealtimeVehicle[] {
       id: v.vehicle?.id || entity.id,
       tripId: v.trip?.tripId || null,
       routeId: v.trip?.routeId || null,
+      startTime: v.trip?.startTime || null,
+      startDate: v.trip?.startDate || null,
       label: v.vehicle?.label || null,
       lat: pos.latitude,
       lon: pos.longitude,
@@ -56,6 +61,10 @@ export interface StopDelay {
 export interface TripDelay {
   tripId: string;
   routeId: string | null;
+  startTime: string | null;
+  startDate: string | null;
+  /** ritardo attuale della corsa dichiarato da ACTV (s), anche quando mancano i dettagli per fermata */
+  delay: number | null;
   /** epoch seconds dell'ultimo aggiornamento della corsa */
   timestamp: number | null;
   stops: StopDelay[];
@@ -77,7 +86,16 @@ export function parseTripUpdates(buffer: ArrayBuffer): TripDelay[] {
         time: ev.time != null ? Number(ev.time) : null,
       }];
     });
-    if (stops.length === 0) return [];
-    return [{ tripId, routeId: u.trip?.routeId || null, timestamp: u.timestamp != null ? Number(u.timestamp) : null, stops }];
+    const delay = u.delay != null ? Number(u.delay) : null;
+    if (stops.length === 0 && delay === null) return [];
+    return [{
+      tripId,
+      routeId: u.trip?.routeId || null,
+      startTime: u.trip?.startTime || null,
+      startDate: u.trip?.startDate || null,
+      delay,
+      timestamp: u.timestamp != null ? Number(u.timestamp) : null,
+      stops,
+    }];
   });
 }
