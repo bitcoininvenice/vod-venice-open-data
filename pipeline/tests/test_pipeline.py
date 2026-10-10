@@ -584,3 +584,30 @@ def test_colori_ufficiali_delle_linee_di_navigazione():
     })
     bus = SimpleNamespace(name="automobilistico", routes={"2_UM": {"route_short_name": "2", "route_color": "E31E24"}})
     assert sim.line_colors([nav, bus]) == {"2": {"color": "#FF0000", "text": "#FFFFFF"}}
+
+
+# --- Numeri civici (OSM) ---
+
+import import_osm_civici as civici  # noqa: E402
+
+
+def test_civici_sestiere_e_numero():
+    assert civici.sestiere_of({"addr:suburb": "Cannaregio"}) == "Cannaregio"
+    assert civici.sestiere_of({"addr:place": "S. Polo"}) == "San Polo"
+    assert civici.sestiere_of({"addr:street": "Giudecca"}) == "Giudecca"
+    assert civici.sestiere_of({"addr:street": "Calle Larga"}) is None
+    assert civici.parse_number("3450") == (3450, "")
+    assert civici.parse_number("122/A") == (122, "A")
+    assert civici.parse_number("2902b") == (2902, "B")
+    assert civici.parse_number("snc") is None
+
+
+def test_civici_build_ordina_e_divide_i_numeri_multipli():
+    payload = {"elements": [
+        {"type": "node", "lat": 45.44, "lon": 12.33, "tags": {"addr:housenumber": "12;10", "addr:suburb": "Castello"}},
+        {"type": "way", "center": {"lat": 45.43, "lon": 12.34}, "tags": {"addr:housenumber": "11a", "addr:suburb": "Castello"}},
+        {"type": "node", "lat": 45.5, "lon": 12.4, "tags": {"addr:housenumber": "5", "addr:street": "Via Roma"}},
+    ]}
+    out = civici.build(payload)
+    assert [r[:2] for r in out["Castello"]] == [[10, ""], [11, "A"], [12, ""]]
+    assert out["Cannaregio"] == []

@@ -14,6 +14,7 @@ import {
   CornerDownLeft
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { civicLabel, parseCivicQuery, type CivicMatch } from '@/lib/civici';
 import { LayerKey } from '@/lib/urlLayers';
 import { isLocated } from '@/lib/types';
 import type { CityData } from '@/lib/cityData';
@@ -28,7 +29,8 @@ export interface SearchResultItem {
   category: SearchCategory;
   lat: number;
   lon: number;
-  layerKey: LayerKey;
+  /** livello da accendere selezionando il risultato (assente per i numeri civici) */
+  layerKey?: LayerKey;
   type: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload eterogeneo, ristretto da `type` nel chiamante
   rawItem: any;
@@ -273,12 +275,52 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
   }, [data, t]);
 
   // Filter items by query and category
+  // Numeri civici ("Cannaregio 3450"): risposta dell'API per la ricerca corrente
+  const civicQuery = useMemo(() => parseCivicQuery(query), [query]);
+  const civicKey = civicQuery ? civicLabel(civicQuery.sestiere, civicQuery.number, civicQuery.letter) : null;
+  const [civic, setCivic] = useState<{ key: string; item: SearchResultItem | null } | null>(null);
+  useEffect(() => {
+    if (!civicKey) return;
+    const ctrl = new AbortController();
+    const id = setTimeout(() => {
+      fetch(`/api/civici?q=${encodeURIComponent(civicKey)}`, { signal: ctrl.signal })
+        .then((r) => r.json())
+        .then((j) => {
+          const r = j.success ? (j.result as CivicMatch | null) : null;
+          setCivic({
+            key: civicKey,
+            item: r && {
+              id: `civico-${civicKey}`,
+              title: civicKey,
+              subtitle:
+                r.match === 'exact'
+                  ? t('ui.civic.resultExact')
+                  : t('ui.civic.resultApprox', { found: civicLabel(r.sestiere, r.number, r.letter) }),
+              category: 'heritage',
+              lat: r.lat,
+              lon: r.lon,
+              type: 'civico',
+              rawItem: { ...r, query: j.query },
+            },
+          });
+        })
+        .catch(() => {});
+    }, 200);
+    return () => {
+      clearTimeout(id);
+      ctrl.abort();
+    };
+  }, [civicKey, t]);
+  const civicItem = civic && civic.key === civicKey ? civic.item : null;
+
   const filteredResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q || q.length < 2) return [];
+    const head = civicItem ? [civicItem] : [];
 
-    return indexedItems
-      .filter((item) => {
+    return [
+      ...head,
+      ...indexedItems.filter((item) => {
         if (selectedCategory !== 'all' && item.category !== selectedCategory) {
           return false;
         }
@@ -286,9 +328,9 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
           item.title.toLowerCase().includes(q) ||
           item.subtitle.toLowerCase().includes(q)
         );
-      })
-      .slice(0, 35);
-  }, [indexedItems, query, selectedCategory]);
+      }),
+    ].slice(0, 35);
+  }, [indexedItems, query, selectedCategory, civicItem]);
 
   // Keyboard navigation
   useEffect(() => {

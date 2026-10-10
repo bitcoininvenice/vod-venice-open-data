@@ -12,6 +12,7 @@ import {
   Compass,
   LifeBuoy,
   Trees,
+  MapPin,
   Zap,
   Wifi,
   Waves,
@@ -75,6 +76,7 @@ import { BdapWorkDetails } from '@/components/BdapWorkDetails';
 import type { BdapProject } from '@/lib/bdap';
 import type { LoraGateway, NauticalPlace, ParkPlace, SportPlace, WifiVenue } from '@/lib/types';
 import { PARK_COLORS } from '@/lib/parks';
+import { civicLabel, type CivicMatch, type CivicQuery } from '@/lib/civici';
 import { sportColor } from '@/lib/sports';
 import { CAMPO_LICENSE_PAGE } from '@/server/sources/campo';
 import type { LayerKey } from '@/lib/urlLayers';
@@ -121,7 +123,8 @@ export type VeniceFeatureSelected =
   | { type: 'wifiVenue'; data: WifiVenue }
   | { type: 'sportPlace'; data: SportPlace }
   | { type: 'nauticalPlace'; data: NauticalPlace }
-  | { type: 'parkPlace'; data: ParkPlace };
+  | { type: 'parkPlace'; data: ParkPlace }
+  | { type: 'civicNumber'; data: CivicMatch & { query: CivicQuery } };
 
 interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
@@ -252,12 +255,16 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {feature.type === 'sportPlace' && <SportPlaceBody place={feature.data} />}
           {feature.type === 'nauticalPlace' && <NauticalBody place={feature.data} />}
           {feature.type === 'parkPlace' && <ParkBody place={feature.data} />}
+          {feature.type === 'civicNumber' && <CivicBody civic={feature.data} />}
 
           {feature.type === 'bdapWork' && (
               <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400"><Construction className="w-5 h-5" /></div>
             )}
             {feature.type === 'nauticalPlace' && (
               <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400"><Anchor className="w-5 h-5" /></div>
+            )}
+            {feature.type === 'civicNumber' && (
+              <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400"><MapPin className="w-5 h-5" /></div>
             )}
             {feature.type === 'parkPlace' && (
               <div className="p-2 rounded-xl text-white" style={{ background: PARK_COLORS[feature.data.kind] }}><Trees className="w-5 h-5" /></div>
@@ -321,6 +328,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'sportPlace' && (feature.data.name ?? t(`ui.sport.kind_${feature.data.kind}`))}
                 {feature.type === 'nauticalPlace' && (feature.data.name ?? t(`ui.nautical.kind_${feature.data.kind}`))}
                 {feature.type === 'parkPlace' && (feature.data.name ?? t(`ui.park.kind_${feature.data.kind}`))}
+                {feature.type === 'civicNumber' && civicLabel(feature.data.query.sestiere, feature.data.query.number, feature.data.query.letter)}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
                 {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
@@ -348,6 +356,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'sportPlace' && [sportNames(feature.data.sports, t), feature.data.area].filter(Boolean).join(' · ')}
                 {feature.type === 'nauticalPlace' && `${t(`ui.nautical.kind_${feature.data.kind}`)} · ${feature.data.zone}`}
                 {feature.type === 'parkPlace' && (feature.data.name ? t(`ui.park.kind_${feature.data.kind}`) : t('ui.park.unnamed'))}
+                {feature.type === 'civicNumber' && t('ui.civic.category')}
               </span>
             </div>
           </div>
@@ -1298,7 +1307,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
 };
 
 /** Layer da cui proviene ogni tipo di scheda (natura del dato e fonte nel piede della scheda). */
-const FEATURE_LAYER: Record<Exclude<VeniceFeatureSelected['type'], 'civicPoi'>, LayerKey> = {
+const FEATURE_LAYER: Record<Exclude<VeniceFeatureSelected['type'], 'civicPoi' | 'civicNumber'>, LayerKey> = {
   passerella: 'showPasserelle', briccola: 'showMarineSignals', oceanStation: 'showOceanStations',
   bathingWater: 'showBathingWaters', urbanTree: 'showTrees', evCharging: 'showEvCharging',
   wifiHotspot: 'showWifiHotspots', speedLimit: 'showCanalLimits', bridgeClearance: 'showBridges',
@@ -1312,7 +1321,8 @@ const FEATURE_LAYER: Record<Exclude<VeniceFeatureSelected['type'], 'civicPoi'>, 
   airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks', loraGateway: 'showLoraGateways', wifiVenue: 'showWifiVenues', sportPlace: 'showSports', nauticalPlace: 'showNautical', parkPlace: 'showParks',
 };
 
-function featureLayer(feature: VeniceFeatureSelected): LayerKey {
+function featureLayer(feature: VeniceFeatureSelected): LayerKey | undefined {
+  if (feature.type === 'civicNumber') return undefined;
   if (feature.type === 'civicPoi') return feature.data.kind === 'recycling' ? 'showRecyclingCentres' : 'showLibraries';
   return FEATURE_LAYER[feature.type];
 }
@@ -1325,7 +1335,7 @@ const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
 ]);
 
 /** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
-const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace', 'parkPlace']);
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace', 'parkPlace', 'civicNumber']);
 
 /** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
 const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {
@@ -1686,6 +1696,34 @@ const ParkBody: React.FC<{ place: ParkPlace }> = ({ place: p }) => {
       )}
       <p className="text-[11px] text-[var(--ink-3)]">{k('note')}</p>
       <a href={p.osmUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2">
+        © OpenStreetMap contributors (ODbL)
+      </a>
+    </div>
+  );
+};
+
+/** Numero civico: esatto se è su OpenStreetMap, altrimenti il civico noto più vicino dello stesso sestiere. */
+const CivicBody: React.FC<{ civic: CivicMatch & { query: CivicQuery } }> = ({ civic: c }) => {
+  const { t } = useTranslation();
+  const k = (key: string, params?: Record<string, string | number>) => t(`ui.civic.${key}`, params);
+  const found = civicLabel(c.sestiere, c.number, c.letter);
+  return (
+    <div className="flex flex-col gap-3">
+      {c.match === 'exact' ? (
+        <p className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300">{k('exact')}</p>
+      ) : (
+        <p className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300" data-testid="civic-approx">
+          {k('approx', { found, gap: c.gap })}
+        </p>
+      )}
+      <KeyValues items={[[k('position'), `${c.lat.toFixed(5)}, ${c.lon.toFixed(5)}`]]} />
+      <p className="text-[11px] text-[var(--ink-3)]">{k('note')}</p>
+      <a
+        href={`https://www.openstreetmap.org/?mlat=${c.lat}&mlon=${c.lon}#map=19/${c.lat}/${c.lon}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2"
+      >
         © OpenStreetMap contributors (ODbL)
       </a>
     </div>

@@ -30,5 +30,5 @@ export function proxy(request: NextRequest) {
 // Solo le route dinamiche (parametri nella richiesta o POST): escludere le API in cache evita
 // un'esecuzione del proxy, cioè una funzione sul server, per ogni richiesta servita dalla CDN.
 export const config = {
-  matcher: ['/api/mcp', '/mcp', '/api/datasets/:path*', '/api/realtime/arrivals', '/api/spatial/:path*', '/api/stops'],
+  matcher: ['/api/mcp', '/mcp', '/api/datasets/:path*', '/api/realtime/arrivals', '/api/spatial/:path*', '/api/stops', '/api/civici'],
 };

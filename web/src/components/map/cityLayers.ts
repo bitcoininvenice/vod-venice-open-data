@@ -1110,3 +1110,39 @@ export function drawParks(rc: RenderContext): void {
   }
   ctx.restore();
 }
+
+/** Segnaposto del luogo cercato: goccia verde se esatto, ambra con alone se approssimato. */
+export function drawPin(rc: RenderContext): void {
+  const { ctx, sx, sy, mx, my, pin } = rc;
+  if (!pin) return;
+  const px = sx(mx(pin.lon));
+  const py = sy(my(pin.lat));
+  const color = pin.approximate ? '#f59e0b' : '#10b981';
+  ctx.save();
+  if (pin.approximate) {
+    // alone: il portone è nei paraggi, non esattamente qui
+    ctx.beginPath();
+    ctx.arc(px, py, 22, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(245, 158, 11, 0.18)';
+    ctx.fill();
+    ctx.setLineDash([4, 3]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  ctx.beginPath();
+  ctx.moveTo(px, py);
+  ctx.bezierCurveTo(px - 9, py - 12, px - 9, py - 24, px, py - 24);
+  ctx.bezierCurveTo(px + 9, py - 24, px + 9, py - 12, px, py);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(px, py - 17, 3, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+  ctx.restore();
+}

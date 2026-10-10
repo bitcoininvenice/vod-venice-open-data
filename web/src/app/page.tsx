@@ -185,6 +185,7 @@ export default function HomePage() {
     else if (item.type === 'emergency_dock') setSelectedFeature({ type: 'emergencyDock', data: item.rawItem });
     else if (item.type === 'fountain') setSelectedFeature({ type: 'fountain', data: item.rawItem });
     else if (item.type === 'parking') setSelectedFeature({ type: 'parking', data: item.rawItem });
+    else if (item.type === 'civico') setSelectedFeature({ type: 'civicNumber', data: item.rawItem });
   }, [clearDetails]);
 
   // Tutorial mostrato alla prima visita: lato server si assume già visto per evitare un flash
@@ -403,6 +404,11 @@ export default function HomePage() {
           sportFilter={sportFilter}
           simulatedTideLevel={simulatedTideLevel}
           isDesktopLayerPanelOpen={isDesktopLayerPanelOpen}
+          pin={
+            selectedFeature?.type === 'civicNumber'
+              ? { lat: selectedFeature.data.lat, lon: selectedFeature.data.lon, approximate: selectedFeature.data.match !== 'exact' }
+              : null
+          }
         />
 
         {/* Floating Simulated Tide Alert Pill on Map */}

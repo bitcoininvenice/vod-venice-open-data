@@ -681,7 +681,7 @@ export const itUi = {
     switchLanguage: "Cambia lingua (IT / EN)"
   },
   search: {
-    placeholder: "Cerca fermate, farmacie, DAE, fontanelle, nizioleti, cantieri...",
+    placeholder: "Cerca fermate, farmacie, DAE, fontanelle, cantieri o un civico (es. Cannaregio 3450)...",
     title: "Ricerca",
     noResults: "Nessun risultato trovato per",
     categoryAll: "Tutti",
@@ -1141,6 +1141,8 @@ export const itUi = {
     "meta_open-meteo-marine": "Onde e temperatura del mare previste alla piattaforma Acqua Alta, accanto alle misure CPSM.",
     "name_osm-waterways": "Briccole e canali OpenStreetMap (pipeline)",
     "meta_osm-waterways": "Non esiste un dataset ufficiale aperto di briccole e canali: OpenStreetMap è la fonte più completa. Non per la navigazione.",
+    "name_osm-civici": "Numeri civici OpenStreetMap (pipeline)",
+    "meta_osm-civici": "Il Comune non pubblica i numeri civici come open data: OpenStreetMap ne copre una parte. Se un civico manca, la ricerca indica il più vicino come posizione approssimata.",
     "name_osm-parks": "Parchi, giardini e aree giochi OpenStreetMap (pipeline)",
     "meta_osm-parks": "Il Comune non pubblica un dataset aperto del verde pubblico: si usa OpenStreetMap, esclusi i luoghi privati. Orari e servizi non verificati.",
     "name_arpav-pollen": "Pollini misurati ARPAV Venezia (pipeline)",
@@ -1596,6 +1598,15 @@ export const itUi = {
     unnamedStop: "Fermata",
     note: "Orari dall'orario ufficiale ACTV (GTFS).",
     noteDelay: "Orario ufficiale barrato e orario previsto con il ritardo attuale del mezzo applicato a tutte le fermate: è una stima."
+  },
+  civic: {
+    category: "Numero civico",
+    resultExact: "Numero civico · OpenStreetMap",
+    resultApprox: "Civico non presente su OpenStreetMap · posizione del civico noto più vicino ({found})",
+    exact: "Civico presente su OpenStreetMap: la posizione è quella del portone mappato.",
+    approx: "Questo civico non è su OpenStreetMap. La posizione indicata è quella del civico noto più vicino dello stesso sestiere, {found} ({gap} numeri di differenza): il portone cercato è nei paraggi, ma la posizione è approssimata.",
+    position: "Posizione",
+    note: "A Venezia i numeri civici sono per sestiere, non per via; la Giudecca ha una numerazione propria. Il Comune non pubblica i civici come open data: OpenStreetMap ne copre una parte, con buona copertura a Cannaregio, San Polo e Santa Croce e scarsa a Dorsoduro."
   }
 };
 

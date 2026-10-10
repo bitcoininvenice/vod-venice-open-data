@@ -676,14 +676,14 @@ export const enUi: UiTranslations = {
     regime_static: "Open dataset",
     regime_curated: "Curated list · to be verified",
     acqApi: "Served by API",
-    group_mobility: "Water, air and rail mobility",
+    group_mobility: "Mobility",
     group_lagoon: "Environment",
-    group_city: "Historic city, heritage and services",
+    group_city: "City",
     target: "File / endpoint:",
     switchLanguage: "Switch language (IT / EN)"
   },
   search: {
-    placeholder: "Search stops, pharmacies, AEDs, fountains, street signs, worksites...",
+    placeholder: "Search stops, pharmacies, AEDs, fountains, works or a house number (e.g. Cannaregio 3450)...",
     title: "Global Geospatial Search",
     noResults: "No results found for",
     categoryAll: "All",
@@ -1143,6 +1143,8 @@ export const enUi: UiTranslations = {
     "meta_open-meteo-marine": "Forecast waves and sea temperature at the Acqua Alta platform, alongside CPSM readings.",
     "name_osm-waterways": "OpenStreetMap channel markers and canals (pipeline)",
     "meta_osm-waterways": "There is no official open dataset of channel markers and canals: OpenStreetMap is the most complete source. Not for navigation.",
+    "name_osm-civici": "OpenStreetMap house numbers (pipeline)",
+    "meta_osm-civici": "The City does not publish house numbers as open data: OpenStreetMap covers part of them. If a number is missing, search shows the nearest one as an approximate position.",
     "name_osm-parks": "OpenStreetMap parks, gardens and playgrounds (pipeline)",
     "meta_osm-parks": "The City does not publish an open dataset of public green areas: OpenStreetMap is used, private places excluded. Opening hours and facilities not verified.",
     "name_arpav-pollen": "ARPAV measured pollen, Venice (pipeline)",
@@ -1308,7 +1310,7 @@ export const enUi: UiTranslations = {
   },
   presets: {
     label: "Scenarios",
-    muoversi: "Getting around",
+    muoversi: "Mobility",
     muoversiDesc: "Live waterbuses, stops, Alilaguna and AIS ships",
     "acqua-alta": "High water",
     "acqua-altaDesc": "MOSE, oceanographic platform, sea wind and canals",
@@ -1598,5 +1600,14 @@ export const enUi: UiTranslations = {
     unnamedStop: "Stop",
     note: "Times from the official ACTV timetable (GTFS).",
     noteDelay: "Official time struck through and expected time with the vehicle's current delay applied to every stop: it is an estimate."
+  },
+  civic: {
+    category: "House number",
+    resultExact: "House number · OpenStreetMap",
+    resultApprox: "Not on OpenStreetMap · position of the nearest known number ({found})",
+    exact: "This house number is on OpenStreetMap: the position is that of the mapped door.",
+    approx: "This house number is not on OpenStreetMap. The position shown is that of the nearest known number in the same sestiere, {found} ({gap} numbers away): the door you are looking for is nearby, but the position is approximate.",
+    position: "Position",
+    note: "In Venice house numbers run by sestiere, not by street; Giudecca has its own numbering. The City does not publish house numbers as open data: OpenStreetMap covers part of them, well in Cannaregio, San Polo and Santa Croce and poorly in Dorsoduro."
   }
 };

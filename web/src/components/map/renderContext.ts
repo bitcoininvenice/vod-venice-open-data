@@ -24,6 +24,8 @@ export interface RenderContext
   /** livello di marea disegnato (simulato se il simulatore è attivo) */
   tideLevel: number;
   sportFilter: SportFilter;
+  /** segnaposto di un luogo cercato */
+  pin: { lat: number; lon: number; approximate: boolean } | null;
   /** corsa del mezzo selezionato da evidenziare (null se nessuna) */
   selectedTrip: HighlightTrip | null;
   ctx: CanvasRenderingContext2D;

@@ -17,6 +17,7 @@ Run `python scripts/vod.py datasets` (or the MCP tool `list_datasets`) for the l
 | Canals and channel markers | `canals`, `channel_markers` | not for navigation |
 | Public works | `public_works` | positions are approximate; field `bdap` adds actual stage, dates, cost and funding when the CUP is in the State monitoring |
 | Works under construction, public spending on works | `public_works_bdap` | State Public Works Monitoring (BDAP); `meta.summary` has all City projects by stage, sector and funding |
+| Venetian house numbers ("Cannaregio 3450") | `house_numbers` | OpenStreetMap, partial coverage (poor in Dorsoduro); numbering is by sestiere, Giudecca has its own |
 | Parks, public gardens, playgrounds, dog parks, nature reserves | `parks` | OpenStreetMap; no official open dataset from the City; private places excluded |
 | Marinas, boat fuel, slipways, moorings | `nautical` | OpenStreetMap; City concessions and time-limited berths are not open data |
 | Sport courts, outdoor fitness, clubs | `sports` | CAMPO community reports (hours, parish courts) + OpenStreetMap; cite “Dati forniti dalla comunità di CAMPO Venezia” (CC BY 4.0) for `source=CAMPO` |

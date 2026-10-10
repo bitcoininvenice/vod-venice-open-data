@@ -55,6 +55,7 @@ vod-venice-open-data/
 │   ├── import_alilaguna_gtfs.py    # Orario ufficiale Alilaguna (GTFS dell'operatore)
 │   ├── import_osm_waterways.py     # Briccole, segnalamenti e canali della laguna (OSM)
 │   ├── import_istat_census.py      # Residenti, famiglie e abitazioni per sestiere, isola e municipalità (ISTAT 2021)
+│   ├── import_osm_civici.py        # Numeri civici del centro storico per sestiere (OSM), per la ricerca «Cannaregio 3450»
 │   ├── import_osm_parks.py         # Parchi, giardini pubblici, aree giochi, aree cani e oasi con perimetro (OSM)
 │   ├── import_arpav_pollen.py      # Pollini misurati da ARPAV a Venezia (calendario mensile)
 │   ├── import_cruscotto_italia.py  # Profilo socio-economico dei comuni della laguna (Cruscotto Italia, AgID)
@@ -148,6 +149,7 @@ python import_alilaguna_gtfs.py             # Orario Alilaguna (simulazione dell
 python import_agcom_fiber.py                # Copertura fibra AGCOM su celle di ~100 m
 python import_osm_waterways.py              # Briccole, segnalamenti e canali della laguna (OSM)
 python import_istat_census.py               # Censimento ISTAT 2021 per sestiere e isola (circa 330 MB da ISTAT, solo a ogni nuova edizione)
+python import_osm_civici.py                 # Numeri civici del centro storico per sestiere (OSM)
 python import_osm_parks.py                  # Parchi, giardini pubblici, aree giochi, aree cani e oasi (OSM)
 python import_arpav_pollen.py               # Pollini misurati ARPAV a Venezia
 python import_cruscotto_italia.py           # Profilo dei comuni da Cruscotto Italia (MCP AgID, CC BY 4.0)
@@ -242,6 +244,7 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/cantieri` | Opere pubbliche dell'Elenco Annuale dei Lavori 2026 (posizioni approssimate); il campo `bdap` aggiunge, per CUP, fase reale, date, costi e finanziamenti dal Monitoraggio Opere Pubbliche. |
 | `GET` | `/api/city-assets` | Fontanelle, parcheggi, ecocentri, biblioteche e luoghi con Wi-Fi (`wifiVenues`: hotel, bar, biblioteche con tipo di accesso) da OpenStreetMap (ODbL). |
 | `GET` | `/api/census` | Residenti, età, stranieri, famiglie e abitazioni (anche vuote o di soli non residenti) per Comune, municipalità, sestiere e isola dal Censimento ISTAT 2021 (CC BY 4.0). |
+| `GET` | `/api/civici?q=Cannaregio 3450` | Numero civico veneziano (anche «CN 3450», «S. Polo 1200/a»): posizione esatta se è su OpenStreetMap, altrimenti il civico noto più vicino dello stesso sestiere (`match=nearest`). |
 | `GET` | `/api/parks` | Parchi, giardini pubblici, aree giochi, aree cani e oasi con perimetro, accesso e superficie da OpenStreetMap (ODbL); il Comune non pubblica un dataset aperto del verde. |
 | `GET` | `/api/nautical` | Marine, carburante per barche, scivoli, cantieri, noleggi e ormeggi da OpenStreetMap (ODbL); non le concessioni comunali, non pubblicate come open data. |
 | `GET` | `/api/sports` | Spazi sportivi: segnalazioni della comunità CAMPO (CC BY 4.0, indirizzo in `web/src/server/sources/campo.ts`, riletta ogni ora) unite agli impianti OpenStreetMap; CAMPO prevale entro 60 m. |

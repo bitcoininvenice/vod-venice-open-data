@@ -387,6 +387,21 @@ test('colori ufficiali delle linee ACTV nella scheda della fermata', async ({ pa
   await expect(line2).toHaveCSS('background-color', 'rgb(255, 0, 0)');
 });
 
+test('ricerca per numero civico: «Cannaregio …» porta al portone o al civico più vicino', async ({ page }) => {
+  // un civico reale presente su OSM, preso dall'API dei dataset
+  const res = await page.request.get('/api/datasets/house_numbers?text=Cannaregio&limit=1');
+  const civ = (await res.json()).items[0];
+  await page.goto('/');
+  await page.locator('canvas').waitFor();
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder(/civico/i).fill(civ.label);
+  const dialog = page.getByRole('dialog', { name: /ricerca/i });
+  await dialog.getByRole('button').filter({ hasText: civ.label }).first().click();
+  const info = page.locator('[data-info-panel]');
+  await expect(info).toContainText(civ.label);
+  await expect(info).toContainText('Civico presente su OpenStreetMap');
+});
+
 test('nautica: il clic su una marina apre la sua scheda', async ({ page, isMobile }) => {
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   const RIALTO = { lat: 45.43727, lon: 12.335071 };
@@ -737,6 +752,19 @@ test.describe('API', () => {
     expect(sestieri.reduce((a: number, s: { population: number }) => a + s.population, 0)).toBe(historicCentre.population);
     expect(sestieri).toHaveLength(6);
     expect(sestieri.map((s: { name: string }) => s.name)).not.toContain('Giudecca');
+  });
+
+  test('civici: esatto o il più vicino nello stesso sestiere, con errore esplicito se la ricerca non è un civico', async ({ request }) => {
+    const ok = await (await request.get('/api/civici?q=' + encodeURIComponent('CN 3450'))).json();
+    expect(ok.success).toBe(true);
+    expect(ok.query.sestiere).toBe('Cannaregio');
+    expect(['exact', 'nearest']).toContain(ok.result.match);
+    expect(ok.result.sestiere).toBe('Cannaregio');
+    expect(ok.meta.license).toMatch(/ODbL/);
+    // un numero molto alto non esiste: risponde con il più vicino, dichiarato come approssimato
+    const far = await (await request.get('/api/civici?q=Castello%2099999')).json();
+    expect(far.result.match).toBe('nearest');
+    expect((await request.get('/api/civici?q=Rialto')).status()).toBe(400);
   });
 
   test('nautical: marine, carburante e ormeggi da OpenStreetMap', async ({ request }) => {

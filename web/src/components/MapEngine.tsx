@@ -17,7 +17,7 @@ import type { RenderContext } from './map/renderContext';
 import { drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, drawMarineSignals, drawOceanStations, drawCanalLimits, drawBridges, drawGondolas, drawDocks, drawMarineWind } from './map/lagoonLayers';
-import { bdapRadius, drawParks, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
+import { bdapRadius, drawPin, drawParks, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 import { drawFloodLayer } from './map/floodLayer';
 import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
@@ -69,6 +69,8 @@ export interface MapEngineProps {
   sportFilter?: SportFilter;
   simulatedTideLevel?: number | null;
   isDesktopLayerPanelOpen?: boolean;
+  /** segnaposto di un luogo cercato (es. numero civico); approximate: posizione del civico noto più vicino */
+  pin?: { lat: number; lon: number; approximate: boolean } | null;
 }
 
 export const MapEngine: React.FC<MapEngineProps> = ({
@@ -96,7 +98,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   focusedCoordinates,
   sportFilter = 'all',
   simulatedTideLevel = null,
-  isDesktopLayerPanelOpen = true
+  isDesktopLayerPanelOpen = true,
+  pin = null
 }) => {
   const { t } = useTranslation();
   // alias: nel codice di disegno `t` è anche il nome locale dell'ora simulata
@@ -803,6 +806,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         paletteTheme,
         sportFilter,
         tideLevel: simulatedTideLevel ?? data.tideLevel ?? 0,
+        pin,
         selectedTrip: selectedTrip && selectedVehicle
           ? {
               ...selectedTrip,
@@ -923,6 +927,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
         drawTributaries(rc);
       });
+      // Segnaposto del luogo cercato, sopra a tutto
+      drawPin(rc);
 
       ctx.restore();
       animId = requestAnimationFrame(render);
@@ -933,7 +939,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   }, [
     camera, KY, H, W, mx, my, tr, layers, data, cantieri, selectedDay, paletteTheme, bufferRadiusMeters, selectedCategory,
     sportFilter, simulatedTideLevel, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
-    alilagunaBoats, is3DView, landHiReady, selectedTrip, selectedVehicle,
+    alilagunaBoats, is3DView, landHiReady, selectedTrip, selectedVehicle, pin,
 ]);
 
   return (

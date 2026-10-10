@@ -23,6 +23,7 @@ import { GET as sportsGET } from '@/app/api/sports/route';
 import { GET as nauticalGET } from '@/app/api/nautical/route';
 import { GET as parksGET } from '@/app/api/parks/route';
 import { GET as censusGET } from '@/app/api/census/route';
+import civiciData from '@/data/osm-civici.json';
 import { GET as healthGET } from '@/app/api/health/route';
 import tourism from '@/data/turismo-comuni.json';
 import cruscotto from '@/data/cruscotto-comuni.json';
@@ -187,6 +188,13 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   public_works_bdap: async () => {
     const j = await read(bdapGET());
     return { items: asRows(j.data), meta: { ...(j.meta as Row), summary: j.summary } };
+  },
+  house_numbers: async () => {
+    const civici = civiciData.civici as unknown as Record<string, [number, string, number, number][]>;
+    const items: Row[] = Object.entries(civici).flatMap(([sestiere, rows]) =>
+      rows.map(([n, l, lon, lat]) => ({ label: `${sestiere} ${n}${l ? ` ${l}` : ''}`, sestiere, number: n, letter: l || null, lat, lon })),
+    );
+    return { items, meta: { source: civiciData.source, license: civiciData.license, attribution: civiciData.attribution, generatedAt: civiciData.generatedAt, coverage: civiciData.counts, note: civiciData.note } };
   },
   census: async () => {
     const j = await read(censusGET());
