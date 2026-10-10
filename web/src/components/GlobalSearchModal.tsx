@@ -87,7 +87,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
       });
     }
 
-    // 2. Farmacie di Turno
+    // 2. Farmacie (i turni non sono open data: la scheda rimanda alla pagina dell'AULSS 3)
     for (const p of pharmacies) {
       list.push({
         id: `pharmacy-${p.id}`,

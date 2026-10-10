@@ -170,7 +170,7 @@ test('gli scenari accendono pochi livelli e si evidenziano', async ({ page, isMo
   const servizi = panel.getByRole('button', { name: /servizi utili/i });
   await servizi.click();
   await expect(servizi).toHaveAttribute('aria-pressed', 'true');
-  await expect(page).toHaveURL(/farmacie_turno/);
+  await expect(page).toHaveURL(/layers=[^&]*farmacie/);
   await expect(page).toHaveURL(/dae_pubblici/);
   // nessun pulsante "Tutti"
   await expect(panel.getByRole('button', { name: /^tutti$/i })).toHaveCount(0);
@@ -185,7 +185,7 @@ test('la ricerca nel pannello filtra i livelli', async ({ page, isMobile }) => {
   await expect(panel.locator('[data-layer="showShips"]')).toHaveCount(0);
   await pharmacies.click();
   await expect(pharmacies).toHaveAttribute('aria-pressed', 'true');
-  await expect(page).toHaveURL(/farmacie_turno/);
+  await expect(page).toHaveURL(/layers=[^&]*farmacie/);
   await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('xyzxyz');
   await expect(panel.getByText(/nessun livello per/i)).toBeVisible();
 });
@@ -203,12 +203,12 @@ test('troppi livelli: avviso con "Pulisci"', async ({ page, isMobile }) => {
 });
 
 test('legenda dei livelli attivi: si apre e spegne un livello', async ({ page }) => {
-  await page.goto('/?layers=farmacie_turno,dae_pubblici');
+  await page.goto('/?layers=farmacie,dae_pubblici');
   const legend = page.getByRole('button', { name: /mostra i livelli attivi/i });
   await legend.click();
   await page.getByRole('button', { name: /disattiva defibrillatori|disattiva dae/i }).first().click();
   await expect(page).not.toHaveURL(/dae_pubblici/);
-  await expect(page).toHaveURL(/farmacie_turno/);
+  await expect(page).toHaveURL(/layers=[^&]*farmacie/);
 });
 
 test('metriche: sezione delle opere pubbliche dal monitoraggio BDAP', async ({ page }) => {

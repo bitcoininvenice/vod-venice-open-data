@@ -7,6 +7,7 @@ Bozze pronte da inviare dal titolare del progetto. Nessuna è stata inviata.
 | Anopticon (tramaci.org) | I Termini d'uso vietano l'accesso ai dati "con script o api di qualunque genere senza autorizzazione da parte dei gestori". Il fatto che la mappa sia consultabile gratuitamente non concede il diritto di copiarne i dati. | epto@tramaci.org (indicato nei Termini) |
 | ACTV / AVM – GTFS-Realtime | L'endpoint `tpl.actv.it/.../GTFSRT` è pubblico ma non è documentato come open data né accompagnato da una licenza (a differenza dei GTFS statici, CC BY). | Canale open data / contatti istituzionali AVM S.p.A. |
 | SkylineWebcams | Le immagini sono contenuti proprietari: oggi il progetto mostra solo un link alla pagina ufficiale. Per mostrare un'anteprima o un player serve l'embed ufficiale o un accordo. | Modulo contatti / programma partner di SkylineWebcams |
+| Regione del Veneto / Azienda Zero – Pronto Soccorso | Il servizio regionale pubblica attese e pazienti in trattamento per codice colore ogni 15 minuti, ma senza API né licenza esplicita; le note legali coprono solo i dati a pubblicazione obbligatoria. | Area Sanità e Sociale della Regione / Azienda Zero |
 
 ---
 
@@ -58,6 +59,30 @@ Grazie,
 Buongiorno,
 
 il progetto non commerciale VOD – Venice Open Data indica sulla mappa la posizione di alcune vostre webcam di Venezia, con un link alla pagina ufficiale di ciascuna. Vorremmo sapere se è possibile mostrare il vostro player o un'anteprima tramite un embed ufficiale, e a quali condizioni (attribuzione, formato, eventuali limiti).
+
+Grazie,
+[Nome e cognome] – [email] – [sito]
+
+---
+
+## 4. Regione del Veneto / Azienda Zero – situazione nei Pronto Soccorso
+
+**Destinatari:** Regione del Veneto – Area Sanità e Sociale (portale salute.regione.veneto.it) e Azienda Zero
+
+**Oggetto:** Riuso dei dati "Situazione nei Pronto Soccorso" per gli ospedali dell'AULSS 3 Serenissima
+
+Buongiorno,
+
+il progetto non commerciale VOD – Venice Open Data (mappa dei dati aperti di Venezia) vorrebbe mostrare, per gli ospedali dell'AULSS 3 Serenissima, il numero di persone in attesa e in trattamento per codice colore pubblicato dal servizio regionale "Situazione nei Pronto Soccorso" (https://salute.regione.veneto.it/servizi/situazione-nei-pronto-soccorso), aggiornato ogni 15 minuti.
+
+Le note legali del portale consentono il riuso dei dati a pubblicazione obbligatoria con citazione della fonte, ma non è chiaro se questi dati rientrino nel caso, e il servizio non offre un'API documentata. Per questo non li leggiamo dalla pagina senza il vostro consenso.
+
+Vi chiediamo:
+1. se il riuso pubblico di questi dati è consentito e con quale licenza o formula di attribuzione;
+2. se esiste un endpoint o un file (JSON, CSV) da cui leggerli, e con quale frequenza massima;
+3. eventuali avvertenze da mostrare insieme al dato.
+
+Il dato verrebbe mostrato con l'ora di aggiornamento, il link al servizio regionale e l'avvertenza che in caso di urgenza si chiama il 112/118 e che l'ordine di accesso dipende dalla gravità, non dall'arrivo.
 
 Grazie,
 [Nome e cognome] – [email] – [sito]

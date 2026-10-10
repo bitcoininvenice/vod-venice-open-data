@@ -803,7 +803,7 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     endpointOrFile: 'src/data/osm-defibrillators.json + open-data-catalog.ts (CURATED_PUBLIC_DAE)'
   },
   {
-    id: 'farmacie_turno',
+    id: 'farmacie',
     nameIt: 'Farmacie',
     nameEn: 'Pharmacies',
     group: 'city',

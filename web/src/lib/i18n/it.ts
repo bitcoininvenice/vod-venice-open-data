@@ -150,7 +150,7 @@ export const itTranslations: Translations = {
     layerBellTowers: 'Campanili Storici & Pendenti',
     layerEmergencyDocks: 'Postazioni Idroambulanze SUEM 118',
     layerDae: 'Defibrillatori Pubblici DAE',
-    layerPharmacies: 'Farmacie di Turno',
+    layerPharmacies: 'Farmacie',
     layerHeatIslands: 'Isole di Calore Satellitari (LST)',
     layerLagoonWater: 'Sonde Qualità Acque Lagunari ARPAV',
     layerAccommodations: 'Pressione Turistica & Alloggi',

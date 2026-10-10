@@ -24,8 +24,8 @@ describe('layerGroups', () => {
 
   it('la ricerca ignora maiuscole e accenti e usa anche il catalogo', () => {
     expect(normalizeSearch('  Qualità ')).toBe('qualita');
-    expect(layerMatches('showPharmacies', 'Farmacie di turno', 'farmac')).toBe(true);
-    expect(layerMatches('showPharmacies', 'Farmacie di turno', 'pharmac')).toBe(true); // nome inglese
+    expect(layerMatches('showPharmacies', 'Farmacie', 'farmac')).toBe(true);
+    expect(layerMatches('showPharmacies', 'Farmacie', 'pharmac')).toBe(true); // nome inglese
     expect(layerMatches('showAirQuality', "Qualità dell'aria", 'qualita aria')).toBe(true);
     expect(layerMatches('showShips', 'Navi', 'ais')).toBe(true); // slug navi_ais
     expect(layerMatches('showShips', 'Navi', 'farmacia')).toBe(false);

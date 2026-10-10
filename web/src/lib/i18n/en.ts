@@ -150,7 +150,7 @@ export const enTranslations: Translations = {
     layerBellTowers: 'Historic & Leaning Bell Towers',
     layerEmergencyDocks: 'SUEM 118 Ambulance Boat Docks',
     layerDae: 'Public Defibrillators (AED/DAE)',
-    layerPharmacies: 'Duty Pharmacies',
+    layerPharmacies: 'Pharmacies',
     layerHeatIslands: 'Satellite Urban Heat Islands (LST)',
     layerLagoonWater: 'ARPAV Lagoon Water Quality Probes',
     layerAccommodations: 'Tourism Pressure & Accommodations',
