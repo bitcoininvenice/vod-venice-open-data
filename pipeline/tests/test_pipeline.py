@@ -553,7 +553,8 @@ def test_censimento_lettura_dbf_e_shp():
 
 def test_censimento_aggregazione_per_zona_e_indicatori():
     square = [[12.0, 45.0], [12.01, 45.0], [12.01, 45.01], [12.0, 45.01], [12.0, 45.0]]
-    zones = [("sestiere", "San Marco", [square])]
+    giudecca = [[12.5, 45.5], [12.51, 45.5], [12.51, 45.51], [12.5, 45.51], [12.5, 45.5]]
+    zones = [("sestiere", "San Marco", "San Marco", [square]), ("sestiere", "Dorsoduro", "Giudecca", [giudecca])]
     row = lambda sid, asc, pop, young, old, a3, a8: {  # noqa: E731
         "SEZ21_ID": sid, "COM_ASC1": str(27042000 + asc), "P1": pop, "P14": young, "P27": old, "PF1": pop / 2,
         "PF3": pop / 4, "A3": a3, "A8": a8, "ST1": 1,
@@ -562,11 +563,14 @@ def test_censimento_aggregazione_per_zona_e_indicatori():
     centroids = {"1": (12.005, 45.005), "2": (12.5, 45.5), "3": (12.2, 45.4)}
     out = census.build(rows, centroids, zones)
     assert out["city"]["population"] == 1150
-    sm = out["sestieri"][0]
+    sm = next(x for x in out["sestieri"] if x["name"] == "San Marco")
     assert sm["name"] == "San Marco" and sm["population"] == 100
     assert sm["pctDwellingsEmptyOrNonResident"] == 50.0 and sm["pct65plus"] == 30.0 and sm["oldAgeIndex"] == 300
     assert sm["avgFamilySize"] == 2.0 and sm["pctOnePersonFamilies"] == 50.0
-    assert out["historicCentre"]["population"] == 100
-    # la sezione 2 è della municipalità insulare ma fuori dai perimetri: contata a parte
-    assert out["unassignedInsular"]["population"] == 50
+    # la Giudecca non è un sestiere: la sua sezione va a Dorsoduro e compare tra le sue parti
+    assert sorted(x["name"] for x in out["sestieri"]) == ["Dorsoduro", "San Marco"]
+    dorsoduro = next(x for x in out["sestieri"] if x["name"] == "Dorsoduro")
+    assert dorsoduro["population"] == 50 and dorsoduro["parts"][0]["name"] == "Giudecca"
+    assert out["historicCentre"]["population"] == 150
+    assert out["unassignedInsular"]["population"] == 0
     assert out["municipalities"][0]["population"] == 150 and out["municipalities"][3]["population"] == 1000

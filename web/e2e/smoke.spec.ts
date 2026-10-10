@@ -446,7 +446,9 @@ test('metriche: residenti per sestiere dal censimento ISTAT, non più valori di 
   await page.goto('/metrics');
   const section = page.getByTestId('residents-census');
   await expect(section).toContainText('Residenti, famiglie e abitazioni');
-  for (const s of ['Cannaregio', 'Castello', 'San Marco', 'Giudecca', 'Burano', 'Lido']) await expect(section).toContainText(s);
+  for (const s of ['Cannaregio', 'Castello', 'San Marco', 'Burano', 'Lido']) await expect(section).toContainText(s);
+  // la Giudecca compare solo come parte di Dorsoduro, non come sestiere
+  await expect(section).toContainText(/di cui: Giudecca/);
   await expect(section).toContainText('ISTAT');
   await expect(page.getByText('Pressione turistica per sestiere')).toHaveCount(0);
 });
@@ -691,7 +693,8 @@ test.describe('API', () => {
     const { city, municipalities, historicCentre, sestieri } = body.data;
     expect(municipalities.reduce((a: number, m: { population: number }) => a + m.population, 0)).toBe(city.population);
     expect(sestieri.reduce((a: number, s: { population: number }) => a + s.population, 0)).toBe(historicCentre.population);
-    expect(sestieri).toHaveLength(7);
+    expect(sestieri).toHaveLength(6);
+    expect(sestieri.map((s: { name: string }) => s.name)).not.toContain('Giudecca');
   });
 
   test('nautical: marine, carburante e ormeggi da OpenStreetMap', async ({ request }) => {

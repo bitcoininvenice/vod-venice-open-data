@@ -1562,7 +1562,7 @@ export const enUi: UiTranslations = {
     kpiCityNote: "Census 31/12/2021 · latest ISTAT estimate: {n} ({date})",
     censusDate: "Census 31/12/2021",
     kpiCentre: "Residents in the historic centre",
-    kpiCentreNote: "{pct} of the municipality's population (seven sestieri, Giudecca included)",
+    kpiCentreNote: "{pct} of the municipality's population (six sestieri, Giudecca included in Dorsoduro)",
     kpiOld: "Over 65 in the historic centre",
     kpiOldNote: "Whole municipality: {city}",
     kpiEmpty: "Empty or non-resident homes",
@@ -1581,7 +1581,9 @@ export const enUi: UiTranslations = {
     colFamilies: "Households",
     colDwellings: "Homes",
     colEmpty: "Empty or non-resident",
-    methodNote: "The City of Venice does not publish residents by sestiere as open data. Values by sestiere and island are the sum of the ISTAT census sections whose centroid falls within the area's OpenStreetMap outline; municipalities are those given by ISTAT. Giudecca is shown separately (administratively it is part of Dorsoduro). Density is computed on the outline's area.",
+    includes: "including: {parts}",
+    emptyShort: "empty or non-res.",
+    methodNote: "The City of Venice does not publish residents by sestiere as open data. Values by sestiere and island are the sum of the ISTAT census sections whose centroid falls within the area's OpenStreetMap outline; municipalities are those given by ISTAT. Areas mapped separately on OpenStreetMap are assigned to their sestiere: Giudecca and Sacca Fisola to Dorsoduro, Sant'Elena to Castello, San Giorgio Maggiore to San Marco, Tronchetto to Santa Croce. Density is computed on the inhabited outlines' area.",
     emptyDefinition: "\"Empty or non-resident\" is ISTAT variable A3: empty homes and homes occupied only by non-residents (second homes, short-term and tourist rentals, vacant units). It does not distinguish between these uses.",
     unassigned: "{n} residents of insular and coastal Venice live in sections outside the outlines considered (minor islands, San Michele, boundary areas): they are in the municipality totals but not in the area tables."
   }

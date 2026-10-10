@@ -33,6 +33,15 @@ export interface CensusArea {
   densityPerKm2?: number;
 }
 
+/** Zona mappata a parte che appartiene a un sestiere (es. Giudecca in Dorsoduro). */
+export interface CensusPart {
+  name: string;
+  population: number;
+  families: number;
+  dwellingsTotal: number;
+  pctDwellingsEmptyOrNonResident: number | null;
+}
+
 export interface CensusData {
   generatedAt: string;
   source: string;
@@ -44,7 +53,8 @@ export interface CensusData {
   city: CensusArea;
   municipalities: (CensusArea & { id: number; name: string })[];
   historicCentre: CensusArea;
-  sestieri: (CensusArea & { name: string })[];
+  /** sestieri con le zone che ne fanno parte (es. Giudecca e Sacca Fisola per Dorsoduro) */
+  sestieri: (CensusArea & { name: string; parts: CensusPart[] })[];
   islands: (CensusArea & { name: string })[];
   unassignedInsular: CensusArea;
 }

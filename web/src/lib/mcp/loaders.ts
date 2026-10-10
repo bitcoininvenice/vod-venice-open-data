@@ -195,7 +195,7 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
     const items: Row[] = [
       { level: 'comune', name: 'Comune di Venezia', ...d.city },
       ...d.municipalities.map((r) => ({ level: 'municipalità', ...r })),
-      { level: 'centro storico', name: 'Centro storico (sette sestieri)', ...d.historicCentre },
+      { level: 'centro storico', name: 'Centro storico (sei sestieri)', ...d.historicCentre },
       ...d.sestieri.map((r) => ({ level: 'sestiere', ...r })),
       ...d.islands.map((r) => ({ level: 'isola', ...r })),
     ];

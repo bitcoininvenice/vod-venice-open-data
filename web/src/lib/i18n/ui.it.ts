@@ -1560,7 +1560,7 @@ export const itUi = {
     kpiCityNote: "Censimento 31/12/2021 · stima ISTAT più recente: {n} ({date})",
     censusDate: "Censimento 31/12/2021",
     kpiCentre: "Residenti nel centro storico",
-    kpiCentreNote: "{pct} della popolazione del Comune (sette sestieri, Giudecca compresa)",
+    kpiCentreNote: "{pct} della popolazione del Comune (sei sestieri, Giudecca compresa in Dorsoduro)",
     kpiOld: "Over 65 nel centro storico",
     kpiOldNote: "Comune intero: {city}",
     kpiEmpty: "Abitazioni vuote o di non residenti",
@@ -1579,7 +1579,9 @@ export const itUi = {
     colFamilies: "Famiglie",
     colDwellings: "Abitazioni",
     colEmpty: "Vuote o non residenti",
-    methodNote: "Il Comune di Venezia non pubblica i residenti per sestiere come open data. I valori per sestiere e isola sono la somma delle sezioni di censimento ISTAT il cui baricentro cade nel perimetro OpenStreetMap della zona; le municipalità sono quelle indicate da ISTAT. La Giudecca è mostrata a parte (amministrativamente fa parte di Dorsoduro). Densità calcolata sulla superficie del perimetro.",
+    includes: "di cui: {parts}",
+    emptyShort: "vuote o non res.",
+    methodNote: "Il Comune di Venezia non pubblica i residenti per sestiere come open data. I valori per sestiere e isola sono la somma delle sezioni di censimento ISTAT il cui baricentro cade nel perimetro OpenStreetMap della zona; le municipalità sono quelle indicate da ISTAT. Le zone mappate a parte su OpenStreetMap sono attribuite al loro sestiere: Giudecca e Sacca Fisola a Dorsoduro, Sant'Elena a Castello, San Giorgio Maggiore a San Marco, Tronchetto a Santa Croce. Densità calcolata sulla superficie dei perimetri abitati.",
     emptyDefinition: "«Vuote o non residenti» è la variabile ISTAT A3: abitazioni vuote e abitazioni occupate solo da persone non residenti (seconde case, affitti brevi e turistici, alloggi sfitti). Non distingue tra questi usi.",
     unassigned: "{n} residenti di Venezia insulare e litorale vivono in sezioni fuori dai perimetri considerati (isole minori, San Michele, aree di confine): sono nei totali delle municipalità ma non nelle tabelle per zona."
   }

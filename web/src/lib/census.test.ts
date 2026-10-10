@@ -8,8 +8,13 @@ describe('censimento ISTAT 2021', () => {
     expect(CENSUS.municipalities).toHaveLength(6);
   });
 
-  it('il centro storico è la somma dei sette sestieri (Giudecca compresa)', () => {
-    expect(CENSUS.sestieri.map((s) => s.name).sort()).toEqual(['Cannaregio', 'Castello', 'Dorsoduro', 'Giudecca', 'San Marco', 'San Polo', 'Santa Croce']);
+  it('il centro storico è la somma dei sei sestieri; la Giudecca fa parte di Dorsoduro', () => {
+    expect(CENSUS.sestieri.map((s) => s.name).sort()).toEqual(['Cannaregio', 'Castello', 'Dorsoduro', 'San Marco', 'San Polo', 'Santa Croce']);
+    const dorsoduro = CENSUS.sestieri.find((s) => s.name === 'Dorsoduro')!;
+    const giudecca = dorsoduro.parts.find((p) => p.name === 'Giudecca')!;
+    expect(giudecca.population).toBeGreaterThan(0);
+    expect(giudecca.population).toBeLessThan(dorsoduro.population);
+    expect(CENSUS.sestieri.find((s) => s.name === 'Castello')!.parts.some((p) => p.name === "Sant'Elena")).toBe(true);
     expect(CENSUS.sestieri.reduce((a, s) => a + s.population, 0)).toBe(CENSUS.historicCentre.population);
     expect(historicCentreShare()).toBeGreaterThan(10);
     expect(historicCentreShare()).toBeLessThan(30);

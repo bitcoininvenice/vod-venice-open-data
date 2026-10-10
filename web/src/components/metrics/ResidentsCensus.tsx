@@ -3,7 +3,7 @@
 import React from 'react';
 import { Users } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
-import { CENSUS, historicCentreShare, type CensusArea } from '@/lib/census';
+import { CENSUS, historicCentreShare, type CensusArea, type CensusPart } from '@/lib/census';
 import cruscotto from '@/data/cruscotto-comuni.json';
 
 /** Stima ISTAT più recente della popolazione del Comune (Cruscotto Italia), per confronto con il censimento. */
@@ -110,14 +110,15 @@ function AreaTable({
   pct,
 }: {
   title: string;
-  rows: (CensusArea & { name: string })[];
+  rows: (CensusArea & { name: string; parts?: CensusPart[] })[];
   total?: CensusArea & { name: string };
-  c: (key: string) => string;
+  c: (key: string, params?: Record<string, string | number>) => string;
   int: (n: number | null | undefined) => string;
   pct: (n: number | null | undefined) => string;
 }) {
-  const row = (r: CensusArea & { name: string }, strong = false) => (
-    <tr key={r.name} className={`border-t border-[var(--rule)] ${strong ? 'bg-[var(--rule)]/30 font-bold' : ''}`}>
+  const row = (r: CensusArea & { name: string; parts?: CensusPart[] }, strong = false) => (
+    <React.Fragment key={r.name}>
+    <tr className={`border-t border-[var(--rule)] ${strong ? 'bg-[var(--rule)]/30 font-bold' : ''}`}>
       <td className="p-2 text-[var(--ink)] font-sans">{r.name}</td>
       <td className="p-2 text-right">{int(r.population)}</td>
       <td className="p-2 text-right">{int(r.densityPerKm2)}</td>
@@ -135,6 +136,19 @@ function AreaTable({
         </div>
       </td>
     </tr>
+    {r.parts && r.parts.some((p) => p.population >= 50) && (
+      <tr className="text-[var(--ink-3)]">
+        <td colSpan={9} className="px-2 pb-2 pt-0 text-[11px] font-sans">
+          {c('includes', {
+            parts: r.parts
+              .filter((p) => p.population >= 50)
+              .map((p) => `${p.name} ${int(p.population)} (${pct(p.pctDwellingsEmptyOrNonResident)} ${c('emptyShort')})`)
+              .join(' · '),
+          })}
+        </td>
+      </tr>
+    )}
+    </React.Fragment>
   );
   return (
     <div className="flex flex-col gap-2">

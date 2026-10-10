@@ -48,12 +48,21 @@ MUNICIPALITIES = {
     5: "Chirignago-Zelarino (Mestre ovest)",
     6: "Marghera",
 }
-SESTIERI = ["Cannaregio", "Castello", "Dorsoduro", "Giudecca", "San Marco", "San Polo", "Santa Croce"]
+SESTIERI = ["Cannaregio", "Castello", "Dorsoduro", "San Marco", "San Polo", "Santa Croce"]
+MIN_PART_RESIDENTS = 50
+# Zone mappate a parte su OpenStreetMap che appartengono a un sestiere: nome OSM -> (sestiere, nome mostrato)
+SESTIERE_PARTS = {
+    "Giudecca": ("Dorsoduro", "Giudecca"),
+    "Sacca Fisola": ("Dorsoduro", "Sacca Fisola"),
+    "Sant'Elena": ("Castello", "Sant'Elena"),
+    "Isola San Giorgio": ("San Marco", "Isola di San Giorgio Maggiore"),
+    "Tronchetto": ("Santa Croce", "Tronchetto"),
+}
 # Nome usato da VOD -> nome dell'isola su OpenStreetMap
 ISLANDS = {
     "Murano": "Murano", "Burano": "Burano", "Mazzorbo": "Mazzorbo", "Torcello": "Isola Torcello",
     "Sant'Erasmo": "Sant'Erasmo", "Vignole": "Isola Le Vignole", "Lido": "Isola del Lido",
-    "Pellestrina": "Isola di Pellestrina", "Tronchetto": "Tronchetto", "Sacca Fisola": "Sacca Fisola",
+    "Pellestrina": "Isola di Pellestrina",
 }
 LAGOON_BBOX = "45.18,12.18,45.52,12.47"
 
@@ -243,33 +252,46 @@ def indicators(t: dict, area_m2: float | None = None) -> dict:
     return out
 
 
-def zone_polygons() -> list[tuple[str, str, list[list[list[float]]]]]:
-    """(tipo, nome, anelli [lon, lat]) di sestieri e isole da OpenStreetMap."""
-    names = "|".join(SESTIERI)
-    islands = "|".join(n.replace("'", ".") for n in ISLANDS.values())
-    osm_to_vod = {v: k for k, v in ISLANDS.items()}
+def zone_polygons() -> list[tuple[str, str, str, list[list[list[float]]]]]:
+    """(tipo, nome, parte, anelli [lon, lat]) di sestieri (con le loro parti) e isole da OpenStreetMap."""
+    rx = lambda names: "|".join(n.replace("'", ".") for n in names)  # noqa: E731
     query = (
         f'[out:json][timeout:120];('
-        f'way["place"="neighbourhood"]["name"~"^({names})$"]({LAGOON_BBOX});'
-        f'nwr["place"~"^(island|islet)$"]["name"~"^({islands})$"]({LAGOON_BBOX});'
+        f'way["place"="neighbourhood"]["name"~"^({rx(SESTIERI)})$"]({LAGOON_BBOX});'
+        f'nwr["place"~"^(neighbourhood|island|islet)$"]["name"~"^({rx(SESTIERE_PARTS)})$"]({LAGOON_BBOX});'
+        f'nwr["place"~"^(island|islet)$"]["name"~"^({rx(ISLANDS.values())})$"]({LAGOON_BBOX});'
         f');out geom;'
     )
-    zones = []
+    osm_to_island = {v: k for k, v in ISLANDS.items()}
+    zones, seen = [], set()
     for el in overpass(query, timeout=180).get("elements", []):
-        kind = "sestiere" if el.get("tags", {}).get("place") == "neighbourhood" else "island"
-        name = el.get("tags", {}).get("name")
-        name = osm_to_vod.get(name, name) if kind == "island" else name
+        tags = el.get("tags", {})
+        osm_name = tags.get("name")
         rings = outer_rings(el)
-        if name and rings:
-            zones.append((kind, name, rings))
-    # prima i sestieri (Giudecca è sia sestiere OSM sia isola: vale il sestiere), poi le isole più piccole
-    zones.sort(key=lambda z: (z[0] != "sestiere", sum(ring_area_m2(r) for r in z[2])))
+        if not osm_name or not rings:
+            continue
+        if osm_name in SESTIERE_PARTS:
+            sestiere, part = SESTIERE_PARTS[osm_name]
+            zone = ("sestiere", sestiere, part)
+        elif osm_name in SESTIERI and tags.get("place") == "neighbourhood":
+            zone = ("sestiere", osm_name, osm_name)
+        elif osm_name in osm_to_island:
+            zone = ("island", osm_to_island[osm_name], osm_to_island[osm_name])
+        else:
+            continue
+        if zone in seen:  # stessa zona mappata due volte (es. Giudecca come quartiere e come isola)
+            continue
+        seen.add(zone)
+        zones.append((*zone, rings))
+    # prima sestieri e loro parti, poi le isole; a parità, le aree più piccole
+    zones.sort(key=lambda z: (z[0] != "sestiere", sum(ring_area_m2(r) for r in z[3])))
     return zones
 
 
 def build(rows: list[dict], centroids: dict[str, tuple[float, float]], zones) -> dict:
     municipalities = {k: empty_totals() for k in MUNICIPALITIES}
     by_zone: dict[tuple[str, str], dict] = {}
+    by_part: dict[tuple[str, str], dict] = {}
     unassigned_insular = empty_totals()
     city = empty_totals()
     for row in rows:
@@ -280,17 +302,34 @@ def build(rows: list[dict], centroids: dict[str, tuple[float, float]], zones) ->
         c = centroids.get(row["SEZ21_ID"])
         zone = None
         if c:
-            for kind, name, rings in zones:
+            for kind, name, part, rings in zones:
                 if any(point_in_ring(c[0], c[1], r) for r in rings):
-                    zone = (kind, name)
+                    zone = (kind, name, part)
                     break
         if zone:
-            add(by_zone.setdefault(zone, empty_totals()), row)
+            add(by_zone.setdefault(zone[:2], empty_totals()), row)
+            if zone[0] == "sestiere" and zone[2] != zone[1]:
+                add(by_part.setdefault((zone[1], zone[2]), empty_totals()), row)
         elif asc in (1, 2):
             add(unassigned_insular, row)
 
-    area = {(k, n): sum(ring_area_m2(r) for r in rings) for k, n, rings in zones}
-    sestieri = [{"name": n, **indicators(t, area[("sestiere", n)])} for (k, n), t in by_zone.items() if k == "sestiere"]
+    # Superficie: somma delle zone, senza contare due volte le parti già dentro il perimetro del sestiere
+    main_rings = {n: rings for k, n, part, rings in zones if k == "sestiere" and part == n}
+    area: dict[tuple[str, str], float] = {}
+    for k, n, part, rings in zones:
+        inside_main = part != n and any(point_in_ring(rings[0][0][0], rings[0][0][1], r) for r in main_rings.get(n, []))
+        # le parti quasi disabitate (Tronchetto, San Giorgio) non entrano nella superficie della densità
+        uninhabited = part != n and by_part.get((n, part), {}).get("population", 0) < MIN_PART_RESIDENTS
+        if not inside_main and not uninhabited:
+            area[(k, n)] = area.get((k, n), 0.0) + sum(ring_area_m2(r) for r in rings)
+    def parts_of(name: str) -> list[dict]:
+        out = []
+        for (sest, part), t in by_part.items():
+            if sest == name and t["population"] > 0:
+                ind = indicators(t)
+                out.append({k: ind[k] for k in ("population", "families", "dwellingsTotal", "pctDwellingsEmptyOrNonResident")} | {"name": part})
+        return sorted(out, key=lambda p: -p["population"])
+    sestieri = [{"name": n, **indicators(t, area[("sestiere", n)]), "parts": parts_of(n)} for (k, n), t in by_zone.items() if k == "sestiere"]
     islands = [{"name": n, **indicators(t, area[("island", n)])} for (k, n), t in by_zone.items() if k == "island"]
     centre = empty_totals()
     for (k, _), t in by_zone.items():
@@ -362,8 +401,8 @@ def main() -> int:
     logging.info("Sezioni con confini: %d", len(centroids))
 
     zones = zone_polygons()
-    logging.info("Zone OSM: %s", [(k, n) for k, n, _ in zones])
-    found = {n for k, n, _ in zones if k == "sestiere"}
+    logging.info("Zone OSM: %s", [(k, n, part) for k, n, part, _ in zones])
+    found = {n for k, n, _, _ in zones if k == "sestiere"}
     if len(rows) < 1000 or len(centroids) < 1000 or found != set(SESTIERI):
         logging.error("Dati incompleti (sezioni %d, confini %d, sestieri %s): file non aggiornato", len(rows), len(centroids), sorted(found))
         return 1
@@ -375,7 +414,7 @@ def main() -> int:
         "license": "CC BY 4.0",
         "attribution": "Elaborazione VOD su dati ISTAT (CC BY 4.0); perimetri di sestieri e isole © OpenStreetMap contributors (ODbL)",
         "referenceDate": "2021-12-31",
-        "method": "Somma delle sezioni di censimento il cui baricentro cade nel perimetro OSM del sestiere o dell'isola. La Giudecca è indicata a parte (amministrativamente fa parte del sestiere di Dorsoduro). 'Abitazioni vuote o di non residenti' è la variabile ISTAT A3: abitazioni vuote e abitazioni occupate solo da persone non residenti (seconde case, affitti turistici, sfitti).",
+        "method": "Somma delle sezioni di censimento il cui baricentro cade nel perimetro OSM del sestiere o dell'isola. Le zone mappate a parte su OSM sono attribuite al loro sestiere: Giudecca e Sacca Fisola a Dorsoduro, Sant'Elena a Castello, l'isola di San Giorgio Maggiore a San Marco, il Tronchetto a Santa Croce (il dettaglio è in 'parts'). 'Abitazioni vuote o di non residenti' è la variabile ISTAT A3: abitazioni vuote e abitazioni occupate solo da persone non residenti (seconde case, affitti turistici, sfitti).",
         **build(rows, centroids, zones),
     }
     os.makedirs(os.path.dirname(OUT_FILE), exist_ok=True)
