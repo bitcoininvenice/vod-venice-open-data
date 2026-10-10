@@ -28,7 +28,7 @@ OUT_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "osm-parks.json")
 
 KINDS = ("park", "garden", "playground", "dog_park", "nature_reserve")
 B = f"{BBOX[0]},{BBOX[1]},{BBOX[2]},{BBOX[3]}"
-QUERY = f'[out:json][timeout:180];(nwr["leisure"~"^({"|".join(KINDS)})$"]({B}););out tags geom qt;'
+QUERY = f'[out:json][timeout:180];(nwr["leisure"~"^({"|".join(KINDS)})$"]({B}););out geom qt;'
 
 SIMPLIFY_M = 1.5
 # Sotto questa soglia la risposta di Overpass è considerata incompleta e il file non viene sovrascritto

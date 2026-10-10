@@ -35,6 +35,8 @@ import {
 import tourismData from '@/data/turismo-comuni.json';
 import { MunicipalProfile } from '@/components/metrics/MunicipalProfile';
 import { PublicWorksMonitor } from '@/components/metrics/PublicWorksMonitor';
+import { ResidentsCensus } from '@/components/metrics/ResidentsCensus';
+import { CENSUS, mostEmptiedSestiere } from '@/lib/census';
 import arpavLagoon from '@/data/arpav-lagoon.json';
 
 /** Riepilogo ARPAV della balneazione sul mare Adriatico veneto (ultimo anno pubblicato) */
@@ -49,14 +51,13 @@ import { SiteFooter, SiteHeader } from '@/components/site/SiteChrome';
 import { useTranslation } from '@/lib/i18n';
 import {
   calculateEmergencyAccessibility,
-  calculateTourismPressure,
   calculateTransitPunctuality,
   calculateBarrierFreeIndex,
   calculateTideFloodForecast72h,
   calculateCanalBottlenecksForecast,
   calculateUrbanHeatStressForecast
 } from '@/lib/spatialAnalytics';
-import type { MetricBasis, SestiereTourismPressure, CanalBottleneckForecast, MicroclimateThermalZone } from '@/lib/spatialAnalytics';
+import type { MetricBasis, CanalBottleneckForecast, MicroclimateThermalZone } from '@/lib/spatialAnalytics';
 
 type ViewSection = 'all' | 'kpi' | 'forecast' | 'platform';
 type PlatformMetricSector = 'maree_aria' | 'laguna_scienza' | 'marittimo' | 'trasporti' | 'aeroporto' | 'satelliti' | 'pedoni_citta';
@@ -78,12 +79,6 @@ function BasisBadge({ basis, note, t }: { basis: MetricBasis; note: string; t: T
 }
 
 // Chiavi di traduzione per i valori enumerati prodotti da spatialAnalytics
-const SATURATION_KEY: Record<SestiereTourismPressure['saturationLevel'], string> = {
-  Estrema: 'satExtreme',
-  Elevata: 'satHigh',
-  'Moderata-Alta': 'satModHigh',
-  Moderata: 'satModerate',
-};
 const RISK_KEY: Record<CanalBottleneckForecast['riskFactor'], string> = {
   Critico: 'riskCritical',
   Elevato: 'riskHigh',
@@ -236,13 +231,12 @@ export default function MetricsPage() {
 
   // Indicatori calcolati dai dataset del progetto (ognuno dichiara la propria attendibilità)
   const accessibility = useMemo(() => calculateEmergencyAccessibility(), []);
-  const tourism = useMemo(() => calculateTourismPressure(), []);
   const transit = useMemo(() => calculateTransitPunctuality(), []);
   const barrierFree = useMemo(() => calculateBarrierFreeIndex(), []);
   const tideForecastAnalysis = useMemo(() => calculateTideFloodForecast72h(tideForecast), [tideForecast]);
   const bottlenecks = useMemo(() => calculateCanalBottlenecksForecast(), []);
   const heatStress = useMemo(() => calculateUrbanHeatStressForecast(metarTempC, metarDewPointC), [metarTempC, metarDewPointC]);
-  const highestPressure = tourism.sestieri.find((s) => s.sestiere === tourism.highestPressureSestiere);
+  const emptiest = mostEmptiedSestiere();
 
   const exportJsonData = () => {
     const report = {
@@ -254,7 +248,7 @@ export default function MetricsPage() {
       },
       spatialAnalytics: {
         emergencyAccessibility: accessibility,
-        tourismPressure: tourism,
+        residentsCensus2021: { city: CENSUS.city, historicCentre: CENSUS.historicCentre, sestieri: CENSUS.sestieri, source: CENSUS.source, license: CENSUS.license },
         transitPunctuality: transit,
         barrierFreeBridges: barrierFree
       },
@@ -374,10 +368,9 @@ export default function MetricsPage() {
           <Highlight
             icon={Building2}
             tone="emerald"
-            label={m('hlTourism', { sestiere: tourism.highestPressureSestiere })}
-            value={`${highestPressure?.bedsPerResidentRatio ?? '–'}x`}
-            note={m('illustrativeNoData')}
-            illustrative
+            label={m('hlEmptyHomes', { sestiere: emptiest.name })}
+            value={`${(emptiest.pctDwellingsEmptyOrNonResident ?? 0).toLocaleString(locale)}%`}
+            note={m('hlEmptyHomesNote', { centre: `${(CENSUS.historicCentre.pctDwellingsEmptyOrNonResident ?? 0).toLocaleString(locale)}%` })}
           />
         </div>
 
@@ -493,67 +486,8 @@ export default function MetricsPage() {
               </div>
             </div>
 
-            {/* 1.2 Pressione turistica */}
-            <div className="p-5 rounded-2xl bg-[var(--rule)]/20 border border-[var(--rule)] flex flex-col gap-4">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div>
-                  <h3 className="text-base font-bold text-[var(--ink)] flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-amber-400" />
-                    {m('tourismTitle')}
-                    <BasisBadge basis={tourism.basis} note={m('note_tourism')} t={t} />
-                  </h3>
-                  <p className="text-xs text-[var(--ink-3)] mt-0.5">{m('note_tourism')}</p>
-                </div>
-                <span className="text-[11px] font-mono text-[var(--ink-3)]">
-                  {m('tourismAside', {
-                    acc: tourism.totalAccommodations.toLocaleString(locale),
-                    stations: tourism.totalGondolaStations,
-                    gondolas: tourism.totalGondoliers
-                  })}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {tourism.sestieri.map((s) => {
-                  const tone = s.saturationLevel === 'Estrema' ? 'rose' : s.saturationLevel === 'Elevata' ? 'amber' : 'cyan';
-                  return (
-                    <div
-                      key={s.sestiere}
-                      className={`p-4 rounded-xl border flex flex-col justify-between gap-2.5 ${
-                        tone === 'rose'
-                          ? 'bg-rose-500/10 border-rose-500/30'
-                          : tone === 'amber'
-                          ? 'bg-amber-500/10 border-amber-500/30'
-                          : 'bg-[var(--ground)]/80 border-[var(--rule)]'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <strong className="text-sm font-bold text-[var(--ink)]">{s.sestiere}</strong>
-                        <span
-                          className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
-                            tone === 'rose' ? 'bg-rose-500/20 text-rose-300' : tone === 'amber' ? 'bg-amber-500/20 text-amber-300' : 'bg-cyan-500/20 text-cyan-300'
-                          }`}
-                        >
-                          {m('saturation', { level: m(SATURATION_KEY[s.saturationLevel]) })}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs font-mono pt-1">
-                        <MiniStat label={m('residents')} value={s.residents.toLocaleString(locale)} />
-                        <MiniStat label={m('beds')} value={s.estimatedBeds.toLocaleString(locale)} />
-                        <MiniStat label={m('bedsPerResident')} value={`${s.bedsPerResidentRatio}x`} valueCls="text-base text-amber-400" />
-                        <MiniStat label={m('density')} value={m('bedsPerHa', { n: s.bedsPerHectare })} />
-                      </div>
-                      <div className="w-full bg-[var(--rule)]/60 h-1.5 rounded-full overflow-hidden mt-1">
-                        <div
-                          className={`h-full rounded-full ${tone === 'rose' ? 'bg-rose-500' : tone === 'amber' ? 'bg-amber-500' : 'bg-cyan-500'}`}
-                          style={{ width: `${Math.min(100, (s.bedsPerResidentRatio / 1.5) * 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            {/* 1.2 Residenti, famiglie e abitazioni (Censimento ISTAT 2021) */}
+            <ResidentsCensus badge={<BasisBadge basis="calcolato" note={m('note_census')} t={t} />} />
 
             {/* 1.3 Puntualità & ponti */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

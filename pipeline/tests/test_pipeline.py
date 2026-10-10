@@ -495,3 +495,78 @@ def test_parchi_ordinati_dal_piu_grande_e_punti_senza_perimetro():
     assert [p["id"] for p in out][:2] == ["osm-way-2", "osm-way-1"]
     pt = next(p for p in out if p["id"] == "osm-node-3")
     assert pt["rings"] == [] and pt["areaM2"] is None
+
+
+# --- Censimento ISTAT 2021 ---
+
+import io as _io  # noqa: E402
+import struct as _struct  # noqa: E402
+
+import import_istat_census as census  # noqa: E402
+
+
+def _xlsx(rows):
+    """xlsx minimo: stringhe condivise per i testi, numeri in linea."""
+    strings, sheet_rows = [], []
+    for r_i, row in enumerate(rows, start=1):
+        cells = []
+        for c_i, v in enumerate(row):
+            ref = f"{chr(65 + c_i)}{r_i}"
+            if isinstance(v, str):
+                strings.append(v)
+                cells.append(f'<c r="{ref}" t="s"><v>{len(strings) - 1}</v></c>')
+            else:
+                cells.append(f'<c r="{ref}"><v>{v}</v></c>')
+        sheet_rows.append(f'<row r="{r_i}">{"".join(cells)}</row>')
+    ns = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"'
+    buf = _io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("xl/sharedStrings.xml", f'<sst {ns}>' + "".join(f"<si><t>{s}</t></si>" for s in strings) + "</sst>")
+        z.writestr("xl/worksheets/sheet1.xml", f'<worksheet {ns}><sheetData>{"".join(sheet_rows)}</sheetData></worksheet>')
+    return buf.getvalue()
+
+
+def test_censimento_lettura_xlsx():
+    rows = list(census.xlsx_rows(_xlsx([["PROCOM", "SEZ21_ID", "P1"], [27042, 270420000001, 12]])))
+    assert rows == [["PROCOM", "SEZ21_ID", "P1"], ["27042", "270420000001", "12"]]
+    assert census.col_index("AB7") == 27
+
+
+def test_censimento_lettura_dbf_e_shp():
+    fields = [("PRO_COM", 6), ("SEZ21_ID", 12)]
+    header_len = 32 + 32 * len(fields) + 1
+    record_len = 1 + sum(n for _, n in fields)
+    dbf = bytearray(_struct.pack("<BBBBIHH", 3, 0, 0, 0, 1, header_len, record_len) + b"\0" * 20)
+    for name, n in fields:
+        dbf += name.encode().ljust(11, b"\0") + b"C" + b"\0" * 4 + bytes([n]) + b"\0" * 15
+    dbf += b"\x0d" + b" " + b"27042".ljust(6) + b"270420000001"
+    assert list(census.dbf_records(bytes(dbf))) == [{"PRO_COM": "27042", "SEZ21_ID": "270420000001"}]
+
+    pts = [(0, 0), (10, 0), (10, 10), (0, 10), (0, 0)]
+    content = _struct.pack("<i4dii", 5, 0, 0, 10, 10, 1, len(pts)) + _struct.pack("<i", 0) + b"".join(_struct.pack("<2d", *p) for p in pts)
+    shp = b"\0" * 100 + _struct.pack(">ii", 1, len(content) // 2) + content
+    (idx, rings), = list(census.shp_polygons(shp, {0}))
+    assert idx == 0 and rings[0][2] == [10.0, 10.0]
+    cx, cy, area = census.planar_centroid(rings)
+    assert (round(cx, 6), round(cy, 6), round(area)) == (5, 5, 100)
+
+
+def test_censimento_aggregazione_per_zona_e_indicatori():
+    square = [[12.0, 45.0], [12.01, 45.0], [12.01, 45.01], [12.0, 45.01], [12.0, 45.0]]
+    zones = [("sestiere", "San Marco", [square])]
+    row = lambda sid, asc, pop, young, old, a3, a8: {  # noqa: E731
+        "SEZ21_ID": sid, "COM_ASC1": str(27042000 + asc), "P1": pop, "P14": young, "P27": old, "PF1": pop / 2,
+        "PF3": pop / 4, "A3": a3, "A8": a8, "ST1": 1,
+    }
+    rows = [row("1", 1, 100, 10, 30, 40, 80), row("2", 1, 50, 5, 10, 10, 30), row("3", 4, 1000, 100, 200, 50, 500)]
+    centroids = {"1": (12.005, 45.005), "2": (12.5, 45.5), "3": (12.2, 45.4)}
+    out = census.build(rows, centroids, zones)
+    assert out["city"]["population"] == 1150
+    sm = out["sestieri"][0]
+    assert sm["name"] == "San Marco" and sm["population"] == 100
+    assert sm["pctDwellingsEmptyOrNonResident"] == 50.0 and sm["pct65plus"] == 30.0 and sm["oldAgeIndex"] == 300
+    assert sm["avgFamilySize"] == 2.0 and sm["pctOnePersonFamilies"] == 50.0
+    assert out["historicCentre"]["population"] == 100
+    # la sezione 2 è della municipalità insulare ma fuori dai perimetri: contata a parte
+    assert out["unassignedInsular"]["population"] == 50
+    assert out["municipalities"][0]["population"] == 150 and out["municipalities"][3]["population"] == 1000

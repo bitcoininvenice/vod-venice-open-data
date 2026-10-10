@@ -3,7 +3,6 @@ import {
   apparentTemperatureC,
   relativeHumidityPercent,
   calculateEmergencyAccessibility,
-  calculateTourismPressure,
   calculateTransitPunctuality,
   calculateBarrierFreeIndex,
   calculateTideFloodForecast72h,
@@ -31,18 +30,6 @@ describe('Spatial Analytics & Forecasting module', () => {
     expect(d[0]).toBeGreaterThan(200);
   });
 
-  it('marks tourism pressure as illustrative and derives the highest-pressure sestiere', () => {
-    const stats = calculateTourismPressure();
-    expect(stats.basis).toBe('illustrativo');
-    const max = Math.max(...stats.sestieri.map((s) => s.bedsPerResidentRatio));
-    expect(stats.sestieri.find((s) => s.sestiere === stats.highestPressureSestiere)!.bedsPerResidentRatio).toBe(max);
-    expect(stats.sestieri.length).toBe(6);
-    expect(stats.highestPressureSestiere).toBe('San Marco');
-    const sanMarco = stats.sestieri.find((s) => s.sestiere === 'San Marco');
-    expect(sanMarco).toBeDefined();
-    expect(sanMarco!.saturationLevel).toBe('Estrema');
-    expect(sanMarco!.bedsPerResidentRatio).toBeGreaterThan(1.0);
-  });
 
   it('calculates public transit punctuality and delay patterns', () => {
     const stats = calculateTransitPunctuality();

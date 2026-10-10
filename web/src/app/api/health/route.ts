@@ -30,6 +30,7 @@ import pollenDataset from '@/data/arpav-pollen-venezia.json';
 import tourismDataset from '@/data/turismo-comuni.json';
 import lagoonProbeDataset from '@/data/arpav-lagoon.json';
 import cruscottoDataset from '@/data/cruscotto-comuni.json';
+import censusDataset from '@/data/istat-census-venezia.json';
 import bdapDataset from '@/data/bdap-opere-venezia.json';
 
 export const revalidate = 60;
@@ -98,6 +99,8 @@ export async function GET() {
     assess('arpav-pollen', 'Pollini misurati ARPAV Venezia (pipeline)', 'dataset', new Date(pollenDataset.generatedAt), 400 * DAY, now),
     assess('cciaa-turismo', 'Turismo e popolazione dei comuni della laguna (pipeline)', 'dataset', new Date(tourismDataset.generatedAt), 400 * DAY, now),
     assess('arpav-lagoon', 'Sonde ARPAV della laguna e balneazione (pipeline)', 'dataset', new Date(lagoonProbeDataset.generatedAt), 120 * DAY, now),
+    // Censimento 2021: la pipeline va rilanciata quando ISTAT pubblica una nuova edizione per sezione
+    assess('istat-census', 'Censimento ISTAT 2021 per sestiere e isola (pipeline)', 'dataset', new Date(censusDataset.generatedAt), 1500 * DAY, now),
     assess('cruscotto-italia', 'Profilo dei comuni da Cruscotto Italia (pipeline)', 'dataset', new Date(cruscottoDataset.generatedAt), 31 * DAY, now),
     assess('bdap-mop', 'Opere pubbliche del Comune dal monitoraggio BDAP (pipeline)', 'dataset', new Date(bdapDataset.generatedAt), 31 * DAY, now),
     assess('agcom-fiber', 'Copertura rete fissa AGCOM (pipeline)', 'dataset', new Date(fiberDataset.generatedAt), 120 * DAY, now),

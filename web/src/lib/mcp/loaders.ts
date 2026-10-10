@@ -22,6 +22,7 @@ import { GET as loraGET } from '@/app/api/lora-gateways/route';
 import { GET as sportsGET } from '@/app/api/sports/route';
 import { GET as nauticalGET } from '@/app/api/nautical/route';
 import { GET as parksGET } from '@/app/api/parks/route';
+import { GET as censusGET } from '@/app/api/census/route';
 import { GET as healthGET } from '@/app/api/health/route';
 import tourism from '@/data/turismo-comuni.json';
 import cruscotto from '@/data/cruscotto-comuni.json';
@@ -186,6 +187,19 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   public_works_bdap: async () => {
     const j = await read(bdapGET());
     return { items: asRows(j.data), meta: { ...(j.meta as Row), summary: j.summary } };
+  },
+  census: async () => {
+    const j = await read(censusGET());
+    const d = j.data as { city: Row; historicCentre: Row; municipalities: Row[]; sestieri: Row[]; islands: Row[] };
+    // Una riga per zona, con il livello (comune, municipalità, centro storico, sestiere, isola)
+    const items: Row[] = [
+      { level: 'comune', name: 'Comune di Venezia', ...d.city },
+      ...d.municipalities.map((r) => ({ level: 'municipalità', ...r })),
+      { level: 'centro storico', name: 'Centro storico (sette sestieri)', ...d.historicCentre },
+      ...d.sestieri.map((r) => ({ level: 'sestiere', ...r })),
+      ...d.islands.map((r) => ({ level: 'isola', ...r })),
+    ];
+    return { items, meta: j.meta as Row };
   },
   tourism: async () => ({ items: tourism.comuni as unknown as Row[], meta: { year: tourism.tourismYear, populationDate: tourism.populationDate, source: tourism.source } }),
   municipal_profile: async () => ({

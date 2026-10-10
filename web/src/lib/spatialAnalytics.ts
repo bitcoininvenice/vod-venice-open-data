@@ -8,12 +8,7 @@
  *   da mostrare in UI con un'etichetta esplicita.
  */
 
-import {
-  OPEN_EMERGENCY_WATER_DOCKS,
-  OPEN_GONDOLA_STATIONS,
-  OPEN_HEAT_ISLAND_LST
-} from '@/lib/open-data-catalog';
-import { REGIONAL_TOURIST_ACCOMMODATIONS } from '@/lib/regionalVenetoData';
+import { OPEN_EMERGENCY_WATER_DOCKS, OPEN_HEAT_ISLAND_LST } from '@/lib/open-data-catalog';
 import { getFloodedGroundPercentage, getSirenTones } from '@/lib/flood';
 import type { TideForecast } from '@/lib/contracts/tide';
 import { ACTV_STOPS_REFERENCE } from '@/lib/db';
@@ -105,88 +100,6 @@ export function calculateEmergencyAccessibility(): EmergencyAccessibilityStats {
     pharmacyCoverage350mPercent: pct(withDist.filter((d) => d.pharmacy <= 350).length, refs.length),
     emergencyDockPerimeterCoveragePercent: pct(withDist.filter((d) => d.dock <= 400).length, refs.length),
     underservedAreas,
-  };
-}
-
-// ============================================================================
-// 2. INDICE DI PRESSIONE TURISTICA PER SESTIERE (Tourism Density Ratio)
-// ============================================================================
-
-export interface SestiereTourismPressure {
-  sestiere: string;
-  residents: number;
-  surfaceHectares: number;
-  accommodationsCount: number;
-  estimatedBeds: number;
-  /** Rapporto posti letto turistici per residente censito */
-  bedsPerResidentRatio: number;
-  /** Posti letto per ettaro di superficie urbana */
-  bedsPerHectare: number;
-  saturationLevel: 'Estrema' | 'Elevata' | 'Moderata-Alta' | 'Moderata';
-}
-
-export interface TourismPressureAnalysis extends MetricProvenance {
-  totalAccommodations: number;
-  totalGondolaStations: number;
-  totalGondoliers: number;
-  sestieri: SestiereTourismPressure[];
-  highestPressureSestiere: string;
-}
-
-export function calculateTourismPressure(): TourismPressureAnalysis {
-  const totalAccommodations = REGIONAL_TOURIST_ACCOMMODATIONS.length;
-  const totalGondolaStations = OPEN_GONDOLA_STATIONS.length;
-  const totalGondoliers = OPEN_GONDOLA_STATIONS.reduce((acc, g) => acc + (g.activeGondolas || 0), 0);
-
-  // Valori di esempio: non esiste un dataset aperto di posti letto e residenti per sestiere
-  // (dati.veneto.it e dati.venezia.it non lo pubblicano). Sostituire con dati ufficiali quando disponibili.
-  const rawSestieri: Array<{
-    sestiere: string;
-    residents: number;
-    surfaceHectares: number;
-    accommodationsCount: number;
-    avgBedsPerUnit: number;
-  }> = [
-    { sestiere: 'San Marco', residents: 3740, surfaceHectares: 60, accommodationsCount: 420, avgBedsPerUnit: 12.6 },
-    { sestiere: 'San Polo', residents: 4620, surfaceHectares: 35, accommodationsCount: 290, avgBedsPerUnit: 14.0 },
-    { sestiere: 'Santa Croce', residents: 4810, surfaceHectares: 94, accommodationsCount: 250, avgBedsPerUnit: 13.3 },
-    { sestiere: 'Dorsoduro (incl. Giudecca)', residents: 10430, surfaceHectares: 153, accommodationsCount: 360, avgBedsPerUnit: 14.5 },
-    { sestiere: 'Castello', residents: 11850, surfaceHectares: 186, accommodationsCount: 380, avgBedsPerUnit: 14.0 },
-    { sestiere: 'Cannaregio', residents: 12610, surfaceHectares: 157, accommodationsCount: 340, avgBedsPerUnit: 13.0 }
-  ];
-
-  const sestieri: SestiereTourismPressure[] = rawSestieri.map((s) => {
-    const estimatedBeds = Math.round(s.accommodationsCount * s.avgBedsPerUnit);
-    const bedsPerResidentRatio = +(estimatedBeds / s.residents).toFixed(2);
-    const bedsPerHectare = +(estimatedBeds / s.surfaceHectares).toFixed(1);
-
-    let saturationLevel: SestiereTourismPressure['saturationLevel'] = 'Moderata';
-    if (bedsPerResidentRatio >= 1.2) saturationLevel = 'Estrema';
-    else if (bedsPerResidentRatio >= 0.8) saturationLevel = 'Elevata';
-    else if (bedsPerResidentRatio >= 0.5) saturationLevel = 'Moderata-Alta';
-
-    return {
-      sestiere: s.sestiere,
-      residents: s.residents,
-      surfaceHectares: s.surfaceHectares,
-      accommodationsCount: s.accommodationsCount,
-      estimatedBeds,
-      bedsPerResidentRatio,
-      bedsPerHectare,
-      saturationLevel
-    };
-  });
-
-  const highest = sestieri.reduce((a, b) => (b.bedsPerResidentRatio > a.bedsPerResidentRatio ? b : a));
-
-  return {
-    basis: 'illustrativo',
-    basisNote: 'Residenti e posti letto per sestiere sono valori di esempio: non esiste un dataset aperto che li pubblichi.',
-    totalAccommodations,
-    totalGondolaStations,
-    totalGondoliers,
-    sestieri,
-    highestPressureSestiere: highest.sestiere
   };
 }
 

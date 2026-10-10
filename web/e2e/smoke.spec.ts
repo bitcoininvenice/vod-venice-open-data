@@ -442,6 +442,15 @@ test('la scheda informativa non copre il pannello livelli e non blocca la mappa'
   await expect(info).toBeHidden();
 });
 
+test('metriche: residenti per sestiere dal censimento ISTAT, non più valori di esempio', async ({ page }) => {
+  await page.goto('/metrics');
+  const section = page.getByTestId('residents-census');
+  await expect(section).toContainText('Residenti, famiglie e abitazioni');
+  for (const s of ['Cannaregio', 'Castello', 'San Marco', 'Giudecca', 'Burano', 'Lido']) await expect(section).toContainText(s);
+  await expect(section).toContainText('ISTAT');
+  await expect(page.getByText('Pressione turistica per sestiere')).toHaveCount(0);
+});
+
 test('la pagina delle fonti mostra lo stato', async ({ page }) => {
   await page.goto('/sources');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -673,6 +682,16 @@ test.describe('API', () => {
       for (const r of p.rings) expect(r[0]).toEqual(r[r.length - 1]);
     }
     expect(body.data.some((p: { name: string | null }) => p.name === 'Parco San Giuliano')).toBe(true);
+  });
+
+  test('census: residenti ISTAT 2021 coerenti tra Comune, municipalità e sestieri', async ({ request }) => {
+    const body = await (await request.get('/api/census')).json();
+    expect(body.success).toBe(true);
+    expect(body.meta.license).toBe('CC BY 4.0');
+    const { city, municipalities, historicCentre, sestieri } = body.data;
+    expect(municipalities.reduce((a: number, m: { population: number }) => a + m.population, 0)).toBe(city.population);
+    expect(sestieri.reduce((a: number, s: { population: number }) => a + s.population, 0)).toBe(historicCentre.population);
+    expect(sestieri).toHaveLength(7);
   });
 
   test('nautical: marine, carburante e ormeggi da OpenStreetMap', async ({ request }) => {

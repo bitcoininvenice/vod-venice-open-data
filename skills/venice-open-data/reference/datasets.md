@@ -22,5 +22,6 @@ Run `python scripts/vod.py datasets` (or the MCP tool `list_datasets`) for the l
 | Sport courts, outdoor fitness, clubs | `sports` | CAMPO community reports (hours, parish courts) + OpenStreetMap; cite “Dati forniti dalla comunità di CAMPO Venezia” (CC BY 4.0) for `source=CAMPO` |
 | Wi-Fi in hotels, bars, libraries (not the City network) | `wifi_venues` | OpenStreetMap; `access`: free, customers, paid or unknown |
 | LoRaWAN radio network (The Things Network) | `lora_gateways` | online gateways only, position as published by the owner, no owner identifiers |
+| Residents, age, households, empty or non-resident homes by sestiere, island, municipality | `census` | ISTAT 2021 census, sections summed by OSM outline; the City publishes no open data by sestiere |
 | Tourism and municipal statistics | `tourism`, `municipal_profile` | yearly figures by municipality |
 | Is a source up to date? | `sources_status` | |
