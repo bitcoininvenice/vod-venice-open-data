@@ -586,6 +586,33 @@ test('llms.txt descrive il sito e il server MCP', async ({ request }) => {
   expect(text).toContain('fiber_coverage');
 });
 
+test('SEO: titolo, descrizione e canonico propri per ogni pagina, anteprima social e dati strutturati', async ({ request }) => {
+  const pages = ['/', '/features', '/layers', '/metrics', '/sources', '/mcp'];
+  const titles = new Set<string>();
+  for (const path of pages) {
+    const html = await (await request.get(path)).text();
+    const title = html.match(/<title>(.*?)<\/title>/)?.[1] ?? '';
+    const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1] ?? '';
+    const description = html.match(/<meta name="description" content="([^"]+)"/)?.[1] ?? '';
+    expect(title, path).toContain('VOD');
+    titles.add(title);
+    expect(new URL(canonical).pathname.replace(/\/$/, '') || '/', path).toBe(path);
+    expect(description.length, path).toBeGreaterThan(80);
+    expect(html, path).toMatch(/<meta property="og:image" content="[^"]+"/);
+    expect(html, path).toContain('application/ld+json');
+  }
+  expect(titles.size).toBe(pages.length);
+  const og = await request.get('/opengraph-image');
+  expect(og.ok()).toBe(true);
+  expect(og.headers()['content-type']).toContain('image/png');
+  // catalogo dei dataset per Google Dataset Search
+  const layers = await (await request.get('/layers')).text();
+  const blocks = [...layers.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
+  const catalog = blocks.find((b) => b['@type'] === 'DataCatalog');
+  expect(catalog.dataset.length).toBeGreaterThan(20);
+  expect(catalog.dataset[0]).toMatchObject({ '@type': 'Dataset', isAccessibleForFree: true });
+});
+
 test.describe('API', () => {
   test('ships restituisce navi AIS reali o dichiara che il feed non è configurato', async ({ request }) => {
     const body = await (await request.get('/api/ships')).json();

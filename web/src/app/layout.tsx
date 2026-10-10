@@ -8,6 +8,8 @@ import "@fontsource/bricolage-grotesque/latin-700.css";
 import "@fontsource/dm-mono/latin-400.css";
 import "@fontsource/dm-mono/latin-500.css";
 import "./globals.css";
+import { SITE_DESCRIPTION, SITE_NAME, jsonLd } from "@/lib/seo";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   manifest: "/manifest.json",
@@ -16,101 +18,20 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png"
   },
   title: {
-    default: "VOD – Venice Open Data | Cruscotto Geospaziale & Digital Twin di Venezia",
+    default: "VOD – Venice Open Data | Mappa di Venezia: vaporetti in tempo reale, marea e open data",
     template: "%s | VOD – Venice Open Data"
   },
-  description: "Piattaforma interattiva che incrocia Open Data di diverso genere relativi all'area della città di Venezia.",
+  description: SITE_DESCRIPTION,
   applicationName: "VOD - Venice Open Data",
   authors: [{ name: "Venice Open Data Initiative" }],
   generator: "Next.js",
+  // Google non usa le parole chiave: poche e pertinenti, per gli altri motori
   keywords: [
-    // Identità e Piattaforma
-    "Venezia",
-    "Venice",
-    "Venice Open Data",
-    "Open Data Venezia",
-    "Digital Twin Venezia",
-    "Cruscotto Geospaziale",
-    "Mappa Interattiva Venezia",
-    "dati.venezia.it",
-
-    // Trasporti & Mobilità Acquea e Terraferma
-    "ACTV",
-    "Vaporetti Venezia",
-    "Motoscali",
-    "Alilaguna",
-    "GTFS Venezia",
-    "Linee Navigazione ACTV",
-    "Mobilità Laguna",
-    "Canal Grande",
-    "Piazzale Roma",
-    "Tronchetto",
-    "Ferry-Boat Lido",
-
-    // Maree, Clima & Protezione Civile
-    "Centro Maree Venezia",
-    "CPSM",
-    "Previsione Maree",
-    "Acqua Alta",
-    "Barriere MOSE",
-    "Bocche di Porto",
-    "Passerelle Acqua Alta",
-    "Percorsi Passerelle Venezia",
-    "Allagamento Venezia",
-
-    // Monitoraggio Satellitare & Spazio
-    "Copernicus",
-    "Sentinel-1 SAR Radar",
-    "Sentinel-2 Multispettrale",
-    "COSMO-SkyMed ASI",
-    "Interferometria Radar DInSAR",
-    "Subsidenza Venezia",
-    "Stazione Spaziale ISS",
-    "Galileo GNSS",
-    "Telerilevamento Satellitare",
-
-    // Ricerca Marina & Oceanografia
-    "CNR-ISMAR",
-    "Piattaforma Oceanografica Acqua Alta",
-    "ISPRA RML",
-    "Boe Ondametriche",
-    "Altezza Onde Adriatico",
-    "Salinità Laguna",
-    "Briccole Venezia",
-    "Dame di Canale",
-    "Fanali Marittimi",
-    "Canale dei Petroli",
-
-    // Ambiente, Mare & Spiagge
-    "ARPAV",
-    "Qualità Aria Venezia",
-    "PM10 Mestre",
-    "Acque di Balneazione Lido",
-    "Spiagge Venezia",
-    "Lido Blue Moon",
-    "Alberoni WWF",
-    "Pellestrina",
-    "Bandiera Blu",
-
-    // Città, Smart City & Patrimonio
-    "Smart Control Room Tronchetto",
-    "Flussi Pedonali Rialto",
-    "Ponti Accessibili",
-    "Fontanelle Potabili",
-    "Cantieri Opere Pubbliche",
-    "Catasto Verde",
-    "Alberi Monumentali Venezia",
-    "Colonnine Ricarica EV",
-    "VeniceConnected Wi-Fi",
-
-    // Navale & Aeroportuale
-    "AIS Navi Venezia",
-    "VTS Guardia Costiera",
-    "Porto di Venezia",
-    "Voli Marco Polo VCE",
-    "Radar ADS-B",
-    "ENAV OpenSky"
+    "Venezia", "Venice", "Venice Open Data", "open data Venezia", "mappa Venezia",
+    "vaporetti ACTV tempo reale", "ritardi vaporetti", "orari vaporetti", "come arrivare Venezia",
+    "acqua alta", "marea Venezia", "MOSE", "numeri civici Venezia", "sestieri", "laguna di Venezia",
   ],
+
   creator: "Venice Open Data Community",
   publisher: "Venice Open Data",
   formatDetection: {
@@ -123,8 +44,8 @@ export const metadata: Metadata = {
     canonical: "/"
   },
   openGraph: {
-    title: "VOD – Venice Open Data | Cruscotto Geospaziale & Digital Twin di Venezia",
-    description: "Piattaforma interattiva che incrocia Open Data di diverso genere relativi all'area della città di Venezia.",
+    title: "VOD – Venice Open Data | Mappa di Venezia: vaporetti in tempo reale, marea e open data",
+    description: SITE_DESCRIPTION,
     url: "https://venice-open-data.vercel.app",
     siteName: "VOD - Venice Open Data",
     locale: "it_IT",
@@ -132,8 +53,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "VOD – Venice Open Data | Cruscotto Geospaziale di Venezia",
-    description: "Piattaforma interattiva che incrocia Open Data di diverso genere relativi all'area della città di Venezia."
+    title: "VOD – Venice Open Data | Mappa di Venezia: vaporetti in tempo reale, marea e open data",
+    description: SITE_DESCRIPTION
   },
   robots: {
     index: true,
@@ -178,6 +99,34 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col bg-[var(--ground)] text-[var(--ink)] antialiased select-none">
+        {/* Dati strutturati: sito e applicazione web gratuita (schema.org) */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={jsonLd({
+            '@context': 'https://schema.org',
+            '@graph': [
+              { '@type': 'WebSite', '@id': `${SITE_URL}/#website`, url: SITE_URL, name: SITE_NAME, description: SITE_DESCRIPTION, inLanguage: ['it', 'en'] },
+              {
+                '@type': 'WebApplication',
+                name: SITE_NAME,
+                url: SITE_URL,
+                description: SITE_DESCRIPTION,
+                applicationCategory: 'TravelApplication',
+                operatingSystem: 'Web',
+                isAccessibleForFree: true,
+                offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+                inLanguage: ['it', 'en'],
+                featureList: [
+                  'Vaporetti ACTV in tempo reale con ritardo verificato',
+                  'Come arrivare a piedi e in vaporetto',
+                  'Marea in tempo reale e simulatore di acqua alta',
+                  'Ricerca dei numeri civici per sestiere',
+                  'Open data di Venezia con fonte e licenza',
+                ],
+              },
+            ],
+          })}
+        />
         <LanguageProvider>
           <ServiceWorkerRegister />
           {children}

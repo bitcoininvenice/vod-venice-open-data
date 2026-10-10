@@ -84,9 +84,9 @@ export default function LayersDocumentationPage() {
               <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
               <span>{t('ui.layersPage.documentazioneDataLineageUfficiale')}</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--ink)]">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--ink)]">
               {t('ui.layersPage.comeFunzionanoIDatiGeospaziali')}
-            </h2>
+            </h1>
             <p className="text-xs sm:text-sm text-[var(--ink-2)] leading-relaxed">
               {t('ui.layersPage.heroBody')}
             </p>
