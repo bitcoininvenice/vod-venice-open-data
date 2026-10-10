@@ -1,11 +1,21 @@
 import type { AlilagunaBoat, FlightItem, SatelliteItem, ShipItem } from '@/lib/types';
 import type { ColorScheme } from '@/lib/solar';
 import type { MapEngineProps } from '../MapEngine';
-
-type DataProps = 'accessibleBridges' | 'airStations' | 'alilagunaRoutes' | 'alilagunaStops' | 'bathingWaters' | 'bellTowers' | 'briccole' | 'bridges' | 'bufferRadiusMeters' | 'cameras' | 'canalSpeedLimits' | 'cantieri' | 'daeList' | 'docks' | 'emergencyDocks' | 'evCharging' | 'flights' | 'fortressIslands' | 'fountains' | 'gondolas' | 'heatIslands' | 'lagoonMorphology' | 'lagoonTributaryRivers' | 'lagoonWaterQuality' | 'liveTrains' | 'marineWindStations' | 'windField' | 'showFiber' | 'fiberData' | 'showRecyclingCentres' | 'recyclingCentres' | 'showLibraries' | 'libraries' | 'showBdapWorks' | 'bdapWorks' | 'showLoraGateways' | 'loraGateways' | 'showWifiVenues' | 'wifiVenues' | 'showSports' | 'sportPlaces' | 'sportFilter' | 'showNautical' | 'nauticalPlaces' | 'showCanals' | 'lagoonNetwork' | 'moseGates' | 'nizioleti' | 'oceanStations' | 'paletteTheme' | 'parkings' | 'passerelle' | 'pedestrianFlows' | 'pharmacies' | 'pollenMonitoringStations' | 'realtimeVehicles' | 'regionalBikeRoutes' | 'satellites' | 'selectedCategory' | 'selectedDay' | 'ships' | 'showAccommodations' | 'showAirQuality' | 'showAlilaguna' | 'showBathingWaters' | 'showBellTowers' | 'showBikeRoutes' | 'showBridges' | 'showCameras' | 'showCanalLimits' | 'showCantieri' | 'showCityAssets' | 'showDae' | 'showDocks' | 'showEmergencyDocks' | 'showEvCharging' | 'showFlights' | 'showFortresses' | 'showGondolas' | 'showHeatIslands' | 'showLagoonWater' | 'showMarineSignals' | 'showMarineWind' | 'showMorphology' | 'showMose' | 'showNizioleti' | 'showOceanStations' | 'showParkings' | 'showPasserelle' | 'showPedestrianFlows' | 'showPharmacies' | 'showPollenStations' | 'showRealtimeVehicles' | 'showRoutes' | 'showSatellites' | 'showShipRoutes' | 'showShips' | 'showSpatialBuffer' | 'showStops' | 'showSubsidence' | 'showTrains' | 'showTrees' | 'showTributaries' | 'showVehicles' | 'showWasteBoats' | 'showWells' | 'showWifiHotspots' | 'stops' | 'subsidencePoints' | 'tideLevel' | 'touristAccommodations' | 'trees' | 'veritasServices' | 'wasteBoats' | 'wells' | 'wifiHotspots';
+import type { CityData } from '@/lib/cityData';
+import type { LayerVisibility } from '@/lib/layerState';
+import type { LocatedCantiere } from '@/lib/types';
+import type { SportFilter } from '@/lib/sports';
 
 /** Tutto ciò che serve per disegnare un frame: canvas, trasformazioni, palette, stato e dati dei layer. */
-export interface RenderContext extends Required<Pick<MapEngineProps, DataProps>> {
+export interface RenderContext
+  extends LayerVisibility,
+    Omit<CityData, 'cantieri' | 'tideLevel'>,
+    Pick<MapEngineProps, 'bufferRadiusMeters' | 'selectedCategory' | 'selectedDay' | 'paletteTheme'> {
+  /** solo opere pubbliche con posizione */
+  cantieri: LocatedCantiere[];
+  /** livello di marea disegnato (simulato se il simulatore è attivo) */
+  tideLevel: number;
+  sportFilter: SportFilter;
   ctx: CanvasRenderingContext2D;
   /** dimensioni del canvas in pixel CSS */
   cw: number;

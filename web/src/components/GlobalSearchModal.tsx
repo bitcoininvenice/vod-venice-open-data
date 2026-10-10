@@ -15,21 +15,8 @@ import {
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { LayerKey } from '@/lib/urlLayers';
-import type {
-  StopItem,
-  PharmacyItem,
-  PublicDaeItem,
-  EmergencyWaterDockItem,
-  CityAssetItem,
-  CantiereItem,
-  VeniceCameraItem,
-  ParkingItem,
-  NizioletoCivicoItem,
-  VeniceWellItem,
-  BellTowerItem,
-  MoseGateItem,
-  OceanStationItem
-} from '@/lib/types';
+import { isLocated } from '@/lib/types';
+import type { CityData } from '@/lib/cityData';
 
 export type SearchCategory = 'transit' | 'health' | 'services' | 'heritage' | 'lagoon';
 
@@ -50,39 +37,11 @@ interface GlobalSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectResult: (item: SearchResultItem) => void;
-  stops?: StopItem[];
-  pharmacies?: PharmacyItem[];
-  daeList?: PublicDaeItem[];
-  emergencyDocks?: EmergencyWaterDockItem[];
-  fountains?: CityAssetItem[];
-  cantieri?: CantiereItem[];
-  cameras?: VeniceCameraItem[];
-  parkings?: ParkingItem[];
-  nizioleti?: NizioletoCivicoItem[];
-  wells?: VeniceWellItem[];
-  bellTowers?: BellTowerItem[];
-  moseGates?: MoseGateItem[];
-  oceanStations?: OceanStationItem[];
+  /** Dati caricati nella mappa, indicizzati per la ricerca */
+  data: CityData;
 }
 
-export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
-  isOpen,
-  onClose,
-  onSelectResult,
-  stops = [],
-  pharmacies = [],
-  daeList = [],
-  emergencyDocks = [],
-  fountains = [],
-  cantieri = [],
-  cameras = [],
-  parkings = [],
-  nizioleti = [],
-  wells = [],
-  bellTowers = [],
-  moseGates = [],
-  oceanStations = []
-}) => {
+export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, onSelectResult, data }) => {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | SearchCategory>('all');
@@ -106,6 +65,8 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
 
   // Index entities into unified search pool
   const indexedItems = useMemo<SearchResultItem[]>(() => {
+    const { stops, pharmacies, daeList, emergencyDocks, fountains, cameras, parkings, nizioleti, wells, bellTowers, moseGates, oceanStations } = data;
+    const cantieri = data.cantieri.filter(isLocated);
     const list: SearchResultItem[] = [];
 
     // 1. Fermate ACTV
@@ -308,7 +269,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
     }
 
     return list;
-  }, [stops, pharmacies, daeList, emergencyDocks, fountains, cantieri, cameras, parkings, nizioleti, wells, bellTowers, moseGates, oceanStations, t]);
+  }, [data, t]);
 
   // Filter items by query and category
   const filteredResults = useMemo(() => {

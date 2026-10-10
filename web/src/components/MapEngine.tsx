@@ -2,61 +2,9 @@
 
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { Plus, Minus, Maximize2, Box } from 'lucide-react';
-import {
-  CameraViewPreset,
-  TransportModeCategory,
-  StopItem,
-  CantiereItem,
-  LocatedCantiere,
-  PaletteTheme,
-  FlightItem,
-  ShipItem,
-  MoseGateItem,
-  CityAssetItem,
-  ParkingItem,
-  AirQualityItem,
-  PedestrianFlowItem,
-  AlilagunaRoute,
-  AlilagunaStop,
-  AlilagunaBoat,
-  SatelliteItem,
-  PasserellaItem,
-  BriccolaSignalItem,
-  OceanStationItem,
-  BathingWaterItem,
-  UrbanTreeItem,
-  EvChargingItem,
-  WifiHotspotItem,
-  CanalSpeedLimitItem,
-  BridgeClearanceItem,
-  GondolaStationItem,
-  PublicDockItem,
-  SubsidenceInSARItem,
-  LagoonMorphologyItem,
-  MeteoMarineWindItem,
-  WindField,
-  CivicPoiItem,
-  TrainLiveItem,
-  VeritasWasteBoatItem,
-  NizioletoCivicoItem,
-  VeniceWellItem,
-  BellTowerItem,
-  LagoonFortressIslandItem,
-  EmergencyWaterDockItem,
-  PublicDaeItem,
-  PharmacyItem,
-  HeatIslandSurfaceTempItem,
-  LagoonWaterQualityItem,
-  TouristAccommodationItem,
-  RegionalBikeRouteItem,
-  PollenMonitoringStationItem,
-  LagoonTributaryRiverItem,
-  VeniceCameraItem
-} from '@/lib/types';
+import { isLocated, type AlilagunaBoat, type CameraViewPreset, type CantiereItem, type PaletteTheme, type SatelliteItem, type StopItem, type TransportModeCategory, type VeniceCameraItem } from '@/lib/types';
 import type { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import type { MapObjectSelected } from './MapObjectPanel';
-import type { BdapProject } from '@/lib/bdap';
-import type { LoraGateway, NauticalPlace, SportPlace, WifiVenue } from '@/lib/types';
 import { matchesSportFilter, type SportFilter } from '@/lib/sports';
 import { GRID, LAND_LO } from '@/lib/simulation-data';
 import { drawBaseMap, isLandHiLoaded, requestLandHi } from './map/baseMap';
@@ -76,73 +24,31 @@ import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
 import { drawFiber } from './map/fiberLayer';
 import { drawLagoonNetwork } from './map/lagoonNetworkLayer';
 import { withLabelGuard } from './map/labelGuard';
+import { firstHit, hitTester, type Hit } from './map/hitTest';
+import type { CityData } from '@/lib/cityData';
+import type { LayerVisibility } from '@/lib/layerState';
 import { pointSegmentDistance, type LagoonNetwork } from '@/lib/lagoonNetwork';
-import { FIBER_COLORS, fiberCellAt, indexFiberCells, type FiberDataset } from '@/lib/fiber';
+import { FIBER_COLORS, fiberCellAt, indexFiberCells } from '@/lib/fiber';
 import { MAP_3D_CSS_TRANSFORM, unprojectFrom3D } from '@/lib/map3d';
 
 
 import { distAt, getSimulation, pointAt } from '@/lib/simulationModel';
-import type { RealtimeVehicleDto } from '@/lib/contracts/realtime';
 
 export interface MapEngineProps {
+  /** Livelli accesi */
+  layers: LayerVisibility;
+  /** Dati caricati (vedi lib/cityData.ts) */
+  data: CityData;
   selectedDay: 'weekday' | 'saturday' | 'sunday';
   paletteTheme: PaletteTheme;
   currentView: CameraViewPreset;
-  showRoutes: boolean;
-  showStops: boolean;
-  showVehicles: boolean;
-  showCantieri: boolean;
-  showSpatialBuffer: boolean;
-  showFlights?: boolean;
-  flights?: FlightItem[];
-  showShips?: boolean;
-  showShipRoutes?: boolean;
-  ships?: ShipItem[];
-  showMose?: boolean;
-  moseGates?: MoseGateItem[];
-  showCityAssets?: boolean;
-  fountains?: CityAssetItem[];
-  accessibleBridges?: CityAssetItem[];
-  veritasServices?: CityAssetItem[];
-  showParkings?: boolean;
-  parkings?: ParkingItem[];
-  showAirQuality?: boolean;
-  airStations?: AirQualityItem[];
-  showPedestrianFlows?: boolean;
-  pedestrianFlows?: PedestrianFlowItem[];
-  showAlilaguna?: boolean;
-  alilagunaRoutes?: AlilagunaRoute[];
-  alilagunaStops?: AlilagunaStop[];
   alilagunaBoats?: AlilagunaBoat[];
   onSelectAlilaguna?: () => void;
-  showCameras?: boolean;
-  cameras?: VeniceCameraItem[];
-  showRealtimeVehicles?: boolean;
-  realtimeVehicles?: RealtimeVehicleDto[];
   onSelectCamera?: (camera: VeniceCameraItem) => void;
-  showSatellites?: boolean;
-  satellites?: SatelliteItem[];
   onSelectSatellite?: (satellite: SatelliteItem) => void;
-  showPasserelle?: boolean;
-  passerelle?: PasserellaItem[];
-  showMarineSignals?: boolean;
-  briccole?: BriccolaSignalItem[];
-  showOceanStations?: boolean;
-  oceanStations?: OceanStationItem[];
-  showBathingWaters?: boolean;
-  bathingWaters?: BathingWaterItem[];
-  showTrees?: boolean;
-  trees?: UrbanTreeItem[];
-  showEvCharging?: boolean;
-  showWifiHotspots?: boolean;
-  evCharging?: EvChargingItem[];
-  wifiHotspots?: WifiHotspotItem[];
   onSelectFeature?: (feature: VeniceFeatureSelected) => void;
   bufferRadiusMeters: number;
   selectedCategory: TransportModeCategory | 'all';
-  /** Solo opere pubbliche con posizione */
-  cantieri: LocatedCantiere[];
-  stops: StopItem[];
   onSelectStop: (stop: StopItem) => void;
   onSelectCantiere: (cantiere: CantiereItem) => void;
   onSelectAirport?: () => void;
@@ -157,144 +63,24 @@ export interface MapEngineProps {
   selectedSatellite?: SatelliteItem | null;
   onSelectMose?: () => void;
   focusedCoordinates?: { lat: number; lon: number } | null;
-  // New Open Data Feeds
-  showCanalLimits?: boolean;
-  canalSpeedLimits?: CanalSpeedLimitItem[];
-  showBridges?: boolean;
-  bridges?: BridgeClearanceItem[];
-  showGondolas?: boolean;
-  gondolas?: GondolaStationItem[];
-  showDocks?: boolean;
-  docks?: PublicDockItem[];
-  showSubsidence?: boolean;
-  subsidencePoints?: SubsidenceInSARItem[];
-  showMorphology?: boolean;
-  lagoonMorphology?: LagoonMorphologyItem[];
-  showMarineWind?: boolean;
-  marineWindStations?: MeteoMarineWindItem[];
-  /** Campo di vento previsto (Open-Meteo) per le particelle animate del layer vento */
-  windField?: WindField | null;
-  /** Copertura della rete fissa (AGCOM) */
-  showFiber?: boolean;
-  fiberData?: FiberDataset | null;
-  /** Ecocentri e biblioteche (OpenStreetMap) */
-  showRecyclingCentres?: boolean;
-  recyclingCentres?: CivicPoiItem[];
-  showLibraries?: boolean;
-  libraries?: CivicPoiItem[];
-  /** Opere in esecuzione (BDAP); quelle senza posizione non vengono disegnate */
-  showBdapWorks?: boolean;
-  bdapWorks?: BdapProject[] | null;
-  /** Gateway LoRaWAN online (posizione pubblicata dal proprietario) */
-  showLoraGateways?: boolean;
-  loraGateways?: LoraGateway[];
-  /** Luoghi con Wi-Fi da OpenStreetMap */
-  showWifiVenues?: boolean;
-  wifiVenues?: WifiVenue[];
-  /** Spazi sportivi (CAMPO + OpenStreetMap) e filtro per sport */
-  showSports?: boolean;
-  sportPlaces?: SportPlace[];
   sportFilter?: SportFilter;
-  /** Nautica da OpenStreetMap (ormeggi visibili solo da vicino) */
-  showNautical?: boolean;
-  nauticalPlaces?: NauticalPlace[];
-  /** Briccole, segnalamenti e canali da OpenStreetMap */
-  showCanals?: boolean;
-  lagoonNetwork?: LagoonNetwork | null;
-  showTrains?: boolean;
-  liveTrains?: TrainLiveItem[];
-  showWasteBoats?: boolean;
-  wasteBoats?: VeritasWasteBoatItem[];
-  showNizioleti?: boolean;
-  nizioleti?: NizioletoCivicoItem[];
-  showWells?: boolean;
-  wells?: VeniceWellItem[];
-  showBellTowers?: boolean;
-  bellTowers?: BellTowerItem[];
-  showFortresses?: boolean;
-  fortressIslands?: LagoonFortressIslandItem[];
-  showEmergencyDocks?: boolean;
-  emergencyDocks?: EmergencyWaterDockItem[];
-  showDae?: boolean;
-  daeList?: PublicDaeItem[];
-  showPharmacies?: boolean;
-  pharmacies?: PharmacyItem[];
-  showHeatIslands?: boolean;
-  heatIslands?: HeatIslandSurfaceTempItem[];
-  // Open Data Regione Veneto (dati.veneto.it)
-  showLagoonWater?: boolean;
-  lagoonWaterQuality?: LagoonWaterQualityItem[];
-  showAccommodations?: boolean;
-  touristAccommodations?: TouristAccommodationItem[];
-  showBikeRoutes?: boolean;
-  regionalBikeRoutes?: RegionalBikeRouteItem[];
-  showPollenStations?: boolean;
-  pollenMonitoringStations?: PollenMonitoringStationItem[];
-  showTributaries?: boolean;
-  lagoonTributaryRivers?: LagoonTributaryRiverItem[];
-  tideLevel?: number;
   simulatedTideLevel?: number | null;
   isDesktopLayerPanelOpen?: boolean;
 }
 
 export const MapEngine: React.FC<MapEngineProps> = ({
+  layers,
+  data,
   selectedDay,
   paletteTheme,
   currentView,
-  showRoutes,
-  showStops,
-  showVehicles,
-  showCantieri,
-  showSpatialBuffer,
-  showFlights = false,
-  flights = [],
-  showShips = true,
-  showShipRoutes = true,
-  ships = [],
-  showMose = true,
-  moseGates = [],
-  showCityAssets = true,
-  fountains = [],
-  accessibleBridges = [],
-  veritasServices = [],
-  showParkings = true,
-  parkings = [],
-  showAirQuality = true,
-  airStations = [],
-  showPedestrianFlows = true,
-  pedestrianFlows = [],
-  showAlilaguna = true,
-  alilagunaRoutes = [],
-  alilagunaStops = [],
   alilagunaBoats = [],
   onSelectAlilaguna,
-  showCameras = true,
-  cameras = [],
-  showRealtimeVehicles = false,
-  realtimeVehicles = [],
   onSelectCamera,
-  showSatellites = true,
-  satellites = [],
   onSelectSatellite,
-  showPasserelle = true,
-  passerelle = [],
-  showMarineSignals = true,
-  briccole = [],
-  showOceanStations = true,
-  oceanStations = [],
-  showBathingWaters = true,
-  bathingWaters = [],
-  showTrees = true,
-  trees = [],
-  showEvCharging = true,
-  showWifiHotspots = true,
-  evCharging = [],
-  wifiHotspots = [],
   onSelectFeature,
   bufferRadiusMeters,
   selectedCategory,
-  cantieri,
-  stops,
   onSelectStop,
   onSelectCantiere,
   onSelectAirport,
@@ -305,71 +91,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   selectedSatellite = null,
   onSelectMose,
   focusedCoordinates,
-  showCanalLimits = false,
-  canalSpeedLimits = [],
-  showBridges = false,
-  bridges = [],
-  showGondolas = false,
-  gondolas = [],
-  showDocks = false,
-  docks = [],
-  showSubsidence = false,
-  subsidencePoints = [],
-  showMorphology = false,
-  lagoonMorphology = [],
-  showMarineWind = false,
-  marineWindStations = [],
-  windField = null,
-  showFiber = false,
-  fiberData = null,
-  showRecyclingCentres = false,
-  recyclingCentres = [],
-  showLibraries = false,
-  libraries = [],
-  showBdapWorks = false,
-  bdapWorks = null,
-  showLoraGateways = false,
-  loraGateways = [],
-  showWifiVenues = false,
-  wifiVenues = [],
-  showSports = false,
-  sportPlaces = [],
   sportFilter = 'all',
-  showNautical = false,
-  nauticalPlaces = [],
-  showCanals = false,
-  lagoonNetwork = null,
-  showTrains = false,
-  liveTrains = [],
-  showWasteBoats = false,
-  wasteBoats = [],
-  showNizioleti = false,
-  nizioleti = [],
-  showWells = false,
-  wells = [],
-  showBellTowers = false,
-  bellTowers = [],
-  showFortresses = false,
-  fortressIslands = [],
-  showEmergencyDocks = false,
-  emergencyDocks = [],
-  showDae = false,
-  daeList = [],
-  showPharmacies = false,
-  pharmacies = [],
-  showHeatIslands = false,
-  heatIslands = [],
-  showLagoonWater = false,
-  lagoonWaterQuality = [],
-  showAccommodations = false,
-  touristAccommodations = [],
-  showBikeRoutes = false,
-  regionalBikeRoutes = [],
-  showPollenStations = false,
-  pollenMonitoringStations = [],
-  showTributaries = false,
-  lagoonTributaryRivers = [],
-  tideLevel = 0,
   simulatedTideLevel = null,
   isDesktopLayerPanelOpen = true
 }) => {
@@ -388,7 +110,11 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
   const mx = useCallback((lon: number) => (lon - LON0) * KX, [LON0, KX]);
   const my = useCallback((lat: number) => (LAT1 - lat) * KY, [LAT1, KY]);
+  const { fiberData, windField } = data;
+  const { showMarineWind, showFiber } = layers;
   const fiberIndex = useMemo(() => (fiberData ? indexFiberCells(fiberData) : null), [fiberData]);
+  // Solo opere pubbliche con posizione
+  const cantieri = useMemo(() => data.cantieri.filter(isLocated), [data.cantieri]);
 
   // View Camera State (x0, y0, scale)
   const [camera, setCamera] = useState({ x0: 0, y0: 0, s: 0.02 });
@@ -741,800 +467,217 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
   const handlePointClick = (clickX: number, clickY: number) => {
     const currentTimeSeconds = simClock.get();
-    // 0. Hit test Aeroporto di Venezia Marco Polo (VCE / LIPZ)
-    const vceX = (mx(12.3519) - camera.x0) * camera.s;
-    const vceY = (my(45.5053) - camera.y0) * camera.s;
-    if (Math.hypot(clickX - vceX, clickY - vceY) <= Math.max(34, 45 * (camera.s / 0.02))) {
-      if (onSelectAirport) {
-        onSelectAirport();
-        return;
-      }
-    }
+    const screen = (lon: number, lat: number) => [(mx(lon) - camera.x0) * camera.s, (my(lat) - camera.y0) * camera.s] as const;
+    const target = hitTester(screen);
+    const L = layers;
+    const D = data;
+    /** Apre la scheda del punto nel pannello informativo. */
+    const feature =
+      <K extends VeniceFeatureSelected['type']>(type: K) =>
+      (item: Extract<VeniceFeatureSelected, { type: K }>['data']) =>
+        onSelectFeature?.({ type, data: item } as VeniceFeatureSelected);
+    const path = (p: { path: readonly (readonly number[])[] }) => p.path;
+    const noPoint = () => null;
 
-    // 1. Hit test Flights (with live flight motion)
-    if (showFlights && flights && flights.length > 0) {
-      for (const f of flights) {
-        const live = getLiveFlight(f, currentTimeSeconds);
-        const fx = (mx(live.lon) - camera.x0) * camera.s;
-        const fy = (my(live.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - fx, clickY - fy) <= 24) {
-          onSelectObject?.({
-            type: 'flight',
-            data: {
-            ...f,
-            lon: live.lon,
-            lat: live.lat,
-            trackDegrees: live.heading,
-            altitudeMeters: live.alt
-            },
-          });
-          return;
-        }
-      }
-    }
+    // Aeroporto di Venezia Marco Polo (VCE / LIPZ): sempre cliccabile, area più ampia da vicino
+    const airport: Hit = (x, y) => {
+      const [ax, ay] = screen(12.3519, 45.5053);
+      return onSelectAirport && Math.hypot(x - ax, y - ay) <= Math.max(34, 45 * (camera.s / 0.02)) ? onSelectAirport : null;
+    };
 
-    // 1b. Hit test Ships & Cruise Vessels (with live channel motion)
-    if (showShips && ships && ships.length > 0) {
-      for (const s of ships) {
-        const sxPos = (mx(s.lon) - camera.x0) * camera.s;
-        const syPos = (my(s.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - sxPos, clickY - syPos) <= 18) {
-          onSelectObject?.({ type: 'ship', data: s });
-          return;
-        }
-      }
-    }
-
-    // 1c. Hit test MOSE Gates (Bocche di Porto)
-    if (showMose && moseGates && moseGates.length > 0) {
-      for (const g of moseGates) {
-        const gx = (mx(g.lon) - camera.x0) * camera.s;
-        const gy = (my(g.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - gx, clickY - gy) <= 30) {
-          if (onSelectMose) {
-            onSelectMose();
-            return;
-          }
-        }
-      }
-    }
-
-    // 1d. Hit test Alilaguna Waterbuses (Deterministic Official GTFS Timetable)
-    if (showAlilaguna) {
-      const scheduledBoats = getScheduledAlilagunaBoats(currentTimeSeconds);
-      for (const b of scheduledBoats) {
-        const bxPos = (mx(b.lon) - camera.x0) * camera.s;
-        const byPos = (my(b.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - bxPos, clickY - byPos) <= 22) {
-          onSelectObject?.({ type: 'alilagunaBoat', data: b });
-          return;
-        }
-      }
-    }
-
-    // 1e. Hit test Alilaguna Darsene & Piers (e.g. Darsena Aeroporto VCE)
-    if (showAlilaguna && alilagunaStops && alilagunaStops.length > 0) {
-      for (const st of alilagunaStops) {
-        const sxPos = (mx(st.lon) - camera.x0) * camera.s;
-        const syPos = (my(st.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - sxPos, clickY - syPos) <= 18) {
-          if (onSelectAlilaguna) {
-            onSelectAlilaguna();
-            return;
-          }
-        }
-      }
-    }
-
-    // 1f. Hit test Venice Cameras & Webcams (Anopticon CCTV & Public Webcams)
-    if (showCameras && cameras && cameras.length > 0) {
-      for (const cam of cameras) {
-        const cx = (mx(cam.lon) - camera.x0) * camera.s;
-        const cy = (my(cam.lat) - camera.y0) * camera.s;
-        const hitRadius = cam.hasLiveFeed ? 22 : 16;
-        if (Math.hypot(clickX - cx, clickY - cy) <= hitRadius) {
-          if (onSelectCamera) {
-            onSelectCamera(cam);
-            return;
-          }
-        }
-      }
-    }
-
-    // 1g. Hit test Earth Observation Satellites (ESA / ASI / NASA)
-    if (showSatellites && satellites && satellites.length > 0) {
-      for (const sat of satellites) {
-        const live = getLiveSatellite(sat, currentTimeSeconds);
-        const satX = (mx(live.lon) - camera.x0) * camera.s;
-        const satY = (my(live.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - satX, clickY - satY) <= 24) {
-          onSelectSatellite?.({
-            ...sat,
-            currentLon: live.lon,
-            currentLat: live.lat,
-            heading: live.heading
-          });
-          return;
-        }
-      }
-    }
-
-    // 1g. Hit test Ocean Stations (Piattaforma CNR & Boe)
-    if (showOceanStations && oceanStations && oceanStations.length > 0) {
-      for (const st of oceanStations) {
-        const sxPos = (mx(st.lon) - camera.x0) * camera.s;
-        const syPos = (my(st.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - sxPos, clickY - syPos) <= 24) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'oceanStation', data: st });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1h. Hit test Briccole & Fanali di Canale
-    if (showMarineSignals && briccole && briccole.length > 0) {
-      for (const br of briccole) {
-        const bxPos = (mx(br.lon) - camera.x0) * camera.s;
-        const byPos = (my(br.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - bxPos, clickY - byPos) <= 20) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'briccola', data: br });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1i. Hit test Passerelle Acqua Alta
-    if (showPasserelle && passerelle && passerelle.length > 0) {
-      for (const p of passerelle) {
-        for (const pt of p.path) {
-          const px = (mx(pt[0]) - camera.x0) * camera.s;
-          const py = (my(pt[1]) - camera.y0) * camera.s;
-          if (Math.hypot(clickX - px, clickY - py) <= 18) {
-            if (onSelectFeature) {
-              onSelectFeature({ type: 'passerella', data: p });
-              return;
-            }
-          }
-        }
-      }
-    }
-
-    // 1j. Hit test Bathing Waters (Lido & Pellestrina)
-    if (showBathingWaters && bathingWaters && bathingWaters.length > 0) {
-      for (const bw of bathingWaters) {
-        const bx = (mx(bw.lon) - camera.x0) * camera.s;
-        const by = (my(bw.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - bx, clickY - by) <= 22) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'bathingWater', data: bw });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1k. Hit test Alberi Monumentali
-    if (showTrees && trees && trees.length > 0) {
-      for (const tr of trees) {
-        const tx = (mx(tr.lon) - camera.x0) * camera.s;
-        const ty = (my(tr.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - tx, clickY - ty) <= 20) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'urbanTree', data: tr });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1l. Hit test Colonnine Ricarica EV
-    if (showEvCharging && evCharging && evCharging.length > 0) {
-      for (const ev of evCharging) {
-        const ex = (mx(ev.lon) - camera.x0) * camera.s;
-        const ey = (my(ev.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - ex, clickY - ey) <= 20) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'evCharging', data: ev });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1m. Hit test Hotspot Wi-Fi VeniceConnected
-    if (showWifiHotspots && wifiHotspots && wifiHotspots.length > 0) {
-      for (const wf of wifiHotspots) {
-        const wx = (mx(wf.lon) - camera.x0) * camera.s;
-        const wy = (my(wf.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - wx, clickY - wy) <= 20) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'wifiHotspot', data: wf });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1m. Hit test Franchi di Tiro Ponti
-    if (showBridges && bridges && bridges.length > 0) {
-      for (const b of bridges) {
-        const bx = (mx(b.lon) - camera.x0) * camera.s;
-        const by = (my(b.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - bx, clickY - by) <= 22) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'bridgeClearance', data: b });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1n. Hit test Traghetti da Parada & Stazi Gondole
-    if (showGondolas && gondolas && gondolas.length > 0) {
-      for (const g of gondolas) {
-        const gx = (mx(g.lon) - camera.x0) * camera.s;
-        const gy = (my(g.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - gx, clickY - gy) <= 20) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'gondolaStation', data: g });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1o. Hit test Rive d'Approdo Pubbliche & Merci
-    if (showDocks && docks && docks.length > 0) {
-      for (const d of docks) {
-        const dx = (mx(d.lon) - camera.x0) * camera.s;
-        const dy = (my(d.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - dx, clickY - dy) <= 20) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'publicDock', data: d });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1p. Hit test Subsidenza InSAR (Copernicus EGMS)
-    if (showSubsidence && subsidencePoints && subsidencePoints.length > 0) {
-      for (const sub of subsidencePoints) {
-        const sxPos = (mx(sub.lon) - camera.x0) * camera.s;
-        const syPos = (my(sub.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - sxPos, clickY - syPos) <= 22) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'subsidence', data: sub });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1q. Hit test Morfologia Barene & Velme
-    if (showMorphology && lagoonMorphology && lagoonMorphology.length > 0) {
-      for (const morph of lagoonMorphology) {
-        const cx = (mx(morph.center[0]) - camera.x0) * camera.s;
-        const cy = (my(morph.center[1]) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - cx, clickY - cy) <= 26) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'lagoonMorphology', data: morph });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1r. Hit test Stazioni Vento Meteomarino (Scirocco/Bora)
-    if (showMarineWind && marineWindStations && marineWindStations.length > 0) {
-      for (const w of marineWindStations) {
-        const wx = (mx(w.lon) - camera.x0) * camera.s;
-        const wy = (my(w.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - wx, clickY - wy) <= 24) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'marineWind', data: w });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1s. Hit test Treni Live Ponte Libertà
-    if (showTrains && liveTrains && liveTrains.length > 0) {
-      for (const tr of liveTrains) {
-        const tx = (mx(tr.lon) - camera.x0) * camera.s;
-        const ty = (my(tr.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - tx, clickY - ty) <= 24) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'trainLive', data: tr });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1s2. Hit test Parcheggi Auto Real-time
-    if (showParkings && parkings && parkings.length > 0) {
-      for (const p of parkings) {
-        const px = (mx(p.lon) - camera.x0) * camera.s;
-        const py = (my(p.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - px, clickY - (py - 10)) <= 28) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'parking', data: p });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1t. Hit test Battelli Ecologici Veritas
-    if (showWasteBoats && wasteBoats && wasteBoats.length > 0) {
-      for (const wb of wasteBoats) {
-        const bx = (mx(wb.lon) - camera.x0) * camera.s;
-        const by = (my(wb.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - bx, clickY - by) <= 20) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'wasteBoat', data: wb });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1u. Hit test Nizioleti Tradizionali
-    if (showNizioleti && nizioleti && nizioleti.length > 0) {
-      for (const niz of nizioleti) {
-        const nx = (mx(niz.lon) - camera.x0) * camera.s;
-        const ny = (my(niz.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - nx, clickY - ny) <= 20) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'nizioleto', data: niz });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1v. Hit test Vere da Pozzo Storiche
-    if (showWells && wells && wells.length > 0) {
-      for (const w of wells) {
-        const wx = (mx(w.lon) - camera.x0) * camera.s;
-        const wy = (my(w.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - wx, clickY - wy) <= 20) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'veniceWell', data: w });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1w. Hit test Campanili & Torri Pendenti
-    if (showBellTowers && bellTowers && bellTowers.length > 0) {
-      for (const bt of bellTowers) {
-        const bx = (mx(bt.lon) - camera.x0) * camera.s;
-        const by = (my(bt.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - bx, clickY - by) <= 24) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'bellTower', data: bt });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1x. Hit test Fortezze Lagunari & Isole
-    if (showFortresses && fortressIslands && fortressIslands.length > 0) {
-      for (const fort of fortressIslands) {
-        const fx = (mx(fort.lon) - camera.x0) * camera.s;
-        const fy = (my(fort.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - fx, clickY - fy) <= 26) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'fortressIsland', data: fort });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1y. Hit test Sanità SUEM 118, DAE & Farmacie
-    if (showEmergencyDocks && emergencyDocks && emergencyDocks.length > 0) {
-      for (const ed of emergencyDocks) {
-        const ex = (mx(ed.lon) - camera.x0) * camera.s;
-        const ey = (my(ed.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - ex, clickY - ey) <= 22) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'emergencyDock', data: ed });
-            return;
-          }
-        }
-      }
-    }
-
-    if (showDae && daeList && daeList.length > 0) {
-      for (const dae of daeList) {
-        const dx = (mx(dae.lon) - camera.x0) * camera.s;
-        const dy = (my(dae.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - dx, clickY - dy) <= 20) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'publicDae', data: dae });
-            return;
-          }
-        }
-      }
-    }
-
-    if (showPharmacies && pharmacies && pharmacies.length > 0) {
-      for (const ph of pharmacies) {
-        const px = (mx(ph.lon) - camera.x0) * camera.s;
-        const py = (my(ph.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - px, clickY - py) <= 20) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'pharmacy', data: ph });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1z. Hit test Isole di Calore LST
-    if (showHeatIslands && heatIslands && heatIslands.length > 0) {
-      for (const hi of heatIslands) {
-        const hx = (mx(hi.lon) - camera.x0) * camera.s;
-        const hy = (my(hi.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - hx, clickY - hy) <= 26) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'heatIsland', data: hi });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1ab. Hit test Acque Lagunari ARPAV (Dati Sonda)
-    if (showLagoonWater && lagoonWaterQuality && lagoonWaterQuality.length > 0) {
-      for (const wq of lagoonWaterQuality) {
-        const wx = (mx(wq.lon) - camera.x0) * camera.s;
-        const wy = (my(wq.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - wx, clickY - wy) <= 24) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'lagoonWater', data: wq });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1ac. Hit test Strutture Ricettive & Overtourism
-    if (showAccommodations && touristAccommodations && touristAccommodations.length > 0) {
-      for (const acc of touristAccommodations) {
-        const ax = (mx(acc.lon) - camera.x0) * camera.s;
-        const ay = (my(acc.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - ax, clickY - ay) <= 28) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'accommodation', data: acc });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1ad. Hit test Ciclovia delle Isole di Venezia
-    if (showBikeRoutes && regionalBikeRoutes && regionalBikeRoutes.length > 0) {
-      for (const br of regionalBikeRoutes) {
-        for (const pt of br.path) {
-          const bx = (mx(pt[0]) - camera.x0) * camera.s;
-          const by = (my(pt[1]) - camera.y0) * camera.s;
-          if (Math.hypot(clickX - bx, clickY - by) <= 20) {
-            if (onSelectFeature) {
-              onSelectFeature({ type: 'bikeRoute', data: br });
-              return;
-            }
-          }
-        }
-      }
-    }
-
-    // 1ae. Hit test Monitoraggio Pollini ARPAV
-    if (showPollenStations && pollenMonitoringStations && pollenMonitoringStations.length > 0) {
-      for (const pol of pollenMonitoringStations) {
-        const px = (mx(pol.lon) - camera.x0) * camera.s;
-        const py = (my(pol.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - px, clickY - py) <= 24) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'pollenStation', data: pol });
-            return;
-          }
-        }
-      }
-    }
-
-    // 1af. Hit test Fiumi Scolanti & Bacino Laguna
-    if (showTributaries && lagoonTributaryRivers && lagoonTributaryRivers.length > 0) {
-      for (const riv of lagoonTributaryRivers) {
-        const rx = (mx(riv.lon) - camera.x0) * camera.s;
-        const ry = (my(riv.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - rx, clickY - ry) <= 26) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'tributaryRiver', data: riv });
-            return;
-          }
-        }
-        for (const pt of riv.path) {
-          const px = (mx(pt[0]) - camera.x0) * camera.s;
-          const py = (my(pt[1]) - camera.y0) * camera.s;
-          if (Math.hypot(clickX - px, clickY - py) <= 20) {
-            if (onSelectFeature) {
-              onSelectFeature({ type: 'tributaryRiver', data: riv });
-              return;
-            }
-          }
-        }
-      }
-    }
-
-    // 1aa. Hit test Limiti Velocità Canali
-    if (showCanalLimits && canalSpeedLimits && canalSpeedLimits.length > 0) {
-      for (const sl of canalSpeedLimits) {
-        for (const pt of sl.path) {
-          const px = (mx(pt[0]) - camera.x0) * camera.s;
-          const py = (my(pt[1]) - camera.y0) * camera.s;
-          if (Math.hypot(clickX - px, clickY - py) <= 18) {
-            if (onSelectFeature) {
-              onSelectFeature({ type: 'speedLimit', data: sl });
-              return;
-            }
-          }
-        }
-      }
-    }
-
-    // 1aa. Stazioni qualità dell'aria ARPAV (etichetta disegnata sopra il punto)
-    if (showAirQuality && airStations && airStations.length > 0 && onSelectFeature) {
-      for (const a of airStations) {
-        const ax = (mx(a.lon) - camera.x0) * camera.s;
-        const ay = (my(a.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - ax, clickY - (ay - 8)) <= 18) {
-          onSelectFeature({ type: 'airStation', data: a });
-          return;
-        }
-      }
-    }
-
-    // 1a6. Nautica (gli ormeggi solo quando sono disegnati, cioè da vicino)
-    if (showNautical && onSelectFeature) {
-      for (const p of nauticalPlaces) {
-        if (p.kind === 'mooring' && camera.s <= MOORINGS_MIN_SCALE) continue;
-        const px = (mx(p.lon) - camera.x0) * camera.s;
-        const py = (my(p.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - px, clickY - py) <= (p.kind === 'mooring' ? 7 : 12)) {
-          onSelectFeature({ type: 'nauticalPlace', data: p });
-          return;
-        }
-      }
-    }
-
-    // 1a7. Spazi sportivi (le segnalazioni CAMPO hanno la precedenza perché sono le prime dell'elenco)
-    if (showSports && onSelectFeature) {
-      for (const p of sportPlaces) {
-        if (!matchesSportFilter(p, sportFilter)) continue;
-        const px = (mx(p.lon) - camera.x0) * camera.s;
-        const py = (my(p.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - px, clickY - py) <= 12) {
-          onSelectFeature({ type: 'sportPlace', data: p });
-          return;
-        }
-      }
-    }
-
-    // 1a8. Luoghi con Wi-Fi (OSM)
-    if (showWifiVenues && onSelectFeature) {
-      for (const w of wifiVenues) {
-        const px = (mx(w.lon) - camera.x0) * camera.s;
-        const py = (my(w.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - px, clickY - py) <= 11) {
-          onSelectFeature({ type: 'wifiVenue', data: w });
-          return;
-        }
-      }
-    }
-
-    // 1a9. Gateway LoRaWAN
-    if (showLoraGateways && onSelectFeature) {
-      for (const g of loraGateways) {
-        const px = (mx(g.lon) - camera.x0) * camera.s;
-        const py = (my(g.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - px, clickY - py) <= 16) {
-          onSelectFeature({ type: 'loraGateway', data: g });
-          return;
-        }
-      }
-    }
-
-    // 1aa. Opere in esecuzione (BDAP)
-    if (showBdapWorks && bdapWorks && onSelectFeature) {
-      for (const w of bdapWorks) {
-        if (w.lat === null || w.lon === null) continue;
-        const px = (mx(w.lon) - camera.x0) * camera.s;
-        const py = (my(w.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - px, clickY - py) <= Math.max(12, bdapRadius(w.costPlannedEur) + 3)) {
-          onSelectFeature({ type: 'bdapWork', data: w });
-          return;
-        }
-      }
-    }
-
-    // 1ab0. Ecocentri e biblioteche (OpenStreetMap)
-    if (onSelectFeature) {
-      const civic = [...(showRecyclingCentres ? recyclingCentres : []), ...(showLibraries ? libraries : [])];
-      for (const p of civic) {
-        const px = (mx(p.lon) - camera.x0) * camera.s;
-        const py = (my(p.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - px, clickY - py) <= 14) {
-          onSelectFeature({ type: 'civicPoi', data: p });
-          return;
-        }
-      }
-    }
-
-    // 1ab. Hit test Fontanelle Potabili (City Assets - Fountains)
-    if (showCityAssets && fountains && fountains.length > 0) {
-      for (const f of fountains) {
-        const fx = (mx(f.lon) - camera.x0) * camera.s;
-        const fy = (my(f.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - fx, clickY - fy) <= 16) {
-          if (onSelectFeature) {
-            onSelectFeature({ type: 'fountain', data: f });
-            return;
-          }
-        }
-      }
-    }
-
-    // 2. Hit test Cantieri (Worksites)
-    if (showCantieri) {
-      for (const c of cantieri) {
-        const cx = (mx(c.lon) - camera.x0) * camera.s;
-        const cy = (my(c.lat) - camera.y0) * camera.s;
-        const dist = Math.hypot(clickX - cx, clickY - cy);
-        if (dist <= 18) {
-          onSelectCantiere(c);
-          return;
-        }
-      }
-    }
-
-    // 3. Hit test Stops (Fermate)
-    if (showStops) {
-      for (const s of stops) {
-        const sx = (mx(s.lon) - camera.x0) * camera.s;
-        const sy = (my(s.lat) - camera.y0) * camera.s;
-        const dist = Math.hypot(clickX - sx, clickY - sy);
-        if (dist <= 15) {
-          onSelectStop(s);
-          return;
-        }
-      }
-    }
-
-    // 4. Hit test Moving Vehicles (ACTV)
-    if (showVehicles) {
+    // Mezzi ACTV simulati dall'orario: posizione al secondo corrente lungo il tracciato
+    const scheduledVehicles: Hit = (x, y) => {
       const sim = getSimulation();
       const tripsData = sim?.daysTrips[selectedDay];
-      if (sim && tripsData) {
-        const { tP, t0, t1, count } = tripsData;
-        const t = currentTimeSeconds;
-        const ptNow: [number, number] = [0, 0];
-
-
-        for (let i = 0; i < count; i++) {
-          if (t0[i] > t || t1[i] < t) continue;
-          const prof = sim.profs[tP[i]];
-          const rCat: string = prof.route.cat || 'vaporetto';
-          if (selectedCategory !== 'all' && rCat !== selectedCategory) continue;
-
-          pointAt(prof.sh, distAt(prof, t - t0[i]), ptNow);
-          const vx = (ptNow[0] - camera.x0) * camera.s;
-          const vy = (ptNow[1] - camera.y0) * camera.s;
-
-          if (Math.hypot(clickX - vx, clickY - vy) <= 18) {
-            // Velocità media secondo l'orario negli ultimi 30 s (1 unità di griglia ≈ 1 m)
-            const dtNow = t - t0[i];
-            const spanSec = Math.min(30, Math.max(1, dtNow));
-            const speedKmh = Math.round(((distAt(prof, dtNow) - distAt(prof, dtNow - spanSec)) / spanSec) * 3.6 * 10) / 10;
-            const lineName = prof.route.n || 'ACTV';
-            const longName = `${tr('ui.mapLabels.line', { line: lineName })} · ${tr('ui.map.orarioUfficialeActv')}`;
-            onSelectObject?.({
-              type: 'vehicle',
-              data: {
-                line: lineName,
-                category: rCat.toUpperCase(),
-                speedKmh,
-                color: paletteAt(currentTimeSeconds).cats[rCat] || '#5cc8ff',
-                headsign: longName,
-                source: 'schedule',
-              },
-            });
-            return;
-          }
-        }
-      }
-    }
-
-    // 5. Hit test posizioni reali GTFS-RT
-    if (showRealtimeVehicles && realtimeVehicles.length > 0) {
-      for (const v of realtimeVehicles) {
-        const vx = (mx(v.lon) - camera.x0) * camera.s;
-        const vy = (my(v.lat) - camera.y0) * camera.s;
-        if (Math.hypot(clickX - vx, clickY - vy) <= 14) {
-          const cat = v.category || 'vaporetto';
+      if (!sim || !tripsData) return null;
+      const { tP, t0, t1, count } = tripsData;
+      const t = currentTimeSeconds;
+      const ptNow: [number, number] = [0, 0];
+      for (let i = 0; i < count; i++) {
+        if (t0[i] > t || t1[i] < t) continue;
+        const prof = sim.profs[tP[i]];
+        const rCat: string = prof.route.cat || 'vaporetto';
+        if (selectedCategory !== 'all' && rCat !== selectedCategory) continue;
+        pointAt(prof.sh, distAt(prof, t - t0[i]), ptNow);
+        if (Math.hypot(x - (ptNow[0] - camera.x0) * camera.s, y - (ptNow[1] - camera.y0) * camera.s) > 18) continue;
+        // Velocità media secondo l'orario negli ultimi 30 s (1 unità di griglia ≈ 1 m)
+        const dtNow = t - t0[i];
+        const spanSec = Math.min(30, Math.max(1, dtNow));
+        const speedKmh = Math.round(((distAt(prof, dtNow) - distAt(prof, dtNow - spanSec)) / spanSec) * 3.6 * 10) / 10;
+        const lineName = prof.route.n || 'ACTV';
+        return () =>
           onSelectObject?.({
             type: 'vehicle',
             data: {
-              line: v.line || '?',
-              category: `${cat.toUpperCase()} · GPS`,
-              speedKmh: null,
-              color: paletteAt(currentTimeSeconds).cats[cat] || '#34d399',
-              headsign: v.line ? `${tr('ui.mapLabels.line', { line: v.line })} · ${tr(v.network === 'navigazione' ? 'ui.mapLabels.networkNav' : 'ui.mapLabels.networkBus')}` : tr('ui.mapLabels.unknownLine', { id: v.label || v.id }),
-              source: 'gps',
-              updatedAt: v.timestamp,
-              delay: v.delay ?? null,
+              line: lineName,
+              category: rCat.toUpperCase(),
+              speedKmh,
+              color: paletteAt(currentTimeSeconds).cats[rCat] || '#5cc8ff',
+              headsign: `${tr('ui.mapLabels.line', { line: lineName })} · ${tr('ui.map.orarioUfficialeActv')}`,
+              source: 'schedule',
             },
           });
-          return;
-        }
       }
-    }
+      return null;
+    };
 
     // Briccole e segnalamenti OpenStreetMap: il punto più vicino entro 10 px
-    if (showMarineSignals && lagoonNetwork && onSelectFeature) {
-      let best: { d: number; m: (typeof lagoonNetwork.markers)[number] } | null = null;
-      for (const m of lagoonNetwork.markers) {
-        const d = Math.hypot(clickX - (mx(m[0]) - camera.x0) * camera.s, clickY - (my(m[1]) - camera.y0) * camera.s);
+    const lagoonMarkers: Hit = (x, y) => {
+      if (!D.lagoonNetwork) return null;
+      let best: { d: number; m: LagoonNetwork['markers'][number] } | null = null;
+      for (const m of D.lagoonNetwork.markers) {
+        const [px, py] = screen(m[0], m[1]);
+        const d = Math.hypot(x - px, y - py);
         if (d <= 10 && (!best || d < best.d)) best = { d, m };
       }
-      if (best) {
-        onSelectFeature({ type: 'lagoonMarker', data: { lon: best.m[0], lat: best.m[1], kind: best.m[2], osmId: best.m[3] } });
-        return;
-      }
-    }
+      const m = best?.m;
+      return m ? () => feature('lagoonMarker')({ lon: m[0], lat: m[1], kind: m[2], osmId: m[3] }) : null;
+    };
 
     // Canali OpenStreetMap: il tracciato più vicino entro 8 px
-    if (showCanals && lagoonNetwork && onSelectFeature) {
-      let best: { d: number; c: (typeof lagoonNetwork.canals)[number] } | null = null;
-      for (const c of lagoonNetwork.canals) {
+    const canals: Hit = (x, y) => {
+      if (!D.lagoonNetwork) return null;
+      let best: { d: number; c: LagoonNetwork['canals'][number] } | null = null;
+      for (const c of D.lagoonNetwork.canals) {
         for (let i = 1; i < c.coords.length; i++) {
-          const ax = (mx(c.coords[i - 1][0]) - camera.x0) * camera.s;
-          const ay = (my(c.coords[i - 1][1]) - camera.y0) * camera.s;
-          const bx = (mx(c.coords[i][0]) - camera.x0) * camera.s;
-          const by = (my(c.coords[i][1]) - camera.y0) * camera.s;
-          const d = pointSegmentDistance(clickX, clickY, ax, ay, bx, by);
+          const [ax, ay] = screen(c.coords[i - 1][0], c.coords[i - 1][1]);
+          const [bx, by] = screen(c.coords[i][0], c.coords[i][1]);
+          const d = pointSegmentDistance(x, y, ax, ay, bx, by);
           if (d <= 8 && (!best || d < best.d)) best = { d, c };
         }
       }
-      if (best) {
-        onSelectFeature({ type: 'canal', data: best.c });
-        return;
-      }
-    }
+      const c = best?.c;
+      return c ? () => feature('canal')(c) : null;
+    };
 
-    // Copertura fibra: ultima priorità, si apre la scheda della cella sotto il clic
-    if (showFiber && fiberData && fiberIndex && onSelectFeature) {
-      const lon = LON0 + (clickX / camera.s + camera.x0) / KX;
-      const lat = LAT1 - (clickY / camera.s + camera.y0) / KY;
-      const cell = fiberCellAt(fiberData, fiberIndex, lon, lat);
-      if (cell) {
-        onSelectFeature({ type: 'fiberCell', data: { cell, dataDate: fiberData.dataDate } });
-        return;
-      }
-    }
+    // Copertura fibra: si apre la scheda della cella sotto il clic
+    const fiberCell: Hit = (x, y) => {
+      if (!D.fiberData || !fiberIndex) return null;
+      const lon = LON0 + (x / camera.s + camera.x0) / KX;
+      const lat = LAT1 - (y / camera.s + camera.y0) / KY;
+      const cell = fiberCellAt(D.fiberData, fiberIndex, lon, lat);
+      const dataDate = D.fiberData.dataDate;
+      return cell ? () => feature('fiberCell')({ cell, dataDate }) : null;
+    };
+
+    // Ordine = priorità: oggetti in movimento, poi punti, poi tracciati e aree
+    const action = firstHit(
+      [
+        airport,
+        L.showFlights &&
+          target({
+            items: D.flights.map((f) => ({ f, live: getLiveFlight(f, currentTimeSeconds) })),
+            at: ({ live }) => [live.lon, live.lat],
+            radius: 24,
+            select: ({ f, live }) =>
+              onSelectObject?.({ type: 'flight', data: { ...f, lon: live.lon, lat: live.lat, trackDegrees: live.heading, altitudeMeters: live.alt } }),
+          }),
+        L.showShips && target({ items: D.ships, radius: 18, select: (s) => onSelectObject?.({ type: 'ship', data: s }) }),
+        L.showMose && target({ items: D.moseGates, radius: 30, select: () => onSelectMose?.() }),
+        L.showAlilaguna &&
+          target({ items: getScheduledAlilagunaBoats(currentTimeSeconds), radius: 22, select: (b) => onSelectObject?.({ type: 'alilagunaBoat', data: b }) }),
+        L.showAlilaguna && target({ items: D.alilagunaStops, radius: 18, select: () => onSelectAlilaguna?.() }),
+        L.showCameras && target({ items: D.cameras, radius: (c) => (c.hasLiveFeed ? 22 : 16), select: (c) => onSelectCamera?.(c) }),
+        L.showSatellites &&
+          target({
+            items: D.satellites.map((sat) => ({ sat, live: getLiveSatellite(sat, currentTimeSeconds) })),
+            at: ({ live }) => [live.lon, live.lat],
+            radius: 24,
+            select: ({ sat, live }) => onSelectSatellite?.({ ...sat, currentLon: live.lon, currentLat: live.lat, heading: live.heading }),
+          }),
+        L.showOceanStations && target({ items: D.oceanStations, radius: 24, select: feature('oceanStation') }),
+        L.showMarineSignals && target({ items: D.briccole, radius: 20, select: feature('briccola') }),
+        L.showPasserelle && target({ items: D.passerelle, at: noPoint, path, radius: 18, select: feature('passerella') }),
+        L.showBathingWaters && target({ items: D.bathingWaters, radius: 22, select: feature('bathingWater') }),
+        L.showTrees && target({ items: D.trees, radius: 20, select: feature('urbanTree') }),
+        L.showEvCharging && target({ items: D.evCharging, radius: 20, select: feature('evCharging') }),
+        L.showWifiHotspots && target({ items: D.wifiHotspots, radius: 20, select: feature('wifiHotspot') }),
+        L.showBridges && target({ items: D.bridges, radius: 22, select: feature('bridgeClearance') }),
+        L.showGondolas && target({ items: D.gondolas, radius: 20, select: feature('gondolaStation') }),
+        L.showDocks && target({ items: D.docks, radius: 20, select: feature('publicDock') }),
+        L.showSubsidence && target({ items: D.subsidencePoints, radius: 22, select: feature('subsidence') }),
+        L.showMorphology && target({ items: D.lagoonMorphology, at: (m) => [m.center[0], m.center[1]], radius: 26, select: feature('lagoonMorphology') }),
+        L.showMarineWind && target({ items: D.marineWindStations, radius: 24, select: feature('marineWind') }),
+        L.showTrains && target({ items: D.liveTrains, radius: 24, select: feature('trainLive') }),
+        L.showParkings && target({ items: D.parkings, radius: 28, dy: -10, select: feature('parking') }),
+        L.showWasteBoats && target({ items: D.wasteBoats, radius: 20, select: feature('wasteBoat') }),
+        L.showNizioleti && target({ items: D.nizioleti, radius: 20, select: feature('nizioleto') }),
+        L.showWells && target({ items: D.wells, radius: 20, select: feature('veniceWell') }),
+        L.showBellTowers && target({ items: D.bellTowers, radius: 24, select: feature('bellTower') }),
+        L.showFortresses && target({ items: D.fortressIslands, radius: 26, select: feature('fortressIsland') }),
+        L.showEmergencyDocks && target({ items: D.emergencyDocks, radius: 22, select: feature('emergencyDock') }),
+        L.showDae && target({ items: D.daeList, radius: 20, select: feature('publicDae') }),
+        L.showPharmacies && target({ items: D.pharmacies, radius: 20, select: feature('pharmacy') }),
+        L.showHeatIslands && target({ items: D.heatIslands, radius: 26, select: feature('heatIsland') }),
+        L.showLagoonWater && target({ items: D.lagoonWaterQuality, radius: 24, select: feature('lagoonWater') }),
+        L.showAccommodations && target({ items: D.touristAccommodations, radius: 28, select: feature('accommodation') }),
+        L.showBikeRoutes && target({ items: D.regionalBikeRoutes, at: noPoint, path, radius: 20, select: feature('bikeRoute') }),
+        L.showPollenStations && target({ items: D.pollenMonitoringStations, radius: 24, select: feature('pollenStation') }),
+        // Fiumi: il punto della foce con raggio più ampio, poi i vertici del corso
+        L.showTributaries && target({ items: D.lagoonTributaryRivers, radius: 26, select: feature('tributaryRiver') }),
+        L.showTributaries && target({ items: D.lagoonTributaryRivers, at: noPoint, path, radius: 20, select: feature('tributaryRiver') }),
+        L.showCanalLimits && target({ items: D.canalSpeedLimits, at: noPoint, path, radius: 18, select: feature('speedLimit') }),
+        // Stazioni dell'aria: etichetta disegnata sopra il punto
+        L.showAirQuality && target({ items: D.airStations, radius: 18, dy: -8, select: feature('airStation') }),
+        // Nautica: gli ormeggi solo quando sono disegnati, cioè da vicino
+        L.showNautical &&
+          target({
+            items: camera.s <= MOORINGS_MIN_SCALE ? D.nauticalPlaces.filter((p) => p.kind !== 'mooring') : D.nauticalPlaces,
+            radius: (p) => (p.kind === 'mooring' ? 7 : 12),
+            select: feature('nauticalPlace'),
+          }),
+        // Sport: le segnalazioni CAMPO hanno la precedenza perché sono le prime dell'elenco
+        L.showSports && target({ items: D.sportPlaces.filter((p) => matchesSportFilter(p, sportFilter)), radius: 12, select: feature('sportPlace') }),
+        L.showWifiVenues && target({ items: D.wifiVenues, radius: 11, select: feature('wifiVenue') }),
+        L.showLoraGateways && target({ items: D.loraGateways, radius: 16, select: feature('loraGateway') }),
+        L.showBdapWorks &&
+          target({
+            items: D.bdapWorks ?? [],
+            at: (w) => (w.lat === null || w.lon === null ? null : [w.lon, w.lat]),
+            radius: (w) => Math.max(12, bdapRadius(w.costPlannedEur) + 3),
+            select: feature('bdapWork'),
+          }),
+        L.showRecyclingCentres && target({ items: D.recyclingCentres, radius: 14, select: feature('civicPoi') }),
+        L.showLibraries && target({ items: D.libraries, radius: 14, select: feature('civicPoi') }),
+        L.showCityAssets && target({ items: D.fountains, radius: 16, select: feature('fountain') }),
+        L.showCantieri && target({ items: cantieri, radius: 18, select: onSelectCantiere }),
+        L.showStops && target({ items: D.stops, radius: 15, select: onSelectStop }),
+        L.showVehicles && scheduledVehicles,
+        L.showRealtimeVehicles &&
+          target({
+            items: D.realtimeVehicles,
+            radius: 14,
+            select: (v) => {
+              const cat = v.category || 'vaporetto';
+              onSelectObject?.({
+                type: 'vehicle',
+                data: {
+                  line: v.line || '?',
+                  category: `${cat.toUpperCase()} · GPS`,
+                  speedKmh: null,
+                  color: paletteAt(currentTimeSeconds).cats[cat] || '#34d399',
+                  headsign: v.line
+                    ? `${tr('ui.mapLabels.line', { line: v.line })} · ${tr(v.network === 'navigazione' ? 'ui.mapLabels.networkNav' : 'ui.mapLabels.networkBus')}`
+                    : tr('ui.mapLabels.unknownLine', { id: v.label || v.id }),
+                  source: 'gps',
+                  updatedAt: v.timestamp,
+                  delay: v.delay ?? null,
+                },
+              });
+            },
+          }),
+        L.showMarineSignals && lagoonMarkers,
+        L.showCanals && canals,
+        // Copertura fibra: ultima priorità
+        L.showFiber && fiberCell,
+      ],
+      clickX,
+      clickY,
+    );
 
     // Clic su un punto vuoto: si chiude la scheda aperta
-    onClearSelection?.();
+    if (action) action();
+    else onClearSelection?.();
   };
 
   // Mouse click wrapper
@@ -1557,10 +700,10 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     // (camera, selezioni o dati cambiati) e poi una volta al secondo (palette dinamica);
     // con layer animati a ogni frame.
     const hasAnimatedLayers =
-      showVehicles || showFlights || showAlilaguna || showSatellites ||
-      (showShips && ships.length > 0) ||
-      showCameras || showMarineSignals || showOceanStations || showLagoonWater ||
-      (showMarineWind && windField !== null);
+      layers.showVehicles || layers.showFlights || layers.showAlilaguna || layers.showSatellites ||
+      (layers.showShips && data.ships.length > 0) ||
+      layers.showCameras || layers.showMarineSignals || layers.showOceanStations || layers.showLagoonWater ||
+      (layers.showMarineWind && data.windField !== null);
     let lastDraw = -Infinity;
     // Con layer animati al massimo 30 fotogrammi al secondo: a velocità reale i mezzi si spostano di
     // frazioni di pixel e la differenza non si vede, mentre il consumo di CPU e batteria si dimezza.
@@ -1603,6 +746,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
       // Contesto del frame condiviso dai layer di disegno (components/map/*)
       const rc: RenderContext = {
+        ...layers,
+        ...data,
+        cantieri,
         t: tr,
         ctx,
         cw,
@@ -1624,122 +770,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         selectedShipOnMap,
         selectedAlilagunaBoat,
         selectedSatellite,
-        accessibleBridges,
-        airStations,
-        alilagunaRoutes,
-        alilagunaStops,
-        bathingWaters,
-        bellTowers,
-        briccole,
-        bridges,
         bufferRadiusMeters,
-        cameras,
-        canalSpeedLimits,
-        cantieri,
-        daeList,
-        docks,
-        emergencyDocks,
-        evCharging,
-        flights,
-        fortressIslands,
-        fountains,
-        gondolas,
-        heatIslands,
-        lagoonMorphology,
-        lagoonTributaryRivers,
-        lagoonWaterQuality,
-        liveTrains,
-        marineWindStations,
-        windField,
-        showFiber,
-        fiberData,
-        showRecyclingCentres,
-        recyclingCentres,
-        showLibraries,
-        libraries,
-        showBdapWorks,
-        bdapWorks,
-        showLoraGateways,
-        loraGateways,
-        showWifiVenues,
-        wifiVenues,
-        showSports,
-        sportPlaces,
-        sportFilter,
-        showNautical,
-        nauticalPlaces,
-        showCanals,
-        lagoonNetwork,
-        moseGates,
-        nizioleti,
-        oceanStations,
-        paletteTheme,
-        parkings,
-        passerelle,
-        pedestrianFlows,
-        pharmacies,
-        pollenMonitoringStations,
-        realtimeVehicles,
-        regionalBikeRoutes,
-        satellites,
         selectedCategory,
         selectedDay,
-        ships,
-        showAccommodations,
-        showAirQuality,
-        showAlilaguna,
-        showBathingWaters,
-        showBellTowers,
-        showBikeRoutes,
-        showBridges,
-        showCameras,
-        showCanalLimits,
-        showCantieri,
-        showCityAssets,
-        showDae,
-        showDocks,
-        showEmergencyDocks,
-        showFlights,
-        showFortresses,
-        showGondolas,
-        showHeatIslands,
-        showLagoonWater,
-        showMarineSignals,
-        showMarineWind,
-        showMorphology,
-        showMose,
-        showNizioleti,
-        showOceanStations,
-        showParkings,
-        showPasserelle,
-        showPedestrianFlows,
-        showPharmacies,
-        showPollenStations,
-        showRealtimeVehicles,
-        showRoutes,
-        showSatellites,
-        showEvCharging,
-        showWifiHotspots,
-        showShipRoutes,
-        showShips,
-        showSpatialBuffer,
-        showStops,
-        showSubsidence,
-        showTrains,
-        showTrees,
-        showTributaries,
-        showVehicles,
-        showWasteBoats,
-        showWells,
-        stops,
-        subsidencePoints,
-        tideLevel: (simulatedTideLevel !== undefined && simulatedTideLevel !== null) ? simulatedTideLevel : tideLevel,
-        touristAccommodations,
-        trees,
-        veritasServices,
-        wasteBoats,
-        wells,
-        wifiHotspots
+        paletteTheme,
+        sportFilter,
+        tideLevel: simulatedTideLevel ?? data.tideLevel ?? 0,
       };
 
       // Vento animato sotto tutti gli altri layer, come sfondo
@@ -1753,7 +789,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         drawSpatialBuffer(rc);
 
         // Zone allagate (stima indicativa): con il simulatore attivo o con il layer passerelle acceso
-        if (simulatedTideLevel != null || showPasserelle) unguarded(() => drawFloodLayer(rc, rc.tideLevel));
+        if (simulatedTideLevel != null || layers.showPasserelle) unguarded(() => drawFloodLayer(rc, rc.tideLevel));
 
         drawVehicles(rc);
 
@@ -1856,138 +892,10 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     render();
     return () => cancelAnimationFrame(animId);
   }, [
-    camera,
-    KY,
-    H,
-    selectedDay,
-    paletteTheme,
-    showRoutes,
-    showStops,
-    showVehicles,
-    showCantieri,
-    showSpatialBuffer,
-    showFlights,
-    flights,
-    selectedFlight,
-    showShips,
-    showShipRoutes,
-    ships,
-    selectedShipOnMap,
-    showMose,
-    moseGates,
-    showCityAssets,
-    fountains,
-    accessibleBridges,
-    veritasServices,
-    showParkings,
-    parkings,
-    showAirQuality,
-    airStations,
-    showPedestrianFlows,
-    pedestrianFlows,
-    showAlilaguna,
-    alilagunaRoutes,
-    alilagunaStops,
-    alilagunaBoats,
-    selectedAlilagunaBoat,
-    showCameras,
-    showRealtimeVehicles,
-    realtimeVehicles,
-    cameras,
-    showSatellites,
-    satellites,
-    selectedSatellite,
-    showPasserelle,
-    passerelle,
-    showMarineSignals,
-    briccole,
-    showOceanStations,
-    oceanStations,
-    showBathingWaters,
-    bathingWaters,
-    showTrees,
-    trees,
-    showEvCharging,
-    showWifiHotspots,
-    evCharging,
-    wifiHotspots,
-    bufferRadiusMeters,
-    selectedCategory,
-    cantieri,
-    stops,
-    showCanalLimits,
-    canalSpeedLimits,
-    showBridges,
-    bridges,
-    showGondolas,
-    gondolas,
-    showDocks,
-    docks,
-    showSubsidence,
-    subsidencePoints,
-    showMorphology,
-    lagoonMorphology,
-    showMarineWind,
-    marineWindStations,
-    windField,
-    showFiber,
-    fiberData,
-    showRecyclingCentres,
-    recyclingCentres,
-    showLibraries,
-    libraries,
-    showBdapWorks,
-    bdapWorks,
-    showLoraGateways,
-    loraGateways,
-    showWifiVenues,
-    wifiVenues,
-    showSports,
-    sportPlaces,
-    sportFilter,
-    showNautical,
-    nauticalPlaces,
-    showCanals,
-    lagoonNetwork,
-    showTrains,
-    liveTrains,
-    showWasteBoats,
-    wasteBoats,
-    showNizioleti,
-    nizioleti,
-    showWells,
-    wells,
-    showBellTowers,
-    bellTowers,
-    showFortresses,
-    fortressIslands,
-    showEmergencyDocks,
-    emergencyDocks,
-    showDae,
-    daeList,
-    showPharmacies,
-    pharmacies,
-    showHeatIslands,
-    heatIslands,
-    showLagoonWater,
-    lagoonWaterQuality,
-    showAccommodations,
-    touristAccommodations,
-    showBikeRoutes,
-    regionalBikeRoutes,
-    showPollenStations,
-    pollenMonitoringStations,
-    showTributaries,
-    lagoonTributaryRivers,
-    tideLevel,
-    simulatedTideLevel,
-    is3DView,
-    landHiReady,
-    W,
-    mx,
-    my,
-    tr
-  ]);
+    camera, KY, H, W, mx, my, tr, layers, data, cantieri, selectedDay, paletteTheme, bufferRadiusMeters, selectedCategory,
+    sportFilter, simulatedTideLevel, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
+    alilagunaBoats, is3DView, landHiReady,
+]);
 
   return (
     <div

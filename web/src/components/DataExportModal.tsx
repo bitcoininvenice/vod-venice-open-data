@@ -4,22 +4,8 @@ import React, { useState } from 'react';
 import { Download, X, FileCode, FileSpreadsheet, Check, CheckSquare, Square, ShieldCheck, Copy, FileCheck } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { buildCsv, buildGeoJson, copyToClipboard, downloadBlob, sha256Hex } from '@/lib/dataExport';
-import type {
-  StopItem,
-  PharmacyItem,
-  PublicDaeItem,
-  EmergencyWaterDockItem,
-  CityAssetItem,
-  CantiereItem,
-  VeniceCameraItem,
-  ParkingItem,
-  NizioletoCivicoItem,
-  VeniceWellItem,
-  BellTowerItem,
-  MoseGateItem,
-  OceanStationItem,
-  BriccolaSignalItem
-} from '@/lib/types';
+import { isLocated } from '@/lib/types';
+import type { CityData } from '@/lib/cityData';
 
 interface ExportableLayer {
   id: string;
@@ -31,41 +17,14 @@ interface ExportableLayer {
 interface DataExportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  stops?: StopItem[];
-  pharmacies?: PharmacyItem[];
-  daeList?: PublicDaeItem[];
-  emergencyDocks?: EmergencyWaterDockItem[];
-  fountains?: CityAssetItem[];
-  cantieri?: CantiereItem[];
-  cameras?: VeniceCameraItem[];
-  parkings?: ParkingItem[];
-  nizioleti?: NizioletoCivicoItem[];
-  wells?: VeniceWellItem[];
-  bellTowers?: BellTowerItem[];
-  moseGates?: MoseGateItem[];
-  oceanStations?: OceanStationItem[];
-  briccole?: BriccolaSignalItem[];
+  /** Dati caricati nella mappa: si esportano gli elenchi con almeno un elemento */
+  data: CityData;
 }
 
-export const DataExportModal: React.FC<DataExportModalProps> = ({
-  isOpen,
-  onClose,
-  stops = [],
-  pharmacies = [],
-  daeList = [],
-  emergencyDocks = [],
-  fountains = [],
-  cantieri = [],
-  cameras = [],
-  parkings = [],
-  nizioleti = [],
-  wells = [],
-  bellTowers = [],
-  moseGates = [],
-  oceanStations = [],
-  briccole = []
-}) => {
+export const DataExportModal: React.FC<DataExportModalProps> = ({ isOpen, onClose, data }) => {
   const { t } = useTranslation();
+  const { stops, pharmacies, daeList, emergencyDocks, fountains, cameras, parkings, nizioleti, wells, bellTowers, moseGates, oceanStations, briccole } = data;
+  const cantieri = data.cantieri.filter(isLocated);
 
   const exportableLayers: ExportableLayer[] = [
     { id: 'stops', name: t('ui.exportModal.layer_stops'), count: stops.length, getData: () => stops },
