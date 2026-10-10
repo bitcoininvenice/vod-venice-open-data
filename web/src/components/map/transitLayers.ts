@@ -2,23 +2,47 @@
 import type { RenderContext } from './renderContext';
 import { distAt, getSimulation, pointAt } from '@/lib/simulationModel';
 import { DELAY_COLORS, isFresh } from '@/lib/realtimeDelay';
+import { lineColor, needsDarkOutline } from '@/lib/actvLines';
+import type { SimModel } from '@/lib/simulationCore';
+
+/** Linea e categoria di ogni forma (dalla prima corsa che la usa), calcolate una volta per modello. */
+const shapeRoutes = new WeakMap<SimModel, Map<object, { n: string; cat: string }>>();
+function routeOfShape(sim: SimModel) {
+  let m = shapeRoutes.get(sim);
+  if (!m) {
+    m = new Map();
+    for (const p of sim.profs) if (!m.has(p.sh)) m.set(p.sh, { n: p.route.n, cat: p.route.cat });
+    shapeRoutes.set(sim, m);
+  }
+  return m;
+}
 
 export function drawRoutes(rc: RenderContext): void {
-  const { ctx, cw, pal, sx, sy, camera, W, showRoutes } = rc;
-  // 3. Render ACTV Routes (Shapes)
+  const { ctx, cw, pal, isDark, sx, sy, camera, W, showRoutes } = rc;
+  // 3. Tracciati ACTV: vaporetti nel colore ufficiale della linea, bus e tram nel colore del tipo di mezzo
   const sim = getSimulation();
   if (showRoutes && sim) {
-    ctx.lineWidth = Math.max(1, 1.2 * (camera.s / (cw / W)));
-    ctx.globalAlpha = 0.35;
-
+    const width = Math.max(1, 1.2 * (camera.s / (cw / W)));
+    const routes = routeOfShape(sim);
     for (const shape of sim.shapes) {
+      const r = routes.get(shape);
+      const col = lineColor(r?.n, r?.cat) ?? pal.cats[r?.cat ?? 'vaporetto'] ?? '#5cc8ff';
       const xy = shape.xy;
       ctx.beginPath();
       ctx.moveTo(sx(xy[0]), sy(xy[1]));
       for (let i = 1; i < shape.n; i++) {
         ctx.lineTo(sx(xy[2 * i]), sy(xy[2 * i + 1]));
       }
-      ctx.strokeStyle = pal.cats.vaporetto || '#5cc8ff';
+      // linee chiare (es. la 1, bianca) con un bordo scuro sui temi chiari
+      if (!isDark && needsDarkOutline(col)) {
+        ctx.globalAlpha = 0.35;
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = width + 1.5;
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 0.5;
+      ctx.strokeStyle = col;
+      ctx.lineWidth = width;
       ctx.stroke();
     }
     ctx.globalAlpha = 1.0;
@@ -50,7 +74,7 @@ export function drawSpatialBuffer(rc: RenderContext): void {
 }
 
 export function drawVehicles(rc: RenderContext): void {
-  const { ctx, cw, ch, pal, sx, sy, currentTimeSeconds, selectedDay, paletteTheme, showVehicles, selectedCategory } = rc;
+  const { ctx, cw, ch, pal, isDark, sx, sy, currentTimeSeconds, selectedDay, paletteTheme, showVehicles, selectedCategory } = rc;
   // 5. Render Moving Fleet (Vehicles with directional trails)
   if (showVehicles) {
     const sim = getSimulation();
@@ -81,7 +105,7 @@ export function drawVehicles(rc: RenderContext): void {
 
         if (vx < -50 || vx > cw + 50 || vy < -50 || vy > ch + 50) continue;
 
-        const col = pal.cats[rCat] || '#5cc8ff';
+        const col = lineColor(prof.route.n, rCat) ?? pal.cats[rCat] ?? '#5cc8ff';
 
         // Trail
         pointAt(prof.sh, distAt(prof, Math.max(0, dt - trailSec)), ptTail);
@@ -99,6 +123,11 @@ export function drawVehicles(rc: RenderContext): void {
         ctx.fillStyle = col;
         ctx.globalAlpha = 0.95;
         ctx.fill();
+        if (!isDark && needsDarkOutline(col)) {
+          ctx.strokeStyle = '#334155';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
       }
 
       ctx.globalCompositeOperation = 'source-over';
@@ -117,7 +146,7 @@ export function drawRealtimeVehicles(rc: RenderContext): void {
       const vx = sx(mx(v.lon));
       const vy = sy(my(v.lat));
       if (vx < -20 || vx > cw + 20 || vy < -20 || vy > ch + 20) continue;
-      const col = pal.cats[cat] || '#34d399';
+      const col = lineColor(v.line, cat) ?? pal.cats[cat] ?? '#34d399';
       ctx.save();
       ctx.translate(vx, vy);
       ctx.rotate(Math.PI / 4);

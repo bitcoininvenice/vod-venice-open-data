@@ -6,6 +6,7 @@ import type { AlilagunaBoat, FlightItem, ShipItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { InfoHeader, InfoPanel, KeyValues, MoreDetails } from '@/components/ui/InfoPanel';
 import { DELAY_COLORS, delayMinutes, type VehicleDelay } from '@/lib/realtimeDelay';
+import { lineTextColor } from '@/lib/actvLines';
 
 /** Mezzo ACTV selezionato: posizione simulata dall'orario o reale (GTFS-RT). */
 export interface VehicleSelection {
@@ -164,7 +165,10 @@ export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose,
           category={v.category}
           title={
             <span className="inline-flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-lg text-sm font-mono font-bold text-white" style={{ backgroundColor: v.color }}>
+              <span
+                className="px-2 py-0.5 rounded-lg text-sm font-mono font-bold border border-black/15"
+                style={{ backgroundColor: v.color, color: lineTextColor(v.line, v.color) }}
+              >
                 {t('map.vehicleLine')} {v.line}
               </span>
             </span>

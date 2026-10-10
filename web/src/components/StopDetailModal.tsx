@@ -7,6 +7,7 @@ import { useTranslation } from '@/lib/i18n';
 import { InfoPanel } from '@/components/ui/InfoPanel';
 import { DELAY_COLORS, delayMinutes, type StopArrival } from '@/lib/realtimeDelay';
 import { startPolling } from '@/lib/polling';
+import { lineColor, lineTextColor } from '@/lib/actvLines';
 
 interface StopDetailModalProps {
   stop: StopItem | null;
@@ -75,14 +76,19 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
         <div className="flex flex-col gap-1.5">
           <span className="text-[11px] font-mono uppercase text-[var(--ink-3)]">{t('stopModal.linesServed')}</span>
           <div className="flex flex-wrap gap-1.5">
-            {lines.map((l) => (
-              <span
-                key={l}
-                className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30"
-              >
-                {t('ui.stop.linea')} {l}
-              </span>
-            ))}
+            {lines.map((l) => {
+              // colore ufficiale della linea per le fermate della navigazione
+              const bg = stop.mode === 'navigazione' || stop.mode === 'ferry' ? lineColor(l, 'vaporetto') : null;
+              return (
+                <span
+                  key={l}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold border ${bg ? 'border-black/15' : 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'}`}
+                  style={bg ? { backgroundColor: bg, color: lineTextColor(l, bg) } : undefined}
+                >
+                  {t('ui.stop.linea')} {l}
+                </span>
+              );
+            })}
           </div>
         </div>
         )}

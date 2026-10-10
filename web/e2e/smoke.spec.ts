@@ -362,6 +362,18 @@ test('ritardi ACTV: scheda del mezzo e prossimi arrivi alla fermata', async ({ p
   await expect(info.getByTestId('delay-source')).toContainText('ACTV indica +3 min');
 });
 
+test('colori ufficiali delle linee ACTV nella scheda della fermata', async ({ page }) => {
+  await page.goto('/?layers=fermate');
+  await page.locator('canvas').waitFor();
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder(/cerca fermate/i).fill('Rialto');
+  await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: /^.*rialto/i }).first().click();
+  const info = page.locator('[data-info-panel]');
+  // la linea 2 è rossa (#FF0000 nel GTFS di ACTV)
+  const line2 = info.getByText(/^Linea 2$/).first();
+  await expect(line2).toHaveCSS('background-color', 'rgb(255, 0, 0)');
+});
+
 test('nautica: il clic su una marina apre la sua scheda', async ({ page, isMobile }) => {
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   const RIALTO = { lat: 45.43727, lon: 12.335071 };

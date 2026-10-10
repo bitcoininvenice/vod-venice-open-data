@@ -1,0 +1,98 @@
+{
+ "source": "GTFS ACTV navigazione (routes.txt: route_color, route_text_color)",
+ "license": "Open Data ACTV (CC BY) - fonte: ACTV S.p.A. / AVM S.p.A.",
+ "lines": {
+  "1": {
+   "color": "#FFFFFF",
+   "text": "#000000"
+  },
+  "10": {
+   "color": "#4DC8E9",
+   "text": "#000000"
+  },
+  "11": {
+   "color": "#F7ACBC",
+   "text": "#000000"
+  },
+  "12": {
+   "color": "#DAD635",
+   "text": "#000000"
+  },
+  "13": {
+   "color": "#57419A",
+   "text": "#FFFFFF"
+  },
+  "14": {
+   "color": "#F37736",
+   "text": "#000000"
+  },
+  "15": {
+   "color": "#DD7127",
+   "text": "#D9D535"
+  },
+  "17": {
+   "color": "#82868C",
+   "text": "#FFFFFF"
+  },
+  "2": {
+   "color": "#FF0000",
+   "text": "#FFFFFF"
+  },
+  "2/": {
+   "color": "#FF0000",
+   "text": "#FFFFFF"
+  },
+  "20": {
+   "color": "#C7AAD1",
+   "text": "#000000"
+  },
+  "22": {
+   "color": "#C4C130",
+   "text": "#00646A"
+  },
+  "3": {
+   "color": "#F9A262",
+   "text": "#000000"
+  },
+  "4.1": {
+   "color": "#B43B96",
+   "text": "#FFFFFF"
+  },
+  "4.2": {
+   "color": "#B43B96",
+   "text": "#FFFFFF"
+  },
+  "5.1": {
+   "color": "#8FD2BF",
+   "text": "#000000"
+  },
+  "5.2": {
+   "color": "#8FD2BF",
+   "text": "#000000"
+  },
+  "6": {
+   "color": "#006BB7",
+   "text": "#FFFFFF"
+  },
+  "7": {
+   "color": "#009366",
+   "text": "#FFFFFF"
+  },
+  "9": {
+   "color": "#948F03",
+   "text": "#FFFFFF"
+  },
+  "N": {
+   "color": "#25408D",
+   "text": "#FFFFFF"
+  },
+  "NLN": {
+   "color": "#25408D",
+   "text": "#FFFFFF"
+  },
+  "NMU": {
+   "color": "#25408D",
+   "text": "#FFFFFF"
+  }
+ }
+}

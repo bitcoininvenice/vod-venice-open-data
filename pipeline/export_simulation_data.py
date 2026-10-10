@@ -35,6 +35,7 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 SIM_FILE = os.path.join(BASE_DIR, "..", "web", "src", "lib", "simulation-data.ts")
 PUBLIC_DATA_DIR = os.path.join(BASE_DIR, "..", "web", "public", "data")
 INDEX_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "actv-gtfs-index.json")
+LINE_COLORS_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "actv-line-colors.json")
 STOPS_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "actv-stops.json")
 # Fermate bus mostrate in mappa: solo i nodi principali (troppe fermate renderebbero la mappa illeggibile)
 MIN_BUS_LINES = 15
@@ -461,6 +462,32 @@ def write_map_stops(feeds: list[Feed]) -> None:
     logging.info("Fermate della mappa: %d (%s)", len(stops), {m: sum(1 for s in stops if s["mode"] == m) for m in ("navigazione", "ferry", "tram", "bus")})
 
 
+def line_colors(feeds: list[Feed]) -> dict[str, dict]:
+    """Colori ufficiali delle linee di navigazione (route_color / route_text_color del GTFS ACTV)."""
+    out = {}
+    for feed in feeds:
+        if feed.name != "navigazione":
+            continue
+        for r in feed.routes.values():
+            name, color = r.get("route_short_name"), r.get("route_color")
+            if name and color:
+                text = r.get("route_text_color")
+                out[name] = {"color": f"#{color.upper()}", "text": f"#{text.upper()}" if text else None}
+    return dict(sorted(out.items()))
+
+
+def write_line_colors(feeds: list[Feed]) -> None:
+    out = {
+        "source": "GTFS ACTV navigazione (routes.txt: route_color, route_text_color)",
+        "license": "Open Data ACTV (CC BY) - fonte: ACTV S.p.A. / AVM S.p.A.",
+        "lines": line_colors(feeds),
+    }
+    with open(LINE_COLORS_FILE, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=1)
+        f.write("\n")
+    logging.info("Colori delle linee: %d", len(out["lines"]))
+
+
 def write_stops_only(feeds: list[Feed]) -> None:
     """Aggiorna solo le fermate nell'indice esistente (senza rigenerare la simulazione)."""
     with open(INDEX_FILE, encoding="utf-8") as f:
@@ -470,6 +497,7 @@ def write_stops_only(feeds: list[Feed]) -> None:
         json.dump(idx, f, ensure_ascii=False, separators=(",", ":"))
     logging.info("Fermate GTFS nell'indice: %d", len(idx["stops"]))
     write_map_stops(feeds)
+    write_line_colors(feeds)
 
 
 def write_index(feeds: list[Feed], trip_route: dict[str, str], generated_for: dict[str, date]) -> None:
@@ -500,6 +528,7 @@ def write_index(feeds: list[Feed], trip_route: dict[str, str], generated_for: di
     with open(INDEX_FILE, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
     logging.info("Scritto %s (%d corse indicizzate)", os.path.relpath(INDEX_FILE, BASE_DIR), len(trips))
+    write_line_colors(feeds)
 
 
 def main() -> int:

@@ -25,6 +25,7 @@ import { drawFiber } from './map/fiberLayer';
 import { drawLagoonNetwork } from './map/lagoonNetworkLayer';
 import { withLabelGuard } from './map/labelGuard';
 import { firstHit, hitTester, pointInRing, type Hit } from './map/hitTest';
+import { lineColor } from '@/lib/actvLines';
 import type { CityData } from '@/lib/cityData';
 import type { LayerVisibility } from '@/lib/layerState';
 import { pointSegmentDistance, type LagoonNetwork } from '@/lib/lagoonNetwork';
@@ -512,7 +513,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               line: lineName,
               category: rCat.toUpperCase(),
               speedKmh,
-              color: paletteAt(currentTimeSeconds).cats[rCat] || '#5cc8ff',
+              color: lineColor(lineName, rCat) ?? paletteAt(currentTimeSeconds).cats[rCat] ?? '#5cc8ff',
               headsign: `${tr('ui.mapLabels.line', { line: lineName })} · ${tr('ui.map.orarioUfficialeActv')}`,
               source: 'schedule',
             },
@@ -670,7 +671,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
                   line: v.line || '?',
                   category: `${cat.toUpperCase()} · GPS`,
                   speedKmh: null,
-                  color: paletteAt(currentTimeSeconds).cats[cat] || '#34d399',
+                  color: lineColor(v.line, cat) ?? paletteAt(currentTimeSeconds).cats[cat] ?? '#34d399',
                   headsign: v.line
                     ? `${tr('ui.mapLabels.line', { line: v.line })} · ${tr(v.network === 'navigazione' ? 'ui.mapLabels.networkNav' : 'ui.mapLabels.networkBus')}`
                     : tr('ui.mapLabels.unknownLine', { id: v.label || v.id }),

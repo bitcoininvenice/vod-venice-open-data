@@ -574,3 +574,13 @@ def test_censimento_aggregazione_per_zona_e_indicatori():
     assert out["historicCentre"]["population"] == 150
     assert out["unassignedInsular"]["population"] == 0
     assert out["municipalities"][0]["population"] == 150 and out["municipalities"][3]["population"] == 1000
+
+
+def test_colori_ufficiali_delle_linee_di_navigazione():
+    from types import SimpleNamespace
+    nav = SimpleNamespace(name="navigazione", routes={
+        "2_UN": {"route_short_name": "2", "route_color": "ff0000", "route_text_color": "FFFFFF"},
+        "SA_UN": {"route_short_name": "SA", "route_color": ""},
+    })
+    bus = SimpleNamespace(name="automobilistico", routes={"2_UM": {"route_short_name": "2", "route_color": "E31E24"}})
+    assert sim.line_colors([nav, bus]) == {"2": {"color": "#FF0000", "text": "#FFFFFF"}}
