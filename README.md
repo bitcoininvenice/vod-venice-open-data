@@ -54,6 +54,7 @@ vod-venice-open-data/
 │   ├── import_osm_poi.py           # Colonnine, parcheggi, vere da pozzo, alberi monumentali, ecocentri, biblioteche (OSM)
 │   ├── import_alilaguna_gtfs.py    # Orario ufficiale Alilaguna (GTFS dell'operatore)
 │   ├── import_osm_waterways.py     # Briccole, segnalamenti e canali della laguna (OSM)
+│   ├── import_osm_parks.py         # Parchi, giardini pubblici, aree giochi, aree cani e oasi con perimetro (OSM)
 │   ├── import_arpav_pollen.py      # Pollini misurati da ARPAV a Venezia (calendario mensile)
 │   ├── import_cruscotto_italia.py  # Profilo socio-economico dei comuni della laguna (Cruscotto Italia, AgID)
 │   ├── import_arpav_lagoon.py      # Sonde ARPAV della laguna (ultimo campionamento) e riepilogo balneazione
@@ -145,6 +146,7 @@ python import_osm_poi.py                    # Colonnine, parcheggi ≥100 posti,
 python import_alilaguna_gtfs.py             # Orario Alilaguna (simulazione delle barche dall'orario)
 python import_agcom_fiber.py                # Copertura fibra AGCOM su celle di ~100 m
 python import_osm_waterways.py              # Briccole, segnalamenti e canali della laguna (OSM)
+python import_osm_parks.py                  # Parchi, giardini pubblici, aree giochi, aree cani e oasi (OSM)
 python import_arpav_pollen.py               # Pollini misurati ARPAV a Venezia
 python import_cruscotto_italia.py           # Profilo dei comuni da Cruscotto Italia (MCP AgID, CC BY 4.0)
 python import_arpav_lagoon.py               # Sonde ARPAV della laguna e balneazione (anche --probe-file/--year/--bathing-file per file locali)
@@ -237,6 +239,7 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/satellites` | Satelliti con orbite SGP4 da TLE CelesTrak e prossimo passaggio sopra Venezia. |
 | `GET` | `/api/cantieri` | Opere pubbliche dell'Elenco Annuale dei Lavori 2026 (posizioni approssimate); il campo `bdap` aggiunge, per CUP, fase reale, date, costi e finanziamenti dal Monitoraggio Opere Pubbliche. |
 | `GET` | `/api/city-assets` | Fontanelle, parcheggi, ecocentri, biblioteche e luoghi con Wi-Fi (`wifiVenues`: hotel, bar, biblioteche con tipo di accesso) da OpenStreetMap (ODbL). |
+| `GET` | `/api/parks` | Parchi, giardini pubblici, aree giochi, aree cani e oasi con perimetro, accesso e superficie da OpenStreetMap (ODbL); il Comune non pubblica un dataset aperto del verde. |
 | `GET` | `/api/nautical` | Marine, carburante per barche, scivoli, cantieri, noleggi e ormeggi da OpenStreetMap (ODbL); non le concessioni comunali, non pubblicate come open data. |
 | `GET` | `/api/sports` | Spazi sportivi: segnalazioni della comunità CAMPO (CC BY 4.0, indirizzo in `web/src/server/sources/campo.ts`, riletta ogni ora) unite agli impianti OpenStreetMap; CAMPO prevale entro 60 m. |
 | `GET` | `/api/lora-gateways` | Gateway LoRaWAN online della rete comunitaria The Things Network nell'area della mappa (Packet Broker Mapper, cache 10 min): posizione come pubblicata dal proprietario, nessun identificativo né nome. |

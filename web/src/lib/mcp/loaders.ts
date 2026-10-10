@@ -21,6 +21,7 @@ import { GET as bdapGET } from '@/app/api/opere-bdap/route';
 import { GET as loraGET } from '@/app/api/lora-gateways/route';
 import { GET as sportsGET } from '@/app/api/sports/route';
 import { GET as nauticalGET } from '@/app/api/nautical/route';
+import { GET as parksGET } from '@/app/api/parks/route';
 import { GET as healthGET } from '@/app/api/health/route';
 import tourism from '@/data/turismo-comuni.json';
 import cruscotto from '@/data/cruscotto-comuni.json';
@@ -168,6 +169,11 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   nautical: async () => {
     const j = await read(nauticalGET());
     return { items: asRows(j.data), meta: j.meta as Row };
+  },
+  parks: async () => {
+    const j = await read(parksGET());
+    // I perimetri restano fuori: per le domande bastano nome, tipo, superficie e posizione del centro
+    return { items: asRows(j.data).map((row) => Object.fromEntries(Object.entries(row).filter(([k]) => k !== 'rings'))), meta: j.meta as Row };
   },
   sports: async () => {
     const j = await read(sportsGET());

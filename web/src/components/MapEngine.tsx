@@ -17,14 +17,14 @@ import type { RenderContext } from './map/renderContext';
 import { drawRoutes, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, drawMarineSignals, drawOceanStations, drawCanalLimits, drawBridges, drawGondolas, drawDocks, drawMarineWind } from './map/lagoonLayers';
-import { bdapRadius, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
+import { bdapRadius, drawParks, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 import { drawFloodLayer } from './map/floodLayer';
 import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
 import { drawFiber } from './map/fiberLayer';
 import { drawLagoonNetwork } from './map/lagoonNetworkLayer';
 import { withLabelGuard } from './map/labelGuard';
-import { firstHit, hitTester, type Hit } from './map/hitTest';
+import { firstHit, hitTester, pointInRing, type Hit } from './map/hitTest';
 import type { CityData } from '@/lib/cityData';
 import type { LayerVisibility } from '@/lib/layerState';
 import { pointSegmentDistance, type LagoonNetwork } from '@/lib/lagoonNetwork';
@@ -550,6 +550,21 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       return c ? () => feature('canal')(c) : null;
     };
 
+    // Parchi e giardini: l'area sotto il clic (prima le più piccole, disegnate sopra), oppure il punto entro 10 px
+    const parks: Hit = (x, y) => {
+      const lon = LON0 + (x / camera.s + camera.x0) / KX;
+      const lat = LAT1 - (y / camera.s + camera.y0) / KY;
+      for (let i = D.parkPlaces.length - 1; i >= 0; i--) {
+        const p = D.parkPlaces[i];
+        const hit =
+          p.rings.length > 0
+            ? p.rings.some((r) => pointInRing(lon, lat, r))
+            : Math.hypot(x - screen(p.lon, p.lat)[0], y - screen(p.lon, p.lat)[1]) <= 10;
+        if (hit) return () => feature('parkPlace')(p);
+      }
+      return null;
+    };
+
     // Copertura fibra: si apre la scheda della cella sotto il clic
     const fiberCell: Hit = (x, y) => {
       if (!D.fiberData || !fiberIndex) return null;
@@ -668,6 +683,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           }),
         L.showMarineSignals && lagoonMarkers,
         L.showCanals && canals,
+        // Aree verdi: dopo punti e linee, perché coprono superfici ampie
+        L.showParks && parks,
         // Copertura fibra: ultima priorità
         L.showFiber && fiberCell,
       ],
@@ -783,6 +800,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       drawFiber(rc);
       // Etichette diradate: niente sovrapposizioni e un massimo per frame (vince chi è disegnato prima)
       withLabelGuard(ctx, (unguarded) => {
+        // Aree verdi per prime: sotto canali, linee e simboli
+        drawParks(rc);
         drawLagoonNetwork(rc);
         drawRoutes(rc);
 

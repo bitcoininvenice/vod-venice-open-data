@@ -176,7 +176,10 @@ export const LAYER_GROUPS: LayerGroup[] = [
       },
       {
         id: 'sportLeisure', label: 'ui.layerPanel.subSport', icon: 'dumbbell', tone: 'orange',
-        layers: [e('showSports', 'ui.layerPanel.sports', 'dumbbell', 'orange')],
+        layers: [
+          e('showSports', 'ui.layerPanel.sports', 'dumbbell', 'orange'),
+          e('showParks', 'ui.layerPanel.parks', 'trees', 'green'),
+        ],
       },
       {
         id: 'heritage', label: 'layers.subHeritage', icon: 'landmark', tone: 'amber',

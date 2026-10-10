@@ -448,3 +448,50 @@ def test_osm_nautica():
     assert osm_poi.mooring_access(None) is None
     item = osm_poi.nautical({"type": "way", "id": 5}, {"mooring": "guest", "name": "Riva X"}, 45.43, 12.33, "mooring")
     assert item["access"] == "guest" and item["kind"] == "mooring" and item["name"] == "Riva X"
+
+
+# --- Parchi e giardini (OSM) ---
+
+import import_osm_parks as parks  # noqa: E402
+
+
+def test_parchi_esclude_privati_e_giardini_domestici():
+    assert parks.keep({"leisure": "park"})
+    assert not parks.keep({"leisure": "park", "access": "private"})
+    assert parks.keep({"leisure": "playground", "access": "customers"})
+    # giardini: solo se aperti, di tipo pubblico o con un nome e non domestici
+    assert not parks.keep({"leisure": "garden"})
+    assert not parks.keep({"leisure": "garden", "name": "Orto di casa", "garden:type": "vegetable_garden"})
+    assert parks.keep({"leisure": "garden", "garden:type": "botanical"})
+    assert parks.keep({"leisure": "garden", "access": "yes"})
+    assert parks.keep({"leisure": "garden", "name": "Giardini Papadopoli"})
+    assert parks.access_of({"access": "permissive"}) == "public"
+    assert parks.access_of({}) == "unknown"
+
+
+def test_parchi_multipoligono_ricomposto():
+    # due tratti, il secondo invertito, formano un quadrato chiuso
+    a = [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0]]
+    b = [[0.0, 0.0], [0.0, 1.0], [1.0, 1.0]]
+    rings = parks.stitch([a, b])
+    assert len(rings) == 1 and rings[0][0] == rings[0][-1] and len(rings[0]) == 5
+
+
+def test_parchi_area_e_baricentro():
+    # quadrato di 0.001° a Venezia: circa 78 m x 111 m
+    ring = [[12.33, 45.43], [12.331, 45.43], [12.331, 45.431], [12.33, 45.431], [12.33, 45.43]]
+    assert 8000 < parks.ring_area_m2(ring) < 9000
+    cx, cy = parks.centroid(ring)
+    assert abs(cx - 12.3305) < 1e-6 and abs(cy - 45.4305) < 1e-6
+
+
+def test_parchi_ordinati_dal_piu_grande_e_punti_senza_perimetro():
+    small = {"type": "way", "id": 1, "tags": {"leisure": "park", "name": "Piccolo"},
+             "geometry": [{"lon": x, "lat": y} for x, y in [[12.33, 45.43], [12.3301, 45.43], [12.3301, 45.4301], [12.33, 45.43]]]}
+    big = {"type": "way", "id": 2, "tags": {"leisure": "park"},
+           "geometry": [{"lon": x, "lat": y} for x, y in [[12.33, 45.43], [12.34, 45.43], [12.34, 45.44], [12.33, 45.43]]]}
+    node = {"type": "node", "id": 3, "lon": 12.3, "lat": 45.4, "tags": {"leisure": "playground"}}
+    out = parks.build({"elements": [small, node, big]})
+    assert [p["id"] for p in out][:2] == ["osm-way-2", "osm-way-1"]
+    pt = next(p for p in out if p["id"] == "osm-node-3")
+    assert pt["rings"] == [] and pt["areaM2"] is None

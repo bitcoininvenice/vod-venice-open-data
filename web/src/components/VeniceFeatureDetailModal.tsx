@@ -73,7 +73,8 @@ import { useTranslation } from '@/lib/i18n';
 import { InfoClose, InfoPanel, KeyValues } from '@/components/ui/InfoPanel';
 import { BdapWorkDetails } from '@/components/BdapWorkDetails';
 import type { BdapProject } from '@/lib/bdap';
-import type { LoraGateway, NauticalPlace, SportPlace, WifiVenue } from '@/lib/types';
+import type { LoraGateway, NauticalPlace, ParkPlace, SportPlace, WifiVenue } from '@/lib/types';
+import { PARK_COLORS } from '@/lib/parks';
 import { sportColor } from '@/lib/sports';
 import { CAMPO_LICENSE_PAGE } from '@/server/sources/campo';
 import type { LayerKey } from '@/lib/urlLayers';
@@ -119,7 +120,8 @@ export type VeniceFeatureSelected =
   | { type: 'loraGateway'; data: LoraGateway }
   | { type: 'wifiVenue'; data: WifiVenue }
   | { type: 'sportPlace'; data: SportPlace }
-  | { type: 'nauticalPlace'; data: NauticalPlace };
+  | { type: 'nauticalPlace'; data: NauticalPlace }
+  | { type: 'parkPlace'; data: ParkPlace };
 
 interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
@@ -249,12 +251,16 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {feature.type === 'wifiVenue' && <WifiVenueBody venue={feature.data} />}
           {feature.type === 'sportPlace' && <SportPlaceBody place={feature.data} />}
           {feature.type === 'nauticalPlace' && <NauticalBody place={feature.data} />}
+          {feature.type === 'parkPlace' && <ParkBody place={feature.data} />}
 
           {feature.type === 'bdapWork' && (
               <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400"><Construction className="w-5 h-5" /></div>
             )}
             {feature.type === 'nauticalPlace' && (
               <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400"><Anchor className="w-5 h-5" /></div>
+            )}
+            {feature.type === 'parkPlace' && (
+              <div className="p-2 rounded-xl text-white" style={{ background: PARK_COLORS[feature.data.kind] }}><Trees className="w-5 h-5" /></div>
             )}
             {feature.type === 'sportPlace' && (
               <div className="p-2 rounded-xl text-white" style={{ background: sportColor(feature.data) }}><Dumbbell className="w-5 h-5" /></div>
@@ -314,6 +320,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'wifiVenue' && (feature.data.name ?? t(`ui.wifiVenue.kind_${feature.data.kind}`))}
                 {feature.type === 'sportPlace' && (feature.data.name ?? t(`ui.sport.kind_${feature.data.kind}`))}
                 {feature.type === 'nauticalPlace' && (feature.data.name ?? t(`ui.nautical.kind_${feature.data.kind}`))}
+                {feature.type === 'parkPlace' && (feature.data.name ?? t(`ui.park.kind_${feature.data.kind}`))}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
                 {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
@@ -340,6 +347,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'wifiVenue' && `${t(`ui.wifiVenue.kind_${feature.data.kind}`)} · ${feature.data.zone}`}
                 {feature.type === 'sportPlace' && [sportNames(feature.data.sports, t), feature.data.area].filter(Boolean).join(' · ')}
                 {feature.type === 'nauticalPlace' && `${t(`ui.nautical.kind_${feature.data.kind}`)} · ${feature.data.zone}`}
+                {feature.type === 'parkPlace' && (feature.data.name ? t(`ui.park.kind_${feature.data.kind}`) : t('ui.park.unnamed'))}
               </span>
             </div>
           </div>
@@ -1301,7 +1309,7 @@ const FEATURE_LAYER: Record<Exclude<VeniceFeatureSelected['type'], 'civicPoi'>, 
   pharmacy: 'showPharmacies', heatIsland: 'showHeatIslands', lagoonWater: 'showLagoonWater',
   accommodation: 'showAccommodations', bikeRoute: 'showBikeRoutes', pollenStation: 'showPollenStations',
   tributaryRiver: 'showTributaries', parking: 'showParkings', fountain: 'showCityAssets', fiberCell: 'showFiber',
-  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks', loraGateway: 'showLoraGateways', wifiVenue: 'showWifiVenues', sportPlace: 'showSports', nauticalPlace: 'showNautical',
+  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks', loraGateway: 'showLoraGateways', wifiVenue: 'showWifiVenues', sportPlace: 'showSports', nauticalPlace: 'showNautical', parkPlace: 'showParks',
 };
 
 function featureLayer(feature: VeniceFeatureSelected): LayerKey {
@@ -1317,7 +1325,7 @@ const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
 ]);
 
 /** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
-const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace']);
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace', 'parkPlace']);
 
 /** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
 const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {
@@ -1636,6 +1644,48 @@ const NauticalBody: React.FC<{ place: NauticalPlace }> = ({ place: p }) => {
       )}
       <p className="text-[11px] text-[var(--ink-3)]">{n('note')}</p>
       <a href={p.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2">
+        © OpenStreetMap contributors (ODbL)
+      </a>
+    </div>
+  );
+};
+
+/** Valori sì/no/in parte di OSM tradotti; altri valori mostrati così come sono. */
+function osmYesNo(value: string | null, t: (k: string) => string): string | null {
+  if (!value) return null;
+  const v = value.toLowerCase();
+  if (v === 'yes' || v === 'designated') return t('ui.park.yes');
+  if (v === 'no') return t('ui.park.no');
+  if (v === 'limited') return t('ui.park.limited');
+  if (v === 'leashed') return t('ui.park.leashed');
+  return value;
+}
+
+const ParkBody: React.FC<{ place: ParkPlace }> = ({ place: p }) => {
+  const { t, language } = useTranslation();
+  const k = (key: string, params?: Record<string, string | number>) => t(`ui.park.${key}`, params);
+  const fmt = (n: number, digits = 0) => n.toLocaleString(language === 'it' ? 'it-IT' : 'en-GB', { maximumFractionDigits: digits });
+  const area = p.areaM2 === null ? null : p.areaM2 >= 10_000 ? k('areaHa', { n: fmt(p.areaM2 / 10_000, 1) }) : k('areaM2', { n: fmt(p.areaM2) });
+  return (
+    <div className="flex flex-col gap-3">
+      <KeyValues
+        items={[
+          [k('access'), k(`access_${p.access}`), p.access === 'public' ? 'text-emerald-400' : p.access === 'customers' ? 'text-amber-400' : undefined],
+          [k('area'), area],
+          [k('hours'), p.openingHours],
+          [k('operator'), p.operator],
+          [k('wheelchair'), osmYesNo(p.wheelchair, t)],
+          [k('dogs'), osmYesNo(p.dog, t)],
+          [k('lit'), osmYesNo(p.lit, t)],
+        ]}
+      />
+      {p.website && (
+        <a href={p.website} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline break-all">
+          {p.website}
+        </a>
+      )}
+      <p className="text-[11px] text-[var(--ink-3)]">{k('note')}</p>
+      <a href={p.osmUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2">
         © OpenStreetMap contributors (ODbL)
       </a>
     </div>

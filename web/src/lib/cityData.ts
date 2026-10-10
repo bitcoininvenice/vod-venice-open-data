@@ -10,7 +10,7 @@ import type {
   BriccolaSignalItem, BridgeClearanceItem, CanalSpeedLimitItem, CantiereItem, CityAssetItem, CivicPoiItem,
   EmergencyWaterDockItem, EvChargingItem, FlightItem, GondolaStationItem, HeatIslandSurfaceTempItem,
   LagoonFortressIslandItem, LagoonMorphologyItem, LagoonTributaryRiverItem, LagoonWaterQualityItem, LoraGateway,
-  MeteoMarineWindItem, MoseGateItem, NauticalPlace, NizioletoCivicoItem, OceanStationItem, ParkingItem,
+  MeteoMarineWindItem, MoseGateItem, NauticalPlace, ParkPlace, NizioletoCivicoItem, OceanStationItem, ParkingItem,
   PasserellaItem, PedestrianFlowItem, PharmacyItem, PollenMonitoringStationItem, PublicDaeItem, PublicDockItem,
   RegionalBikeRouteItem, SatelliteItem, ShipItem, SportPlace, StopItem, SubsidenceInSARItem,
   TouristAccommodationItem, TrainLiveItem, UrbanTreeItem, VeniceCameraItem, VeniceWellItem,
@@ -101,6 +101,7 @@ export interface CityData {
   cameras: VeniceCameraItem[];
   pedestrianFlows: PedestrianFlowItem[];
   sportPlaces: SportPlace[];
+  parkPlaces: ParkPlace[];
   pharmacies: PharmacyItem[];
   daeList: PublicDaeItem[];
   emergencyDocks: EmergencyWaterDockItem[];
@@ -165,6 +166,7 @@ export const INITIAL_CITY_DATA: CityData = {
   cameras: VENICE_CAMERAS,
   pedestrianFlows: [],
   sportPlaces: [],
+  parkPlaces: [],
   pharmacies: OPEN_PHARMACIES,
   daeList: OPEN_PUBLIC_DAE,
   emergencyDocks: OPEN_EMERGENCY_WATER_DOCKS,
@@ -231,6 +233,7 @@ export const RESOURCES = {
   fiber: { url: '/api/fiber', pick: (j) => (j.success && j.data ? { fiberData: j.data as FiberDataset } : undefined) },
   nautical: { url: '/api/nautical', pick: (j) => ({ nauticalPlaces: list(j.data) }) },
   sports: { url: '/api/sports', pick: (j) => ({ sportPlaces: list(j.data) }) },
+  parks: { url: '/api/parks', pick: (j) => (j.success ? { parkPlaces: list(j.data) } : undefined) },
   loraGateways: { url: '/api/lora-gateways', pick: (j) => ({ loraGateways: list(j.data) }) },
   cantieri: { url: '/api/cantieri', pick: (j) => (j.success ? { cantieri: nonEmpty(j.data) } : undefined) },
   stops: { url: '/api/stops', pick: (j) => (j.success ? { stops: nonEmpty(j.data) } : undefined) },
@@ -375,6 +378,7 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
     fiber: l.showFiber,
     nautical: l.showNautical,
     sports: l.showSports,
+    parks: l.showParks,
     loraGateways: l.showLoraGateways,
     cantieri: l.showCantieri || l.showSpatialBuffer || ui.lists,
     stops: l.showStops || ui.lists,
@@ -421,6 +425,7 @@ export function layerCounts(d: CityData, extra: { scheduledVehicles: number; ali
     showLoraGateways: d.loraGateways.length,
     showWifiVenues: d.wifiVenues.length,
     showSports: d.sportPlaces.length,
+    showParks: d.parkPlaces.length,
     showNautical: d.nauticalPlaces.length,
     showCanals: d.lagoonNetwork?.canals.length ?? 0,
     showWifiHotspots: d.wifiHotspots.length,

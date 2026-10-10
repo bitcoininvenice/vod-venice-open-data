@@ -531,6 +531,22 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     endpointOrFile: '/api/sports'
   },
   {
+    id: 'parchi_giardini',
+    nameIt: 'Parchi, giardini e aree giochi (OpenStreetMap)',
+    nameEn: 'Parks, gardens and playgrounds (OpenStreetMap)',
+    group: 'city',
+    regime: 'static',
+    acquisition: 'local',
+    institution: 'OpenStreetMap contributors (ODbL)',
+    portalUrl: 'https://www.openstreetmap.org',
+    portalName: 'openstreetmap.org (leisure=park, garden, playground, dog_park, nature_reserve)',
+    descriptionIt: 'Parchi, giardini pubblici, aree giochi, aree cani e oasi naturalistiche con il loro perimetro, l\'accesso dichiarato, la superficie e, dove indicati, orari, gestore e accessibilità.',
+    descriptionEn: 'Parks, public gardens, playgrounds, dog parks and nature reserves with their outline, declared access, area and, where stated, opening hours, operator and accessibility.',
+    technicalNotesIt: 'Import settimanale con pipeline/import_osm_parks.py (ODbL): perimetri semplificati a 1,5 m, multipoligoni ricomposti. Il Comune di Venezia non pubblica un dataset aperto del verde pubblico. Esclusi i luoghi con accesso privato e i giardini privati o domestici (residenziali, orti, aiuole): un giardino resta solo se OSM lo dichiara aperto o pubblico, botanico o comunitario, oppure se ha un nome e non è dichiarato privato. Orari e servizi non verificati.',
+    technicalNotesEn: 'Weekly import with pipeline/import_osm_parks.py (ODbL): outlines simplified to 1.5 m, multipolygons reassembled. The City of Venice does not publish an open dataset of public green areas. Places with private access and private or domestic gardens (residential, allotments, flower beds) are excluded: a garden is kept only if OSM marks it open or public, botanical or community, or if it has a name and is not marked private. Opening hours and facilities are not verified.',
+    endpointOrFile: '/api/parks (src/data/osm-parks.json)'
+  },
+  {
     id: 'wifi_locali',
     nameIt: 'Wi-Fi in hotel, bar e luoghi pubblici (OpenStreetMap)',
     nameEn: 'Wi-Fi in hotels, bars and public places (OpenStreetMap)',

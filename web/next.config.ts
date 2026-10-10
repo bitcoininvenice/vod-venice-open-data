@@ -46,7 +46,7 @@ const nextConfig: NextConfig = {
       { source: "/:path*", headers: securityHeaders },
       // Dataset aggiornati dalle pipeline (al più una volta al giorno)
       browserCache(
-        "cantieri|stops|city-assets|venice-assets|cameras|heritage|emergency-health|waterways|lagoon-morphology|rail-logistics|pedestrian-flows|urban-microclimate|passerelle|fiber|lagoon-network|opere-bdap|nautical",
+        "cantieri|stops|city-assets|venice-assets|cameras|heritage|emergency-health|waterways|lagoon-morphology|rail-logistics|pedestrian-flows|urban-microclimate|passerelle|fiber|lagoon-network|opere-bdap|nautical|parks",
         3600,
         86400,
       ),

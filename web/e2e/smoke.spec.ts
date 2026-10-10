@@ -388,6 +388,41 @@ test('nautica: il clic su una marina apre la sua scheda', async ({ page, isMobil
   await expect(info).toContainText('OpenStreetMap');
 });
 
+test('parchi: il clic dentro l\'area di un parco apre la sua scheda', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  const RIALTO = { lat: 45.43727, lon: 12.335071 };
+  const d = 0.0015;
+  const ring = [
+    [RIALTO.lon - d, RIALTO.lat - d], [RIALTO.lon + d, RIALTO.lat - d], [RIALTO.lon + d, RIALTO.lat + d],
+    [RIALTO.lon - d, RIALTO.lat + d], [RIALTO.lon - d, RIALTO.lat - d],
+  ];
+  await page.route('**/api/parks', (route) =>
+    route.fulfill({
+      json: {
+        success: true, count: 1, meta: {},
+        data: [{ id: 'osm-way-1', osmUrl: 'https://www.openstreetmap.org/way/1', name: 'Parco di prova', kind: 'park', access: 'public', areaM2: 77000, ...RIALTO, rings: [ring], openingHours: 'Mo-Su 08:00-20:00', operator: null, wheelchair: 'yes', dog: 'leashed', lit: null, website: null }],
+      },
+    })
+  );
+  await page.goto('/?layers=parchi_giardini');
+  await page.locator('canvas').waitFor();
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder(/cerca fermate/i).fill('Rialto');
+  await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: /rialto/i }).first().click();
+  await page.keyboard.press('Escape');
+  const panel = page.locator('aside').filter({ visible: true }).first();
+  await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('fermate');
+  await panel.locator('[data-layer="showStops"]').click();
+  const box = (await page.locator('canvas').boundingBox())!;
+  // un punto dentro il poligono ma lontano dal centro: il clic usa l'area, non un raggio attorno al punto
+  await page.mouse.click(box.x + box.width / 2 + 12, box.y + box.height / 2 - 12);
+  const info = page.locator('[data-info-panel]');
+  await expect(info).toContainText('Parco di prova');
+  await expect(info).toContainText('7,7 ettari');
+  await expect(info).toContainText('al guinzaglio');
+  await expect(info).toContainText('OpenStreetMap');
+});
+
 test('la scheda informativa non copre il pannello livelli e non blocca la mappa', async ({ page, isMobile }) => {
   test.skip(isMobile, 'su mobile la scheda è un cassetto dal basso');
   await page.goto('/');
@@ -624,6 +659,20 @@ test.describe('API', () => {
     expect([200, 503]).toContain(res.status());
     expect(body.data.moseGates).toHaveLength(4);
     expect(body.meta.levels.kind).toBe('live');
+  });
+
+  test('parks: parchi e giardini OSM con perimetro, accesso dichiarato e niente luoghi privati', async ({ request }) => {
+    const body = await (await request.get('/api/parks')).json();
+    expect(body.success).toBe(true);
+    expect(body.count).toBeGreaterThan(400);
+    expect(body.meta.attribution).toMatch(/OpenStreetMap/);
+    const kinds = new Set(body.data.map((p: { kind: string }) => p.kind));
+    for (const k of ['park', 'playground', 'garden']) expect(kinds.has(k)).toBe(true);
+    for (const p of body.data) {
+      expect(['public', 'customers', 'unknown']).toContain(p.access);
+      for (const r of p.rings) expect(r[0]).toEqual(r[r.length - 1]);
+    }
+    expect(body.data.some((p: { name: string | null }) => p.name === 'Parco San Giuliano')).toBe(true);
   });
 
   test('nautical: marine, carburante e ormeggi da OpenStreetMap', async ({ request }) => {

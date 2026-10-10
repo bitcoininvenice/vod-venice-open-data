@@ -124,7 +124,8 @@ export const itUi = {
     sports: "Sport e spazi per allenarsi",
     subSport: "Sport e tempo libero",
     sportFilter: "Filtra per sport",
-    nautical: "Nautica e ormeggi (OSM)"
+    nautical: "Nautica e ormeggi (OSM)",
+    parks: "Parchi, giardini e aree giochi (OSM)"
   },
   map: {
     orarioUfficialeActv: "orario ufficiale ACTV",
@@ -1150,6 +1151,8 @@ export const itUi = {
     "meta_open-meteo-marine": "Onde e temperatura del mare previste alla piattaforma Acqua Alta, accanto alle misure CPSM.",
     "name_osm-waterways": "Briccole e canali OpenStreetMap (pipeline)",
     "meta_osm-waterways": "Non esiste un dataset ufficiale aperto di briccole e canali: OpenStreetMap è la fonte più completa. Non per la navigazione.",
+    "name_osm-parks": "Parchi, giardini e aree giochi OpenStreetMap (pipeline)",
+    "meta_osm-parks": "Il Comune non pubblica un dataset aperto del verde pubblico: si usa OpenStreetMap, esclusi i luoghi privati. Orari e servizi non verificati.",
     "name_arpav-pollen": "Pollini misurati ARPAV Venezia (pipeline)",
     "meta_arpav-pollen": "Concentrazioni giornaliere dell'ultimo anno pubblicato; ARPAV non pubblica l'anno in corso come open data.",
     "name_cciaa-turismo": "Turismo e popolazione dei comuni della laguna (pipeline)",
@@ -1532,6 +1535,31 @@ export const itUi = {
     operator: "Gestore",
     hours: "Orari",
     note: "Dati di OpenStreetMap, non verificati. Le concessioni del Comune e le soste a tempo non sono pubblicate come open data: per quelle vale il Geoportale comunale (Servizio Concessioni Acquee)."
+  },
+  park: {
+    kind_park: "Parco",
+    kind_garden: "Giardino pubblico",
+    kind_playground: "Area giochi",
+    kind_dog_park: "Area cani",
+    kind_nature_reserve: "Oasi naturalistica",
+    access: "Accesso",
+    access_public: "Aperto al pubblico",
+    access_customers: "Solo clienti",
+    access_unknown: "Non indicato su OSM",
+    area: "Superficie",
+    areaHa: "{n} ettari",
+    areaM2: "{n} m²",
+    hours: "Orari",
+    operator: "Gestore",
+    wheelchair: "Accessibile in sedia a rotelle",
+    dogs: "Cani",
+    lit: "Illuminato",
+    yes: "sì",
+    no: "no",
+    limited: "in parte",
+    leashed: "al guinzaglio",
+    note: "Dati di OpenStreetMap, non verificati: orari, accesso e servizi vanno controllati sul posto. Il Comune di Venezia non pubblica un dataset aperto del verde pubblico.",
+    unnamed: "Senza nome su OSM"
   }
 };
 

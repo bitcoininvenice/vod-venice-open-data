@@ -1046,6 +1046,28 @@ export interface NauticalPlace {
   sourceUrl: string;
 }
 
+/** Parco, giardino pubblico, area giochi, area cani o oasi naturalistica da OpenStreetMap. */
+export interface ParkPlace {
+  id: string;
+  osmUrl: string;
+  name: string | null;
+  kind: 'park' | 'garden' | 'playground' | 'dog_park' | 'nature_reserve';
+  /** accesso dichiarato su OSM: public, customers (solo clienti), unknown (non indicato) */
+  access: 'public' | 'customers' | 'unknown';
+  /** area in m² (null per i luoghi mappati come punto) */
+  areaM2: number | null;
+  lat: number;
+  lon: number;
+  /** anelli esterni [lon, lat][] semplificati; vuoto per i punti */
+  rings: [number, number][][];
+  openingHours: string | null;
+  operator: string | null;
+  wheelchair: string | null;
+  dog: string | null;
+  lit: string | null;
+  website: string | null;
+}
+
 /** Temperatura dell'aria nel centro storico (stazione CPSM), mostrata nella barra dell'orario. */
 export interface CityAirTemperature {
   celsius: number;

@@ -126,7 +126,8 @@ export const enUi: UiTranslations = {
     sports: "Sport and training spaces",
     subSport: "Sport and leisure",
     sportFilter: "Filter by sport",
-    nautical: "Boating and moorings (OSM)"
+    nautical: "Boating and moorings (OSM)",
+    parks: "Parks, gardens and playgrounds (OSM)"
   },
   map: {
     orarioUfficialeActv: "official ACTV timetable",
@@ -1152,6 +1153,8 @@ export const enUi: UiTranslations = {
     "meta_open-meteo-marine": "Forecast waves and sea temperature at the Acqua Alta platform, alongside CPSM readings.",
     "name_osm-waterways": "OpenStreetMap channel markers and canals (pipeline)",
     "meta_osm-waterways": "There is no official open dataset of channel markers and canals: OpenStreetMap is the most complete source. Not for navigation.",
+    "name_osm-parks": "OpenStreetMap parks, gardens and playgrounds (pipeline)",
+    "meta_osm-parks": "The City does not publish an open dataset of public green areas: OpenStreetMap is used, private places excluded. Opening hours and facilities not verified.",
     "name_arpav-pollen": "ARPAV measured pollen, Venice (pipeline)",
     "meta_arpav-pollen": "Daily concentrations for the latest published year; ARPAV does not publish the current year as open data.",
     "name_cciaa-turismo": "Tourism and population of lagoon municipalities (pipeline)",
@@ -1534,5 +1537,30 @@ export const enUi: UiTranslations = {
     operator: "Operator",
     hours: "Hours",
     note: "OpenStreetMap data, not verified. City concessions and time-limited berths are not published as open data: see the City Geoportal (Water Concessions Office)."
+  },
+  park: {
+    kind_park: "Park",
+    kind_garden: "Public garden",
+    kind_playground: "Playground",
+    kind_dog_park: "Dog park",
+    kind_nature_reserve: "Nature reserve",
+    access: "Access",
+    access_public: "Open to the public",
+    access_customers: "Customers only",
+    access_unknown: "Not stated on OSM",
+    area: "Area",
+    areaHa: "{n} hectares",
+    areaM2: "{n} m²",
+    hours: "Opening hours",
+    operator: "Operator",
+    wheelchair: "Wheelchair accessible",
+    dogs: "Dogs",
+    lit: "Lit at night",
+    yes: "yes",
+    no: "no",
+    limited: "partly",
+    leashed: "on a leash",
+    note: "OpenStreetMap data, not verified: check opening hours, access and facilities on site. The City of Venice does not publish an open dataset of public green areas.",
+    unnamed: "Unnamed on OSM"
   }
 };

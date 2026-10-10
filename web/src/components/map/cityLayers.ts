@@ -1,5 +1,6 @@
 // Layer di disegno della mappa estratti da MapEngine (cityLayers). Ogni funzione riceve il contesto del frame.
 import type { RenderContext } from './renderContext';
+import { PARK_COLORS } from '@/lib/parks';
 import { matchesSportFilter, sportColor } from '@/lib/sports';
 
 export function drawCityAssets(rc: RenderContext): void {
@@ -1045,4 +1046,67 @@ export function drawNautical(rc: RenderContext): void {
     }
     ctx.restore();
   }
+}
+
+
+/**
+ * Parchi e giardini (OSM): aree verdi semitrasparenti sotto gli altri livelli, punti per i luoghi senza
+ * perimetro, nomi da vicino (prima i più grandi). L'elenco arriva ordinato dal più grande al più piccolo,
+ * così le aree piccole restano disegnate sopra quelle che le contengono.
+ */
+export function drawParks(rc: RenderContext): void {
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showParks, parkPlaces } = rc;
+  if (!showParks || !parkPlaces || parkPlaces.length === 0) return;
+  ctx.save();
+  for (const p of parkPlaces) {
+    const color = PARK_COLORS[p.kind];
+    if (p.rings.length === 0) {
+      const px = sx(mx(p.lon));
+      const py = sy(my(p.lat));
+      if (px < -10 || px > cw + 10 || py < -10 || py > ch + 10) continue;
+      ctx.beginPath();
+      ctx.arc(px, py, 4, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = isDark ? '#ffffff' : '#14532d';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      continue;
+    }
+    ctx.beginPath();
+    let visible = false;
+    for (const ring of p.rings) {
+      for (let i = 0; i < ring.length; i++) {
+        const x = sx(mx(ring[i][0]));
+        const y = sy(my(ring[i][1]));
+        if (!visible && x > -50 && x < cw + 50 && y > -50 && y < ch + 50) visible = true;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+    }
+    if (!visible) continue;
+    ctx.globalAlpha = isDark ? 0.3 : 0.35;
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.globalAlpha = 0.8;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  // Nomi: i grandi parchi già da lontano, gli altri da vicino (la guardia delle etichette evita sovrapposizioni)
+  ctx.font = '600 8px "DM Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = isDark ? '#bbf7d0' : '#14532d';
+  for (const p of parkPlaces) {
+    if (!p.name) continue;
+    const big = (p.areaM2 ?? 0) >= 50_000;
+    if (!(camera.s > 0.06 || (big && camera.s > 0.015) || ((p.areaM2 ?? 0) >= 5_000 && camera.s > 0.035))) continue;
+    const px = sx(mx(p.lon));
+    const py = sy(my(p.lat));
+    if (px < -40 || px > cw + 40 || py < -10 || py > ch + 10) continue;
+    ctx.fillText(p.name.slice(0, 32), px, py + 3);
+  }
+  ctx.restore();
 }
