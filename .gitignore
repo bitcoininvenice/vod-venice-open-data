@@ -98,6 +98,8 @@ data/*.csv
 pipeline/data/
 pipeline/downloads/
 *.zip
+# lo ZIP della skill è servito dal sito (/downloads): va versionato, un test lo tiene allineato ai sorgenti
+!web/public/downloads/venice-open-data-skill.zip
 *.tar.gz
 *.rar
 
