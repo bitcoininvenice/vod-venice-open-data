@@ -77,6 +77,7 @@ import type { BdapProject } from '@/lib/bdap';
 import type { LoraGateway, NauticalPlace, ParkPlace, SportPlace, WifiVenue } from '@/lib/types';
 import { PARK_COLORS } from '@/lib/parks';
 import { civicLabel, type CivicMatch, type CivicQuery } from '@/lib/civici';
+import { PlanHereButton } from '@/components/ui/PlanHereButton';
 import { sportColor } from '@/lib/sports';
 import { CAMPO_LICENSE_PAGE } from '@/server/sources/campo';
 import type { LayerKey } from '@/lib/urlLayers';
@@ -130,12 +131,15 @@ interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
   onClose: () => void;
   currentTideLevelCm?: number;
+  /** apre il planner con il luogo come destinazione */
+  onPlanTo?: (point: { lon: number; lat: number; label: string }) => void;
 }
 
 export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> = ({
   feature,
   onClose,
-  currentTideLevelCm
+  currentTideLevelCm,
+  onPlanTo
 }) => {
   const { t } = useTranslation();
   if (!feature) return null;
@@ -255,7 +259,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {feature.type === 'sportPlace' && <SportPlaceBody place={feature.data} />}
           {feature.type === 'nauticalPlace' && <NauticalBody place={feature.data} />}
           {feature.type === 'parkPlace' && <ParkBody place={feature.data} />}
-          {feature.type === 'civicNumber' && <CivicBody civic={feature.data} />}
+          {feature.type === 'civicNumber' && <CivicBody civic={feature.data} onPlanTo={onPlanTo} />}
 
           {feature.type === 'bdapWork' && (
               <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400"><Construction className="w-5 h-5" /></div>
@@ -1703,7 +1707,7 @@ const ParkBody: React.FC<{ place: ParkPlace }> = ({ place: p }) => {
 };
 
 /** Numero civico: esatto se è su OpenStreetMap, altrimenti il civico noto più vicino dello stesso sestiere. */
-const CivicBody: React.FC<{ civic: CivicMatch & { query: CivicQuery } }> = ({ civic: c }) => {
+const CivicBody: React.FC<{ civic: CivicMatch & { query: CivicQuery }; onPlanTo?: (p: { lon: number; lat: number; label: string }) => void }> = ({ civic: c, onPlanTo }) => {
   const { t } = useTranslation();
   const k = (key: string, params?: Record<string, string | number>) => t(`ui.civic.${key}`, params);
   const found = civicLabel(c.sestiere, c.number, c.letter);
@@ -1717,6 +1721,7 @@ const CivicBody: React.FC<{ civic: CivicMatch & { query: CivicQuery } }> = ({ ci
         </p>
       )}
       <KeyValues items={[[k('position'), `${c.lat.toFixed(5)}, ${c.lon.toFixed(5)}`]]} />
+      {onPlanTo && <PlanHereButton onClick={() => onPlanTo({ lon: c.lon, lat: c.lat, label: civicLabel(c.query.sestiere, c.query.number, c.query.letter) })} />}
       <p className="text-[11px] text-[var(--ink-3)]">{k('note')}</p>
       <a
         href={`https://www.openstreetmap.org/?mlat=${c.lat}&mlon=${c.lon}#map=19/${c.lat}/${c.lon}`}

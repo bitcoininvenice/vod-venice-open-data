@@ -27,6 +27,7 @@ import fiberDataset from '@/data/agcom-fiber.json';
 import lagoonDataset from '@/data/osm-waterways.json';
 import parksDataset from '@/data/osm-parks.json';
 import civiciDataset from '@/data/osm-civici.json';
+import { WALK_STATS } from '@/lib/walk-data';
 import pollenDataset from '@/data/arpav-pollen-venezia.json';
 import tourismDataset from '@/data/turismo-comuni.json';
 import lagoonProbeDataset from '@/data/arpav-lagoon.json';
@@ -96,6 +97,7 @@ export async function GET() {
     assess('osm-fountains', 'Fontanelle OpenStreetMap (pipeline)', 'dataset', new Date(fountainsDataset.metadata.extractedAt), 31 * DAY, now),
     assess('osm-poi', 'POI OpenStreetMap: colonnine, parcheggi, pozzi, alberi (pipeline)', 'dataset', new Date(OSM_POI_META.generatedAt), 31 * DAY, now),
     assess('osm-waterways', 'Briccole e canali OpenStreetMap (pipeline)', 'dataset', new Date(lagoonDataset.generatedAt), 31 * DAY, now),
+    assess('osm-walk', 'Rete pedonale OpenStreetMap per il planner (pipeline)', 'dataset', new Date(WALK_STATS.generatedAt), 31 * DAY, now),
     assess('osm-civici', 'Numeri civici OpenStreetMap (pipeline)', 'dataset', new Date(civiciDataset.generatedAt), 31 * DAY, now),
     assess('osm-parks', 'Parchi, giardini e aree giochi OpenStreetMap (pipeline)', 'dataset', new Date(parksDataset.generatedAt), 31 * DAY, now),
     assess('arpav-pollen', 'Pollini misurati ARPAV Venezia (pipeline)', 'dataset', new Date(pollenDataset.generatedAt), 400 * DAY, now),

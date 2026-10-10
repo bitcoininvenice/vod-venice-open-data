@@ -14,7 +14,7 @@ import { useTranslation } from '@/lib/i18n';
 import { simClock } from '@/lib/simClock';
 import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
-import { drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
+import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, drawMarineSignals, drawOceanStations, drawCanalLimits, drawBridges, drawGondolas, drawDocks, drawMarineWind } from './map/lagoonLayers';
 import { bdapRadius, drawPin, drawParks, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
@@ -26,6 +26,7 @@ import { drawLagoonNetwork } from './map/lagoonNetworkLayer';
 import { withLabelGuard } from './map/labelGuard';
 import { firstHit, hitTester, pointInRing, type Hit } from './map/hitTest';
 import { lineColor } from '@/lib/actvLines';
+import type { Itinerary } from '@/lib/tripPlanner';
 import type { CityData } from '@/lib/cityData';
 import type { LayerVisibility } from '@/lib/layerState';
 import { pointSegmentDistance, type LagoonNetwork } from '@/lib/lagoonNetwork';
@@ -69,6 +70,11 @@ export interface MapEngineProps {
   sportFilter?: SportFilter;
   simulatedTideLevel?: number | null;
   isDesktopLayerPanelOpen?: boolean;
+  /** scelta di un punto per il planner: il prossimo clic sulla mappa restituisce le coordinate */
+  pickMode?: boolean;
+  onPickPoint?: (lon: number, lat: number) => void;
+  /** itinerario del planner da disegnare */
+  itinerary?: Itinerary | null;
   /** segnaposto di un luogo cercato (es. numero civico); approximate: posizione del civico noto più vicino */
   pin?: { lat: number; lon: number; approximate: boolean } | null;
 }
@@ -99,7 +105,10 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   sportFilter = 'all',
   simulatedTideLevel = null,
   isDesktopLayerPanelOpen = true,
-  pin = null
+  pin = null,
+  pickMode = false,
+  onPickPoint,
+  itinerary = null
 }) => {
   const { t } = useTranslation();
   // alias: nel codice di disegno `t` è anche il nome locale dell'ora simulata
@@ -476,6 +485,11 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     paletteTheme === 'notte' ? NOTTE : paletteTheme === 'carta' ? CARTA : getDynamicPalette(t);
 
   const handlePointClick = (clickX: number, clickY: number) => {
+    // Scelta di un punto per il planner: il clic restituisce le coordinate e non seleziona nulla
+    if (pickMode && onPickPoint) {
+      onPickPoint(LON0 + (clickX / camera.s + camera.x0) / KX, LAT1 - (clickY / camera.s + camera.y0) / KY);
+      return;
+    }
     const currentTimeSeconds = simClock.get();
     const screen = (lon: number, lat: number) => [(mx(lon) - camera.x0) * camera.s, (my(lat) - camera.y0) * camera.s] as const;
     const target = hitTester(screen);
@@ -807,6 +821,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         sportFilter,
         tideLevel: simulatedTideLevel ?? data.tideLevel ?? 0,
         pin,
+        itinerary,
         selectedTrip: selectedTrip && selectedVehicle
           ? {
               ...selectedTrip,
@@ -927,7 +942,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
         drawTributaries(rc);
       });
-      // Segnaposto del luogo cercato, sopra a tutto
+      // Itinerario del planner e segnaposto del luogo cercato, sopra a tutto
+      drawItinerary(rc);
       drawPin(rc);
 
       ctx.restore();
@@ -939,13 +955,13 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   }, [
     camera, KY, H, W, mx, my, tr, layers, data, cantieri, selectedDay, paletteTheme, bufferRadiusMeters, selectedCategory,
     sportFilter, simulatedTideLevel, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
-    alilagunaBoats, is3DView, landHiReady, selectedTrip, selectedVehicle, pin,
+    alilagunaBoats, is3DView, landHiReady, selectedTrip, selectedVehicle, pin, itinerary,
 ]);
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full overflow-hidden cursor-grab active:cursor-grabbing select-none"
+      className={`relative w-full h-full overflow-hidden select-none ${pickMode ? 'cursor-crosshair' : 'cursor-grab active:cursor-grabbing'}`}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}

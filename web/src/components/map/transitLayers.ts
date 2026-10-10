@@ -289,3 +289,55 @@ export function drawSelectedTrip(rc: RenderContext): void {
   }
   ctx.restore();
 }
+
+/** Itinerario del planner: tratti a piedi tratteggiati, corse nel colore della linea, partenza e arrivo. */
+export function drawItinerary(rc: RenderContext): void {
+  const { ctx, sx, sy, mx, my, isDark, itinerary } = rc;
+  if (!itinerary) return;
+  const path = (coords: [number, number][]) => {
+    ctx.beginPath();
+    coords.forEach(([lon, lat], i) => (i === 0 ? ctx.moveTo(sx(mx(lon)), sy(my(lat))) : ctx.lineTo(sx(mx(lon)), sy(my(lat)))));
+  };
+  ctx.save();
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  for (const leg of itinerary.legs) {
+    if (leg.coords.length < 2) continue;
+    path(leg.coords);
+    if (leg.kind === 'walk') {
+      ctx.setLineDash([2, 6]);
+      ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else {
+      const col = lineColor(leg.line, leg.category) ?? '#0ea5e9';
+      ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.6)' : 'rgba(15,23,42,0.5)';
+      ctx.lineWidth = 8;
+      ctx.stroke();
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 5;
+      ctx.stroke();
+    }
+  }
+  const first = itinerary.legs[0]?.coords[0];
+  const lastLeg = itinerary.legs[itinerary.legs.length - 1];
+  const last = lastLeg?.coords[lastLeg.coords.length - 1];
+  for (const [pt, label, color] of [[first, 'A', '#10b981'], [last, 'B', '#ef4444']] as const) {
+    if (!pt) continue;
+    const px = sx(mx(pt[0]));
+    const py = sy(my(pt[1]));
+    ctx.beginPath();
+    ctx.arc(px, py, 9, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.font = '700 10px "DM Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(label, px, py + 3.5);
+  }
+  ctx.restore();
+}

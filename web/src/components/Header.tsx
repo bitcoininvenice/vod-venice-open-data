@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { CameraViewPreset, PaletteTheme } from '@/lib/types';
-import { Compass, Moon, Sun, Sparkles, Layers, BarChart3, HelpCircle, Globe, Waves, MoreHorizontal, Construction, Search, Download, TrendingUp, TrendingDown, Activity, Menu, Bot } from 'lucide-react';
+import { Compass, Moon, Sun, Sparkles, Layers, BarChart3, HelpCircle, Globe, Waves, MoreHorizontal, Construction, Search, Download, TrendingUp, TrendingDown, Activity, Menu, Bot, Route } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { formatSignedCm, formatLocalStamp } from '@/lib/time';
 
@@ -16,6 +16,7 @@ interface HeaderProps {
   onOpenLayers?: () => void;
   onOpenTutorial?: () => void;
   onOpenSearch?: () => void;
+  onOpenTripPlanner?: () => void;
   onOpenTideModal?: () => void;
   onOpenExportModal?: () => void;
   activeCantieriCount: number;
@@ -34,6 +35,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenLayers,
   onOpenTutorial,
   onOpenSearch,
+  onOpenTripPlanner,
   onOpenTideModal,
   onOpenExportModal,
   activeCantieriCount,
@@ -197,6 +199,13 @@ export const Header: React.FC<HeaderProps> = ({
                     onClick={() => runAndClose(onOpenSearch)}
                   />
                 )}
+                {onOpenTripPlanner && (
+                  <MobileMenuItem
+                    icon={<Route className="w-4 h-4 text-emerald-400" />}
+                    label={t('ui.planner.title')}
+                    onClick={() => runAndClose(onOpenTripPlanner)}
+                  />
+                )}
                 {onOpenTideModal && (
                   <MobileMenuItem
                     icon={<Waves className="w-4 h-4 text-blue-400" />}
@@ -330,6 +339,20 @@ export const Header: React.FC<HeaderProps> = ({
             <kbd className="hidden lg:inline-block px-1.5 py-0.5 rounded text-[10px] font-mono text-[var(--ink-3)] bg-[var(--ground)] border border-[var(--rule)]">
               ⌘K
             </kbd>
+          </button>
+        )}
+
+        {/* Come arrivare: percorso a piedi e in vaporetto */}
+        {onOpenTripPlanner && (
+          <button
+            type="button"
+            onClick={onOpenTripPlanner}
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-xs text-emerald-300 cursor-pointer transition-all shrink-0"
+            title={t('ui.planner.title')}
+            data-testid="open-planner"
+          >
+            <Route className="w-3.5 h-3.5" aria-hidden />
+            <span className="hidden xl:inline">{t('ui.planner.title')}</span>
           </button>
         )}
 

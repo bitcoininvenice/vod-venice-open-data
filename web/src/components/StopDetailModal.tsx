@@ -8,16 +8,20 @@ import { InfoPanel } from '@/components/ui/InfoPanel';
 import { DELAY_COLORS, delayMinutes, type StopArrival } from '@/lib/realtimeDelay';
 import { startPolling } from '@/lib/polling';
 import { lineColor, lineTextColor } from '@/lib/actvLines';
+import { PlanHereButton } from '@/components/ui/PlanHereButton';
 
 interface StopDetailModalProps {
   stop: StopItem | null;
   onClose: () => void;
   currentTimeSeconds: number;
+  /** apre il planner con la fermata come destinazione */
+  onPlanTo?: (point: { lon: number; lat: number; label: string }) => void;
 }
 
 export const StopDetailModal: React.FC<StopDetailModalProps> = ({
   stop,
-  onClose
+  onClose,
+  onPlanTo
 }) => {
   const { t } = useTranslation();
   if (!stop) return null;
@@ -70,6 +74,10 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
             </div>
           </div>
         </div>
+
+        {onPlanTo && (stop.mode === 'navigazione' || stop.mode === 'ferry') && (
+          <PlanHereButton onClick={() => onPlanTo({ lon: stop.lon, lat: stop.lat, label: stop.name })} />
+        )}
 
         {/* Linee che servono la fermata (dal GTFS) */}
         {lines.length > 0 && (

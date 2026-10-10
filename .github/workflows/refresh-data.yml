@@ -43,6 +43,7 @@ jobs:
           python import_osm_waterways.py || echo "::warning::briccole e canali OSM non aggiornati"
           python import_osm_parks.py || echo "::warning::parchi e giardini OSM non aggiornati"
           python import_osm_civici.py || echo "::warning::numeri civici OSM non aggiornati"
+          python import_osm_walk.py || echo "::warning::rete pedonale OSM non aggiornata"
           python import_arpav_pollen.py || echo "::warning::pollini misurati ARPAV non aggiornati"
           python import_arpav_lagoon.py || echo "::warning::sonde ARPAV della laguna non aggiornate"
           python import_cruscotto_italia.py || echo "::warning::profilo dei comuni (Cruscotto Italia) non aggiornato"
@@ -77,7 +78,7 @@ jobs:
             - profilo socio-economico dei comuni della laguna (Cruscotto Italia, AgID)
             - opere pubbliche del Comune dal Monitoraggio Opere Pubbliche (BDAP – Ragioneria Generale dello Stato)
             - pollini misurati ARPAV a Venezia, sonde ARPAV della laguna e riepilogo balneazione, turismo e popolazione dei comuni della laguna (Camera di Commercio)
-            - OpenStreetMap: telecamere, DAE, farmacie, fontanelle, colonnine, parcheggi, vere da pozzo, alberi monumentali, ecocentri, biblioteche, briccole e canali
+            - OpenStreetMap: telecamere, DAE, farmacie, fontanelle, colonnine, parcheggi, vere da pozzo, alberi monumentali, ecocentri, biblioteche, briccole e canali, parchi e giardini, numeri civici, rete pedonale del planner (`web/public/data/walk-<hash>.json`, `web/src/lib/walk-data.ts`)
 
             Typecheck, test e build sono passati sui nuovi dati. Controllare il diff prima del merge.
           labels: data

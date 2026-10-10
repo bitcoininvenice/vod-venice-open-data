@@ -14,6 +14,8 @@ import { useCityData } from '@/lib/useCityData';
 import { StopDetailModal } from '@/components/StopDetailModal';
 import { CantiereDetailModal } from '@/components/CantiereDetailModal';
 import { MapObjectPanel, type MapObjectSelected } from '@/components/MapObjectPanel';
+import { TripPlannerPanel, type PickTarget } from '@/components/TripPlannerPanel';
+import type { Itinerary, PlannerPoint } from '@/lib/tripPlanner';
 import type { SportFilter } from '@/lib/sports';
 import { ActiveLayersLegend } from '@/components/ActiveLayersLegend';
 import type { VeniceFeatureSelected } from '@/components/VeniceFeatureDetailModal';
@@ -159,8 +161,23 @@ export default function HomePage() {
     setIsMoseModalOpen(false);
     setIsAlilagunaModalOpen(false);
   }, []);
+  // Trip planner: luoghi scelti, eventuale scelta di un punto sulla mappa, itinerario da disegnare
+  const [isPlannerOpen, setIsPlannerOpen] = useState(false);
+  const [plannerFrom, setPlannerFrom] = useState<PlannerPoint | null>(null);
+  const [plannerTo, setPlannerTo] = useState<PlannerPoint | null>(null);
+  const [pickTarget, setPickTarget] = useState<PickTarget | null>(null);
+  const [itinerary, setItinerary] = useState<Itinerary | null>(null);
+  const setPlannerPoint = useCallback((which: PickTarget, p: PlannerPoint | null) => (which === 'from' ? setPlannerFrom(p) : setPlannerTo(p)), []);
+  const openPlanner = useCallback((to?: PlannerPoint) => {
+    clearDetails();
+    if (to) setPlannerTo(to);
+    setIsPlannerOpen(true);
+  }, [clearDetails]);
+
   const showDetail = useCallback((open: () => void) => {
     clearDetails();
+    // una scheda e il planner occupano lo stesso spazio: il planner si chiude (i luoghi scelti restano)
+    setIsPlannerOpen(false);
     open();
   }, [clearDetails]);
 
@@ -368,6 +385,7 @@ export default function HomePage() {
         }}
         onOpenTutorial={() => setIsTutorialOpen(true)}
         onOpenSearch={() => setIsSearchOpen(true)}
+        onOpenTripPlanner={() => openPlanner()}
         onOpenTideModal={() => setIsTideModalOpen(true)}
         onOpenExportModal={() => setIsExportModalOpen(true)}
         activeCantieriCount={locatedCantieri.length}
@@ -404,6 +422,13 @@ export default function HomePage() {
           sportFilter={sportFilter}
           simulatedTideLevel={simulatedTideLevel}
           isDesktopLayerPanelOpen={isDesktopLayerPanelOpen}
+          pickMode={pickTarget !== null}
+          onPickPoint={(lon, lat) => {
+            if (!pickTarget) return;
+            setPlannerPoint(pickTarget, { lon, lat, label: t('ui.planner.mapPoint', { lat: lat.toFixed(5), lon: lon.toFixed(5) }) });
+            setPickTarget(null);
+          }}
+          itinerary={isPlannerOpen ? itinerary : null}
           pin={
             selectedFeature?.type === 'civicNumber'
               ? { lat: selectedFeature.data.lat, lon: selectedFeature.data.lon, approximate: selectedFeature.data.match !== 'exact' }
@@ -552,6 +577,7 @@ export default function HomePage() {
           stop={selectedStop}
           onClose={() => setSelectedStop(null)}
           currentTimeSeconds={currentTimeSeconds}
+          onPlanTo={openPlanner}
         />
 
         <CantiereDetailModal
@@ -568,6 +594,19 @@ export default function HomePage() {
           />
         )}
 
+        <TripPlannerPanel
+          open={isPlannerOpen}
+          onClose={() => {
+            setIsPlannerOpen(false);
+            setPickTarget(null);
+          }}
+          from={plannerFrom}
+          to={plannerTo}
+          onChange={setPlannerPoint}
+          onPick={(which) => setPickTarget((cur) => (cur === which ? null : which))}
+          picking={pickTarget}
+          onItinerary={setItinerary}
+        />
         <MapObjectPanel
           object={selectedObject}
           onClose={() => setSelectedObject(null)}
@@ -616,6 +655,7 @@ export default function HomePage() {
             feature={selectedFeature}
             onClose={() => setSelectedFeature(null)}
             currentTideLevelCm={data.tideLevel ?? undefined}
+            onPlanTo={openPlanner}
           />
         )}
       </div>

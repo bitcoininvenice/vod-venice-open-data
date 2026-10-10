@@ -5,6 +5,7 @@ import type { CityData } from '@/lib/cityData';
 import type { LayerVisibility } from '@/lib/layerState';
 import type { SportFilter } from '@/lib/sports';
 import type { SelectedTrip } from '@/lib/tripView';
+import type { Itinerary } from '@/lib/tripPlanner';
 
 export interface HighlightTrip extends SelectedTrip {
   color: string;
@@ -24,6 +25,8 @@ export interface RenderContext
   /** livello di marea disegnato (simulato se il simulatore è attivo) */
   tideLevel: number;
   sportFilter: SportFilter;
+  /** itinerario del planner */
+  itinerary: Itinerary | null;
   /** segnaposto di un luogo cercato */
   pin: { lat: number; lon: number; approximate: boolean } | null;
   /** corsa del mezzo selezionato da evidenziare (null se nessuna) */

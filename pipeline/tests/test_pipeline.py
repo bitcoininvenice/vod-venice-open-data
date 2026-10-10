@@ -611,3 +611,29 @@ def test_civici_build_ordina_e_divide_i_numeri_multipli():
     out = civici.build(payload)
     assert [r[:2] for r in out["Castello"]] == [[10, ""], [11, "A"], [12, ""]]
     assert out["Cannaregio"] == []
+
+
+# --- Rete pedonale (OSM) ---
+
+import import_osm_walk as walk  # noqa: E402
+
+
+def test_rete_pedonale_incroci_ponti_e_componenti():
+    nodes = [{"type": "node", "id": i, "lon": 12.3 + i * 0.001, "lat": 45.43} for i in range(1, 26)]
+    ways = [
+        # via principale 1-2-3-4 e traversa 3-5: il nodo 3 è un incrocio
+        {"type": "way", "id": 100, "nodes": [1, 2, 3, 4], "tags": {"highway": "pedestrian"}},
+        {"type": "way", "id": 101, "nodes": [3, 5], "tags": {"highway": "footway", "bridge": "yes"}},
+        {"type": "way", "id": 102, "nodes": [6, 7], "tags": {"highway": "footway", "access": "private"}},
+        # catena lunga per superare la soglia delle componenti piccole
+        {"type": "way", "id": 103, "nodes": list(range(4, 26)), "tags": {"highway": "pedestrian"}},
+    ]
+    walk.MIN_COMPONENT = 3
+    g = walk.build({"elements": nodes + ways})
+    n_edges = len(g["edges"]) // 4
+    flags = [g["edges"][4 * e + 3] for e in range(n_edges)]
+    assert flags.count(walk.FLAG_STEPS) == 1  # il ponte
+    # la via privata non entra nella rete
+    xs = {g["nodes"][2 * i] for i in range(len(g["nodes"]) // 2)}
+    assert round((12.3 + 6 * 0.001 - walk.LON0) * walk.SCALE) not in xs
+    assert walk.walkable({"highway": "footway", "access": "private", "foot": "yes"})

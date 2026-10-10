@@ -55,6 +55,7 @@ vod-venice-open-data/
 │   ├── import_alilaguna_gtfs.py    # Orario ufficiale Alilaguna (GTFS dell'operatore)
 │   ├── import_osm_waterways.py     # Briccole, segnalamenti e canali della laguna (OSM)
 │   ├── import_istat_census.py      # Residenti, famiglie e abitazioni per sestiere, isola e municipalità (ISTAT 2021)
+│   ├── import_osm_walk.py          # Rete pedonale (calli, fondamenta, ponti) per il planner «Come arrivare» (OSM)
 │   ├── import_osm_civici.py        # Numeri civici del centro storico per sestiere (OSM), per la ricerca «Cannaregio 3450»
 │   ├── import_osm_parks.py         # Parchi, giardini pubblici, aree giochi, aree cani e oasi con perimetro (OSM)
 │   ├── import_arpav_pollen.py      # Pollini misurati da ARPAV a Venezia (calendario mensile)
@@ -149,6 +150,7 @@ python import_alilaguna_gtfs.py             # Orario Alilaguna (simulazione dell
 python import_agcom_fiber.py                # Copertura fibra AGCOM su celle di ~100 m
 python import_osm_waterways.py              # Briccole, segnalamenti e canali della laguna (OSM)
 python import_istat_census.py               # Censimento ISTAT 2021 per sestiere e isola (circa 330 MB da ISTAT, solo a ogni nuova edizione)
+python import_osm_walk.py                   # Rete pedonale per il planner a piedi + vaporetto (OSM -> public/data/walk-<hash>.json)
 python import_osm_civici.py                 # Numeri civici del centro storico per sestiere (OSM)
 python import_osm_parks.py                  # Parchi, giardini pubblici, aree giochi, aree cani e oasi (OSM)
 python import_arpav_pollen.py               # Pollini misurati ARPAV a Venezia

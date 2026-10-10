@@ -1143,6 +1143,8 @@ export const itUi = {
     "meta_osm-waterways": "Non esiste un dataset ufficiale aperto di briccole e canali: OpenStreetMap è la fonte più completa. Non per la navigazione.",
     "name_osm-civici": "Numeri civici OpenStreetMap (pipeline)",
     "meta_osm-civici": "Il Comune non pubblica i numeri civici come open data: OpenStreetMap ne copre una parte. Se un civico manca, la ricerca indica il più vicino come posizione approssimata.",
+    "name_osm-walk": "Rete pedonale OpenStreetMap per «Come arrivare» (pipeline)",
+    "meta_osm-walk": "Calli, fondamenta e ponti mappati su OpenStreetMap, usati per i tratti a piedi del planner insieme all'orario ufficiale ACTV.",
     "name_osm-parks": "Parchi, giardini e aree giochi OpenStreetMap (pipeline)",
     "meta_osm-parks": "Il Comune non pubblica un dataset aperto del verde pubblico: si usa OpenStreetMap, esclusi i luoghi privati. Orari e servizi non verificati.",
     "name_arpav-pollen": "Pollini misurati ARPAV Venezia (pipeline)",
@@ -1308,7 +1310,7 @@ export const itUi = {
   },
   presets: {
     label: "Scenari",
-    muoversi: "Muoversi",
+    muoversi: "Trasporti",
     muoversiDesc: "Vaporetti in tempo reale, fermate, Alilaguna e navi AIS",
     "acqua-alta": "Acqua alta",
     "acqua-altaDesc": "MOSE, piattaforma oceanografica, vento sul mare e canali",
@@ -1607,6 +1609,30 @@ export const itUi = {
     approx: "Questo civico non è su OpenStreetMap. La posizione indicata è quella del civico noto più vicino dello stesso sestiere, {found} ({gap} numeri di differenza): il portone cercato è nei paraggi, ma la posizione è approssimata.",
     position: "Posizione",
     note: "A Venezia i numeri civici sono per sestiere, non per via; la Giudecca ha una numerazione propria. Il Comune non pubblica i civici come open data: OpenStreetMap ne copre una parte, con buona copertura a Cannaregio, San Polo e Santa Croce e scarsa a Dorsoduro."
+  },
+  planner: {
+    title: "Come arrivare",
+    category: "A piedi e in vaporetto",
+    from: "Da",
+    to: "A",
+    placeholder: "Fermata o civico (es. Cannaregio 3450)",
+    change: "cambia",
+    swap: "Inverti partenza e arrivo",
+    pickOnMap: "Scegli sulla mappa",
+    pickingHint: "Clicca sulla mappa…",
+    mapPoint: "Punto sulla mappa ({lat}, {lon})",
+    departure: "Partenza",
+    now: "adesso",
+    loading: "Caricamento di orario e rete pedonale…",
+    loadError: "Rete pedonale non disponibile in questo momento.",
+    noRoute: "Nessun percorso trovato entro 3 ore: uno dei due punti è lontano dalla rete pedonale o dalle fermate.",
+    duration: "{min} min",
+    walkLeg: "A piedi {min} min ({m} m) fino a {to}",
+    rideLeg: "direzione {headsign} · {n} fermate",
+    walkAlternative: "Solo a piedi: {min} min.",
+    walkBest: "A piedi si fa prima che aspettando il vaporetto.",
+    planHere: "Come arrivare qui",
+    note: "Orario ufficiale ACTV (GTFS) e rete pedonale OpenStreetMap, a 4,5 km/h. Non considera ritardi, affollamento, chiusure né acqua alta; massimo un cambio, alla stessa fermata. Verifica sempre sul posto."
   }
 };
 
