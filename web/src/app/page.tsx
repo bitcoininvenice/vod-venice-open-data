@@ -116,6 +116,7 @@ export default function HomePage() {
   const [isAirportModalOpen, setIsAirportModalOpen] = useState<boolean>(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState<boolean>(false);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+  const [searchInitialQuery, setSearchInitialQuery] = useState('');
   const [isTideModalOpen, setIsTideModalOpen] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [focusedCoordinates, setFocusedCoordinates] = useState<{ lat: number; lon: number } | null>(null);
@@ -236,8 +237,24 @@ export default function HomePage() {
     } else if (readPreference(ONBOARDING_KEY) === null) {
       applyPreset(DEFAULT_PRESET);
     }
+    // ?open=… apre uno strumento (link «Prova» della pagina /features); ?q= precompila la ricerca
+    const params = new URLSearchParams(window.location.search);
+    const tool = params.get('open');
+    if (tool) {
+      // chi arriva da un link diretto a uno strumento non vede il tutorial sopra lo strumento
+      writePreference(ONBOARDING_KEY, 'true');
+      if (tool === 'planner') openPlanner();
+      else if (tool === 'tide') setIsTideModalOpen(true);
+      else if (tool === 'export') setIsExportModalOpen(true);
+      else if (tool === 'spatial') setIsSpatialModalOpen(true);
+      else if (tool === 'tutorial') setIsTutorialOpen(true);
+      else if (tool === 'search') {
+        setSearchInitialQuery(params.get('q')?.slice(0, 60) ?? '');
+        setIsSearchOpen(true);
+      }
+    }
     hasLoadedUrlParamsRef.current = true;
-  }, [applyPreset]);
+  }, [applyPreset, openPlanner]);
 
   // Sincronizza i layer attivi nell'URL (replaceState, senza voci di cronologia)
   useEffect(() => {
@@ -249,6 +266,9 @@ export default function HomePage() {
     // Il preset è già tradotto in layer: lasciarlo nell'URL farebbe perdere le modifiche al reload
     url.searchParams.delete('layer');
     url.searchParams.delete('preset');
+    // lo strumento aperto da un link non resta nell'URL condiviso
+    url.searchParams.delete('open');
+    url.searchParams.delete('q');
     window.history.replaceState(null, '', url.pathname + url.search + url.hash);
   }, [layers]);
 
@@ -680,8 +700,12 @@ export default function HomePage() {
       {isSearchOpen && (
         <GlobalSearchModal
           isOpen={isSearchOpen}
-          onClose={() => setIsSearchOpen(false)}
+          onClose={() => {
+            setIsSearchOpen(false);
+            setSearchInitialQuery('');
+          }}
           onSelectResult={handleSelectSearchResult}
+          initialQuery={searchInitialQuery}
           data={data}
         />
       )}

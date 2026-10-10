@@ -9,6 +9,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0
     },
     {
+      url: 'https://venice-open-data.vercel.app/features',
+      changeFrequency: 'weekly',
+      priority: 0.9
+    },
+    {
       url: 'https://venice-open-data.vercel.app/layers',
       changeFrequency: 'weekly',
       priority: 0.9

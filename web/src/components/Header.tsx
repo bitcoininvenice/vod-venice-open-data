@@ -226,6 +226,15 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={() => runAndClose(onOpenSpatialModal)}
                 />
                 <Link
+                  href="/features"
+                  role="menuitem"
+                  onClick={() => setIsMoreOpen(false)}
+                  className="flex items-center gap-2.5 w-full px-2.5 py-2.5 rounded-lg text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                  <span>{t('ui.featuresPage.navLabel')}</span>
+                </Link>
+                <Link
                   href="/metrics"
                   role="menuitem"
                   onClick={() => setIsMoreOpen(false)}
@@ -454,6 +463,20 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                 </button>
               )}
+
+              {/* Funzionalità di VOD */}
+              <Link
+                href="/features"
+                role="menuitem"
+                onClick={() => setIsDesktopMenuOpen(false)}
+                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none transition-all cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4 text-cyan-400 shrink-0" />
+                <div className="flex flex-col">
+                  <span className="font-semibold">{t('ui.featuresPage.navLabel')}</span>
+                  <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('ui.featuresPage.subtitle')}</span>
+                </div>
+              </Link>
 
               {/* 2. Metriche */}
               <Link

@@ -75,7 +75,7 @@ test('il pannello livelli si apre e mostra i gruppi', async ({ page, isMobile })
   await page.goto('/');
   if (isMobile) await page.getByRole('button', { name: /filtri/i }).click();
   // il pannello esiste in due varianti (desktop e cassetto mobile): conta quella visibile
-  await expect(page.getByText(/mobilità & trasporti/i).filter({ visible: true }).first()).toBeVisible();
+  await expect(page.getByText('Trasporti', { exact: true }).filter({ visible: true }).first()).toBeVisible();
   await expect(page.getByText('Ambiente', { exact: true }).filter({ visible: true }).first()).toBeVisible();
 });
 
@@ -194,7 +194,7 @@ test('la ricerca nel pannello filtra i livelli', async ({ page, isMobile }) => {
 test('troppi livelli: avviso con "Pulisci"', async ({ page, isMobile }) => {
   await page.goto('/');
   const panel = await openLayerPanel(page, isMobile);
-  await panel.getByRole('button', { name: /attiva i livelli verificati di mobilità/i }).click();
+  await panel.getByRole('button', { name: /attiva i livelli verificati di trasporti/i }).click();
   await panel.getByRole('button', { name: /attiva i livelli verificati di ambiente/i }).click();
   const warning = panel.getByRole('status').filter({ hasText: /livelli accesi/i });
   await expect(warning).toBeVisible();
@@ -523,6 +523,22 @@ test('metriche: residenti per sestiere dal censimento ISTAT, non più valori di 
   await expect(section).toContainText(/di cui: Giudecca/);
   await expect(section).toContainText('ISTAT');
   await expect(page.getByText('Pressione turistica per sestiere')).toHaveCount(0);
+});
+
+test('pagina /features: funzionalità per gruppo e link «Prova» che aprono lo strumento', async ({ page, isMobile }) => {
+  await page.goto('/features');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Funzionalità di VOD');
+  for (const id of ['planner', 'floodSim', 'civic', 'realtime', 'mcp']) await expect(page.getByTestId(`feature-${id}`)).toBeVisible();
+  // «Come arrivare»: il link apre la mappa con il planner già aperto
+  await page.getByTestId('feature-planner').getByRole('link', { name: /prova/i }).click();
+  await expect(page).toHaveURL(/\/$|\/\?/);
+  await expect(page.locator('[data-info-panel]')).toContainText('Come arrivare');
+  await expect(page).not.toHaveURL(/open=/);
+  // numeri civici: la ricerca si apre già compilata
+  await page.goto('/features');
+  await page.getByTestId('feature-civic').getByRole('link', { name: /prova/i }).click();
+  await expect(page.getByPlaceholder(/civico/i)).toHaveValue('Cannaregio 3450');
+  if (!isMobile) await expect(page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: 'Cannaregio 3450' }).first()).toBeVisible();
 });
 
 test('la pagina delle fonti mostra lo stato', async ({ page }) => {

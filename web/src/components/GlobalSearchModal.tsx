@@ -42,11 +42,13 @@ interface GlobalSearchModalProps {
   onSelectResult: (item: SearchResultItem) => void;
   /** Dati caricati nella mappa, indicizzati per la ricerca */
   data: CityData;
+  /** testo con cui aprire la ricerca (link diretti, es. ?open=search&q=Cannaregio 3450) */
+  initialQuery?: string;
 }
 
-export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, onSelectResult, data }) => {
+export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, onSelectResult, data, initialQuery = '' }) => {
   const { t } = useTranslation();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [selectedCategory, setSelectedCategory] = useState<'all' | SearchCategory>('all');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);

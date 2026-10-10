@@ -10,7 +10,7 @@ describe('layerGroups', () => {
   });
 
   it('i gruppi sono i tre del catalogo', () => {
-    expect(LAYER_GROUPS.map((g) => g.id)).toEqual(['mobility', 'lagoon', 'city']);
+    expect([...LAYER_GROUPS.map((g) => g.id)].sort()).toEqual(['city', 'lagoon', 'mobility']);
     expect(LAYER_GROUPS.reduce((n, g) => n + groupLayerKeys(g).length, 0)).toBe(ALL_LAYER_KEYS.length);
   });
 

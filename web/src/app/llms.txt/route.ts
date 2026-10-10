@@ -15,6 +15,7 @@ export function GET() {
     '## Pagine',
     '',
     `- [Mappa](${SITE}/): tutti i layer su una mappa interattiva.`,
+    `- [Funzionalità](${SITE}/features): tutti gli strumenti di VOD (planner a piedi e in vaporetto, simulatore di acqua alta, ricerca dei civici…) con un link per provarli.`,
     `- [Elenco dei layer](${SITE}/layers): provenienza e aggiornamento di ogni layer.`,
     `- [Metriche](${SITE}/metrics): indicatori calcolati, con la base di calcolo dichiarata.`,
     `- [Stato delle fonti](${SITE}/sources): disponibilità e freschezza di ogni fonte.`,
