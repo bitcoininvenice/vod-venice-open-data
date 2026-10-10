@@ -1049,6 +1049,8 @@ export interface NauticalPlace {
 /** Temperatura dell'aria nel centro storico (stazione CPSM), mostrata nella barra dell'orario. */
 export interface CityAirTemperature {
   celsius: number;
+  /** umidità relativa della stessa stazione, se misurata nelle ultime 2 ore */
+  humidityPercent: number | null;
   stationId: string;
   stationName: string;
   /** ora locale Europe/Rome della misura, "YYYY-MM-DD HH:mm:ss" */

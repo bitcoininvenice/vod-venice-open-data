@@ -117,16 +117,26 @@ export const CITY_AIR_TEMP_MAX_AGE_MS = 2 * 60 * 60_000;
 
 
 /**
- * Temperatura dell'aria nel centro storico: la prima stazione dell'elenco con una misura recente.
+ * Temperatura dell'aria nel centro storico: la prima stazione dell'elenco con una misura recente,
+ * con l'umidità della stessa stazione (mai di un'altra, per non mescolare luoghi diversi).
  * null se nessuna stazione del centro ha trasmesso nelle ultime 2 ore (niente ripieghi su altre zone).
  */
-export function cityAirTemperature(readings: CpsmReading[], now: Date = new Date()): CityAirTemperature | null {
+export function cityAirTemperature(readings: CpsmReading[], humidity: CpsmReading[] = [], now: Date = new Date()): CityAirTemperature | null {
+  const recent = (r: CpsmReading | undefined) =>
+    Boolean(r?.observedAt) && now.getTime() - romeLocalToDate(r!.observedAt!).getTime() <= CITY_AIR_TEMP_MAX_AGE_MS;
   for (const id of CITY_AIR_TEMP_STATIONS) {
     const r = readings.find((x) => x.id === id);
     const celsius = parseNumber(r?.value);
-    if (!r || celsius === null || !r.observedAt) continue;
-    if (now.getTime() - romeLocalToDate(r.observedAt).getTime() > CITY_AIR_TEMP_MAX_AGE_MS) continue;
-    return { celsius: round1(celsius), stationId: r.id, stationName: r.name.replace(/_/g, ' '), observedAt: r.observedAt };
+    if (!r || celsius === null || !recent(r)) continue;
+    const h = humidity.find((x) => x.id === id);
+    const humidityPercent = recent(h) ? parseNumber(h?.value) : null;
+    return {
+      celsius: round1(celsius),
+      humidityPercent: humidityPercent !== null && humidityPercent >= 0 && humidityPercent <= 100 ? Math.round(humidityPercent) : null,
+      stationId: r.id,
+      stationName: r.name.replace(/_/g, ' '),
+      observedAt: r.observedAt!,
+    };
   }
   return null;
 }

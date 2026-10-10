@@ -282,13 +282,14 @@ test('barra dell\'orario: temperatura del centro storico accanto ad alba e tramo
   await page.route('**/api/weather', async (route) => {
     const res = await route.fetch();
     const json = await res.json();
-    json.data.cityTemp = { celsius: 16.9, stationId: '1026', stationName: 'Palazzo Cavalli', observedAt: '2026-10-10 09:40:00' };
+    json.data.cityTemp = { celsius: 16.9, humidityPercent: 80, stationId: '1026', stationName: 'Palazzo Cavalli', observedAt: '2026-10-10 09:40:00' };
     await route.fulfill({ response: res, json });
   });
   await page.goto('/');
   const temp = page.getByTestId('timeline-air-temp');
-  await expect(temp).toHaveText('16,9°');
-  await expect(temp).toHaveAttribute('title', /Palazzo Cavalli.*09:40/);
+  await expect(temp).toContainText('16,9°');
+  await expect(page.getByTestId('timeline-humidity')).toHaveText('80% umidità');
+  await expect(temp).toHaveAttribute('title', /umidità.*Palazzo Cavalli.*09:40/);
 });
 
 test('ritardi ACTV: scheda del mezzo e prossimi arrivi alla fermata', async ({ page, isMobile }) => {
@@ -612,6 +613,7 @@ test.describe('API', () => {
     if (t) {
       expect(['1026', '1039', '1029']).toContain(t.stationId);
       expect(typeof t.celsius).toBe('number');
+      expect(t.humidityPercent === null || (t.humidityPercent >= 0 && t.humidityPercent <= 100)).toBe(true);
       expect(t.observedAt).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/);
     }
   });

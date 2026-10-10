@@ -23,7 +23,7 @@ export async function GET() {
   );
   const cpsmStations = buildWindStations(feeds);
   // Temperatura del centro storico (Palazzo Cavalli e riserve), mostrata nella barra dell'orario
-  const cityTemp = feeds.tempAria ? cityAirTemperature(feeds.tempAria) : null;
+  const cityTemp = feeds.tempAria ? cityAirTemperature(feeds.tempAria, feeds.umidita) : null;
 
   // Stazione aeroportuale: anagrafica + METAR reale (se disponibile)
   const lipzBase = METEO_MARINE_WIND_STATIONS.find((s) => s.id === 'WIND_LIPZ_AERONAUTICA');
@@ -74,10 +74,10 @@ export async function GET() {
       },
       cityTemp: {
         kind: cityTemp ? 'live' : 'unavailable',
-        source: 'Comune di Venezia – CPSM, temperatura dell’aria (dati.venezia.it)',
+        source: 'Comune di Venezia – CPSM, temperatura e umidità dell’aria (dati.venezia.it)',
         sourceUrl: 'https://dati.venezia.it/sites/default/files/dataset/opendata/temparia.json',
         license: 'CC BY – Comune di Venezia',
-        note: 'Prima stazione del centro storico con una misura delle ultime 2 ore: Palazzo Cavalli, poi San Giorgio, poi Misericordia.',
+        note: 'Prima stazione del centro storico con una misura delle ultime 2 ore: Palazzo Cavalli, poi San Giorgio, poi Misericordia. L’umidità è della stessa stazione.',
       },
     },
   });

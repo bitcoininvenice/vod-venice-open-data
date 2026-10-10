@@ -365,6 +365,8 @@ export const itUi = {
     mareaPuntaSalute: "Marea P.ta Salute",
     mareaNonDisponibile: "n.d.",
     airTempTitle: "Temperatura dell'aria a {station} (Centro Maree, Comune di Venezia), misurata alle {time}",
+    airTempHumidityTitle: "Temperatura e umidità relativa dell'aria a {station} (Centro Maree, Comune di Venezia), misurate alle {time}",
+    humidityLabel: "umidità",
     mobilitaAttiva: "Mobilità in servizio",
     flottaActv: "ACTV",
     flottaAlilaguna: "Alilaguna",

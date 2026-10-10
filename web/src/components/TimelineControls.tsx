@@ -16,7 +16,8 @@ import {
   Ship,
   Share2,
   Check,
-  Thermometer
+  Thermometer,
+  Droplets
 } from 'lucide-react';
 import type { CityAirTemperature, DayType } from '@/lib/types';
 import { formatTimeParts, getSolarPhase } from '@/lib/solar';
@@ -191,11 +192,22 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
             {isLiveSynced && airTemp && (
               <span
                 className="flex items-center gap-1 pl-1.5 ml-0.5 border-l border-[var(--rule)]"
-                title={t('ui.timeline.airTempTitle', { station: airTemp.stationName, time: airTemp.observedAt.slice(11, 16) })}
+                title={t(airTemp.humidityPercent !== null ? 'ui.timeline.airTempHumidityTitle' : 'ui.timeline.airTempTitle', {
+                  station: airTemp.stationName,
+                  time: airTemp.observedAt.slice(11, 16),
+                })}
                 data-testid="timeline-air-temp"
               >
                 <Thermometer className="w-3.5 h-3.5 text-rose-300 shrink-0" aria-hidden />
                 <span className="font-medium text-[var(--ink)] tabular">{airTemp.celsius.toLocaleString(language === 'it' ? 'it-IT' : 'en-GB', { maximumFractionDigits: 1 })}°</span>
+                {airTemp.humidityPercent !== null && (
+                  <>
+                    <Droplets className="w-3.5 h-3.5 text-sky-300 shrink-0 ml-1" aria-hidden />
+                    <span className="font-medium text-[var(--ink)] tabular" data-testid="timeline-humidity">
+                      {airTemp.humidityPercent}%<span className="sr-only"> {t('ui.timeline.humidityLabel')}</span>
+                    </span>
+                  </>
+                )}
               </span>
             )}
           </div>
