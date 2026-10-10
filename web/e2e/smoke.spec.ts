@@ -218,7 +218,7 @@ test('metriche: sezione delle opere pubbliche dal monitoraggio BDAP', async ({ p
   await expect(section.getByText(/lavori in corso più costosi/i)).toBeVisible();
 });
 
-test('consumi: all\'avvio a mappa pulita parte solo la marea, le altre API con il loro livello', async ({ page }) => {
+test('consumi: all\'avvio a mappa pulita partono solo marea e meteo, le altre API con il loro livello', async ({ page }) => {
   const api: string[] = [];
   const data: string[] = [];
   page.on('request', (r) => {
@@ -228,7 +228,8 @@ test('consumi: all\'avvio a mappa pulita parte solo la marea, le altre API con i
   });
   await page.goto('/');
   await page.waitForTimeout(2500);
-  expect(api).toEqual(['/api/tide']);
+  // marea nell'intestazione, meteo per la temperatura nella barra dell'orario
+  expect([...api].sort()).toEqual(['/api/tide', '/api/weather']);
   // la simulazione dei mezzi non si scarica (le isole dettagliate sì, se la vista è già ravvicinata)
   expect(data.filter((d) => d.startsWith('/data/sim-'))).toEqual([]);
   // accendere le farmacie carica solo la loro API
@@ -275,6 +276,19 @@ test('i clic sulla legenda dei livelli attivi non arrivano alla mappa sotto', as
     break;
   }
   expect(checked, 'nessuna vista con una cella di fibra sotto la legenda').toBe(true);
+});
+
+test('barra dell\'orario: temperatura del centro storico accanto ad alba e tramonto', async ({ page }) => {
+  await page.route('**/api/weather', async (route) => {
+    const res = await route.fetch();
+    const json = await res.json();
+    json.data.cityTemp = { celsius: 16.9, stationId: '1026', stationName: 'Palazzo Cavalli', observedAt: '2026-10-10 09:40:00' };
+    await route.fulfill({ response: res, json });
+  });
+  await page.goto('/');
+  const temp = page.getByTestId('timeline-air-temp');
+  await expect(temp).toHaveText('16,9°');
+  await expect(temp).toHaveAttribute('title', /Palazzo Cavalli.*09:40/);
 });
 
 test('ritardi ACTV: scheda del mezzo e prossimi arrivi alla fermata', async ({ page, isMobile }) => {
@@ -589,6 +603,17 @@ test.describe('API', () => {
     expect(['ok', 'stale', 'degraded']).toContain(body.status);
     expect(body.sources.length).toBeGreaterThan(5);
     for (const s of body.sources) expect(['ok', 'stale', 'down']).toContain(s.status);
+  });
+
+  test('weather: temperatura del centro storico misurata o null, mai un valore di riserva', async ({ request }) => {
+    const json = await (await request.get('/api/weather')).json();
+    expect(json.data).toHaveProperty('cityTemp');
+    const t = json.data.cityTemp;
+    if (t) {
+      expect(['1026', '1039', '1029']).toContain(t.stationId);
+      expect(typeof t.celsius).toBe('number');
+      expect(t.observedAt).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/);
+    }
   });
 
   test('tide risponde con il contratto atteso anche se la fonte è giù', async ({ request }) => {

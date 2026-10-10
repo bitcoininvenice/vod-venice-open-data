@@ -3,7 +3,7 @@ import { METEO_MARINE_WIND_STATIONS } from '@/lib/weatherWindData';
 import type { MeteoMarineWindItem } from '@/lib/types';
 import { fetchUpstream } from '@/server/upstream';
 import { LIPZ_METAR_URL, parseLipzMetar } from '@/server/sources/metar';
-import { buildWindStations, CPSM_METEO_URLS, parseCpsmFeed, type CpsmFeedName } from '@/server/sources/cpsmMeteo';
+import { buildWindStations, cityAirTemperature, CPSM_METEO_URLS, parseCpsmFeed, type CpsmFeedName } from '@/server/sources/cpsmMeteo';
 
 export const revalidate = 300;
 
@@ -22,6 +22,8 @@ export async function GET() {
     }),
   );
   const cpsmStations = buildWindStations(feeds);
+  // Temperatura del centro storico (Palazzo Cavalli e riserve), mostrata nella barra dell'orario
+  const cityTemp = feeds.tempAria ? cityAirTemperature(feeds.tempAria) : null;
 
   // Stazione aeroportuale: anagrafica + METAR reale (se disponibile)
   const lipzBase = METEO_MARINE_WIND_STATIONS.find((s) => s.id === 'WIND_LIPZ_AERONAUTICA');
@@ -50,6 +52,7 @@ export async function GET() {
     data: {
       metar: metar.ok ? metar.data : null,
       windStations: [...lipz, ...cpsmStations],
+      cityTemp,
     },
     meta: {
       metar: {
@@ -68,6 +71,13 @@ export async function GET() {
         license: 'CC BY – Comune di Venezia',
         fetchedAt: new Date().toISOString(),
         note: `${cpsmStations.length} stazioni CPSM con coordinate pubblicate; misure aggiornate ogni 5 minuti.`,
+      },
+      cityTemp: {
+        kind: cityTemp ? 'live' : 'unavailable',
+        source: 'Comune di Venezia – CPSM, temperatura dell’aria (dati.venezia.it)',
+        sourceUrl: 'https://dati.venezia.it/sites/default/files/dataset/opendata/temparia.json',
+        license: 'CC BY – Comune di Venezia',
+        note: 'Prima stazione del centro storico con una misura delle ultime 2 ore: Palazzo Cavalli, poi San Giorgio, poi Misericordia.',
       },
     },
   });

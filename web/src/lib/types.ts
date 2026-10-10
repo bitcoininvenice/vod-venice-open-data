@@ -1045,3 +1045,12 @@ export interface NauticalPlace {
   lon: number;
   sourceUrl: string;
 }
+
+/** Temperatura dell'aria nel centro storico (stazione CPSM), mostrata nella barra dell'orario. */
+export interface CityAirTemperature {
+  celsius: number;
+  stationId: string;
+  stationName: string;
+  /** ora locale Europe/Rome della misura, "YYYY-MM-DD HH:mm:ss" */
+  observedAt: string;
+}

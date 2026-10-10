@@ -15,9 +15,10 @@ import {
   Sunset,
   Ship,
   Share2,
-  Check
+  Check,
+  Thermometer
 } from 'lucide-react';
-import { DayType } from '@/lib/types';
+import type { CityAirTemperature, DayType } from '@/lib/types';
 import { formatTimeParts, getSolarPhase } from '@/lib/solar';
 import { useTranslation } from '@/lib/i18n';
 
@@ -40,6 +41,8 @@ export interface TimelineControlsProps {
   // Contextual Tide Props
   showTide?: boolean;
   tideLevel?: number | null;
+  /** Temperatura dell'aria nel centro storico (mostrata solo all'ora attuale) */
+  airTemp?: CityAirTemperature | null;
   // Live sync
   onSyncLiveTime?: () => void;
   isLiveSynced?: boolean;
@@ -66,13 +69,14 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
   peakTime,
   showTide = false,
   tideLevel,
+  airTemp,
   onSyncLiveTime,
   isLiveSynced,
   onShare,
   hasActiveLayers = false,
   onOpenTideModal
 }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [isExpandedMobile, setIsExpandedMobile] = useState<boolean>(false);
   const [shareState, setShareState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const copied = shareState === 'copied';
@@ -183,6 +187,17 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
             <span className="hidden md:inline text-[var(--ink-3)]">
               {t(solarPhase.targetLabelKey)} {solarPhase.targetTime}
             </span>
+            {/* Temperatura misurata adesso: con l'orario spostato non corrisponderebbe all'ora mostrata */}
+            {isLiveSynced && airTemp && (
+              <span
+                className="flex items-center gap-1 pl-1.5 ml-0.5 border-l border-[var(--rule)]"
+                title={t('ui.timeline.airTempTitle', { station: airTemp.stationName, time: airTemp.observedAt.slice(11, 16) })}
+                data-testid="timeline-air-temp"
+              >
+                <Thermometer className="w-3.5 h-3.5 text-rose-300 shrink-0" aria-hidden />
+                <span className="font-medium text-[var(--ink)] tabular">{airTemp.celsius.toLocaleString(language === 'it' ? 'it-IT' : 'en-GB', { maximumFractionDigits: 1 })}°</span>
+              </span>
+            )}
           </div>
 
           {/* Contextual Tide Badge (Visible only when Tide / MOSE layer is active) */}

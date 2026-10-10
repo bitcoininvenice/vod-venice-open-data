@@ -6,7 +6,7 @@
  * Il caricamento vero e proprio è in `useCityData`.
  */
 import type {
-  AirportMetarData, AirQualityItem, AlilagunaRoute, AlilagunaStop, BathingWaterItem, BellTowerItem,
+  AirportMetarData, AirQualityItem, CityAirTemperature, AlilagunaRoute, AlilagunaStop, BathingWaterItem, BellTowerItem,
   BriccolaSignalItem, BridgeClearanceItem, CanalSpeedLimitItem, CantiereItem, CityAssetItem, CivicPoiItem,
   EmergencyWaterDockItem, EvChargingItem, FlightItem, GondolaStationItem, HeatIslandSurfaceTempItem,
   LagoonFortressIslandItem, LagoonMorphologyItem, LagoonTributaryRiverItem, LagoonWaterQualityItem, LoraGateway,
@@ -75,6 +75,8 @@ export interface CityData {
   marineWindStations: MeteoMarineWindItem[];
   windField: WindField | null;
   metarData: AirportMetarData | null;
+  /** temperatura dell'aria nel centro storico (barra dell'orario) */
+  cityTemp: CityAirTemperature | null;
   subsidencePoints: SubsidenceInSARItem[];
   lagoonMorphology: LagoonMorphologyItem[];
   lagoonWaterQuality: LagoonWaterQualityItem[];
@@ -139,6 +141,7 @@ export const INITIAL_CITY_DATA: CityData = {
   marineWindStations: [],
   windField: null,
   metarData: null,
+  cityTemp: null,
   subsidencePoints: OPEN_SUBSIDENCE_INSAR,
   lagoonMorphology: OPEN_LAGOON_MORPHOLOGY,
   lagoonWaterQuality: [],
@@ -285,9 +288,17 @@ export const RESOURCES = {
   },
   weather: {
     url: '/api/weather',
+    // Sempre caricata: la temperatura del centro è nella barra dell'orario
+    refreshMs: 10 * 60_000,
     pick: (j) => {
       const d = payload(j);
-      return d && { metarData: (d.metar as AirportMetarData | undefined) ?? null, marineWindStations: list(d.windStations) };
+      return (
+        d && {
+          metarData: (d.metar as AirportMetarData | undefined) ?? null,
+          marineWindStations: list(d.windStations),
+          cityTemp: (d.cityTemp as CityAirTemperature | undefined) ?? null,
+        }
+      );
     },
   },
   railLogistics: {
@@ -378,7 +389,7 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
     veniceAssets: l.showBathingWaters || l.showTrees || l.showEvCharging || l.showWifiHotspots,
     waterways: l.showCanalLimits || l.showBridges || l.showGondolas || l.showDocks,
     lagoonMorphology: l.showSubsidence || l.showMorphology,
-    weather: l.showMarineWind || ui.airportModal || ui.tideModal,
+    weather: true,
     railLogistics: l.showTrains || l.showWasteBoats,
     heritage: l.showNizioleti || l.showWells || l.showBellTowers || l.showFortresses || ui.lists,
     emergencyHealth: l.showEmergencyDocks || l.showDae || l.showPharmacies || ui.lists,

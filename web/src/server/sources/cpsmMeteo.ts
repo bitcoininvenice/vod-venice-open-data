@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import type { MeteoMarineWindItem } from '@/lib/types';
+import { romeLocalToDate } from '@/lib/time';
+import type { CityAirTemperature } from '@/lib/types';
 
 /** Feed meteo-marini in tempo reale del Centro Maree (dati.venezia.it, CC BY). Aggiornamento ogni 5 minuti. */
 const BASE = 'https://dati.venezia.it/sites/default/files/dataset/opendata';
@@ -107,6 +109,27 @@ function stationType(name: string): MeteoMarineWindItem['stationType'] {
 }
 
 const round1 = (v: number) => Math.round(v * 10) / 10;
+
+/** Stazioni CPSM del centro storico per la temperatura "di Venezia", in ordine di preferenza. */
+export const CITY_AIR_TEMP_STATIONS = ['1026', '1039', '1029'] as const; // Palazzo Cavalli, San Giorgio, Misericordia
+/** Oltre questa età la misura non viene mostrata come temperatura attuale. */
+export const CITY_AIR_TEMP_MAX_AGE_MS = 2 * 60 * 60_000;
+
+
+/**
+ * Temperatura dell'aria nel centro storico: la prima stazione dell'elenco con una misura recente.
+ * null se nessuna stazione del centro ha trasmesso nelle ultime 2 ore (niente ripieghi su altre zone).
+ */
+export function cityAirTemperature(readings: CpsmReading[], now: Date = new Date()): CityAirTemperature | null {
+  for (const id of CITY_AIR_TEMP_STATIONS) {
+    const r = readings.find((x) => x.id === id);
+    const celsius = parseNumber(r?.value);
+    if (!r || celsius === null || !r.observedAt) continue;
+    if (now.getTime() - romeLocalToDate(r.observedAt).getTime() > CITY_AIR_TEMP_MAX_AGE_MS) continue;
+    return { celsius: round1(celsius), stationId: r.id, stationName: r.name.replace(/_/g, ' '), observedAt: r.observedAt };
+  }
+  return null;
+}
 
 /**
  * Stazioni vento CPSM con misure reali, arricchite (stessa stazione) con onde, temperatura,

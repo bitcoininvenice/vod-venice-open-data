@@ -60,7 +60,8 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   },
   weather_stations: async () => {
     const j = await read(weatherGET());
-    return { items: asRows(field(j.data, 'windStations')), meta: j.meta as Row };
+    // La temperatura del centro storico va nel contesto: è la risposta a "che temperatura c'è a Venezia?"
+    return { items: asRows(field(j.data, 'windStations')), meta: { ...(j.meta as Row), cityTemp: field(j.data, 'cityTemp') ?? null } };
   },
   wind_forecast: async () => {
     const j = await read(windGET());

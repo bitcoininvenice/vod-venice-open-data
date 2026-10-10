@@ -12,9 +12,9 @@ describe('registro delle risorse', () => {
     for (const u of urls) expect(u.startsWith('/api/')).toBe(true);
   });
 
-  it('a mappa vuota serve solo la marea', () => {
+  it('a mappa vuota servono solo marea e meteo (barra dell’orario)', () => {
     const needed = neededResources(allLayers(false), noUi);
-    expect(DATA_RESOURCES.filter((k) => needed[k])).toEqual(['tide']);
+    expect(DATA_RESOURCES.filter((k) => needed[k])).toEqual(['tide', 'weather']);
   });
 
   it('ricerca ed esportazione caricano gli elenchi cercabili', () => {

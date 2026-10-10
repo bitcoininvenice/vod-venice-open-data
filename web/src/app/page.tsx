@@ -533,6 +533,7 @@ export default function HomePage() {
             peakTime={simulation ? dayActivity(selectedDay).peakTime : undefined}
             showTide={showMose || showPasserelle}
             tideLevel={data.tideLevel}
+            airTemp={data.cityTemp}
             onSyncLiveTime={handleSyncLiveTime}
             isLiveSynced={isLiveSynced}
             onShare={handleShare}

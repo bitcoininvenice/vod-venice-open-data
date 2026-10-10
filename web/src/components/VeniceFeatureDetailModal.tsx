@@ -534,19 +534,19 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('ui.feature.temperatura')}</span>
                   <span className="font-mono font-bold text-[var(--ink)] text-sm">
-                    {feature.data.airTempCelsius ?? 18}°C
+                    {feature.data.airTempCelsius != null ? `${feature.data.airTempCelsius}°C` : t('ui.feature.nonDisponibile')}
                   </span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('ui.feature.pressione')}</span>
                   <span className="font-mono font-bold text-sky-600 dark:text-sky-400 text-sm">
-                    {feature.data.pressureHpa ?? 1015} hPa
+                    {feature.data.pressureHpa != null ? `${feature.data.pressureHpa} hPa` : t('ui.feature.nonDisponibile')}
                   </span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
                   <span className="text-[10px] text-[var(--ink-3)] block font-mono">{t('ui.feature.umiditaRel')}</span>
                   <span className="font-mono font-bold text-teal-600 dark:text-teal-400 text-sm">
-                    {feature.data.humidityPercent ?? 75}%
+                    {feature.data.humidityPercent != null ? `${feature.data.humidityPercent}%` : t('ui.feature.nonDisponibile')}
                   </span>
                 </div>
               </div>

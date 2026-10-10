@@ -7,6 +7,7 @@ import tempAria from '@/test/fixtures/cpsm-temparia.json';
 import livello from '@/test/fixtures/livello.json';
 import {
   buildWindStations,
+  cityAirTemperature,
   parseCpsmFeed,
   parseNumber,
   parseWaves,
@@ -79,5 +80,27 @@ describe('stazioni dalla fixture reale', () => {
     expect(p.waveHeightMeters).toBeGreaterThanOrEqual(0);
     // nella fixture la piattaforma non pubblica la temperatura dell'acqua: deve restare null, non inventata
     expect(p.waterTempC).toBeNull();
+  });
+});
+
+describe('cityAirTemperature', () => {
+  const now = new Date('2026-10-10T00:00:00Z'); // 02:00 a Venezia (ora legale)
+  const reading = (id: string, name: string, value: string | undefined, observedAt = '2026-10-10 01:40:00') => ({ id, name, value, observedAt });
+
+  it('preferisce Palazzo Cavalli', () => {
+    const t = cityAirTemperature([reading('1039', 'San Giorgio Isola', '17.4 °C'), reading('1026', 'Palazzo_Cavalli', '16.94 °C')], now);
+    expect(t).toEqual({ celsius: 16.9, stationId: '1026', stationName: 'Palazzo Cavalli', observedAt: '2026-10-10 01:40:00' });
+  });
+
+  it('passa alla stazione successiva se manca il valore o la misura è vecchia', () => {
+    const t = cityAirTemperature(
+      [reading('1026', 'Palazzo Cavalli', undefined), reading('1039', 'San Giorgio', '17 °C', '2026-10-09 20:00:00'), reading('1029', 'Misericordia', '16.5 °C')],
+      now,
+    );
+    expect(t?.stationId).toBe('1029');
+  });
+
+  it('nessuna stazione del centro: null, senza ripiegare su altre zone', () => {
+    expect(cityAirTemperature([reading('1021', 'Piattaforma', '18.8 °C')], now)).toBeNull();
   });
 });
