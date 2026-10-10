@@ -839,7 +839,7 @@ export const itUi = {
     exportTitle: "Scarica il report completo in JSON con impronta SHA-256",
     kicker: "Indicatori e stime",
     refreshedAt: "Aggiornato alle {time}",
-    title: "Metriche, analisi spaziale e stime",
+    title: "Metriche, analisi e stime",
     intro: "Indicatori ricavati dai dati del progetto e dalle fonti live (CPSM, ACTV, ARPAV, OpenSky, METAR). Ogni sezione dichiara se il valore è calcolato, una stima o illustrativo.",
     basis_calcolato: "Calcolato",
     basis_stima: "Stima",
