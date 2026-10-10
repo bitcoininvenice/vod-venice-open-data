@@ -49,6 +49,62 @@ const e = (key: LayerKey, label: string, icon: LayerIconName, tone: LayerTone): 
 
 export const LAYER_GROUPS: LayerGroup[] = [
   {
+    id: 'city',
+    label: 'layers.catCity',
+    icon: 'landmark',
+    tone: 'emerald',
+    subgroups: [
+      {
+        id: 'health', label: 'layers.subHealth', icon: 'heartPulse', tone: 'rose',
+        layers: [
+          e('showPharmacies', 'layers.layerPharmacies', 'pill', 'green'),
+          e('showDae', 'layers.layerDae', 'heartPulse', 'emerald'),
+          e('showEmergencyDocks', 'layers.layerEmergencyDocks', 'heartPulse', 'red'),
+        ],
+      },
+      {
+        id: 'cityServices', label: 'layers.subCityServices', icon: 'droplets', tone: 'cyan',
+        layers: [
+          e('showCityAssets', 'layers.layerCityAssets', 'droplets', 'cyan'),
+          e('showWifiHotspots', 'layers.layerWifiHotspots', 'wifi', 'indigo'),
+          e('showWifiVenues', 'ui.layerPanel.wifiVenues', 'wifi', 'teal'),
+          e('showFiber', 'ui.layerPanel.fiber', 'cable', 'green'),
+          e('showLoraGateways', 'ui.layerPanel.loraGateways', 'radio', 'violet'),
+          e('showRecyclingCentres', 'ui.layerPanel.recyclingCentres', 'recycle', 'green'),
+          e('showLibraries', 'ui.layerPanel.libraries', 'library', 'violet'),
+          e('showEvCharging', 'layers.layerEvCharging', 'zap', 'amber'),
+          e('showCameras', 'layers.layerCameras', 'camera', 'cyan'),
+          e('showCantieri', 'layers.layerCantieri', 'construction', 'amber'),
+          e('showBdapWorks', 'ui.layerPanel.bdapWorks', 'construction', 'orange'),
+          e('showSpatialBuffer', 'ui.layerPanel.bufferSpazialeCantieri', 'sliders', 'amber'),
+          e('showPedestrianFlows', 'layers.layerPedestrianFlows', 'footprints', 'rose'),
+        ],
+      },
+      {
+        id: 'sportLeisure', label: 'ui.layerPanel.subSport', icon: 'dumbbell', tone: 'orange',
+        layers: [
+          e('showSports', 'ui.layerPanel.sports', 'dumbbell', 'orange'),
+          e('showParks', 'ui.layerPanel.parks', 'trees', 'green'),
+        ],
+      },
+      {
+        id: 'heritage', label: 'layers.subHeritage', icon: 'landmark', tone: 'amber',
+        layers: [
+          e('showNizioleti', 'layers.layerNizioleti', 'landmark', 'neutral'),
+          e('showWells', 'layers.layerWells', 'landmark', 'amber'),
+          e('showBellTowers', 'layers.layerBellTowers', 'bell', 'orange'),
+        ],
+      },
+      {
+        id: 'territory', label: 'ui.layerPanel.subTerritory', icon: 'building', tone: 'fuchsia',
+        layers: [
+          e('showSatellites', 'layers.layerSatellites', 'satellite', 'fuchsia'),
+          e('showAccommodations', 'layers.layerAccommodations', 'building', 'fuchsia'),
+        ],
+      },
+    ],
+  },
+  {
     id: 'mobility',
     label: 'layers.catMobility',
     icon: 'ship',
@@ -142,62 +198,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
       },
     ],
   },
-  {
-    id: 'city',
-    label: 'layers.catCity',
-    icon: 'landmark',
-    tone: 'emerald',
-    subgroups: [
-      {
-        id: 'health', label: 'layers.subHealth', icon: 'heartPulse', tone: 'rose',
-        layers: [
-          e('showPharmacies', 'layers.layerPharmacies', 'pill', 'green'),
-          e('showDae', 'layers.layerDae', 'heartPulse', 'emerald'),
-          e('showEmergencyDocks', 'layers.layerEmergencyDocks', 'heartPulse', 'red'),
-        ],
-      },
-      {
-        id: 'cityServices', label: 'layers.subCityServices', icon: 'droplets', tone: 'cyan',
-        layers: [
-          e('showCityAssets', 'layers.layerCityAssets', 'droplets', 'cyan'),
-          e('showWifiHotspots', 'layers.layerWifiHotspots', 'wifi', 'indigo'),
-          e('showWifiVenues', 'ui.layerPanel.wifiVenues', 'wifi', 'teal'),
-          e('showFiber', 'ui.layerPanel.fiber', 'cable', 'green'),
-          e('showLoraGateways', 'ui.layerPanel.loraGateways', 'radio', 'violet'),
-          e('showRecyclingCentres', 'ui.layerPanel.recyclingCentres', 'recycle', 'green'),
-          e('showLibraries', 'ui.layerPanel.libraries', 'library', 'violet'),
-          e('showEvCharging', 'layers.layerEvCharging', 'zap', 'amber'),
-          e('showCameras', 'layers.layerCameras', 'camera', 'cyan'),
-          e('showCantieri', 'layers.layerCantieri', 'construction', 'amber'),
-          e('showBdapWorks', 'ui.layerPanel.bdapWorks', 'construction', 'orange'),
-          e('showSpatialBuffer', 'ui.layerPanel.bufferSpazialeCantieri', 'sliders', 'amber'),
-          e('showPedestrianFlows', 'layers.layerPedestrianFlows', 'footprints', 'rose'),
-        ],
-      },
-      {
-        id: 'sportLeisure', label: 'ui.layerPanel.subSport', icon: 'dumbbell', tone: 'orange',
-        layers: [
-          e('showSports', 'ui.layerPanel.sports', 'dumbbell', 'orange'),
-          e('showParks', 'ui.layerPanel.parks', 'trees', 'green'),
-        ],
-      },
-      {
-        id: 'heritage', label: 'layers.subHeritage', icon: 'landmark', tone: 'amber',
-        layers: [
-          e('showNizioleti', 'layers.layerNizioleti', 'landmark', 'neutral'),
-          e('showWells', 'layers.layerWells', 'landmark', 'amber'),
-          e('showBellTowers', 'layers.layerBellTowers', 'bell', 'orange'),
-        ],
-      },
-      {
-        id: 'territory', label: 'ui.layerPanel.subTerritory', icon: 'building', tone: 'fuchsia',
-        layers: [
-          e('showSatellites', 'layers.layerSatellites', 'satellite', 'fuchsia'),
-          e('showAccommodations', 'layers.layerAccommodations', 'building', 'fuchsia'),
-        ],
-      },
-    ],
-  },
+
 ];
 
 const REGIME_BY_SLUG = new Map(LAYER_CATALOG.map((l) => [l.id, l.regime]));

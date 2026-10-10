@@ -10,7 +10,7 @@ import {
   HeartPulse,
   Landmark,
   Layers,
-  Navigation,
+  Ship,
   Search,
   ShieldQuestion,
   Waves,
@@ -65,18 +65,17 @@ interface LayerPanelProps {
 }
 
 const PRESET_STYLE: Record<(typeof SCENARIO_PRESETS)[number], { icon: LucideIcon; cls: string; on: string }> = {
-  muoversi: { icon: Navigation, cls: 'text-sky-400', on: 'bg-sky-500/15 border-sky-500/50 text-[var(--ink)]' },
+  citta: { icon: Landmark, cls: 'text-amber-400', on: 'bg-amber-500/15 border-amber-500/50 text-[var(--ink)]' },
+  muoversi: { icon: Ship, cls: 'text-sky-400', on: 'bg-sky-500/15 border-sky-500/50 text-[var(--ink)]' },
   'acqua-alta': { icon: Waves, cls: 'text-blue-400', on: 'bg-blue-500/15 border-blue-500/50 text-[var(--ink)]' },
   ambiente: { icon: Wind, cls: 'text-emerald-400', on: 'bg-emerald-500/15 border-emerald-500/50 text-[var(--ink)]' },
   servizi: { icon: HeartPulse, cls: 'text-rose-400', on: 'bg-rose-500/15 border-rose-500/50 text-[var(--ink)]' },
-  citta: { icon: Landmark, cls: 'text-amber-400', on: 'bg-amber-500/15 border-amber-500/50 text-[var(--ink)]' },
 };
 
 const SubCategoryHeader: React.FC<{ icon: React.ReactNode; label: string; isFirst?: boolean }> = ({ icon, label, isFirst = false }) => (
   <div
-    className={`flex items-center gap-1.5 px-1 pb-1 text-[10px] font-mono font-semibold uppercase tracking-wider text-[var(--ink-3)] border-b border-[var(--rule)]/40 ${
-      isFirst ? 'pt-0.5' : 'pt-2.5'
-    }`}
+    className={`flex items-center gap-1.5 px-1 pb-1 text-[10px] font-mono font-semibold uppercase tracking-wider text-[var(--ink-3)] border-b border-[var(--rule)]/40 ${isFirst ? 'pt-0.5' : 'pt-2.5'
+      }`}
   >
     {icon}
     <span>{label}</span>
@@ -144,9 +143,8 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           onClick={() => onToggleLayer(entry.key)}
           aria-pressed={on}
           data-layer={entry.key}
-          className={`flex items-center justify-between gap-2 p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer text-left ${
-            on ? TONE_CLASSES[entry.tone].active : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] hover:border-[var(--ink-3)]/60 hover:text-[var(--ink)]'
-          }`}
+          className={`flex items-center justify-between gap-2 p-2 rounded-xl text-xs font-medium border transition-all cursor-pointer text-left ${on ? TONE_CLASSES[entry.tone].active : 'bg-transparent text-[var(--ink-2)] border-[var(--rule)] hover:border-[var(--ink-3)]/60 hover:text-[var(--ink)]'
+            }`}
         >
           <span className="flex items-center gap-2 min-w-0">
             <LayerIcon name={entry.icon} tone={entry.tone} className={`w-3.5 h-3.5 shrink-0 ${on ? '' : 'opacity-70'}`} />
@@ -173,9 +171,8 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 type="button"
                 onClick={() => onSportFilterChange(f)}
                 aria-pressed={sportFilter === f}
-                className={`px-2 py-0.5 rounded-full border text-[10px] font-mono cursor-pointer ${
-                  sportFilter === f ? 'bg-orange-500/20 border-orange-500/50 text-orange-200' : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)]'
-                }`}
+                className={`px-2 py-0.5 rounded-full border text-[10px] font-mono cursor-pointer ${sportFilter === f ? 'bg-orange-500/20 border-orange-500/50 text-orange-200' : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)]'
+                  }`}
               >
                 {t(`ui.sport.filter_${f}`)}
               </button>
@@ -357,9 +354,8 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 onClick={() => applyPreset(p)}
                 aria-pressed={on}
                 title={t(`ui.presets.${p}Desc`)}
-                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-xl border text-[11px] font-medium text-left transition-all cursor-pointer active:scale-[0.98] ${
-                  on ? style.on : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] hover:border-[var(--ink-3)]/60'
-                }`}
+                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-xl border text-[11px] font-medium text-left transition-all cursor-pointer active:scale-[0.98] ${on ? style.on : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] hover:border-[var(--ink-3)]/60'
+                  }`}
               >
                 <Icon className={`w-3.5 h-3.5 shrink-0 ${style.cls}`} aria-hidden />
                 <span className="truncate">{t(`ui.presets.${p}`)}</span>
@@ -457,11 +453,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                     type="button"
                     onClick={() => onSelectCategory(isSelected ? 'all' : c.key)}
                     aria-pressed={isSelected}
-                    className={`flex items-center justify-between p-1.5 px-2.5 rounded-lg text-xs transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-[var(--rule)] text-[var(--ink)] font-bold ring-1 ring-cyan-500'
-                        : 'text-[var(--ink-2)] hover:bg-[var(--rule)]/50 hover:text-[var(--ink)]'
-                    }`}
+                    className={`flex items-center justify-between p-1.5 px-2.5 rounded-lg text-xs transition-all cursor-pointer ${isSelected
+                      ? 'bg-[var(--rule)] text-[var(--ink)] font-bold ring-1 ring-cyan-500'
+                      : 'text-[var(--ink-2)] hover:bg-[var(--rule)]/50 hover:text-[var(--ink)]'
+                      }`}
                   >
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-sm" style={{ backgroundColor: color }} />
