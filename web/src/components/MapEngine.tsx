@@ -7,7 +7,7 @@ import type { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import type { MapObjectSelected } from './MapObjectPanel';
 import { matchesSportFilter, type SportFilter } from '@/lib/sports';
 import { GRID, LAND_LO } from '@/lib/simulation-data';
-import { drawBaseMap, isLandHiLoaded, requestLandHi } from './map/baseMap';
+import { drawBaseMap, isLandHiLoaded, requestLandHi, isStreetsLoaded, requestStreets } from './map/baseMap';
 import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { useTranslation } from '@/lib/i18n';
@@ -783,10 +783,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       const sy = (y: number) => (y - camera.y0) * camera.s;
 
       // 1-2. Acqua e isole: disegnate in una cache e ricopiate finché vista, dimensioni e colori non cambiano.
-      // Le isole dettagliate (circa 860 KB) si scaricano solo al primo zoom; nel frattempo resta la versione leggera.
-      const zoomed = camera.s / (cw / W) > 1.6;
+      // Le isole dettagliate (circa 860 KB) e le calli si scaricano al primo zoom ravvicinato.
+      const zoomFactor = camera.s / (cw / W);
+      const zoomed = zoomFactor > 1.6;
       if (zoomed && !isLandHiLoaded()) requestLandHi(() => setLandHiReady(true));
-      drawBaseMap(ctx, { cw, ch, dpr, camera, pal, is3DView, zoomed: zoomed && isLandHiLoaded(), landLo: LAND_LO });
+      if (zoomed && !isStreetsLoaded()) requestStreets(() => setLandHiReady((prev) => !prev));
+      drawBaseMap(ctx, { cw, ch, dpr, camera, pal, is3DView, zoomed: zoomed && isLandHiLoaded(), landLo: LAND_LO, zoomFactor });
 
       // Contesto del frame condiviso dai layer di disegno (components/map/*)
       const rc: RenderContext = {

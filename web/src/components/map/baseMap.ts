@@ -1,7 +1,8 @@
-// Mappa di base (acqua e isole) con cache: è la parte più costosa del frame (migliaia di vertici) ma cambia
-// solo con vista, dimensioni o colori. Viene disegnata su un canvas nascosto e ricopiata negli altri frame.
 import { LAND_HI_URL } from '@/lib/simulation-data';
 import type { ColorScheme } from '@/lib/solar';
+import { isStreetsLoaded, paintStreets, requestStreets } from './streetsLayer';
+
+export { isStreetsLoaded, requestStreets };
 
 /** Poligoni (anelli di coordinate x,y alternate) nella griglia virtuale della mappa. */
 export type LandPolygons = number[][][];
@@ -71,6 +72,7 @@ interface BaseMapOptions {
   /** usa le isole dettagliate (solo se già caricate) */
   zoomed: boolean;
   landLo: LandPolygons;
+  zoomFactor?: number;
 }
 
 let cache: { canvas: HTMLCanvasElement; key: string } | null = null;
@@ -116,6 +118,17 @@ function paint(b: CanvasRenderingContext2D, o: BaseMapOptions, polys: LandPolygo
     b.fill();
     b.stroke();
   }
+
+  // 3. Rete pedonale: calli, rami, salizzade, fondamenta e ponti di Venezia
+  if (isStreetsLoaded() && o.zoomFactor && o.zoomFactor >= 1.7) {
+    paintStreets(b, {
+      cw: o.cw,
+      ch: o.ch,
+      camera: o.camera,
+      pal: o.pal,
+      zoomFactor: o.zoomFactor,
+    });
+  }
 }
 
 /** Disegna acqua e isole sul contesto (già scalato per il devicePixelRatio). */
@@ -123,7 +136,21 @@ export function drawBaseMap(ctx: CanvasRenderingContext2D, o: BaseMapOptions): v
   const polys = o.zoomed && landHi ? landHi : o.landLo;
   const w = Math.round(o.cw * o.dpr);
   const h = Math.round(o.ch * o.dpr);
-  const key = [w, h, o.dpr, o.camera.x0, o.camera.y0, o.camera.s, o.pal.water, o.pal.land, o.pal.coast, o.is3DView, polys === landHi].join('|');
+  const streetsActive = isStreetsLoaded() && Boolean(o.zoomFactor && o.zoomFactor >= 1.7);
+  const key = [
+    w,
+    h,
+    o.dpr,
+    o.camera.x0,
+    o.camera.y0,
+    o.camera.s,
+    o.pal.water,
+    o.pal.land,
+    o.pal.coast,
+    o.is3DView,
+    polys === landHi,
+    streetsActive,
+  ].join('|');
   if (!cache || cache.key !== key) {
     const canvas = cache?.canvas ?? document.createElement('canvas');
     if (canvas.width !== w) canvas.width = w;
