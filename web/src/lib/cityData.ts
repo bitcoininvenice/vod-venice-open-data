@@ -14,7 +14,7 @@ import type {
   PasserellaItem, PedestrianFlowItem, PharmacyItem, PollenMonitoringStationItem, PublicDaeItem, PublicDockItem,
   RegionalBikeRouteItem, SatelliteItem, ShipItem, SportPlace, StopItem, SubsidenceInSARItem,
   TouristAccommodationItem, TrainLiveItem, UrbanTreeItem, VeniceCameraItem, VeniceWellItem,
-  VeritasWasteBoatItem, WifiHotspotItem, WifiVenue, WindField,
+  VeritasWasteBoatItem, WifiHotspotItem, WifiVenue, WindField, GeoportaleCatalogData,
 } from './types';
 import type { TideCategory, TideForecast, TideResponse, TideStation, TideTrend } from './contracts/tide';
 import type { RealtimeVehicleDto } from './contracts/realtime';
@@ -111,6 +111,7 @@ export interface CityData {
   fortressIslands: LagoonFortressIslandItem[];
   satellites: SatelliteItem[];
   touristAccommodations: TouristAccommodationItem[];
+  geoportaleData: GeoportaleCatalogData | null;
 }
 
 /** Valori iniziali: elenchi di riferimento inclusi nella build, poi sostituiti dalle API. */
@@ -176,6 +177,7 @@ export const INITIAL_CITY_DATA: CityData = {
   fortressIslands: OPEN_LAGOON_FORTRESS_ISLANDS,
   satellites: [],
   touristAccommodations: REGIONAL_TOURIST_ACCOMMODATIONS,
+  geoportaleData: null,
 };
 
 // ---------------------------------------------------------------------------
@@ -341,6 +343,10 @@ export const RESOURCES = {
       );
     },
   },
+  geoportale: {
+    url: '/api/geoportale',
+    pick: (j) => (j.success && j.data ? { geoportaleData: j.data as GeoportaleCatalogData } : undefined),
+  },
 } satisfies Record<string, ResourceSpec>;
 
 export type DataResource = keyof typeof RESOURCES;
@@ -399,6 +405,7 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
     emergencyHealth: l.showEmergencyDocks || l.showDae || l.showPharmacies || ui.lists,
     urbanMicroclimate: l.showHeatIslands,
     regionalData: l.showLagoonWater || l.showAccommodations || l.showBikeRoutes || l.showPollenStations || l.showTributaries,
+    geoportale: l.showGeoportale || ui.lists,
   };
 }
 
@@ -457,5 +464,6 @@ export function layerCounts(d: CityData, extra: { scheduledVehicles: number; ali
     showBikeRoutes: d.regionalBikeRoutes.length,
     showPollenStations: d.pollenMonitoringStations.length,
     showTributaries: d.lagoonTributaryRivers.length,
+    showGeoportale: (d.geoportaleData?.municipalities.length ?? 0) + (d.geoportaleData?.sestieri.length ?? 0),
   };
 }

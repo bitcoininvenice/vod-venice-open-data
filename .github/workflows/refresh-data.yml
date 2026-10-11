@@ -51,6 +51,7 @@ jobs:
           python import_cciaa_turismo.py || echo "::warning::turismo e popolazione non aggiornati"
           python import_alilaguna_gtfs.py || echo "::warning::orario Alilaguna non aggiornato"
           python import_agcom_fiber.py || echo "::warning::copertura fibra AGCOM non aggiornata"
+          python import_geoportale.py || echo "::warning::Geoportale SIT non aggiornato"
 
       - uses: actions/setup-node@v4
         with:

@@ -1078,3 +1078,98 @@ export interface CityAirTemperature {
   /** ora locale Europe/Rome della misura, "YYYY-MM-DD HH:mm:ss" */
   observedAt: string;
 }
+
+// ==========================================
+// GEOPORTALE SIT COMUNE DI VENEZIA (DBGT, SIT & Pianificazione)
+// ==========================================
+export type GeoportaleThemeKey =
+  | 'confini_toponomastica'
+  | 'urbanistica_piani'
+  | 'ambiente_suolo'
+  | 'servizi_civici'
+  | 'mobilita_infrastrutture'
+  | 'catasto_patrimonio'
+  | 'cartografia_storica_ortofoto';
+
+export interface GeoportaleLayerInfo {
+  id: string;
+  name: string;
+  geometryType: string;
+  nativeId: number | null;
+  isGroup: boolean;
+  displayField: string | null;
+}
+
+export interface GeoportaleService {
+  id: string;
+  name: string;
+  serviceType: string;
+  theme: GeoportaleThemeKey;
+  themeLabelIt: string;
+  themeLabelEn: string;
+  description: string;
+  layerCount: number;
+  layers: GeoportaleLayerInfo[];
+  deepLinkUrl: string;
+  connectionString?: string;
+  openDataStatus: 'open_iodl' | 'open_selective' | 'viewer_only';
+  technicalNotes: string;
+}
+
+export interface GeoportaleMunicipality {
+  id: number;
+  name: string;
+  rawName: string;
+  code: string;
+  objectid?: number;
+  population: number;
+  areaHa: number;
+  areaKm2: number | null;
+  densityPerKm2: number;
+  bbox: [number, number, number, number];
+  centroid: [number, number];
+  rings: [number, number][][];
+}
+
+export interface GeoportaleSestiere {
+  name: string;
+  code: string;
+  population?: number;
+  areaHa?: number;
+  densityPerKm2?: number;
+  civicNumbersCount?: number;
+  subAreas?: string[];
+  centroid: [number, number];
+  bbox: [number, number, number, number];
+}
+
+export interface GeoportaleTutelaZone {
+  id: string;
+  name: string;
+  theme: string;
+  normative: string;
+  description: string;
+  centroid: [number, number];
+  level: string;
+}
+
+export interface GeoportaleCatalogData {
+  generatedAt: string;
+  source: string;
+  sourceUrl: string;
+  license: string;
+  nature: string;
+  method: string;
+  themes: Record<string, { it: string; en: string; priority: string }>;
+  stats: {
+    totalServices: number;
+    totalLayers: number;
+    municipalitiesCount: number;
+    sestieriCount: number;
+    tutelaZonesCount: number;
+  };
+  municipalities: GeoportaleMunicipality[];
+  sestieri: GeoportaleSestiere[];
+  tutelaZones: GeoportaleTutelaZone[];
+  services: GeoportaleService[];
+}

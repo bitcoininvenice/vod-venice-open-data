@@ -160,6 +160,7 @@ export interface Translations {
     layerTributaries: string;
     layerSatellites: string;
     layerCameras: string;
+    layerGeoportale: string;
   };
   tutorial: {
     step1Badge: string;

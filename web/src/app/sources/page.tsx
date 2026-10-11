@@ -80,6 +80,7 @@ const SOURCES_METADATA: Record<string, SourceMetadata> = {
   'bdap-mop': { institution: 'MEF – Ragioneria Generale dello Stato (BDAP)', portalUrl: 'https://bdap-opendata.rgs.mef.gov.it/opendata/spd_mop_prg_mon_reg05_01_9999', portalName: 'bdap-opendata.rgs.mef.gov.it', license: 'CC BY', format: 'CSV (CKAN)', refresh: 'weekly', hasNote: true },
   'agcom-fiber': { institution: 'AGCOM – BroadbandMap', portalUrl: 'https://maps.agcom.it', portalName: 'maps.agcom.it', license: 'CC BY 4.0', format: 'ArcGIS REST (griglia 20 m)', refresh: 'weekly', hasNote: true },
   'alilaguna-gtfs': { institution: 'Alilaguna S.p.A.', portalUrl: 'https://www.alilaguna.it', portalName: 'alilaguna.it (GTFS)', license: '—', format: 'GTFS', refresh: 'weekly', hasNote: true },
+  geoportale: { institution: `${COMUNE} – SIT Geoportale e DBGT`, portalUrl: 'https://geoportale.comune.venezia.it', portalName: 'geoportale.comune.venezia.it', license: 'IODL 2.0 / CC BY', format: 'ArcGIS / DBGT WGS84', refresh: 'weekly', hasNote: true },
 };
 
 // Dettagli prodotti da /api/health, tradotti quando noti

@@ -158,7 +158,8 @@ export const itTranslations: Translations = {
     layerPollenStations: 'Monitoraggio Pollini ARPAV',
     layerTributaries: 'Fiumi Immissari in Laguna',
     layerSatellites: 'Orbita Satelliti Copernicus & ASI',
-    layerCameras: 'Telecamere & Webcam (Live + CCTV)'
+    layerCameras: 'Telecamere & Webcam (Live + CCTV)',
+    layerGeoportale: 'Geoportale SIT & Confini Ufficiali'
   },
   tutorial: {
     step1Badge: 'BENVENUTO',

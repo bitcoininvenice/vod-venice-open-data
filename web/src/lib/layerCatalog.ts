@@ -929,5 +929,21 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     technicalNotesIt: 'Import con pipeline/import_osm_waterways.py (waterway=canal, ODbL), tracciati semplificati a 4 m. Cliccando un canale si vedono nome e lunghezza del tratto mappato. Non è una carta nautica: profondità e navigabilità non sono indicate.',
     technicalNotesEn: 'Imported with pipeline/import_osm_waterways.py (waterway=canal, ODbL), courses simplified to 4 m. Clicking a canal shows its name and the length of the mapped section. It is not a nautical chart: depth and navigability are not shown.',
     endpointOrFile: '/api/lagoon-network (src/data/osm-waterways.json)'
+  },
+  {
+    id: 'geoportale_sit',
+    nameIt: 'Geoportale SIT & Confini Ufficiali',
+    nameEn: 'SIT Geoportal & Official Boundaries',
+    group: 'city',
+    regime: 'static',
+    acquisition: 'api',
+    institution: 'Comune di Venezia (SIT & DBGT)',
+    portalUrl: 'https://geoportale.comune.venezia.it',
+    portalName: 'geoportale.comune.venezia.it',
+    descriptionIt: 'Confini amministrativi ufficiali DBGT (6 Municipalità e Sestieri storici in coordinate WGS84 con statistiche demografiche), zone di tutela speciale (microzone somministrazione alimenti e patti territoriali) e catalogo federato dei 28 Map Services del SIT con collegamento diretto al visualizzatore Geocortex per consultare catasto, pianificazione e ortofoto storiche.',
+    descriptionEn: 'Official administrative DBGT boundaries (6 Municipalities and historic Sestieri in WGS84 coordinates with demographics), special protection zones (food commerce restrictions and territorial pacts), and federated catalog of 28 SIT Map Services linking to the official Geocortex viewer for cadastre, planning, and historic orthophotos.',
+    technicalNotesIt: 'Dataset ufficiale del Comune di Venezia (Database Geotopografico, licenza IODL 2.0 / CC BY). Integrazione selettiva ad alto valore civico: geometrie poligonali semplificate per performance web; i layer pesanti di sola consultazione (catasto particelle, VPRG frammentati, ortofoto storiche) rimandano al visualizzatore SIT del Comune tramite deep-link per evitare violazioni di licenza, errori 403 e saturazione client.',
+    technicalNotesEn: 'Official City of Venice dataset (Geotopographical Database, IODL 2.0 / CC BY license). Selective high-value integration: simplified polygon geometries for web performance; heavy consultation-only layers (cadastre parcels, planning variants, historic orthophotos) deep-link to the official municipal SIT viewer to respect licensing, avoid 403 errors, and prevent client bloat.',
+    endpointOrFile: '/api/geoportale (src/data/geoportale-venezia.json)'
   }
 ];

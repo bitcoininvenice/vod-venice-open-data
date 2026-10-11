@@ -23,6 +23,7 @@ import { drawFloodLayer } from './map/floodLayer';
 import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
 import { drawFiber } from './map/fiberLayer';
 import { drawLagoonNetwork } from './map/lagoonNetworkLayer';
+import { drawGeoportale } from './map/geoportaleLayer';
 import { withLabelGuard } from './map/labelGuard';
 import { firstHit, hitTester, pointInRing, type Hit } from './map/hitTest';
 import { lineColor } from '@/lib/actvLines';
@@ -838,8 +839,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       drawFiber(rc);
       // Etichette diradate: niente sovrapposizioni e un massimo per frame (vince chi è disegnato prima)
       withLabelGuard(ctx, (unguarded) => {
-        // Aree verdi per prime: sotto canali, linee e simboli
+        // Aree verdi e confini per primi: sotto canali, linee e simboli
         drawParks(rc);
+        drawGeoportale(rc);
         drawLagoonNetwork(rc);
         drawRoutes(rc);
         drawSelectedTrip(rc);

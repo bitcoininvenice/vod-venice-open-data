@@ -127,7 +127,8 @@ export const enUi: UiTranslations = {
     subSport: "Sport and leisure",
     sportFilter: "Filter by sport",
     nautical: "Boating and moorings (OSM)",
-    parks: "Parks, gardens and playgrounds (OSM)"
+    parks: "Parks, gardens and playgrounds (OSM)",
+    geoportale: "SIT Geoportal & Official Boundaries"
   },
   map: {
     orarioUfficialeActv: "official ACTV timetable",
@@ -1169,6 +1170,8 @@ export const enUi: UiTranslations = {
     "meta_packet-broker": "Online gateways whose owners made status and location public, read every 10 minutes; same position as TTN maps, without identifiers.",
     name_campo: "CAMPO community sport spaces",
     meta_campo: "CAMPO community reports (CC BY 4.0), re-read every hour and merged with OpenStreetMap sports facilities.",
+    name_geoportale: "SIT Geoportal & DBGT (City of Venice)",
+    meta_geoportale: "Selective high-value civic integration: official DBGT boundaries in WGS84 for the 6 municipalities and historic sestieri, special protection zones (food commerce and territorial pacts), and federated catalog of 28 SIT Map Services deep-linking to the official City viewer.",
     refresh_r60min: "read every hour"
   },
   notFound: {

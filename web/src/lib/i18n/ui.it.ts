@@ -125,7 +125,8 @@ export const itUi = {
     subSport: "Sport e tempo libero",
     sportFilter: "Filtra per sport",
     nautical: "Nautica e ormeggi (OSM)",
-    parks: "Parchi, giardini e aree giochi (OSM)"
+    parks: "Parchi, giardini e aree giochi (OSM)",
+    geoportale: "Geoportale SIT & Confini Ufficiali"
   },
   map: {
     orarioUfficialeActv: "orario ufficiale ACTV",
@@ -1167,6 +1168,8 @@ export const itUi = {
     "meta_packet-broker": "Gateway online con stato e posizione resi pubblici dai proprietari, letti ogni 10 minuti; stessa posizione delle mappe di TTN, senza identificativi.",
     name_campo: "Spazi sportivi della comunità CAMPO",
     meta_campo: "Segnalazioni della comunità CAMPO (CC BY 4.0), rilette ogni ora e unite agli impianti sportivi di OpenStreetMap.",
+    name_geoportale: "SIT Geoportale e DBGT (Comune di Venezia)",
+    meta_geoportale: "Integrazione selettiva ad alto valore civico: confini ufficiali DBGT in WGS84 delle 6 municipalità e dei sestieri, zone di tutela territoriale (microzone somministrazione alimenti e patti territoriali) e catalogo federato dei 28 Map Services con deep-link al visualizzatore ufficiale del Comune.",
     refresh_r60min: "riletto ogni ora"
   },
   notFound: {

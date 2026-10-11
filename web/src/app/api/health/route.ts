@@ -34,6 +34,7 @@ import lagoonProbeDataset from '@/data/arpav-lagoon.json';
 import cruscottoDataset from '@/data/cruscotto-comuni.json';
 import censusDataset from '@/data/istat-census-venezia.json';
 import bdapDataset from '@/data/bdap-opere-venezia.json';
+import { GEOPORTALE_DATA } from '@/lib/geoportale';
 
 export const revalidate = 60;
 
@@ -110,6 +111,7 @@ export async function GET() {
     assess('agcom-fiber', 'Copertura rete fissa AGCOM (pipeline)', 'dataset', new Date(fiberDataset.generatedAt), 120 * DAY, now),
     assess('alilaguna-gtfs', 'Orario Alilaguna GTFS (pipeline)', 'dataset', new Date(ALILAGUNA_FEED_META.generatedAt), 31 * DAY, now,
       isAlilagunaTimetableValid(now) ? undefined : 'orario importato non più valido'),
+    assess('geoportale', 'SIT Geoportale e DBGT Comune di Venezia (pipeline)', 'dataset', new Date(GEOPORTALE_DATA.generatedAt), 31 * DAY, now),
   ];
 
   const status = sources.some((s) => s.status === 'down') ? 'degraded' : sources.some((s) => s.status === 'stale') ? 'stale' : 'ok';

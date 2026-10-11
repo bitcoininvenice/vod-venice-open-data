@@ -63,6 +63,7 @@ vod-venice-open-data/
 │   ├── import_arpav_lagoon.py      # Sonde ARPAV della laguna (ultimo campionamento) e riepilogo balneazione
 │   ├── import_cciaa_turismo.py     # Arrivi, presenze e residenti dei comuni della laguna (CCIAA, CC BY)
 │   ├── import_agcom_fiber.py       # Copertura rete fissa FTTH/FTTC/ADSL (AGCOM BroadbandMap, CC BY 4.0)
+│   ├── import_geoportale.py        # Geoportale SIT: confini ufficiali DBGT (WGS84), tutela territoriale e catalogo 28 Map Services
 │   ├── enrich_fountains.py         # Toponimo di prossimità per le fontanelle senza nome
 │   └── tests/                      # Test pytest
 ├── web/                            # Applicazione Next.js 16 (App Router)
@@ -252,6 +253,7 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/sports` | Spazi sportivi: segnalazioni della comunità CAMPO (CC BY 4.0, indirizzo in `web/src/server/sources/campo.ts`, riletta ogni ora) unite agli impianti OpenStreetMap; CAMPO prevale entro 60 m. |
 | `GET` | `/api/lora-gateways` | Gateway LoRaWAN online della rete comunitaria The Things Network nell'area della mappa (Packet Broker Mapper, cache 10 min): posizione come pubblicata dal proprietario, nessun identificativo né nome. |
 | `GET` | `/api/opere-bdap` | Opere del Comune con lavori in corso dal Monitoraggio Opere Pubbliche (BDAP – Ragioneria Generale dello Stato, CC BY) e riepilogo di tutti i progetti per fase, settore e finanziamento. |
+| `GET` | `/api/geoportale` | Confini ufficiali DBGT (6 municipalità e sestieri in WGS84), zone di tutela speciale (microzone commercio e patti territoriali) e catalogo federato dei 28 Map Services del SIT con deep-link al visualizzatore ufficiale del Comune. |
 
 Le API sono pubbliche e in sola lettura, con cache server per ogni fonte e un limite di
 600 richieste al minuto per IP (`API_RATE_LIMIT_PER_MINUTE`).
@@ -259,6 +261,7 @@ Le API sono pubbliche e in sola lettura, con cache server per ogni fonte e un li
 ---
 
 ## 📄 Fonti, licenze e crediti
+* **Comune di Venezia – SIT Geoportale e DBGT**: Database Geotopografico, confini ufficiali, microzone di tutela e servizi territoriali (licenza IODL 2.0 / CC BY).
 * **ACTV S.p.A. / AVM**: GTFS Navigazione e Automobilistico (Open Data, CC BY – citazione obbligatoria). Il feed GTFS-RT è pubblico ma la licenza d'uso va confermata con AVM.
 * **Comune di Venezia – CPSM**: livelli e previsioni di marea da `dati.venezia.it`.
 * **CAMPO – Dati forniti dalla comunità di CAMPO Venezia**: spazi sportivi di Venezia (CC BY 4.0; licenza, avvertenze e richieste di rimozione nella pagina `/licenza` di CAMPO).

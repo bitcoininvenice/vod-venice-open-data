@@ -23,6 +23,7 @@ import { GET as sportsGET } from '@/app/api/sports/route';
 import { GET as nauticalGET } from '@/app/api/nautical/route';
 import { GET as parksGET } from '@/app/api/parks/route';
 import { GET as censusGET } from '@/app/api/census/route';
+import { GET as geoportaleGET } from '@/app/api/geoportale/route';
 import civiciData from '@/data/osm-civici.json';
 import { GET as healthGET } from '@/app/api/health/route';
 import tourism from '@/data/turismo-comuni.json';
@@ -214,6 +215,17 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
     items: cruscotto.comuni as unknown as Row[],
     meta: { source: cruscotto.source, sourceUrl: cruscotto.sourceUrl, license: cruscotto.license, retrievedAt: cruscotto.generatedAt },
   }),
+  geoportale_sit: async () => {
+    const j = await read(geoportaleGET(new Request('https://veniceopendata.com/api/geoportale')));
+    const d = j.data as { municipalities: Row[]; sestieri: Row[]; tutelaZones: Row[]; services: Row[] };
+    const items: Row[] = [
+      ...d.municipalities.map((m) => ({ type: 'municipalita', ...m })),
+      ...d.sestieri.map((s) => ({ type: 'sestiere', ...s })),
+      ...d.tutelaZones.map((t) => ({ type: 'tutela', ...t })),
+      ...d.services.map((s) => ({ type: 'sit_service', ...s })),
+    ];
+    return { items, meta: j.meta as Row };
+  },
   sources_status: async () => {
     const j = await read(healthGET());
     return { items: asRows(j.sources), meta: { status: j.status, checkedAt: j.checkedAt } };

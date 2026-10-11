@@ -158,7 +158,8 @@ export const enTranslations: Translations = {
     layerPollenStations: 'ARPAV Airborne Pollen Monitoring',
     layerTributaries: 'Lagoon Tributary Rivers',
     layerSatellites: 'Copernicus & ASI Satellite Orbits',
-    layerCameras: 'Cameras & Webcams (Live + CCTV)'
+    layerCameras: 'Cameras & Webcams (Live + CCTV)',
+    layerGeoportale: 'SIT Geoportal & Official Boundaries'
   },
   tutorial: {
     step1Badge: 'WELCOME',

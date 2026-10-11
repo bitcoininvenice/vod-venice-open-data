@@ -100,6 +100,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
         layers: [
           e('showSatellites', 'layers.layerSatellites', 'satellite', 'fuchsia'),
           e('showAccommodations', 'layers.layerAccommodations', 'building', 'fuchsia'),
+          e('showGeoportale', 'layers.layerGeoportale', 'landmark', 'stone'),
         ],
       },
     ],
