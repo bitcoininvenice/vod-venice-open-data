@@ -5,11 +5,59 @@ import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { MARITIME_ROUTES } from '@/lib/shipsData';
 import type { MoseGateItem, ShipCategory } from '@/lib/types';
 
-const DEFAULT_MOSE_GATES: { id: string; inletName: string; lat: number; lon: number; barriersCount: number; status: MoseGateItem['status'] }[] = [
-  { id: 'mose-lido-treporti', inletName: 'Lido Treporti', lat: 45.4330, lon: 12.4280, barriersCount: 21, status: 'ABBASSATO' },
-  { id: 'mose-lido-sannicolo', inletName: 'Lido San Nicolò', lat: 45.4225, lon: 12.4330, barriersCount: 20, status: 'ABBASSATO' },
-  { id: 'mose-malamocco', inletName: 'Malamocco', lat: 45.3340, lon: 12.2980, barriersCount: 19, status: 'ABBASSATO' },
-  { id: 'mose-chioggia', inletName: 'Chioggia', lat: 45.2310, lon: 12.2980, barriersCount: 18, status: 'ABBASSATO' },
+const DEFAULT_MOSE_GATES = [
+  {
+    id: 'mose-lido-treporti',
+    inletName: 'Lido Treporti',
+    channel: 'Bocca di Porto di Lido Nord',
+    lat: 45.4342,
+    lon: 12.4300,
+    startLon: 12.4335,
+    startLat: 45.4370,
+    endLon: 12.4265,
+    endLat: 45.4315,
+    barriersCount: 21,
+    status: 'ABBASSATO' as const,
+  },
+  {
+    id: 'mose-lido-sannicolo',
+    inletName: 'Lido San Nicolò',
+    channel: 'Bocca di Porto di Lido Sud',
+    lat: 45.4245,
+    lon: 12.4242,
+    startLon: 12.4265,
+    startLat: 45.4285,
+    endLon: 12.4220,
+    endLat: 45.4205,
+    barriersCount: 20,
+    status: 'ABBASSATO' as const,
+  },
+  {
+    id: 'mose-malamocco',
+    inletName: 'Malamocco',
+    channel: 'Canale dei Petroli / Bocca Centrale',
+    lat: 45.3338,
+    lon: 12.3345,
+    startLon: 12.3325,
+    startLat: 45.3370,
+    endLon: 12.3365,
+    endLat: 45.3305,
+    barriersCount: 19,
+    status: 'ABBASSATO' as const,
+  },
+  {
+    id: 'mose-chioggia',
+    inletName: 'Chioggia',
+    channel: 'Bocca di Porto Sud / Chioggia',
+    lat: 45.2350,
+    lon: 12.2998,
+    startLon: 12.2970,
+    startLat: 45.2385,
+    endLon: 12.3025,
+    endLat: 45.2315,
+    barriersCount: 18,
+    status: 'ABBASSATO' as const,
+  },
 ];
 
 export function drawMose(rc: RenderContext): void {
@@ -21,78 +69,204 @@ export function drawMose(rc: RenderContext): void {
   const gates = (moseGates && moseGates.length > 0) ? moseGates : DEFAULT_MOSE_GATES;
   const isProtected = isMoseProtected !== false;
   const isSimulating = rawTideLevel !== undefined && rawTideLevel !== null;
+  const time = Date.now() / 1000;
+  const reduced = prefersReducedMotion();
 
-  for (const gate of gates) {
-    const gx = sx(mx(gate.lon));
-    const gy = sy(my(gate.lat));
+  gates.forEach((gate, gateIdx) => {
+    // Coordinate dei due estremi attraverso la bocca di porto
+    const sLon = gate.startLon ?? DEFAULT_MOSE_GATES[gateIdx]?.startLon ?? (gate.lon - 0.003);
+    const sLat = gate.startLat ?? DEFAULT_MOSE_GATES[gateIdx]?.startLat ?? (gate.lat + 0.003);
+    const eLon = gate.endLon ?? DEFAULT_MOSE_GATES[gateIdx]?.endLon ?? (gate.lon + 0.003);
+    const eLat = gate.endLat ?? DEFAULT_MOSE_GATES[gateIdx]?.endLat ?? (gate.lat - 0.003);
 
-    const barWidth = Math.max(34, 56 * (camera.s / 0.02));
-    // Se la simulazione e attiva o la marea supera 110 cm e protetto: paratie del MOSE alzate
+    const x1 = sx(mx(sLon));
+    const y1 = sy(my(sLat));
+    const x2 = sx(mx(eLon));
+    const y2 = sy(my(eLat));
+
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.hypot(dx, dy);
+    if (len < 2) return;
+
+    const ux = dx / len;
+    const uy = dy / len;
+    // Normale che punta verso l'Adriatico (est / mare aperto, nx > 0)
+    let nx = -uy;
+    let ny = ux;
+    if (nx < 0) {
+      nx = -nx;
+      ny = -ny;
+    }
+
     const isGateActivated = isSimulating
       ? (seaTide >= 110 && isProtected)
       : (gate.status === 'ATTIVATO' || (seaTide >= 110 && isProtected));
-    const barrierCol = isGateActivated ? '#10b981' : '#ef4444';
 
     ctx.save();
-    // Alone luminoso di difesa se sollevato
+
     if (isGateActivated) {
-      ctx.strokeStyle = 'rgba(16, 185, 129, 0.40)';
-      ctx.lineWidth = Math.max(8, 12 * (camera.s / 0.02));
-      ctx.lineCap = 'round';
+      // 1. ALONE DI DIFESA LAGUNARE: Velo calmo e protetto sul lato laguna (-nx, -ny)
       ctx.beginPath();
-      ctx.moveTo(gx - barWidth / 2, gy);
-      ctx.lineTo(gx + barWidth / 2, gy);
+      ctx.moveTo(x1 - nx * 8, y1 - ny * 8);
+      ctx.lineTo(x2 - nx * 8, y2 - ny * 8);
+      ctx.strokeStyle = isDark ? 'rgba(16, 185, 129, 0.35)' : 'rgba(5, 150, 105, 0.25)';
+      ctx.lineWidth = Math.max(10, 18 * (camera.s / 0.02));
+      ctx.lineCap = 'round';
       ctx.stroke();
+
+      // 2. FRANGIFLUTTI E MOTO ONDOSO ADRIATICO: Schiuma e marosi sul lato mare (+nx, +ny)
+      const wavePulse = reduced ? 0.6 : (0.45 + 0.35 * Math.sin(time * 3.2 + gateIdx * 1.8));
+      const foamOffset = Math.max(3.5, 6.5 * (camera.s / 0.02));
+      ctx.beginPath();
+      ctx.moveTo(x1 + nx * foamOffset, y1 + ny * foamOffset);
+      ctx.lineTo(x2 + nx * foamOffset, y2 + ny * foamOffset);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${wavePulse.toFixed(2)})`;
+      ctx.lineWidth = Math.max(2.5, 4.2 * (camera.s / 0.02));
+      ctx.setLineDash([6, 4, 10, 5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 3. BASAMENTO IN CEMENTO ARMATO SUBACQUEO (CASSONI DI ALLOGGIAMENTO)
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = Math.max(5.5, 8.5 * (camera.s / 0.02));
+      ctx.lineCap = 'butt';
+      ctx.stroke();
+
+      // 4. LE ICONICHE PARATOIE GIALLE DEL MOSE (PARATIE METALLICHE MODULARI)
+      const count = gate.barriersCount || 20;
+      const flapThick = Math.max(3.8, 6.0 * (camera.s / 0.02));
+
+      // 4a. Base scura / cerniera delle paratie
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.strokeStyle = '#92400e';
+      ctx.lineWidth = flapThick + 1.6;
+      ctx.stroke();
+
+      // 4b. Disegno modulare delle singole paratie in giallo canarino vivo (#facc15 / #eab308)
+      // Ogni paratoia ha una larghezza di 20 metri e una fessura di dilatazione scura
+      for (let k = 0; k < count; k++) {
+        const t0 = (k + 0.12) / count;
+        const t1 = (k + 0.88) / count;
+        const gx0 = x1 + ux * len * t0;
+        const gy0 = y1 + uy * len * t0;
+        const gx1 = x1 + ux * len * t1;
+        const gy1 = y1 + uy * len * t1;
+
+        ctx.beginPath();
+        ctx.moveTo(gx0, gy0);
+        ctx.lineTo(gx1, gy1);
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = flapThick;
+        ctx.lineCap = 'square';
+        ctx.stroke();
+
+        // Riflesso solare sullo spigolo superiore della paratoia metallica
+        ctx.beginPath();
+        ctx.moveTo(gx0 + nx * 0.8, gy0 + ny * 0.8);
+        ctx.lineTo(gx1 + nx * 0.8, gy1 + ny * 0.8);
+        ctx.strokeStyle = '#fef08a';
+        ctx.lineWidth = Math.max(1, flapThick * 0.35);
+        ctx.stroke();
+      }
+
+      // 5. SPALLE E CASSONI DI TESTATA IN CEMENTO
+      const capRadius = Math.max(3.5, 5.5 * (camera.s / 0.02));
+      [ [x1, y1], [x2, y2] ].forEach(([cx, cy], endIdx) => {
+        ctx.beginPath();
+        ctx.arc(cx, cy, capRadius, 0, Math.PI * 2);
+        ctx.fillStyle = '#475569';
+        ctx.fill();
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Fanali marittimi di navigazione (rosso / verde pulsanti)
+        const lightCol = endIdx === 0 ? '#ef4444' : '#10b981';
+        const lightPulse = reduced ? 0.7 : (0.5 + 0.5 * Math.sin(time * 4 + endIdx));
+        ctx.beginPath();
+        ctx.arc(cx, cy, capRadius * 1.6, 0, Math.PI * 2);
+        ctx.fillStyle = endIdx === 0 ? `rgba(239, 68, 68, ${0.35 * lightPulse})` : `rgba(16, 185, 129, ${0.35 * lightPulse})`;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, capRadius * 0.6, 0, Math.PI * 2);
+        ctx.fillStyle = lightCol;
+        ctx.fill();
+      });
+
+    } else {
+      // MOSE ABBASSATO SUL FONDALE (CANALE LIBERO E NAVIGABILE)
+      // 1. Tracciato tecnico subacqueo dei cassoni sul fondale (-14m)
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.strokeStyle = isDark ? 'rgba(56, 189, 248, 0.40)' : 'rgba(2, 132, 199, 0.35)';
+      ctx.lineWidth = Math.max(2.5, 4.0 * (camera.s / 0.02));
+      ctx.setLineDash([7, 5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 2. Spalle di testata con fanali verdi marittimi fissi (via libera)
+      const capRadius = Math.max(2.8, 4.5 * (camera.s / 0.02));
+      [ [x1, y1], [x2, y2] ].forEach(([cx, cy]) => {
+        ctx.beginPath();
+        ctx.arc(cx, cy, capRadius, 0, Math.PI * 2);
+        ctx.fillStyle = isDark ? '#334155' : '#64748b';
+        ctx.fill();
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Fanale verde canale navigabile aperto
+        ctx.beginPath();
+        ctx.arc(cx, cy, capRadius * 0.55, 0, Math.PI * 2);
+        ctx.fillStyle = '#10b981';
+        ctx.fill();
+      });
     }
 
-    // Linea barriera
-    ctx.beginPath();
-    ctx.moveTo(gx - barWidth / 2, gy);
-    ctx.lineTo(gx + barWidth / 2, gy);
-    ctx.strokeStyle = barrierCol;
-    ctx.lineWidth = Math.max(4, 6 * (camera.s / 0.02));
-    ctx.lineCap = 'round';
-    if (!isGateActivated) ctx.setLineDash([5, 4]);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    // 6. BADGE INFORMATIVO ELEGANTE
+    // Posizionato al punto medio della barriera con leggero offset
+    if (camera.s > 0.012) {
+      const bmx = (x1 + x2) * 0.5;
+      const bmy = (y1 + y2) * 0.5;
+      const offsetDist = Math.max(16, 22 * (camera.s / 0.02));
+      // Offset verso la laguna per non coprire il frangiflutti
+      const bx = bmx - nx * offsetDist;
+      const by = bmy - ny * offsetDist;
 
-    // Spalle / cassoni di ormeggio ai lati
-    ctx.fillStyle = isDark ? '#ffffff' : '#334155';
-    ctx.beginPath();
-    ctx.arc(gx - barWidth / 2, gy, 4, 0, Math.PI * 2);
-    ctx.arc(gx + barWidth / 2, gy, 4, 0, Math.PI * 2);
-    ctx.fill();
+      ctx.font = '700 8.5px "DM Mono", monospace';
+      const label = isGateActivated
+        ? `MOSE ${gate.inletName}: DIFESA ATTIVA (${gate.barriersCount}p)`
+        : `MOSE ${gate.inletName}: APERTO (${gate.barriersCount}p)`;
+      const tw = ctx.measureText(label).width;
 
-    // Fanali di navigazione
-    ctx.fillStyle = '#ef4444';
-    ctx.beginPath();
-    ctx.arc(gx - barWidth / 2, gy - 5, 2.5, 0, Math.PI * 2);
-    ctx.fill();
+      ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.90)' : 'rgba(255, 255, 255, 0.92)';
+      ctx.strokeStyle = isGateActivated ? '#10b981' : (isDark ? '#475569' : '#94a3b8');
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(bx - tw / 2 - 5, by - 8, tw + 10, 16, 4);
+      ctx.fill();
+      ctx.stroke();
 
-    ctx.fillStyle = '#10b981';
-    ctx.beginPath();
-    ctx.arc(gx + barWidth / 2, gy - 5, 2.5, 0, Math.PI * 2);
-    ctx.fill();
+      // Indicatore di stato circolare
+      ctx.beginPath();
+      ctx.arc(bx - tw / 2 + 2, by, 3, 0, Math.PI * 2);
+      ctx.fillStyle = isGateActivated ? '#10b981' : '#64748b';
+      ctx.fill();
 
-    // Etichetta stato MOSE
-    ctx.font = '700 9px "DM Mono", monospace';
-    const gateTag = isGateActivated
-      ? `MOSE ${gate.inletName}: CHIUSO (${gate.barriersCount}p)`
-      : `MOSE ${gate.inletName}: APERTO (${gate.barriersCount}p)`;
-    const tagW = ctx.measureText(gateTag).width;
+      ctx.fillStyle = isGateActivated ? (isDark ? '#34d399' : '#059669') : (isDark ? '#94a3b8' : '#475569');
+      ctx.fillText(label, bx - tw / 2 + 8, by + 3);
+    }
 
-    ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.92)';
-    ctx.strokeStyle = barrierCol;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(gx - tagW / 2 - 5, gy - 18, tagW + 10, 15, 4);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = barrierCol;
-    ctx.fillText(gateTag, gx - tagW / 2, gy - 7);
     ctx.restore();
-  }
+  });
 }
 
 export function drawShipRoutes(rc: RenderContext): void {
@@ -422,13 +596,15 @@ export function drawAlilaguna(rc: RenderContext): void {
 
 export function drawPasserelle(rc: RenderContext): void {
   const { ctx, isDark, sx, sy, mx, my, camera, showPasserelle, passerelle } = rc;
-  // 19. Render Passerelle per Acqua Alta (CPSM / Protezione Civile)
+  // 19. Evidenziazione pulita delle sole calli con passerelle (CPSM / Protezione Civile)
   if (showPasserelle && passerelle && passerelle.length > 0) {
+    const haloWidth = Math.max(4.5, Math.min(8.5, 3.5 + 40 * camera.s));
+    const coreWidth = Math.max(2.0, Math.min(3.6, 1.6 + 18 * camera.s));
+
     for (const p of passerelle) {
       if (!p.path || p.path.length < 2) continue;
       ctx.save();
 
-      // 1. Evidenziazione luminosa dell'intera calle (alone dorato di transito sopraelevato)
       ctx.beginPath();
       p.path.forEach((pt, idx) => {
         const px = sx(mx(pt[0]));
@@ -436,61 +612,24 @@ export function drawPasserelle(rc: RenderContext): void {
         if (idx === 0) ctx.moveTo(px, py);
         else ctx.lineTo(px, py);
       });
-      ctx.strokeStyle = p.isMounted ? 'rgba(245, 158, 11, 0.45)' : 'rgba(217, 119, 6, 0.25)';
-      ctx.lineWidth = Math.max(9, 16 * (camera.s / 0.05));
+
+      // 1. Alone luminoso delicato lungo il corridoio della calle
+      ctx.strokeStyle = p.isMounted
+        ? (isDark ? 'rgba(251, 191, 36, 0.32)' : 'rgba(217, 119, 6, 0.24)')
+        : 'rgba(148, 163, 184, 0.20)';
+      ctx.lineWidth = haloWidth;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
 
-      // 2. Basamento e telaio metallico/legno scuro della passerella
-      ctx.strokeStyle = '#78350f';
-      ctx.lineWidth = Math.max(5.5, 9.5 * (camera.s / 0.05));
+      // 2. Tracciato pulito di evidenziazione della passerella
+      ctx.strokeStyle = p.isMounted
+        ? (isDark ? '#fbbf24' : '#d97706')
+        : (isDark ? '#94a3b8' : '#78716c');
+      ctx.lineWidth = coreWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.stroke();
-
-      // 3. Piano di calpestio in tavole di legno (ambrato vivo se montata)
-      ctx.strokeStyle = p.isMounted ? '#fbbf24' : '#a8a29e';
-      ctx.lineWidth = Math.max(3.8, 6.5 * (camera.s / 0.05));
-      ctx.stroke();
-
-      // 4. Tratteggio delle singole assi di legno trasversali
-      ctx.strokeStyle = '#92400e';
-      ctx.lineWidth = Math.max(2.2, 3.8 * (camera.s / 0.05));
-      ctx.setLineDash([3, 4]);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // 5. Cavalletti di supporto e paline nei vertici
-      p.path.forEach((pt) => {
-        const px = sx(mx(pt[0]));
-        const py = sy(my(pt[1]));
-        ctx.fillStyle = p.isMounted ? '#fbbf24' : '#a8a29e';
-        ctx.strokeStyle = '#451a03';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.arc(px, py, Math.max(2.8, 4.5 * (camera.s / 0.05)), 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-      });
-
-      // 6. Etichetta del percorso pedonale sopraelevato
-      if (camera.s > 0.05) {
-        const midPt = p.path[Math.floor(p.path.length / 2)];
-        const lx = sx(mx(midPt[0]));
-        const ly = sy(my(midPt[1]));
-        ctx.font = '700 9px "DM Mono", monospace';
-        const label = `Passerella: ${p.name.split('-')[0].trim()} (${p.lengthMeters}m)`;
-        const lW = ctx.measureText(label).width;
-        ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.94)';
-        ctx.strokeStyle = '#d97706';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(lx - lW / 2 - 4, ly - 16, lW + 8, 14, 4);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#d97706';
-        ctx.fillText(label, lx - lW / 2, ly - 6);
-      }
 
       ctx.restore();
     }

@@ -221,6 +221,11 @@ export interface MoseGateItem {
   channel: string;
   lat: number;
   lon: number;
+  /** Coordinate georiferite dei due estremi della schiera di paratie attraverso la bocca di porto */
+  startLon?: number;
+  startLat?: number;
+  endLon?: number;
+  endLat?: number;
   barriersCount: number;
   /** Lo stato operativo del MOSE non è pubblicato come open data in tempo reale. */
   status: 'ABBASSATO' | 'IN_SOLLEVAMENTO' | 'ATTIVATO' | 'NON_DISPONIBILE';
