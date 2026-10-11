@@ -305,12 +305,13 @@ function paintFloodedOpenSpaces(
     sy: (y: number) => number;
     mx: (lon: number) => number;
     my: (lat: number) => number;
+    camera: { s: number };
     tide: number;
     animate: boolean;
     time: number;
   }
 ): void {
-  const { sx, sy, mx, my, tide, animate, time } = o;
+  const { sx, sy, mx, my, camera, tide, animate, time } = o;
 
   ctx.save();
   for (const space of VENICE_FLOODED_SPACES) {
@@ -339,17 +340,18 @@ function paintFloodedOpenSpaces(
     ctx.lineWidth = 1.2;
     ctx.stroke();
 
-    // Onde e riflessi di luce concentrici sulla superficie allagata
-    if (animate) {
+    // Onde e riflessi di luce concentrici sulla superficie allagata (solo su zoom ravvicinato)
+    if (animate && camera.s > 0.045) {
       const cx = sx(mx(space.centerLon));
       const cy = sy(my(space.centerLat));
+      const maxR = Math.max(8, Math.min(22, 140 * camera.s));
       for (let w = 0; w < 2; w++) {
         const phase = ((time * 0.6 + w * 0.5 + space.thresholdCm * 0.05) % 1);
-        const r = 16 + phase * 50;
-        ctx.strokeStyle = `rgba(255, 255, 255, ${((1 - phase) * 0.45).toFixed(2)})`;
-        ctx.lineWidth = 1.2;
+        const r = 4 + phase * maxR;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${((1 - phase) * 0.35).toFixed(2)})`;
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.ellipse(cx, cy, r * 1.6, r * 0.75, 0, 0, Math.PI * 2);
+        ctx.ellipse(cx, cy, r * 1.3, r * 0.65, 0, 0, Math.PI * 2);
         ctx.stroke();
       }
     }
@@ -375,61 +377,58 @@ export function drawFloodLayer(rc: RenderContext, activeTideCm: number | null): 
     paintFloodedStreets(ctx, { cw, ch, camera, tideLevel: tide, animate });
 
     // 2. Specchi d'acqua continui su piazze, campi e fondamenta aperte
-    paintFloodedOpenSpaces(ctx, { sx, sy, mx, my, tide, animate, time });
+    paintFloodedOpenSpaces(ctx, { sx, sy, mx, my, camera, tide, animate, time });
   }
 
-  // 3. Alone di marea regionale / macro view
-  const haloOpacityFactor = streetsReady && zoomed ? 0.35 : 1.0;
-  for (const zone of VENICE_FLOOD_ZONES) {
-    if (tide < zone.thresholdCm) continue;
+  // 3. Alone di marea regionale macro (solo se le calli dettagliate non sono ancora pronte o con vista lontanissima)
+  if (!streetsReady || camera.s < 0.02) {
+    const haloOpacityFactor = 0.85;
+    for (const zone of VENICE_FLOOD_ZONES) {
+      if (tide < zone.thresholdCm) continue;
 
-    const waterDepth = tide - zone.thresholdCm;
-    const screenX = sx(mx(zone.centerLon));
-    const screenY = sy(my(zone.centerLat));
+      const waterDepth = tide - zone.thresholdCm;
+      const screenX = sx(mx(zone.centerLon));
+      const screenY = sy(my(zone.centerLat));
 
-    // Scala del raggio da metri a pixel schermo georiferito
-    const geoRadiusPx = (zone.radiusMeters / 111139) * (rc.KY || 276000) * camera.s;
-    const baseRadiusPx = Math.max(14, geoRadiusPx);
+      const geoRadiusPx = (zone.radiusMeters / 111139) * (rc.KY || 276000) * camera.s;
+      const baseRadiusPx = Math.max(14, geoRadiusPx);
 
-    ctx.save();
+      ctx.save();
+      const waterGrad = ctx.createRadialGradient(
+        screenX,
+        screenY,
+        baseRadiusPx * 0.05,
+        screenX,
+        screenY,
+        baseRadiusPx
+      );
 
-    // Velo d'acqua della laguna (allagamento del suolo pedonale)
-    const waterGrad = ctx.createRadialGradient(
-      screenX,
-      screenY,
-      baseRadiusPx * 0.05,
-      screenX,
-      screenY,
-      baseRadiusPx
-    );
+      const depthOpacity = Math.min(0.55, 0.20 + (waterDepth / 60) * 0.25) * haloOpacityFactor;
+      waterGrad.addColorStop(0, `rgba(6, 182, 212, ${depthOpacity.toFixed(2)})`);
+      waterGrad.addColorStop(0.65, `rgba(2, 132, 199, ${(depthOpacity * 0.8).toFixed(2)})`);
+      waterGrad.addColorStop(1, 'rgba(2, 132, 199, 0)');
 
-    const depthOpacity = Math.min(0.65, 0.25 + (waterDepth / 60) * 0.3) * haloOpacityFactor;
-    waterGrad.addColorStop(0, `rgba(6, 182, 212, ${depthOpacity.toFixed(2)})`);
-    waterGrad.addColorStop(0.65, `rgba(2, 132, 199, ${(depthOpacity * 0.8).toFixed(2)})`);
-    waterGrad.addColorStop(1, 'rgba(2, 132, 199, 0)');
-
-    ctx.fillStyle = waterGrad;
-    ctx.beginPath();
-    ctx.arc(screenX, screenY, baseRadiusPx, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Onde marine animate concentriche (se la vista e' d'insieme o le calli non sono ancora caricate)
-    if (animate && (!streetsReady || !zoomed)) {
-      for (let w = 0; w < 2; w++) {
-        const phase = ((time * 0.75 + w * 0.5 + zone.thresholdCm * 0.08) % 1);
-        const rippleRadius = baseRadiusPx * (0.25 + 0.75 * phase);
-        const rippleAlpha = (1 - phase) * 0.55 * haloOpacityFactor;
-
-        ctx.strokeStyle = `rgba(125, 211, 252, ${rippleAlpha.toFixed(2)})`;
-        ctx.lineWidth = 1.4;
-        ctx.beginPath();
-        ctx.arc(screenX, screenY, rippleRadius, 0, Math.PI * 2);
-        ctx.stroke();
-      }
+      ctx.fillStyle = waterGrad;
+      ctx.beginPath();
+      ctx.arc(screenX, screenY, baseRadiusPx, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     }
+  }
 
-    // Etichetta quota d'acqua se la visuale e' ravvicinata (zoomed)
-    if (zoomed || camera.s > 0.02) {
+  // 4. Etichette quota d'acqua visibili ESCLUSIVAMENTE con zoom profondo (camera.s >= 0.065)
+  // per non sovrapporsi in massa e coprire la vista d'insieme della citta
+  if (camera.s >= 0.065) {
+    for (const zone of VENICE_FLOOD_ZONES) {
+      if (tide < zone.thresholdCm) continue;
+      const waterDepth = tide - zone.thresholdCm;
+      const screenX = sx(mx(zone.centerLon));
+      const screenY = sy(my(zone.centerLat));
+
+      // Non disegnare etichette fuori dall'area visibile del canvas
+      if (screenX < -80 || screenX > cw + 80 || screenY < -30 || screenY > ch + 30) continue;
+
+      ctx.save();
       const label = `${zone.name} ~${waterDepth} cm`;
       ctx.font = 'bold 10px "DM Mono", monospace';
       const textMetrics = ctx.measureText(label);
@@ -452,8 +451,7 @@ export function drawFloodLayer(rc: RenderContext, activeTideCm: number | null): 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(label, screenX, screenY);
+      ctx.restore();
     }
-
-    ctx.restore();
   }
 }
