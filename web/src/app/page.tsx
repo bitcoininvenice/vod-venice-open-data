@@ -708,7 +708,7 @@ export default function HomePage() {
                     title={isTideCyclePlaying ? 'Pausa ciclo sinusoidale' : 'Avvia ciclo marea'}
                   >
                     {isTideCyclePlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-                    <span>{isTideCyclePlaying ? 'Pausa' : 'Ciclo'}</span>
+                    <span>{isTideCyclePlaying ? 'Pausa' : 'Avvia'}</span>
                   </button>
 
                   {/* Toggle Difesa MOSE quando la marea supera la soglia di allerta (>= 110 cm) */}
