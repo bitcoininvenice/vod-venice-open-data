@@ -125,6 +125,7 @@ export default function HomePage() {
   const [focusedCoordinates, setFocusedCoordinates] = useState<{ lat: number; lon: number } | null>(null);
   const [simulatedTideLevel, setSimulatedTideLevel] = useState<number | null>(null);
   const [isTideCyclePlaying, setIsTideCyclePlaying] = useState<boolean>(false);
+  const [isMoseProtected, setIsMoseProtected] = useState<boolean>(true);
 
   useEffect(() => {
     if (!isTideCyclePlaying) return;
@@ -542,6 +543,7 @@ export default function HomePage() {
           focusedCoordinates={focusedCoordinates}
           sportFilter={sportFilter}
           simulatedTideLevel={simulatedTideLevel}
+          isMoseProtected={isMoseProtected}
           isDesktopLayerPanelOpen={isDesktopLayerPanelOpen}
           pickMode={pickTarget !== null}
           onPickPoint={(lon, lat) => {
@@ -568,7 +570,9 @@ export default function HomePage() {
                   {formatSignedCm(simulatedTideLevel)}
                 </strong>
                 <span className="text-[10px] text-slate-400 ml-1.5 opacity-80">
-                  (~{getFloodedGroundPercentage(simulatedTideLevel)}% suolo)
+                  {simulatedTideLevel >= 110 && isMoseProtected
+                    ? `(~${getFloodedGroundPercentage(85)}% suolo · MOSE)`
+                    : `(~${getFloodedGroundPercentage(simulatedTideLevel)}% suolo)`}
                 </span>
               </span>
 
@@ -614,6 +618,26 @@ export default function HomePage() {
                 {isTideCyclePlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
                 <span>{isTideCyclePlaying ? 'Pausa' : 'Ciclo'}</span>
               </button>
+
+              {/* Toggle Difesa MOSE quando la marea supera la soglia di allerta (>= 110 cm) */}
+              {simulatedTideLevel >= 110 && (
+                <button
+                  type="button"
+                  onClick={() => setIsMoseProtected((p) => !p)}
+                  className={`px-2 py-0.5 rounded text-[11px] font-mono border transition-colors cursor-pointer ${
+                    isMoseProtected
+                      ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/40'
+                      : 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border-rose-500/40'
+                  }`}
+                  title={
+                    isMoseProtected
+                      ? 'MOSE attivo: paratie alzate, laguna protetta a +85cm. Clicca per disattivare e vedere la citta allagata'
+                      : 'MOSE disattivato: paratie abbassate, marea entra in citta. Clicca per attivare la difesa'
+                  }
+                >
+                  {isMoseProtected ? 'MOSE: Difesa Attiva' : 'MOSE: Disattivato'}
+                </button>
+              )}
 
               <button
                 type="button"
@@ -884,6 +908,8 @@ export default function HomePage() {
           }}
           simulatedTideLevel={simulatedTideLevel}
           onSimulatedTideChange={setSimulatedTideLevel}
+          isMoseProtected={isMoseProtected}
+          onToggleMoseProtection={() => setIsMoseProtected((p) => !p)}
           forecast={data.tideInfo.forecast}
           marineWindStations={data.marineWindStations}
         />

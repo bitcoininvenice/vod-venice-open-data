@@ -69,6 +69,8 @@ export interface MapEngineProps {
   focusedCoordinates?: { lat: number; lon: number } | null;
   sportFilter?: SportFilter;
   simulatedTideLevel?: number | null;
+  /** Se il MOSE protegge la laguna quando la marea supera 110 cm (default true) */
+  isMoseProtected?: boolean;
   isDesktopLayerPanelOpen?: boolean;
   /** scelta di un punto per il planner: il prossimo clic sulla mappa restituisce le coordinate */
   pickMode?: boolean;
@@ -104,6 +106,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   focusedCoordinates,
   sportFilter = 'all',
   simulatedTideLevel = null,
+  isMoseProtected = true,
   isDesktopLayerPanelOpen = true,
   pin = null,
   pickMode = false,
@@ -790,6 +793,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       if ((zoomed || simulatedTideLevel != null) && !isStreetsLoaded()) requestStreets(() => setLandHiReady((prev) => !prev));
       drawBaseMap(ctx, { cw, ch, dpr, camera, pal, is3DView, zoomed: zoomed && isLandHiLoaded(), landLo: LAND_LO, zoomFactor });
 
+      const rawTide = simulatedTideLevel ?? data.tideLevel ?? 0;
+      const effectiveTideLevel = (rawTide >= 110 && isMoseProtected) ? 85 : rawTide;
+
       // Contesto del frame condiviso dai layer di disegno (components/map/*)
       const rc: RenderContext = {
         ...layers,
@@ -821,7 +827,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         selectedDay,
         paletteTheme,
         sportFilter,
-        tideLevel: simulatedTideLevel ?? data.tideLevel ?? 0,
+        tideLevel: effectiveTideLevel,
+        rawTideLevel: rawTide,
+        isMoseProtected,
         pin,
         itinerary,
         selectedTrip: selectedTrip && selectedVehicle

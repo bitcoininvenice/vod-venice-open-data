@@ -3,59 +3,95 @@ import type { RenderContext } from './renderContext';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 
 import { MARITIME_ROUTES } from '@/lib/shipsData';
-import type { ShipCategory } from '@/lib/types';
+import type { MoseGateItem, ShipCategory } from '@/lib/types';
+
+const DEFAULT_MOSE_GATES: { id: string; inletName: string; lat: number; lon: number; barriersCount: number; status: MoseGateItem['status'] }[] = [
+  { id: 'mose-lido-treporti', inletName: 'Lido Treporti', lat: 45.4330, lon: 12.4280, barriersCount: 21, status: 'ABBASSATO' },
+  { id: 'mose-lido-sannicolo', inletName: 'Lido San Nicolò', lat: 45.4225, lon: 12.4330, barriersCount: 20, status: 'ABBASSATO' },
+  { id: 'mose-malamocco', inletName: 'Malamocco', lat: 45.3340, lon: 12.2980, barriersCount: 19, status: 'ABBASSATO' },
+  { id: 'mose-chioggia', inletName: 'Chioggia', lat: 45.2310, lon: 12.2980, barriersCount: 18, status: 'ABBASSATO' },
+];
 
 export function drawMose(rc: RenderContext): void {
-  const { ctx, isDark, sx, sy, mx, my, camera, paletteTheme, showMose, moseGates } = rc;
-  // 11. Render MOSE Defense Barriers at the 3 Bocche di Porto (Lido, Malamocco, Chioggia)
-  if (showMose && moseGates && moseGates.length > 0) {
-    for (const gate of moseGates) {
-      const gx = sx(mx(gate.lon));
-      const gy = sy(my(gate.lat));
+  const { ctx, isDark, sx, sy, mx, my, camera, paletteTheme, showMose, moseGates, tideLevel, rawTideLevel, isMoseProtected } = rc;
+  const seaTide = rawTideLevel ?? tideLevel ?? 0;
+  const isSimulationOrMose = showMose || (seaTide >= 80);
+  if (!isSimulationOrMose) return;
 
-      // Draw barrier line across channel
-      const barWidth = Math.max(28, 48 * (camera.s / 0.02));
-      const isActivated = gate.status === 'ATTIVATO';
-      const isRaising = gate.status === 'IN_SOLLEVAMENTO';
-      const isUnknown = gate.status === 'NON_DISPONIBILE';
-      const barrierCol = isActivated ? '#ef4444' : isRaising ? '#f59e0b' : isUnknown ? '#94a3b8' : '#10b981';
+  const gates = (moseGates && moseGates.length > 0) ? moseGates : DEFAULT_MOSE_GATES;
+  const isProtected = isMoseProtected !== false;
+  const isSimulating = rawTideLevel !== undefined && rawTideLevel !== null;
 
-      ctx.save();
-      // Barrier line with end anchors
+  for (const gate of gates) {
+    const gx = sx(mx(gate.lon));
+    const gy = sy(my(gate.lat));
+
+    const barWidth = Math.max(34, 56 * (camera.s / 0.02));
+    // Se la simulazione e attiva o la marea supera 110 cm e protetto: paratie del MOSE alzate
+    const isGateActivated = isSimulating
+      ? (seaTide >= 110 && isProtected)
+      : (gate.status === 'ATTIVATO' || (seaTide >= 110 && isProtected));
+    const barrierCol = isGateActivated ? '#10b981' : '#ef4444';
+
+    ctx.save();
+    // Alone luminoso di difesa se sollevato
+    if (isGateActivated) {
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.40)';
+      ctx.lineWidth = Math.max(8, 12 * (camera.s / 0.02));
+      ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(gx - barWidth / 2, gy);
       ctx.lineTo(gx + barWidth / 2, gy);
-      ctx.strokeStyle = barrierCol;
-      ctx.lineWidth = Math.max(3, 4.5 * (camera.s / 0.02));
-      ctx.lineCap = 'round';
-      if (!isActivated) ctx.setLineDash([4, 3]);
       ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Mooring caissons / Abutments on both sides
-      ctx.fillStyle = isDark ? '#ffffff' : '#475569';
-      ctx.beginPath();
-      ctx.arc(gx - barWidth / 2, gy, 3, 0, Math.PI * 2);
-      ctx.arc(gx + barWidth / 2, gy, 3, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Gate Status Tag
-      ctx.font = '700 9px "DM Mono", monospace';
-      const gateTag = `MOSE ${gate.inletName} (${gate.barriersCount}p)`;
-      const tagW = ctx.measureText(gateTag).width;
-
-      ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.85)';
-      ctx.strokeStyle = barrierCol;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(gx - tagW / 2 - 4, gy - 16, tagW + 8, 14, 4);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = barrierCol;
-      ctx.fillText(gateTag, gx - tagW / 2, gy - 6);
-      ctx.restore();
     }
+
+    // Linea barriera
+    ctx.beginPath();
+    ctx.moveTo(gx - barWidth / 2, gy);
+    ctx.lineTo(gx + barWidth / 2, gy);
+    ctx.strokeStyle = barrierCol;
+    ctx.lineWidth = Math.max(4, 6 * (camera.s / 0.02));
+    ctx.lineCap = 'round';
+    if (!isGateActivated) ctx.setLineDash([5, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Spalle / cassoni di ormeggio ai lati
+    ctx.fillStyle = isDark ? '#ffffff' : '#334155';
+    ctx.beginPath();
+    ctx.arc(gx - barWidth / 2, gy, 4, 0, Math.PI * 2);
+    ctx.arc(gx + barWidth / 2, gy, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Fanali di navigazione
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.arc(gx - barWidth / 2, gy - 5, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#10b981';
+    ctx.beginPath();
+    ctx.arc(gx + barWidth / 2, gy - 5, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Etichetta stato MOSE
+    ctx.font = '700 9px "DM Mono", monospace';
+    const gateTag = isGateActivated
+      ? `MOSE ${gate.inletName}: CHIUSO (${gate.barriersCount}p)`
+      : `MOSE ${gate.inletName}: APERTO (${gate.barriersCount}p)`;
+    const tagW = ctx.measureText(gateTag).width;
+
+    ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.92)';
+    ctx.strokeStyle = barrierCol;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(gx - tagW / 2 - 5, gy - 18, tagW + 10, 15, 4);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = barrierCol;
+    ctx.fillText(gateTag, gx - tagW / 2, gy - 7);
+    ctx.restore();
   }
 }
 
@@ -392,7 +428,7 @@ export function drawPasserelle(rc: RenderContext): void {
       if (!p.path || p.path.length < 2) continue;
       ctx.save();
 
-      // Outer walkway board outline
+      // 1. Evidenziazione luminosa dell'intera calle (alone dorato di transito sopraelevato)
       ctx.beginPath();
       p.path.forEach((pt, idx) => {
         const px = sx(mx(pt[0]));
@@ -400,44 +436,60 @@ export function drawPasserelle(rc: RenderContext): void {
         if (idx === 0) ctx.moveTo(px, py);
         else ctx.lineTo(px, py);
       });
-
-      // Wooden planks glow & styling
-      ctx.strokeStyle = p.isMounted ? '#f59e0b' : '#78716c';
-      ctx.lineWidth = Math.max(3.5, 6 * (camera.s / 0.05));
+      ctx.strokeStyle = p.isMounted ? 'rgba(245, 158, 11, 0.45)' : 'rgba(217, 119, 6, 0.25)';
+      ctx.lineWidth = Math.max(9, 16 * (camera.s / 0.05));
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.globalAlpha = p.isMounted ? 0.95 : 0.45;
       ctx.stroke();
 
-      // Elevated metal stilt legs / planks dashes
-      ctx.strokeStyle = isDark ? '#ffffff' : '#44403c';
-      ctx.lineWidth = Math.max(1.5, 2.5 * (camera.s / 0.05));
-      ctx.setLineDash([4, 4]);
+      // 2. Basamento e telaio metallico/legno scuro della passerella
+      ctx.strokeStyle = '#78350f';
+      ctx.lineWidth = Math.max(5.5, 9.5 * (camera.s / 0.05));
+      ctx.stroke();
+
+      // 3. Piano di calpestio in tavole di legno (ambrato vivo se montata)
+      ctx.strokeStyle = p.isMounted ? '#fbbf24' : '#a8a29e';
+      ctx.lineWidth = Math.max(3.8, 6.5 * (camera.s / 0.05));
+      ctx.stroke();
+
+      // 4. Tratteggio delle singole assi di legno trasversali
+      ctx.strokeStyle = '#92400e';
+      ctx.lineWidth = Math.max(2.2, 3.8 * (camera.s / 0.05));
+      ctx.setLineDash([3, 4]);
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Stanchion marker posts at vertices
+      // 5. Cavalletti di supporto e paline nei vertici
       p.path.forEach((pt) => {
         const px = sx(mx(pt[0]));
         const py = sy(my(pt[1]));
         ctx.fillStyle = p.isMounted ? '#fbbf24' : '#a8a29e';
+        ctx.strokeStyle = '#451a03';
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.arc(px, py, Math.max(2.5, 4 * (camera.s / 0.05)), 0, Math.PI * 2);
+        ctx.arc(px, py, Math.max(2.8, 4.5 * (camera.s / 0.05)), 0, Math.PI * 2);
         ctx.fill();
+        ctx.stroke();
       });
 
-      // Label when zoomed in
-      if (camera.s > 0.06) {
+      // 6. Etichetta del percorso pedonale sopraelevato
+      if (camera.s > 0.05) {
         const midPt = p.path[Math.floor(p.path.length / 2)];
         const lx = sx(mx(midPt[0]));
         const ly = sy(my(midPt[1]));
-        ctx.font = '700 8.5px "DM Mono", monospace';
-        const label = `${p.name.split('-')[0].trim()} (${p.lengthMeters}m)`;
+        ctx.font = '700 9px "DM Mono", monospace';
+        const label = `Passerella: ${p.name.split('-')[0].trim()} (${p.lengthMeters}m)`;
         const lW = ctx.measureText(label).width;
-        ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.92)';
-        ctx.fillRect(lx - lW / 2 - 3, ly - 14, lW + 6, 12);
-        ctx.fillStyle = isDark ? '#f59e0b' : '#b45309';
-        ctx.fillText(label, lx - lW / 2, ly - 5);
+        ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.94)';
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(lx - lW / 2 - 4, ly - 16, lW + 8, 14, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#d97706';
+        ctx.fillText(label, lx - lW / 2, ly - 6);
       }
 
       ctx.restore();

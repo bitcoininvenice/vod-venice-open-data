@@ -143,7 +143,162 @@ export const VENICE_FLOOD_ZONES: FloodZone[] = [
 const reducedMotion = (): boolean =>
   typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
 
-function paintSanMarcoPiazzaWater(
+interface FloodedOpenSpace {
+  id: string;
+  name: string;
+  thresholdCm: number;
+  centerLon: number;
+  centerLat: number;
+  polygon: [number, number][];
+}
+
+const VENICE_FLOODED_SPACES: FloodedOpenSpace[] = [
+  {
+    id: 'piazza_san_marco',
+    name: 'Piazza San Marco',
+    thresholdCm: 84,
+    centerLon: 12.3373,
+    centerLat: 45.4344,
+    polygon: [
+      [12.3359, 45.43415],
+      [12.3385, 45.43405],
+      [12.3388, 45.43460],
+      [12.3360, 45.43465],
+    ],
+  },
+  {
+    id: 'piazzetta_san_marco',
+    name: 'Piazzetta San Marco',
+    thresholdCm: 78,
+    centerLon: 12.3385,
+    centerLat: 45.4336,
+    polygon: [
+      [12.3382, 45.4332],
+      [12.3389, 45.4332],
+      [12.3389, 45.4341],
+      [12.3382, 45.4341],
+    ],
+  },
+  {
+    id: 'erbaria_rialto',
+    name: 'Rialto Erbaria',
+    thresholdCm: 95,
+    centerLon: 12.3358,
+    centerLat: 45.4383,
+    polygon: [
+      [12.3350, 45.4379],
+      [12.3366, 45.4378],
+      [12.3368, 45.4386],
+      [12.3352, 45.4387],
+    ],
+  },
+  {
+    id: 'riva_schiavoni',
+    name: 'Riva degli Schiavoni',
+    thresholdCm: 98,
+    centerLon: 12.3425,
+    centerLat: 45.4343,
+    polygon: [
+      [12.3400, 45.4338],
+      [12.3445, 45.4342],
+      [12.3445, 45.4347],
+      [12.3400, 45.4343],
+    ],
+  },
+  {
+    id: 'dogana_salute',
+    name: 'Dogana & Salute',
+    thresholdCm: 98,
+    centerLon: 12.3365,
+    centerLat: 45.4312,
+    polygon: [
+      [12.3355, 45.4308],
+      [12.3375, 45.4310],
+      [12.3375, 45.4315],
+      [12.3355, 45.4314],
+    ],
+  },
+  {
+    id: 'fondamenta_guglie',
+    name: 'Cannaregio Guglie',
+    thresholdCm: 105,
+    centerLon: 12.3255,
+    centerLat: 45.4444,
+    polygon: [
+      [12.3245, 45.4440],
+      [12.3268, 45.4442],
+      [12.3268, 45.4448],
+      [12.3245, 45.4446],
+    ],
+  },
+  {
+    id: 'fondamenta_ormesini',
+    name: 'Misericordia & Ormesini',
+    thresholdCm: 108,
+    centerLon: 12.3325,
+    centerLat: 45.4454,
+    polygon: [
+      [12.3305, 45.4450],
+      [12.3345, 45.4453],
+      [12.3345, 45.4458],
+      [12.3305, 45.4455],
+    ],
+  },
+  {
+    id: 'zattere_gesuati',
+    name: 'Fondamenta Zattere',
+    thresholdCm: 108,
+    centerLon: 12.3280,
+    centerLat: 45.4293,
+    polygon: [
+      [12.3260, 45.4290],
+      [12.3300, 45.4292],
+      [12.3300, 45.4297],
+      [12.3260, 45.4295],
+    ],
+  },
+  {
+    id: 'campo_san_polo',
+    name: 'Campo San Polo',
+    thresholdCm: 110,
+    centerLon: 12.3300,
+    centerLat: 45.4372,
+    polygon: [
+      [12.3292, 45.4368],
+      [12.3308, 45.4368],
+      [12.3308, 45.4376],
+      [12.3292, 45.4376],
+    ],
+  },
+  {
+    id: 'campo_santa_margherita',
+    name: 'Campo Santa Margherita',
+    thresholdCm: 114,
+    centerLon: 12.3236,
+    centerLat: 45.4338,
+    polygon: [
+      [12.3230, 45.4332],
+      [12.3242, 45.4332],
+      [12.3242, 45.4345],
+      [12.3230, 45.4345],
+    ],
+  },
+  {
+    id: 'campo_san_giacomo_orio',
+    name: 'San Giacomo dell\'Orio',
+    thresholdCm: 118,
+    centerLon: 12.3275,
+    centerLat: 45.4412,
+    polygon: [
+      [12.3268, 45.4408],
+      [12.3282, 45.4408],
+      [12.3282, 45.4416],
+      [12.3268, 45.4416],
+    ],
+  },
+];
+
+function paintFloodedOpenSpaces(
   ctx: CanvasRenderingContext2D,
   o: {
     sx: (x: number) => number;
@@ -156,65 +311,54 @@ function paintSanMarcoPiazzaWater(
   }
 ): void {
   const { sx, sy, mx, my, tide, animate, time } = o;
-  const depth = tide - 80;
-  const alpha = Math.min(0.65, 0.35 + (depth / 50) * 0.3);
 
   ctx.save();
+  for (const space of VENICE_FLOODED_SPACES) {
+    if (tide < space.thresholdCm) continue;
 
-  // Poligono Piazza San Marco
-  const piazzaPts = [
-    [12.3359, 45.43415],
-    [12.3385, 45.43405],
-    [12.3388, 45.43460],
-    [12.3360, 45.43465],
-  ];
+    const depth = tide - space.thresholdCm;
+    const alpha = Math.min(0.72, 0.40 + (depth / 45) * 0.32);
 
-  ctx.beginPath();
-  ctx.moveTo(sx(mx(piazzaPts[0][0])), sy(my(piazzaPts[0][1])));
-  for (let i = 1; i < piazzaPts.length; i++) {
-    ctx.lineTo(sx(mx(piazzaPts[i][0])), sy(my(piazzaPts[i][1])));
-  }
-  ctx.closePath();
-  ctx.fillStyle = `rgba(14, 165, 233, ${alpha.toFixed(2)})`;
-  ctx.fill();
+    // Specchio d'acqua continuo sulla pavimentazione dello spazio aperto
+    ctx.beginPath();
+    const pts = space.polygon;
+    ctx.moveTo(sx(mx(pts[0][0])), sy(my(pts[0][1])));
+    for (let i = 1; i < pts.length; i++) {
+      ctx.lineTo(sx(mx(pts[i][0])), sy(my(pts[i][1])));
+    }
+    ctx.closePath();
 
-  // Poligono Piazzetta San Marco verso il Molo
-  const piazzettaPts = [
-    [12.3382, 45.4332],
-    [12.3389, 45.4332],
-    [12.3389, 45.4341],
-    [12.3382, 45.4341],
-  ];
+    // Gradiente d'acqua fluida (blu vivo con riflesso azzurrato)
+    ctx.fillStyle = depth >= 20
+      ? `rgba(2, 132, 199, ${alpha.toFixed(2)})`
+      : `rgba(14, 165, 233, ${alpha.toFixed(2)})`;
+    ctx.fill();
 
-  ctx.beginPath();
-  ctx.moveTo(sx(mx(piazzettaPts[0][0])), sy(my(piazzettaPts[0][1])));
-  for (let i = 1; i < piazzettaPts.length; i++) {
-    ctx.lineTo(sx(mx(piazzettaPts[i][0])), sy(my(piazzettaPts[i][1])));
-  }
-  ctx.closePath();
-  ctx.fillStyle = `rgba(2, 132, 199, ${(alpha * 1.15).toFixed(2)})`;
-  ctx.fill();
+    // Contorno del battente d'acqua
+    ctx.strokeStyle = `rgba(56, 189, 248, ${(alpha * 0.8).toFixed(2)})`;
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
 
-  // Onde e riflessi di luce sulla superficie allagata della piazza
-  if (animate) {
-    const cx = sx(mx(12.3373));
-    const cy = sy(my(45.4344));
-    for (let w = 0; w < 2; w++) {
-      const phase = ((time * 0.6 + w * 0.5) % 1);
-      const r = 20 + phase * 65;
-      ctx.strokeStyle = `rgba(224, 242, 254, ${((1 - phase) * 0.4).toFixed(2)})`;
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, r * 1.8, r * 0.7, 0, 0, Math.PI * 2);
-      ctx.stroke();
+    // Onde e riflessi di luce concentrici sulla superficie allagata
+    if (animate) {
+      const cx = sx(mx(space.centerLon));
+      const cy = sy(my(space.centerLat));
+      for (let w = 0; w < 2; w++) {
+        const phase = ((time * 0.6 + w * 0.5 + space.thresholdCm * 0.05) % 1);
+        const r = 16 + phase * 50;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${((1 - phase) * 0.45).toFixed(2)})`;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, r * 1.6, r * 0.75, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
     }
   }
-
   ctx.restore();
 }
 
 /**
- * Disegna le zone allagate con effetto volumetrico sull'ordito delle calli, specchio d'acqua in piazza
+ * Disegna le zone allagate con effetto volumetrico sull'ordito delle calli, specchi d'acqua continui sui campi
  * e onde marine animate. Il canvas e' gia' scalato per il devicePixelRatio.
  */
 export function drawFloodLayer(rc: RenderContext, activeTideCm: number | null): void {
@@ -225,15 +369,13 @@ export function drawFloodLayer(rc: RenderContext, activeTideCm: number | null): 
   const animate = !reducedMotion();
   const time = animate ? Date.now() / 900 : 0;
 
-  // 1. Allagamento delle calli e ponti emersi
+  // 1. Allagamento volumetrico delle calli e ponti emersi
   const streetsReady = isStreetsLoaded();
   if (streetsReady && (zoomed || camera.s > 0.015)) {
     paintFloodedStreets(ctx, { cw, ch, camera, tideLevel: tide, animate });
 
-    // 2. Allagamento specchio d'acqua Piazza San Marco
-    if (tide >= 80) {
-      paintSanMarcoPiazzaWater(ctx, { sx, sy, mx, my, tide, animate, time });
-    }
+    // 2. Specchi d'acqua continui su piazze, campi e fondamenta aperte
+    paintFloodedOpenSpaces(ctx, { sx, sy, mx, my, tide, animate, time });
   }
 
   // 3. Alone di marea regionale / macro view

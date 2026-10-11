@@ -322,8 +322,8 @@ export function paintStreets(b: CanvasRenderingContext2D, o: StreetsPaintOptions
     : `rgba(65, 50, 35, ${(0.75 * alpha).toFixed(2)})`;
 
   const bridgeFillColor = isDark
-    ? `rgba(56, 189, 248, ${(0.9 * alpha).toFixed(2)})`
-    : `rgba(255, 255, 255, ${(0.95 * alpha).toFixed(2)})`;
+    ? `rgba(255, 255, 255, ${(0.95 * alpha).toFixed(2)})`
+    : `rgba(255, 255, 255, ${(0.98 * alpha).toFixed(2)})`;
 
   // Casing del ponte
   b.strokeStyle = bridgeCasingColor;
@@ -397,8 +397,9 @@ export function paintFloodedStreets(ctx: CanvasRenderingContext2D, o: FloodedStr
   const vx1 = camera.x0 + cw / camera.s + m;
   const vy1 = camera.y0 + ch / camera.s + m;
 
-  const calleWidth = Math.max(1.4, Math.min(5.2, 2.0 * camera.s));
-  const bridgeWidth = Math.max(2.0, Math.min(6.5, 2.6 * camera.s));
+  // Larghezza fluida volumetrica della calle: espansa per riempire il corridoio urbano tra i muri
+  const fluidBase = Math.max(4.2, Math.min(22.0, 16.0 * camera.s));
+  const bridgeWidth = Math.max(2.4, Math.min(8.5, 3.2 * camera.s));
 
   ctx.save();
   ctx.lineJoin = 'round';
@@ -444,57 +445,65 @@ export function paintFloodedStreets(ctx: CanvasRenderingContext2D, o: FloodedStr
     ctx.stroke();
   };
 
-  // 1. Acqua profonda (oltre 20 cm di battente)
+  const totalFlooded = shallowEdges.length + mediumEdges.length + deepEdges.length;
+  if (totalFlooded === 0 && visibleBridges.length === 0) {
+    ctx.restore();
+    return;
+  }
+
+  const allFlooded = shallowEdges.concat(mediumEdges, deepEdges);
+
+  // PASS 1: Menisco fluido e alone di battente diffuso (fonde le calli adiacenti in una massa fluida continua)
+  if (totalFlooded > 0) {
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.38)';
+    ctx.lineWidth = fluidBase * 1.6;
+    renderEdgeList(allFlooded);
+  }
+
+  // PASS 2: Massa d'acqua principale stratificata per profondita
   if (deepEdges.length > 0) {
-    ctx.strokeStyle = 'rgba(2, 132, 199, 0.85)';
-    ctx.lineWidth = calleWidth + 1.6;
+    ctx.strokeStyle = 'rgba(2, 132, 199, 0.88)';
+    ctx.lineWidth = fluidBase * 1.25;
     renderEdgeList(deepEdges);
   }
 
-  // 2. Acqua media (tra 8 e 20 cm di battente)
   if (mediumEdges.length > 0) {
-    ctx.strokeStyle = 'rgba(14, 165, 233, 0.72)';
-    ctx.lineWidth = calleWidth + 1.2;
+    ctx.strokeStyle = 'rgba(14, 165, 233, 0.75)';
+    ctx.lineWidth = fluidBase * 1.10;
     renderEdgeList(mediumEdges);
   }
 
-  // 3. Velo d'acqua (fino a 8 cm di battente)
   if (shallowEdges.length > 0) {
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.55)';
-    ctx.lineWidth = calleWidth + 0.8;
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.60)';
+    ctx.lineWidth = fluidBase * 0.95;
     renderEdgeList(shallowEdges);
   }
 
-  // 4. Increspatura e riflessi di luce dinamici dell'acqua in movimento
-  const totalFlooded = shallowEdges.length + mediumEdges.length + deepEdges.length;
+  // PASS 3: Cuore profondo del canale allagato (colore blu marino denso nei tratti piu profondi)
+  if (deepEdges.length > 0) {
+    ctx.strokeStyle = 'rgba(3, 105, 161, 0.95)';
+    ctx.lineWidth = fluidBase * 0.65;
+    renderEdgeList(deepEdges);
+  }
+
+  // PASS 4: Increspatura e riflessi di luce dinamici dell'acqua in movimento (caustiche fluide)
   if (animate && totalFlooded > 0) {
     const time = Date.now() / 800;
-    ctx.setLineDash([10, 16]);
-    ctx.lineDashOffset = -time * 22;
-    ctx.strokeStyle = 'rgba(224, 242, 254, 0.40)';
-    ctx.lineWidth = Math.max(1.0, calleWidth - 0.4);
-    ctx.beginPath();
-    const allFlooded = shallowEdges.concat(mediumEdges, deepEdges);
-    for (let k = 0; k < allFlooded.length; k++) {
-      const e = allFlooded[k];
-      const start = offsets[e];
-      const len = lengths[e];
-      ctx.moveTo(sx(allCoords[start]), sy(allCoords[start + 1]));
-      for (let p = 1; p < len; p++) {
-        ctx.lineTo(sx(allCoords[start + 2 * p]), sy(allCoords[start + 2 * p + 1]));
-      }
-    }
-    ctx.stroke();
+    ctx.setLineDash([12, 18]);
+    ctx.lineDashOffset = -time * 26;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+    ctx.lineWidth = Math.max(1.4, fluidBase * 0.35);
+    renderEdgeList(allFlooded);
     ctx.setLineDash([]);
   }
 
-  // 5. Ponti emersi e asciutti: via di fuga pedonale chiaramente visibile sopra l'acqua
-  if (totalFlooded > 0 && visibleBridges.length > 0) {
-    ctx.strokeStyle = 'rgba(15, 23, 42, 0.85)';
-    ctx.lineWidth = bridgeWidth + 1.6;
+  // PASS 5: Ponti in pietra bianca emersi e asciutti: via di fuga pedonale chiaramente visibile sopra l'acqua
+  if (visibleBridges.length > 0) {
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.90)';
+    ctx.lineWidth = bridgeWidth + 2.0;
     renderEdgeList(visibleBridges);
 
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.96)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.98)';
     ctx.lineWidth = bridgeWidth;
     renderEdgeList(visibleBridges);
   }

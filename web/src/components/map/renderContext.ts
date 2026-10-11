@@ -22,8 +22,12 @@ export interface RenderContext
     Pick<MapEngineProps, 'bufferRadiusMeters' | 'selectedCategory' | 'selectedDay' | 'paletteTheme'> {
   /** solo opere pubbliche con posizione */
   cantieri: LocatedCantiere[];
-  /** livello di marea disegnato (simulato se il simulatore è attivo) */
+  /** livello di marea disegnato nella citta (calmierato dal MOSE se attivo) */
   tideLevel: number;
+  /** livello di marea in mare aperto prima dell'eventuale difesa MOSE */
+  rawTideLevel?: number;
+  /** se il MOSE è attivo e protegge la laguna quando marea >= 110 cm */
+  isMoseProtected?: boolean;
   sportFilter: SportFilter;
   /** itinerario del planner */
   itinerary: Itinerary | null;

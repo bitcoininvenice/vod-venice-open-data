@@ -32,6 +32,8 @@ interface TideFloodModalProps {
   onActivatePasserelle: () => void;
   simulatedTideLevel?: number | null;
   onSimulatedTideChange?: (cm: number | null) => void;
+  isMoseProtected?: boolean;
+  onToggleMoseProtection?: () => void;
   forecast?: TideForecast | null;
   marineWindStations?: MeteoMarineWindItem[];
 }
@@ -56,6 +58,8 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
   onActivatePasserelle,
   simulatedTideLevel,
   onSimulatedTideChange,
+  isMoseProtected = true,
+  onToggleMoseProtection,
   forecast,
   marineWindStations = []
 }) => {
@@ -121,8 +125,10 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
 
   if (!isOpen) return null;
 
-  const floodedPercent = getFloodedGroundPercentage(simulatedCm);
-  const isMoseRaised = simulatedCm >= 110;
+  const floodedPercent = (isMoseProtected && simulatedCm >= 110)
+    ? getFloodedGroundPercentage(85)
+    : getFloodedGroundPercentage(simulatedCm);
+  const isMoseRaised = simulatedCm >= 110 && isMoseProtected;
 
   // Tratte passerelle dal dataset usato anche dalla mappa (una sola fonte)
   const passerelleRoutes = [...PASSERELLE_DATA]
@@ -340,6 +346,9 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
                   <span className="text-[var(--ink-2)]">{t('ui.floodModal.floodedArea')}</span>
                   <span className={`font-bold tabular ${floodedPercent > 15 ? 'text-rose-400' : 'text-cyan-400'}`}>
                     {t('ui.floodModal.floodedOfCentre', { pct: floodedPercent })}
+                    {simulatedCm >= 110 && isMoseProtected && (
+                      <span className="text-emerald-400 font-normal ml-1.5 text-[10px]">(Calmierato da MOSE)</span>
+                    )}
                   </span>
                 </div>
 
@@ -353,29 +362,55 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
                 </div>
 
                 <div className="text-[11px] font-mono text-[var(--ink-3)]">
-                  {t(
-                    simulatedCm < 80
-                      ? 'ui.floodModal.floodDesc0'
-                      : simulatedCm < 100
-                      ? 'ui.floodModal.floodDesc80'
-                      : simulatedCm < 110
-                      ? 'ui.floodModal.floodDesc100'
-                      : simulatedCm < 120
-                      ? 'ui.floodModal.floodDesc110'
-                      : simulatedCm < 130
-                      ? 'ui.floodModal.floodDesc120'
-                      : 'ui.floodModal.floodDesc130'
-                  )}
+                  {simulatedCm >= 110 && isMoseProtected
+                    ? 'Con il sistema MOSE sollevato alle tre bocche di porto, la laguna e isolata dal mare Adriatico. Il livello dell\'acqua nel centro storico resta calmierato attorno a +85 cm (allagamento circoscritto alla sola Piazza San Marco, il restante 95% della citta e protetto).'
+                    : t(
+                        simulatedCm < 80
+                          ? 'ui.floodModal.floodDesc0'
+                          : simulatedCm < 100
+                          ? 'ui.floodModal.floodDesc80'
+                          : simulatedCm < 110
+                          ? 'ui.floodModal.floodDesc100'
+                          : simulatedCm < 120
+                          ? 'ui.floodModal.floodDesc110'
+                          : simulatedCm < 130
+                          ? 'ui.floodModal.floodDesc120'
+                          : 'ui.floodModal.floodDesc130'
+                      )}
                 </div>
               </div>
 
               {/* MOSE Status Matrix */}
               <div className="p-4 rounded-xl bg-[var(--rule)]/20 border border-[var(--rule)] flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono text-[var(--ink-2)] uppercase font-semibold">
-                    {t('ui.floodModal.moseStatus')}
-                  </span>
-                  <div className="flex items-center gap-1.5 text-xs font-mono">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono text-[var(--ink-2)] uppercase font-semibold">
+                      {t('ui.floodModal.moseStatus')}
+                    </span>
+                    {simulatedCm >= 110 && (
+                      <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
+                        isMoseProtected
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-semibold'
+                          : 'bg-rose-500/10 text-rose-400 border-rose-500/30 font-semibold'
+                      }`}>
+                        {isMoseProtected ? 'DIFESA ATTIVA (CENTRO STORICO ~85 cm)' : 'DISATTIVATO (MAREA INTEGRALE IN CITTA)'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-mono">
+                    {simulatedCm >= 110 && onToggleMoseProtection && (
+                      <button
+                        type="button"
+                        onClick={onToggleMoseProtection}
+                        className={`px-2.5 py-1 rounded-lg border text-xs font-mono font-medium transition-all cursor-pointer ${
+                          isMoseProtected
+                            ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border-rose-500/30'
+                            : 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border-emerald-500/30'
+                        }`}
+                      >
+                        {isMoseProtected ? 'Disattiva MOSE (Simula Allagamento)' : 'Attiva MOSE (Proteggi Laguna)'}
+                      </button>
+                    )}
                     {isMoseRaised ? (
                       <span className="flex items-center gap-1 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
                         <CheckCircle2 className="w-3.5 h-3.5" />
