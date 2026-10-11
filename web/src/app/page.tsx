@@ -20,7 +20,8 @@ import type { SportFilter } from '@/lib/sports';
 import { ActiveLayersLegend } from '@/components/ActiveLayersLegend';
 import type { VeniceFeatureSelected } from '@/components/VeniceFeatureDetailModal';
 import type { SearchResultItem } from '@/components/GlobalSearchModal';
-import { Layers, Waves, X } from 'lucide-react';
+import { Layers, Waves, X, Play, Pause, Plus, Minus } from 'lucide-react';
+import { getFloodedGroundPercentage } from '@/lib/flood';
 import { isLocated, type CameraViewPreset, type PaletteTheme, type DayType, type TransportModeCategory, type StopItem, type CantiereItem, type SatelliteItem, type VeniceCameraItem } from '@/lib/types';
 import { NOTTE, CARTA, getDynamicPalette, isDaylightTheme } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
@@ -123,6 +124,17 @@ export default function HomePage() {
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [focusedCoordinates, setFocusedCoordinates] = useState<{ lat: number; lon: number } | null>(null);
   const [simulatedTideLevel, setSimulatedTideLevel] = useState<number | null>(null);
+  const [isTideCyclePlaying, setIsTideCyclePlaying] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isTideCyclePlaying) return;
+    const interval = setInterval(() => {
+      // Ciclo sinusoidale fluido tra +75 cm e +142 cm (~16s di periodo)
+      const val = Math.round(75 + 67 * ((1 - Math.cos(Date.now() / 2500)) / 2));
+      setSimulatedTideLevel(val);
+    }, 60);
+    return () => clearInterval(interval);
+  }, [isTideCyclePlaying]);
 
   // Dati della mappa: ogni API parte solo quando serve (livello acceso, ricerca, esportazione, schede),
   // le statiche una volta per sessione, quelle live con aggiornamento periodico (vedi lib/cityData.ts)
@@ -548,22 +560,75 @@ export default function HomePage() {
         {/* Floating Simulated Tide Alert Pill on Map */}
         {simulatedTideLevel !== null && (
           <div className="absolute top-4 right-4 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-slate-950/85 backdrop-blur-md border border-cyan-500/40 text-xs font-mono shadow-2xl">
-              <Waves className="w-4 h-4 text-cyan-400 motion-safe:animate-pulse" />
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-950/85 backdrop-blur-md border border-cyan-500/40 text-xs font-mono shadow-2xl flex-wrap max-w-sm sm:max-w-none">
+              <Waves className="w-4 h-4 text-cyan-400 motion-safe:animate-pulse shrink-0" />
               <span className="text-slate-300">
-                {t('ui.floodModal.simPill')}: <strong className={simulatedTideLevel >= 110 ? 'text-rose-400' : 'text-cyan-300'}>{formatSignedCm(simulatedTideLevel)}</strong>
+                {t('ui.floodModal.simPill')}:{' '}
+                <strong className={simulatedTideLevel >= 110 ? 'text-rose-400' : 'text-cyan-300'}>
+                  {formatSignedCm(simulatedTideLevel)}
+                </strong>
+                <span className="text-[10px] text-slate-400 ml-1.5 opacity-80">
+                  (~{getFloodedGroundPercentage(simulatedTideLevel)}% suolo)
+                </span>
               </span>
+
+              {/* Controlli passo marea (-5 / +5 cm) */}
+              <div className="flex items-center gap-1 border-l border-slate-700/60 pl-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsTideCyclePlaying(false);
+                    setSimulatedTideLevel((prev) => Math.max(50, (prev ?? 80) - 5));
+                  }}
+                  className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-mono cursor-pointer"
+                  title="-5 cm"
+                  aria-label="-5 cm"
+                >
+                  <Minus className="w-3 h-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsTideCyclePlaying(false);
+                    setSimulatedTideLevel((prev) => Math.min(160, (prev ?? 80) + 5));
+                  }}
+                  className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-mono cursor-pointer"
+                  title="+5 cm"
+                  aria-label="+5 cm"
+                >
+                  <Plus className="w-3 h-3" />
+                </button>
+              </div>
+
+              {/* Riproduzione ciclo marea sinusoidale (aumento/diminuzione fluido) */}
+              <button
+                type="button"
+                onClick={() => setIsTideCyclePlaying((p) => !p)}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono border transition-colors cursor-pointer ${
+                  isTideCyclePlaying
+                    ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400'
+                    : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+                }`}
+                title={isTideCyclePlaying ? 'Pausa ciclo sinusoidale' : 'Avvia ciclo marea'}
+              >
+                {isTideCyclePlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                <span>{isTideCyclePlaying ? 'Pausa' : 'Ciclo'}</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setIsTideModalOpen(true)}
-                className="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 transition-colors cursor-pointer"
+                className="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 transition-colors cursor-pointer text-[11px]"
                 title={t('ui.floodModal.simAdjustTitle')}
               >
                 {t('ui.floodModal.simAdjust')}
               </button>
               <button
                 type="button"
-                onClick={() => setSimulatedTideLevel(null)}
+                onClick={() => {
+                  setIsTideCyclePlaying(false);
+                  setSimulatedTideLevel(null);
+                }}
                 className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
                 title={t('ui.floodModal.simReset')}
                 aria-label={t('ui.floodModal.simReset')}

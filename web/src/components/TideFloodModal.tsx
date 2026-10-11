@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Waves,
   X,
@@ -13,7 +13,9 @@ import {
   Wind,
   TrendingUp,
   TrendingDown,
-  Compass
+  Compass,
+  Play,
+  Pause
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { formatSignedCm, formatLocalStamp } from '@/lib/time';
@@ -60,17 +62,29 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
   const { t, language } = useTranslation();
   type ModalTab = 'simulator' | 'forecast' | 'sirens' | 'meteo';
   const [activeTab, setActiveTab] = useState<ModalTab>('simulator');
-  // Livello mostrato derivato dalle prop (nessuna copia sincronizzata con un effetto):
-  // il valore locale serve solo se il genitore non controlla la simulazione.
   const [draftCm, setDraftCm] = useState<number | null>(null);
+  const [isCycling, setIsCycling] = useState(false);
   const simulatedCm = simulatedTideLevel ?? draftCm ?? liveTideLevel ?? 65;
 
+  useEffect(() => {
+    if (!isCycling || !isOpen) return;
+    const interval = setInterval(() => {
+      // Ciclo sinusoidale fluido tra +75 cm e +142 cm (~16s di periodo)
+      const val = Math.round(75 + 67 * ((1 - Math.cos(Date.now() / 2500)) / 2));
+      setDraftCm(val);
+      onSimulatedTideChange?.(val);
+    }, 60);
+    return () => clearInterval(interval);
+  }, [isCycling, isOpen, onSimulatedTideChange]);
+
   const handleLevelChange = (cm: number) => {
+    setIsCycling(false);
     setDraftCm(cm);
     onSimulatedTideChange?.(cm);
   };
 
   const handleResetToLive = () => {
+    setIsCycling(false);
     setDraftCm(null);
     onSimulatedTideChange?.(null);
   };
@@ -247,15 +261,30 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
                     </div>
                   </div>
 
-                  {liveTideLevel !== null && (
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
                     <button
                       type="button"
-                      onClick={handleResetToLive}
-                      className="px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs font-mono transition-all cursor-pointer"
+                      onClick={() => setIsCycling((c) => !c)}
+                      className={`px-3 py-1.5 rounded-lg border text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5 ${
+                        isCycling
+                          ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 font-bold shadow-sm'
+                          : 'bg-[var(--rule)]/40 hover:bg-[var(--rule)] text-[var(--ink-2)] border-transparent'
+                      }`}
                     >
-                      {t('ui.floodModal.liveTide')} ({formatSignedCm(liveTideLevel)})
+                      {isCycling ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                      <span>{isCycling ? (language === 'it' ? 'Pausa ciclo' : 'Pause cycle') : (language === 'it' ? 'Avvia ciclo marea' : 'Start tide cycle')}</span>
                     </button>
-                  )}
+
+                    {liveTideLevel !== null && (
+                      <button
+                        type="button"
+                        onClick={handleResetToLive}
+                        className="px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs font-mono transition-all cursor-pointer"
+                      >
+                        {t('ui.floodModal.liveTide')} ({formatSignedCm(liveTideLevel)})
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Range Slider */}

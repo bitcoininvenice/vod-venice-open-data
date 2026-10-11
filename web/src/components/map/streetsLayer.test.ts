@@ -2,8 +2,10 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
   indexRawWalk,
   paintStreets,
+  paintFloodedStreets,
   isStreetsLoaded,
   getStreetsStats,
+  getFloodedEdgesStats,
   type RawWalkData,
   type StreetsPaintOptions,
 } from './streetsLayer';
@@ -47,11 +49,20 @@ describe('streetsLayer', () => {
     // Check bounding boxes
     expect(indexed.boxes[0]).toBeLessThan(indexed.boxes[2]); // x0 < x1
     expect(indexed.boxes[1]).toBeLessThan(indexed.boxes[3]); // y0 < y1
+
+    // Check elevations
+    expect(indexed.elevations[1]).toBe(220); // Bridge is set to high dry elevation (220 cm)
+    expect(indexed.elevations[0]).toBeGreaterThan(70); // Calle elevation
+    expect(indexed.elevations[0]).toBeLessThan(160);
+  });
+
+  it('calculates flooded edges stats', () => {
+    // When no singleton data is loaded, returns 0
+    expect(getFloodedEdgesStats(110)).toEqual({ floodedCount: 0, totalCalli: 0, percentage: 0 });
+    expect(getFloodedEdgesStats(75)).toEqual({ floodedCount: 0, totalCalli: 0, percentage: 0 });
   });
 
   it('paints visible calli and bridges when zoomFactor is sufficient', () => {
-    const indexed = indexRawWalk(sampleData);
-
     const mockCtx = {
       save: vi.fn(),
       restore: vi.fn(),

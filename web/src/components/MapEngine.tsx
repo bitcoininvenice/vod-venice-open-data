@@ -787,7 +787,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       const zoomFactor = camera.s / (cw / W);
       const zoomed = zoomFactor > 1.6;
       if (zoomed && !isLandHiLoaded()) requestLandHi(() => setLandHiReady(true));
-      if (zoomed && !isStreetsLoaded()) requestStreets(() => setLandHiReady((prev) => !prev));
+      if ((zoomed || simulatedTideLevel != null) && !isStreetsLoaded()) requestStreets(() => setLandHiReady((prev) => !prev));
       drawBaseMap(ctx, { cw, ch, dpr, camera, pal, is3DView, zoomed: zoomed && isLandHiLoaded(), landLo: LAND_LO, zoomFactor });
 
       // Contesto del frame condiviso dai layer di disegno (components/map/*)

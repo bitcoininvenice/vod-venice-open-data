@@ -21,25 +21,77 @@ export interface RawWalkData {
   geom: number[][];
 }
 
-interface IndexedStreets {
+export interface IndexedStreets {
   edgeCount: number;
   boxes: Float32Array;
   offsets: Int32Array;
   lengths: Int16Array;
   flags: Uint8Array;
   allCoords: Float32Array;
+  elevations: Int16Array;
 }
+
+const FLOOD_ANCHORS = [
+  { lon: 12.3385, lat: 45.4338, h: 78, r: 120 }, // San Marco Piazzetta (punto piu basso)
+  { lon: 12.3370, lat: 45.4344, h: 84, r: 180 }, // San Marco Piazza
+  { lon: 12.3392, lat: 45.4352, h: 87, r: 140 }, // Piazzetta Leoncini / Spadaria
+  { lon: 12.3360, lat: 45.4382, h: 95, r: 130 }, // Rialto Erbaria
+  { lon: 12.3368, lat: 45.4377, h: 102, r: 140 }, // Campo San Bartolomeo
+  { lon: 12.3365, lat: 45.4312, h: 98, r: 150 }, // Dogana & Salute
+  { lon: 12.3425, lat: 45.4345, h: 99, r: 160 }, // San Zaccaria / Schiavoni
+  { lon: 12.3255, lat: 45.4445, h: 105, r: 160 }, // Cannaregio Guglie
+  { lon: 12.3325, lat: 45.4455, h: 108, r: 170 }, // Misericordia / Ormesini
+  { lon: 12.3280, lat: 45.4485, h: 120, r: 170 }, // Sant'Alvise
+  { lon: 12.3395, lat: 45.4448, h: 128, r: 170 }, // Fondamente Nove
+  { lon: 12.3265, lat: 45.4262, h: 108, r: 190 }, // Giudecca Palanca
+  { lon: 12.3420, lat: 45.4260, h: 124, r: 200 }, // Giudecca Zitelle
+  { lon: 12.3200, lat: 45.4280, h: 122, r: 180 }, // Giudecca Molino Stucky
+  { lon: 12.3300, lat: 45.4372, h: 110, r: 160 }, // Campo San Polo
+  { lon: 12.3275, lat: 45.4412, h: 118, r: 160 }, // San Giacomo dell'Orio
+  { lon: 12.3235, lat: 45.4338, h: 114, r: 170 }, // Campo Santa Margherita
+  { lon: 12.3280, lat: 45.4295, h: 108, r: 160 }, // Fondamenta Zattere
+  { lon: 12.3215, lat: 45.4335, h: 122, r: 160 }, // Carmini / San Pantalon
+  { lon: 12.3185, lat: 45.4375, h: 124, r: 170 }, // Piazzale Roma / Tolentini
+  { lon: 12.3210, lat: 45.4415, h: 128, r: 180 }, // Stazione Santa Lucia / Scalzi
+  { lon: 12.3525, lat: 45.4325, h: 124, r: 180 }, // Castello Garibaldi / Giardini
+  { lon: 12.3500, lat: 45.4370, h: 126, r: 180 }, // Arsenale / Celestia
+  { lon: 12.3660, lat: 45.4280, h: 145, r: 250 }, // Sant'Elena
+];
+
+const GRID_ANCHORS = FLOOD_ANCHORS.map((a) => ({
+  gx: mx(a.lon),
+  gy: my(a.lat),
+  h: a.h,
+  r: a.r,
+}));
 
 let streetsData: IndexedStreets | null = null;
 let streetsRequestedAt = 0;
 
 export const isStreetsLoaded = (): boolean => streetsData !== null;
 
+export const getStreetsData = (): IndexedStreets | null => streetsData;
+
 export function getStreetsStats(): { loaded: boolean; edges: number } {
   return {
     loaded: streetsData !== null,
     edges: streetsData ? streetsData.edgeCount : 0,
   };
+}
+
+export function getFloodedEdgesStats(tideCm: number): { floodedCount: number; totalCalli: number; percentage: number } {
+  if (!streetsData || tideCm < 80) return { floodedCount: 0, totalCalli: 0, percentage: 0 };
+  let flooded = 0;
+  let calli = 0;
+  const { edgeCount, flags, elevations } = streetsData;
+  for (let e = 0; e < edgeCount; e++) {
+    if (flags[e] === 0) {
+      calli++;
+      if (elevations[e] <= tideCm) flooded++;
+    }
+  }
+  const percentage = calli > 0 ? +((flooded / calli) * 100).toFixed(1) : 0;
+  return { floodedCount: flooded, totalCalli: calli, percentage };
 }
 
 export function indexRawWalk(data: RawWalkData): IndexedStreets {
@@ -68,6 +120,7 @@ export function indexRawWalk(data: RawWalkData): IndexedStreets {
   const lengths = new Int16Array(m);
   const flags = new Uint8Array(m);
   const boxes = new Float32Array(m * 4);
+  const elevations = new Int16Array(m);
 
   let ptr = 0;
   for (let e = 0; e < m; e++) {
@@ -110,6 +163,36 @@ export function indexRawWalk(data: RawWalkData): IndexedStreets {
     boxes[4 * e + 1] = y0;
     boxes[4 * e + 2] = x1;
     boxes[4 * e + 3] = y1;
+
+    // Attribuzione altimetrica per la simulazione dell'acqua alta
+    if (flags[e] === 1) {
+      // I ponti sono sempre rialzati e rimangono all'asciutto
+      elevations[e] = 220;
+    } else {
+      const ex = (nodeX[u] + nodeX[v]) * 0.5;
+      const ey = (nodeY[u] + nodeY[v]) * 0.5;
+
+      let totalW = 0.001;
+      let weightedH = 138 * 0.001;
+
+      for (let k = 0; k < GRID_ANCHORS.length; k++) {
+        const z = GRID_ANCHORS[k];
+        const dx = ex - z.gx;
+        const dy = ey - z.gy;
+        const dist = Math.hypot(dx, dy);
+        if (dist < z.r * 2.2) {
+          const dNorm = dist / z.r;
+          const w = 1 / (1 + dNorm * dNorm * dNorm);
+          weightedH += z.h * w;
+          totalW += w;
+        }
+      }
+
+      // Micro-variazioni del piano stradale
+      const hash = Math.sin(ex * 12.9898 + ey * 78.233) * 43758.5453;
+      const jitter = ((hash - Math.floor(hash)) - 0.5) * 4;
+      elevations[e] = Math.round(weightedH / totalW + jitter);
+    }
   }
   offsets[m] = ptr;
 
@@ -120,6 +203,7 @@ export function indexRawWalk(data: RawWalkData): IndexedStreets {
     lengths,
     flags,
     allCoords,
+    elevations,
   };
 }
 
@@ -284,4 +368,136 @@ export function paintStreets(b: CanvasRenderingContext2D, o: StreetsPaintOptions
   }
 
   b.restore();
+}
+
+export interface FloodedStreetsPaintOptions {
+  cw: number;
+  ch: number;
+  camera: { x0: number; y0: number; s: number };
+  tideLevel: number;
+  animate?: boolean;
+}
+
+/**
+ * Disegna la simulazione volumetrica dell'acqua alta sulle calli e campielli di Venezia.
+ * L'acqua allaga le vie con quota altimetrica inferiore alla marea, differenziando la profondita
+ * con un gradiente cromatico e increspature animate, lasciando emersi e percorribili i ponti.
+ */
+export function paintFloodedStreets(ctx: CanvasRenderingContext2D, o: FloodedStreetsPaintOptions): void {
+  if (!streetsData || o.tideLevel < 80) return;
+  const { cw, ch, camera, tideLevel, animate = true } = o;
+  const { edgeCount, boxes, offsets, lengths, flags, allCoords, elevations } = streetsData;
+
+  const sx = (x: number) => (x - camera.x0) * camera.s;
+  const sy = (y: number) => (y - camera.y0) * camera.s;
+
+  const m = 12 / camera.s;
+  const vx0 = camera.x0 - m;
+  const vy0 = camera.y0 - m;
+  const vx1 = camera.x0 + cw / camera.s + m;
+  const vy1 = camera.y0 + ch / camera.s + m;
+
+  const calleWidth = Math.max(1.4, Math.min(5.2, 2.0 * camera.s));
+  const bridgeWidth = Math.max(2.0, Math.min(6.5, 2.6 * camera.s));
+
+  ctx.save();
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  const shallowEdges: number[] = [];
+  const mediumEdges: number[] = [];
+  const deepEdges: number[] = [];
+  const visibleBridges: number[] = [];
+
+  for (let e = 0; e < edgeCount; e++) {
+    const i = 4 * e;
+    if (boxes[i + 2] < vx0 || boxes[i] > vx1 || boxes[i + 3] < vy0 || boxes[i + 1] > vy1) continue;
+
+    if (flags[e] === 1) {
+      visibleBridges.push(e);
+      continue;
+    }
+
+    if (elevations[e] <= tideLevel) {
+      const depth = tideLevel - elevations[e];
+      if (depth <= 8) {
+        shallowEdges.push(e);
+      } else if (depth <= 20) {
+        mediumEdges.push(e);
+      } else {
+        deepEdges.push(e);
+      }
+    }
+  }
+
+  const renderEdgeList = (edges: number[]) => {
+    ctx.beginPath();
+    for (let k = 0; k < edges.length; k++) {
+      const e = edges[k];
+      const start = offsets[e];
+      const len = lengths[e];
+      ctx.moveTo(sx(allCoords[start]), sy(allCoords[start + 1]));
+      for (let p = 1; p < len; p++) {
+        ctx.lineTo(sx(allCoords[start + 2 * p]), sy(allCoords[start + 2 * p + 1]));
+      }
+    }
+    ctx.stroke();
+  };
+
+  // 1. Acqua profonda (oltre 20 cm di battente)
+  if (deepEdges.length > 0) {
+    ctx.strokeStyle = 'rgba(2, 132, 199, 0.85)';
+    ctx.lineWidth = calleWidth + 1.6;
+    renderEdgeList(deepEdges);
+  }
+
+  // 2. Acqua media (tra 8 e 20 cm di battente)
+  if (mediumEdges.length > 0) {
+    ctx.strokeStyle = 'rgba(14, 165, 233, 0.72)';
+    ctx.lineWidth = calleWidth + 1.2;
+    renderEdgeList(mediumEdges);
+  }
+
+  // 3. Velo d'acqua (fino a 8 cm di battente)
+  if (shallowEdges.length > 0) {
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.55)';
+    ctx.lineWidth = calleWidth + 0.8;
+    renderEdgeList(shallowEdges);
+  }
+
+  // 4. Increspatura e riflessi di luce dinamici dell'acqua in movimento
+  const totalFlooded = shallowEdges.length + mediumEdges.length + deepEdges.length;
+  if (animate && totalFlooded > 0) {
+    const time = Date.now() / 800;
+    ctx.setLineDash([10, 16]);
+    ctx.lineDashOffset = -time * 22;
+    ctx.strokeStyle = 'rgba(224, 242, 254, 0.40)';
+    ctx.lineWidth = Math.max(1.0, calleWidth - 0.4);
+    ctx.beginPath();
+    const allFlooded = shallowEdges.concat(mediumEdges, deepEdges);
+    for (let k = 0; k < allFlooded.length; k++) {
+      const e = allFlooded[k];
+      const start = offsets[e];
+      const len = lengths[e];
+      ctx.moveTo(sx(allCoords[start]), sy(allCoords[start + 1]));
+      for (let p = 1; p < len; p++) {
+        ctx.lineTo(sx(allCoords[start + 2 * p]), sy(allCoords[start + 2 * p + 1]));
+      }
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // 5. Ponti emersi e asciutti: via di fuga pedonale chiaramente visibile sopra l'acqua
+  if (totalFlooded > 0 && visibleBridges.length > 0) {
+    ctx.strokeStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.lineWidth = bridgeWidth + 1.6;
+    renderEdgeList(visibleBridges);
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.96)';
+    ctx.lineWidth = bridgeWidth;
+    renderEdgeList(visibleBridges);
+  }
+
+  ctx.restore();
 }
