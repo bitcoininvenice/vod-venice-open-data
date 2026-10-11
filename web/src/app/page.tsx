@@ -30,6 +30,8 @@ import { activeTripsAt, activeTripsByCategory, dayActivity } from '@/lib/gtfsAct
 import { useSimulation } from '@/lib/simulationModel';
 import { simClock } from '@/lib/simClock';
 import { readPreference, usePreference, writePreference, THEME_PREFERENCE_KEY } from '@/lib/localPreference';
+import { track } from '@vercel/analytics';
+import { trackLayerToggle, trackLayerOpen, featureToLayerSlug, mapObjectToLayerSlug } from '@/lib/analytics';
 
 // Finestre e schede meno frequenti: il loro codice si scarica solo quando si aprono
 const SpatialAnalysisModal = dynamic(() => import('@/components/SpatialAnalysisModal').then((m) => m.SpatialAnalysisModal));
@@ -189,21 +191,56 @@ export default function HomePage() {
 
     // Accende il layer del risultato (senza toccare gli altri)
     const key = item.layerKey;
-    if (key) setLayers((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
+    if (key) {
+      setLayers((prev) => {
+        if (!prev[key]) {
+          trackLayerToggle(key, true);
+          return { ...prev, [key]: true };
+        }
+        return prev;
+      });
+    }
 
-    if (item.type === 'stop') setSelectedStop(item.rawItem);
-    else if (item.type === 'cantiere') setSelectedCantiere(item.rawItem);
-    else if (item.type === 'camera') setSelectedCamera(item.rawItem);
-    else if (item.type === 'mose') setIsMoseModalOpen(true);
-    else if (item.type === 'nizioleto') setSelectedFeature({ type: 'nizioleto', data: item.rawItem });
-    else if (item.type === 'well') setSelectedFeature({ type: 'veniceWell', data: item.rawItem });
-    else if (item.type === 'bell_tower') setSelectedFeature({ type: 'bellTower', data: item.rawItem });
-    else if (item.type === 'pharmacy') setSelectedFeature({ type: 'pharmacy', data: item.rawItem });
-    else if (item.type === 'dae') setSelectedFeature({ type: 'publicDae', data: item.rawItem });
-    else if (item.type === 'emergency_dock') setSelectedFeature({ type: 'emergencyDock', data: item.rawItem });
-    else if (item.type === 'fountain') setSelectedFeature({ type: 'fountain', data: item.rawItem });
-    else if (item.type === 'parking') setSelectedFeature({ type: 'parking', data: item.rawItem });
-    else if (item.type === 'civico') setSelectedFeature({ type: 'civicNumber', data: item.rawItem });
+    if (item.type === 'stop') {
+      trackLayerOpen('fermate_actv');
+      setSelectedStop(item.rawItem);
+    } else if (item.type === 'cantiere') {
+      trackLayerOpen('cantieri');
+      setSelectedCantiere(item.rawItem);
+    } else if (item.type === 'camera') {
+      trackLayerOpen('telecamere_webcam');
+      setSelectedCamera(item.rawItem);
+    } else if (item.type === 'mose') {
+      trackLayerOpen('mose');
+      setIsMoseModalOpen(true);
+    } else if (item.type === 'nizioleto') {
+      trackLayerOpen('nizioleti');
+      setSelectedFeature({ type: 'nizioleto', data: item.rawItem });
+    } else if (item.type === 'well') {
+      trackLayerOpen('vere_da_pozzo');
+      setSelectedFeature({ type: 'veniceWell', data: item.rawItem });
+    } else if (item.type === 'bell_tower') {
+      trackLayerOpen('campanili_pendenti');
+      setSelectedFeature({ type: 'bellTower', data: item.rawItem });
+    } else if (item.type === 'pharmacy') {
+      trackLayerOpen('farmacie');
+      setSelectedFeature({ type: 'pharmacy', data: item.rawItem });
+    } else if (item.type === 'dae') {
+      trackLayerOpen('dae_pubblici');
+      setSelectedFeature({ type: 'publicDae', data: item.rawItem });
+    } else if (item.type === 'emergency_dock') {
+      trackLayerOpen('idroambulanze');
+      setSelectedFeature({ type: 'emergencyDock', data: item.rawItem });
+    } else if (item.type === 'fountain') {
+      trackLayerOpen('fontanelle_ponti');
+      setSelectedFeature({ type: 'fountain', data: item.rawItem });
+    } else if (item.type === 'parking') {
+      trackLayerOpen('parcheggi');
+      setSelectedFeature({ type: 'parking', data: item.rawItem });
+    } else if (item.type === 'civico') {
+      trackLayerOpen('civici');
+      setSelectedFeature({ type: 'civicNumber', data: item.rawItem });
+    }
   }, [clearDetails]);
 
   // Tutorial mostrato alla prima visita: lato server si assume già visto per evitare un flash
@@ -214,13 +251,32 @@ export default function HomePage() {
     setIsTutorialOpen(false);
   };
 
-  const toggleLayer = useCallback((key: LayerKey) => setLayers((prev) => ({ ...prev, [key]: !prev[key] })), []);
+  const toggleLayer = useCallback((key: LayerKey) => {
+    setLayers((prev) => {
+      const next = !prev[key];
+      trackLayerToggle(key, next);
+      return { ...prev, [key]: next };
+    });
+  }, []);
+
   const setLayerGroup = useCallback(
-    (keys: LayerKey[], active: boolean) => setLayers((prev) => ({ ...prev, ...Object.fromEntries(keys.map((k) => [k, active])) })),
+    (keys: LayerKey[], active: boolean) => {
+      setLayers((prev) => ({ ...prev, ...Object.fromEntries(keys.map((k) => [k, active])) }));
+      for (const k of keys) {
+        trackLayerToggle(k, active);
+      }
+    },
     []
   );
 
-  const applyPreset = useCallback((preset: MapPreset) => setLayers(presetLayers(preset)), []);
+  const applyPreset = useCallback((preset: MapPreset) => {
+    setLayers(presetLayers(preset));
+    if (typeof window !== 'undefined') {
+      try {
+        track('preset_apply', { preset });
+      } catch {}
+    }
+  }, []);
 
   // Track initial mount load from URL
   const hasLoadedUrlParamsRef = useRef(false);
@@ -244,7 +300,10 @@ export default function HomePage() {
       // chi arriva da un link diretto a uno strumento non vede il tutorial sopra lo strumento
       writePreference(ONBOARDING_KEY, 'true');
       if (tool === 'planner') openPlanner();
-      else if (tool === 'tide') setIsTideModalOpen(true);
+      else if (tool === 'tide') {
+        trackLayerOpen('marea');
+        setIsTideModalOpen(true);
+      }
       else if (tool === 'export') setIsExportModalOpen(true);
       else if (tool === 'spatial') setIsSpatialModalOpen(true);
       else if (tool === 'tutorial') setIsTutorialOpen(true);
@@ -406,7 +465,10 @@ export default function HomePage() {
         onOpenTutorial={() => setIsTutorialOpen(true)}
         onOpenSearch={() => setIsSearchOpen(true)}
         onOpenTripPlanner={() => openPlanner()}
-        onOpenTideModal={() => setIsTideModalOpen(true)}
+        onOpenTideModal={() => {
+          trackLayerOpen('marea');
+          setIsTideModalOpen(true);
+        }}
         onOpenExportModal={() => setIsExportModalOpen(true)}
         activeCantieriCount={locatedCantieri.length}
         tideLevel={data.tideLevel}
@@ -425,19 +487,46 @@ export default function HomePage() {
           bufferRadiusMeters={bufferRadiusMeters}
           selectedCategory={selectedCategory}
           alilagunaBoats={alilagunaBoats}
-          onSelectAlilaguna={() => showDetail(() => setIsAlilagunaModalOpen(true))}
-          onSelectCamera={(c) => showDetail(() => setSelectedCamera(c))}
-          onSelectSatellite={(sat) => showDetail(() => setSelectedSatellite(sat))}
-          onSelectFeature={(f) => showDetail(() => setSelectedFeature(f))}
-          onSelectStop={(st) => showDetail(() => setSelectedStop(st))}
-          onSelectCantiere={(c) => showDetail(() => setSelectedCantiere(c))}
-          onSelectAirport={() => showDetail(() => setIsAirportModalOpen(true))}
-          onSelectObject={(o) => showDetail(() => setSelectedObject(o))}
+          onSelectAlilaguna={() => {
+            trackLayerOpen('alilaguna');
+            showDetail(() => setIsAlilagunaModalOpen(true));
+          }}
+          onSelectCamera={(c) => {
+            trackLayerOpen('telecamere_webcam');
+            showDetail(() => setSelectedCamera(c));
+          }}
+          onSelectSatellite={(sat) => {
+            trackLayerOpen('satelliti_copernicus');
+            showDetail(() => setSelectedSatellite(sat));
+          }}
+          onSelectFeature={(f) => {
+            trackLayerOpen(featureToLayerSlug(f));
+            showDetail(() => setSelectedFeature(f));
+          }}
+          onSelectStop={(st) => {
+            trackLayerOpen('fermate_actv');
+            showDetail(() => setSelectedStop(st));
+          }}
+          onSelectCantiere={(c) => {
+            trackLayerOpen('cantieri');
+            showDetail(() => setSelectedCantiere(c));
+          }}
+          onSelectAirport={() => {
+            trackLayerOpen('voli_vce');
+            showDetail(() => setIsAirportModalOpen(true));
+          }}
+          onSelectObject={(o) => {
+            trackLayerOpen(mapObjectToLayerSlug(o));
+            showDetail(() => setSelectedObject(o));
+          }}
           onClearSelection={clearDetails}
           legend={<ActiveLayersLegend layers={layers} counts={layerCounts} onHideLayer={toggleLayer} />}
           selectedObject={selectedObject}
           selectedSatellite={selectedSatellite}
-          onSelectMose={() => showDetail(() => setIsMoseModalOpen(true))}
+          onSelectMose={() => {
+            trackLayerOpen('mose');
+            showDetail(() => setIsMoseModalOpen(true));
+          }}
           focusedCoordinates={focusedCoordinates}
           sportFilter={sportFilter}
           simulatedTideLevel={simulatedTideLevel}
@@ -589,7 +678,10 @@ export default function HomePage() {
             isLiveSynced={isLiveSynced}
             onShare={handleShare}
             hasActiveLayers={activeLayersCount > 0}
-            onOpenTideModal={() => setIsTideModalOpen(true)}
+            onOpenTideModal={() => {
+              trackLayerOpen('marea');
+              setIsTideModalOpen(true);
+            }}
           />
         </div>
           {/* Scheda informativa unica (agganciata a destra su desktop, cassetto su mobile) */}
@@ -630,8 +722,14 @@ export default function HomePage() {
         <MapObjectPanel
           object={selectedObject}
           onClose={() => setSelectedObject(null)}
-          onOpenAirport={() => showDetail(() => setIsAirportModalOpen(true))}
-          onOpenAlilaguna={() => showDetail(() => setIsAlilagunaModalOpen(true))}
+          onOpenAirport={() => {
+            trackLayerOpen('voli_vce');
+            showDetail(() => setIsAirportModalOpen(true));
+          }}
+          onOpenAlilaguna={() => {
+            trackLayerOpen('alilaguna');
+            showDetail(() => setIsAlilagunaModalOpen(true));
+          }}
           timeSeconds={currentTimeSeconds}
         />
 
@@ -715,7 +813,10 @@ export default function HomePage() {
           isOpen={isTideModalOpen}
           onClose={() => setIsTideModalOpen(false)}
           liveTideLevel={data.tideLevel}
-          onActivatePasserelle={() => setShowPasserelle(true)}
+          onActivatePasserelle={() => {
+            trackLayerToggle('showPasserelle', true);
+            setShowPasserelle(true);
+          }}
           simulatedTideLevel={simulatedTideLevel}
           onSimulatedTideChange={setSimulatedTideLevel}
           forecast={data.tideInfo.forecast}

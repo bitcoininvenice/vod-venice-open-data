@@ -10,7 +10,7 @@ import "@fontsource/dm-mono/latin-500.css";
 import "./globals.css";
 import { SITE_DESCRIPTION, SITE_NAME, jsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   manifest: "/manifest.json",
