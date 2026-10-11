@@ -28,6 +28,10 @@ export interface RenderContext
   rawTideLevel?: number;
   /** se il MOSE è attivo e protegge la laguna quando marea >= 110 cm */
   isMoseProtected?: boolean;
+  /** fase operativa dinamica del MOSE (sollevamento 30 min, attivato, abbassamento 15 min, abbassato) */
+  mosePhase?: 'ABBASSATO' | 'IN_SOLLEVAMENTO' | 'ATTIVATO' | 'IN_ABBASSAMENTO';
+  /** progresso di sollevamento da 0.0 (fondo) a 1.0 (eretto) */
+  moseLiftProgress?: number;
   sportFilter: SportFilter;
   /** itinerario del planner */
   itinerary: Itinerary | null;

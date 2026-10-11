@@ -33,6 +33,7 @@ import { simClock } from '@/lib/simClock';
 import { readPreference, usePreference, writePreference, THEME_PREFERENCE_KEY } from '@/lib/localPreference';
 import { track } from '@vercel/analytics';
 import { trackLayerToggle, trackLayerOpen, featureToLayerSlug, mapObjectToLayerSlug } from '@/lib/analytics';
+import { resolveTideState } from '@/lib/tideCurve';
 
 // Finestre e schede meno frequenti: il loro codice si scarica solo quando si aprono
 const SpatialAnalysisModal = dynamic(() => import('@/components/SpatialAnalysisModal').then((m) => m.SpatialAnalysisModal));
@@ -459,6 +460,18 @@ export default function HomePage() {
   );
   const liveWebcamsCount = useMemo(() => data.cameras.filter((c) => c.hasLiveFeed).length, [data.cameras]);
 
+  // Stato dinamico di marea (reale o simulato) che segue l'ora corrente o il punto della timeline
+  const currentDynamicTide = useMemo(() => {
+    return resolveTideState({
+      simulatedTideLevel,
+      isMoseProtected,
+      timelineSeconds: currentTimeSeconds,
+      forecast: data.tideInfo?.forecast,
+      liveTideLevel: data.tideLevel,
+      liveObservedAt: data.tideInfo?.observedAt,
+    });
+  }, [simulatedTideLevel, isMoseProtected, currentTimeSeconds, data.tideInfo, data.tideLevel]);
+
   return (
     <main className="relative w-screen h-screen overflow-hidden flex flex-col bg-[var(--ground)]">
       {/* Top Header */}
@@ -764,8 +777,8 @@ export default function HomePage() {
             alilagunaBoatsCount={alilagunaBoats.length}
             peakCount={simulation ? dayActivity(selectedDay).peakCount : undefined}
             peakTime={simulation ? dayActivity(selectedDay).peakTime : undefined}
-            showTide={showMose || showPasserelle}
-            tideLevel={data.tideLevel}
+            showTide={showMose || showPasserelle || currentDynamicTide.lagoonTideCm >= 80 || simulatedTideLevel != null}
+            tideLevel={currentDynamicTide.lagoonTideCm}
             airTemp={data.cityTemp}
             onSyncLiveTime={handleSyncLiveTime}
             isLiveSynced={isLiveSynced}

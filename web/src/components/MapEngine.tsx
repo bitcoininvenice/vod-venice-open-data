@@ -20,6 +20,7 @@ import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, dra
 import { bdapRadius, drawPin, drawParks, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 import { drawFloodLayer } from './map/floodLayer';
+import { resolveTideState } from '@/lib/tideCurve';
 import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
 import { drawFiber } from './map/fiberLayer';
 import { drawLagoonNetwork } from './map/lagoonNetworkLayer';
@@ -790,11 +791,23 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       const zoomFactor = camera.s / (cw / W);
       const zoomed = zoomFactor > 1.6;
       if (zoomed && !isLandHiLoaded()) requestLandHi(() => setLandHiReady(true));
-      if ((zoomed || simulatedTideLevel != null) && !isStreetsLoaded()) requestStreets(() => setLandHiReady((prev) => !prev));
-      drawBaseMap(ctx, { cw, ch, dpr, camera, pal, is3DView, zoomed: zoomed && isLandHiLoaded(), landLo: LAND_LO, zoomFactor });
 
-      const rawTide = simulatedTideLevel ?? data.tideLevel ?? 0;
-      const effectiveTideLevel = (rawTide >= 110 && isMoseProtected) ? 85 : rawTide;
+      const tideState = resolveTideState({
+        simulatedTideLevel,
+        isMoseProtected,
+        timelineSeconds: currentTimeSeconds,
+        forecast: data.tideInfo?.forecast,
+        liveTideLevel: data.tideLevel,
+        liveObservedAt: data.tideInfo?.observedAt,
+      });
+
+      const rawTide = tideState.seaTideCm;
+      const effectiveTideLevel = tideState.lagoonTideCm;
+
+      if ((zoomed || simulatedTideLevel != null || effectiveTideLevel >= 80) && !isStreetsLoaded()) {
+        requestStreets(() => setLandHiReady((prev) => !prev));
+      }
+      drawBaseMap(ctx, { cw, ch, dpr, camera, pal, is3DView, zoomed: zoomed && isLandHiLoaded(), landLo: LAND_LO, zoomFactor });
 
       // Contesto del frame condiviso dai layer di disegno (components/map/*)
       const rc: RenderContext = {
@@ -829,7 +842,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         sportFilter,
         tideLevel: effectiveTideLevel,
         rawTideLevel: rawTide,
-        isMoseProtected,
+        isMoseProtected: tideState.isMoseRaised,
+        mosePhase: tideState.moseStatus,
+        moseLiftProgress: tideState.moseLiftProgress,
         pin,
         itinerary,
         selectedTrip: selectedTrip && selectedVehicle
@@ -856,8 +871,10 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
         drawSpatialBuffer(rc);
 
-        // Zone allagate (stima indicativa): con il simulatore attivo o con il layer passerelle acceso
-        if (simulatedTideLevel != null || layers.showPasserelle) unguarded(() => drawFloodLayer(rc, rc.tideLevel));
+        // Zone allagate (stima indicativa): su marea >= 80 cm (reale o timeline), con simulatore attivo o con passerelle accese
+        if (effectiveTideLevel >= 80 || simulatedTideLevel != null || layers.showPasserelle) {
+          unguarded(() => drawFloodLayer(rc, rc.tideLevel));
+        }
 
         drawVehicles(rc);
 

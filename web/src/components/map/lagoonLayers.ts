@@ -61,7 +61,7 @@ const DEFAULT_MOSE_GATES = [
 ];
 
 export function drawMose(rc: RenderContext): void {
-  const { ctx, isDark, sx, sy, mx, my, camera, paletteTheme, showMose, moseGates, tideLevel, rawTideLevel, isMoseProtected } = rc;
+  const { ctx, isDark, sx, sy, mx, my, camera, paletteTheme, showMose, moseGates, tideLevel, rawTideLevel, isMoseProtected, mosePhase, moseLiftProgress } = rc;
   const seaTide = rawTideLevel ?? tideLevel ?? 0;
   const isSimulationOrMose = showMose || (seaTide >= 80);
   if (!isSimulationOrMose) return;
@@ -71,6 +71,19 @@ export function drawMose(rc: RenderContext): void {
   const isSimulating = rawTideLevel !== undefined && rawTideLevel !== null;
   const time = Date.now() / 1000;
   const reduced = prefersReducedMotion();
+
+  // Stato dinamico delle paratie: derivato dal calcolo temporale o dalla soglia
+  const dynamicPhase = mosePhase ?? (
+    isSimulating
+      ? (seaTide >= 110 && isProtected ? 'ATTIVATO' : 'ABBASSATO')
+      : (isProtected && seaTide >= 110 ? 'ATTIVATO' : 'ABBASSATO')
+  );
+
+  const dynamicProgress = moseLiftProgress ?? (
+    dynamicPhase === 'ATTIVATO' ? 1.0 : dynamicPhase === 'IN_SOLLEVAMENTO' ? 0.6 : 0.0
+  );
+
+  const isGateRaised = dynamicPhase === 'ATTIVATO' || dynamicPhase === 'IN_SOLLEVAMENTO' || dynamicPhase === 'IN_ABBASSAMENTO';
 
   gates.forEach((gate, gateIdx) => {
     // Coordinate dei due estremi attraverso la bocca di porto
@@ -99,22 +112,20 @@ export function drawMose(rc: RenderContext): void {
       ny = -ny;
     }
 
-    const isGateActivated = isSimulating
-      ? (seaTide >= 110 && isProtected)
-      : (gate.status === 'ATTIVATO' || (seaTide >= 110 && isProtected));
-
     ctx.save();
 
-    if (isGateActivated) {
+    if (isGateRaised) {
       // 1. ALONE DI DIFESA LAGUNARE: Velo calmo e protetto sul versante laguna (-nx, -ny)
-      const haloWidth = Math.max(4.0, Math.min(8.0, 3.0 + 35 * camera.s));
-      ctx.beginPath();
-      ctx.moveTo(x1 - nx * 3, y1 - ny * 3);
-      ctx.lineTo(x2 - nx * 3, y2 - ny * 3);
-      ctx.strokeStyle = isDark ? 'rgba(16, 185, 129, 0.28)' : 'rgba(5, 150, 105, 0.20)';
-      ctx.lineWidth = haloWidth;
-      ctx.lineCap = 'butt';
-      ctx.stroke();
+      const haloWidth = Math.max(4.0, Math.min(8.0, 3.0 + 35 * camera.s)) * dynamicProgress;
+      if (haloWidth > 1) {
+        ctx.beginPath();
+        ctx.moveTo(x1 - nx * 3, y1 - ny * 3);
+        ctx.lineTo(x2 - nx * 3, y2 - ny * 3);
+        ctx.strokeStyle = isDark ? 'rgba(16, 185, 129, 0.28)' : 'rgba(5, 150, 105, 0.20)';
+        ctx.lineWidth = haloWidth;
+        ctx.lineCap = 'butt';
+        ctx.stroke();
+      }
 
       // 2. FRANGIFLUTTI E MOTO ONDOSO ADRIATICO: Schiuma fine e increspatura sul lato mare (+nx, +ny)
       const wavePulse = reduced ? 0.6 : (0.45 + 0.35 * Math.sin(time * 3.2 + gateIdx * 1.8));
@@ -122,26 +133,39 @@ export function drawMose(rc: RenderContext): void {
       ctx.beginPath();
       ctx.moveTo(x1 + nx * foamOffset, y1 + ny * foamOffset);
       ctx.lineTo(x2 + nx * foamOffset, y2 + ny * foamOffset);
-      ctx.strokeStyle = `rgba(255, 255, 255, ${wavePulse.toFixed(2)})`;
+      ctx.strokeStyle = `rgba(255, 255, 255, ${(wavePulse * dynamicProgress).toFixed(2)})`;
       ctx.lineWidth = Math.max(1.4, Math.min(2.6, 1.2 + 10 * camera.s));
       ctx.setLineDash([5, 3, 8, 4]);
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // 3. BASAMENTO IN CEMENTO ARMATO SUBACQUEO (CASSONI DI ALLOGGIAMENTO)
-      const flapThick = Math.max(2.8, Math.min(5.2, 2.2 + 22 * camera.s));
+      // 3. EFFETTO ARIA COMPRESSA IN SOLLEVAMENTO: Bolle e spuma di galleggiamento
+      if (dynamicPhase === 'IN_SOLLEVAMENTO' && !reduced) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = `rgba(224, 242, 254, ${(0.55 + 0.35 * Math.sin(time * 6.5 + gateIdx * 1.5)).toFixed(2)})`;
+        ctx.lineWidth = Math.max(2.0, 3.8 * camera.s);
+        ctx.setLineDash([3, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // 4. BASAMENTO IN CEMENTO ARMATO SUBACQUEO (CASSONI DI ALLOGGIAMENTO)
+      const maxFlapThick = Math.max(2.8, Math.min(5.2, 2.2 + 22 * camera.s));
+      const flapThick = maxFlapThick * (0.35 + 0.65 * dynamicProgress);
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.strokeStyle = '#1e293b';
-      ctx.lineWidth = flapThick + 1.2;
+      ctx.lineWidth = maxFlapThick + 1.2;
       ctx.lineCap = 'butt';
       ctx.stroke();
 
-      // 4. LE ICONICHE PARATOIE GIALLE DEL MOSE (PARATIE METALLICHE MODULARI)
+      // 5. PARATOIE GIALLE DEL MOSE MODULARI
       const count = gate.barriersCount || 20;
 
-      // 4a. Cerniera ambrata di base
+      // Cerniera ambrata di base
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
@@ -150,7 +174,11 @@ export function drawMose(rc: RenderContext): void {
       ctx.lineCap = 'butt';
       ctx.stroke();
 
-      // 4b. Disegno modulare delle singole paratie in giallo canarino vivo (#facc15 / #eab308)
+      // Disegno modulare delle paratie in giallo
+      const yellowColor = dynamicPhase === 'IN_SOLLEVAMENTO' || dynamicPhase === 'IN_ABBASSAMENTO'
+        ? '#eab308'
+        : '#facc15';
+
       for (let k = 0; k < count; k++) {
         const t0 = (k + 0.12) / count;
         const t1 = (k + 0.88) / count;
@@ -162,21 +190,21 @@ export function drawMose(rc: RenderContext): void {
         ctx.beginPath();
         ctx.moveTo(gx0, gy0);
         ctx.lineTo(gx1, gy1);
-        ctx.strokeStyle = '#facc15';
+        ctx.strokeStyle = yellowColor;
         ctx.lineWidth = flapThick;
         ctx.lineCap = 'butt';
         ctx.stroke();
 
-        // Riflesso sullo spigolo superiore della paratoia metallica
+        // Riflesso superiore
         ctx.beginPath();
         ctx.moveTo(gx0 + nx * 0.6, gy0 + ny * 0.6);
         ctx.lineTo(gx1 + nx * 0.6, gy1 + ny * 0.6);
         ctx.strokeStyle = '#fef08a';
-        ctx.lineWidth = Math.max(0.8, flapThick * 0.3);
+        ctx.lineWidth = Math.max(0.6, flapThick * 0.28);
         ctx.stroke();
       }
 
-      // 5. SPALLE E CASSONI DI TESTATA IN CEMENTO
+      // 6. SPALLE E CASSONI DI TESTATA IN CEMENTO CON FANALI MARITTIMI
       const capRadius = Math.max(2.2, Math.min(4.2, 1.8 + 15 * camera.s));
       [ [x1, y1], [x2, y2] ].forEach(([cx, cy], endIdx) => {
         ctx.beginPath();
@@ -187,17 +215,60 @@ export function drawMose(rc: RenderContext): void {
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // Fanale marittimo di navigazione (rosso / verde compatto)
-        const lightCol = endIdx === 0 ? '#ef4444' : '#10b981';
+        // Fanale: se in sollevamento o abbassamento lampeggia ambra; se attivo fisso rosso/verde
+        let lightCol = endIdx === 0 ? '#ef4444' : '#10b981';
+        if (dynamicPhase === 'IN_SOLLEVAMENTO' || dynamicPhase === 'IN_ABBASSAMENTO') {
+          const isFlash = Math.floor(time * 3.5 + endIdx) % 2 === 0;
+          lightCol = isFlash ? '#f59e0b' : '#78350f';
+        }
+
         ctx.beginPath();
         ctx.arc(cx, cy, Math.max(1.2, capRadius * 0.55), 0, Math.PI * 2);
         ctx.fillStyle = lightCol;
         ctx.fill();
       });
 
+      // 7. BADGE INFORMATIVO DI STATO (zoom >= 0.02)
+      if (camera.s > 0.02) {
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2 - 12;
+
+        let badgeText = 'MOSE · ATTIVO';
+        let badgeColor = '#6ee7b7';
+        let borderColor = 'rgba(16, 185, 129, 0.6)';
+
+        if (dynamicPhase === 'IN_SOLLEVAMENTO') {
+          const pct = Math.round(dynamicProgress * 100);
+          badgeText = `MOSE · SOLLEVAMENTO (${pct}%)`;
+          badgeColor = '#fde047';
+          borderColor = 'rgba(234, 179, 8, 0.6)';
+        } else if (dynamicPhase === 'IN_ABBASSAMENTO') {
+          badgeText = 'MOSE · IN ABBASSAMENTO';
+          badgeColor = '#fed7aa';
+          borderColor = 'rgba(249, 115, 22, 0.6)';
+        }
+
+        ctx.font = 'bold 9px "DM Mono", monospace';
+        const txtWidth = ctx.measureText(badgeText).width;
+        const bw = txtWidth + 10;
+        const bh = 14;
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(midX - bw / 2, midY - bh / 2, bw, bh, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = badgeColor;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(badgeText, midX, midY);
+      }
+
     } else {
       // MOSE ABBASSATO SUL FONDALE (CANALE LIBERO E NAVIGABILE)
-      // 1. Tracciato tecnico subacqueo dei cassoni sul fondale (-14m)
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
@@ -207,7 +278,6 @@ export function drawMose(rc: RenderContext): void {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // 2. Spalle di testata con fanali verdi marittimi fissi (via libera)
       const capRadius = Math.max(2.0, Math.min(3.6, 1.6 + 12 * camera.s));
       [ [x1, y1], [x2, y2] ].forEach(([cx, cy]) => {
         ctx.beginPath();
