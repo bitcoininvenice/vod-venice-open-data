@@ -106,50 +106,51 @@ export function drawMose(rc: RenderContext): void {
     ctx.save();
 
     if (isGateActivated) {
-      // 1. ALONE DI DIFESA LAGUNARE: Velo calmo e protetto sul lato laguna (-nx, -ny)
+      // 1. ALONE DI DIFESA LAGUNARE: Velo calmo e protetto sul versante laguna (-nx, -ny)
+      const haloWidth = Math.max(4.0, Math.min(8.0, 3.0 + 35 * camera.s));
       ctx.beginPath();
-      ctx.moveTo(x1 - nx * 8, y1 - ny * 8);
-      ctx.lineTo(x2 - nx * 8, y2 - ny * 8);
-      ctx.strokeStyle = isDark ? 'rgba(16, 185, 129, 0.35)' : 'rgba(5, 150, 105, 0.25)';
-      ctx.lineWidth = Math.max(10, 18 * (camera.s / 0.02));
-      ctx.lineCap = 'round';
+      ctx.moveTo(x1 - nx * 3, y1 - ny * 3);
+      ctx.lineTo(x2 - nx * 3, y2 - ny * 3);
+      ctx.strokeStyle = isDark ? 'rgba(16, 185, 129, 0.28)' : 'rgba(5, 150, 105, 0.20)';
+      ctx.lineWidth = haloWidth;
+      ctx.lineCap = 'butt';
       ctx.stroke();
 
-      // 2. FRANGIFLUTTI E MOTO ONDOSO ADRIATICO: Schiuma e marosi sul lato mare (+nx, +ny)
+      // 2. FRANGIFLUTTI E MOTO ONDOSO ADRIATICO: Schiuma fine e increspatura sul lato mare (+nx, +ny)
       const wavePulse = reduced ? 0.6 : (0.45 + 0.35 * Math.sin(time * 3.2 + gateIdx * 1.8));
-      const foamOffset = Math.max(3.5, 6.5 * (camera.s / 0.02));
+      const foamOffset = Math.max(2.4, Math.min(4.5, 2.0 + 15 * camera.s));
       ctx.beginPath();
       ctx.moveTo(x1 + nx * foamOffset, y1 + ny * foamOffset);
       ctx.lineTo(x2 + nx * foamOffset, y2 + ny * foamOffset);
       ctx.strokeStyle = `rgba(255, 255, 255, ${wavePulse.toFixed(2)})`;
-      ctx.lineWidth = Math.max(2.5, 4.2 * (camera.s / 0.02));
-      ctx.setLineDash([6, 4, 10, 5]);
+      ctx.lineWidth = Math.max(1.4, Math.min(2.6, 1.2 + 10 * camera.s));
+      ctx.setLineDash([5, 3, 8, 4]);
       ctx.stroke();
       ctx.setLineDash([]);
 
       // 3. BASAMENTO IN CEMENTO ARMATO SUBACQUEO (CASSONI DI ALLOGGIAMENTO)
+      const flapThick = Math.max(2.8, Math.min(5.2, 2.2 + 22 * camera.s));
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.strokeStyle = '#1e293b';
-      ctx.lineWidth = Math.max(5.5, 8.5 * (camera.s / 0.02));
+      ctx.lineWidth = flapThick + 1.2;
       ctx.lineCap = 'butt';
       ctx.stroke();
 
       // 4. LE ICONICHE PARATOIE GIALLE DEL MOSE (PARATIE METALLICHE MODULARI)
       const count = gate.barriersCount || 20;
-      const flapThick = Math.max(3.8, 6.0 * (camera.s / 0.02));
 
-      // 4a. Base scura / cerniera delle paratie
+      // 4a. Cerniera ambrata di base
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.strokeStyle = '#92400e';
-      ctx.lineWidth = flapThick + 1.6;
+      ctx.lineWidth = flapThick;
+      ctx.lineCap = 'butt';
       ctx.stroke();
 
       // 4b. Disegno modulare delle singole paratie in giallo canarino vivo (#facc15 / #eab308)
-      // Ogni paratoia ha una larghezza di 20 metri e una fessura di dilatazione scura
       for (let k = 0; k < count; k++) {
         const t0 = (k + 0.12) / count;
         const t1 = (k + 0.88) / count;
@@ -163,39 +164,33 @@ export function drawMose(rc: RenderContext): void {
         ctx.lineTo(gx1, gy1);
         ctx.strokeStyle = '#facc15';
         ctx.lineWidth = flapThick;
-        ctx.lineCap = 'square';
+        ctx.lineCap = 'butt';
         ctx.stroke();
 
-        // Riflesso solare sullo spigolo superiore della paratoia metallica
+        // Riflesso sullo spigolo superiore della paratoia metallica
         ctx.beginPath();
-        ctx.moveTo(gx0 + nx * 0.8, gy0 + ny * 0.8);
-        ctx.lineTo(gx1 + nx * 0.8, gy1 + ny * 0.8);
+        ctx.moveTo(gx0 + nx * 0.6, gy0 + ny * 0.6);
+        ctx.lineTo(gx1 + nx * 0.6, gy1 + ny * 0.6);
         ctx.strokeStyle = '#fef08a';
-        ctx.lineWidth = Math.max(1, flapThick * 0.35);
+        ctx.lineWidth = Math.max(0.8, flapThick * 0.3);
         ctx.stroke();
       }
 
       // 5. SPALLE E CASSONI DI TESTATA IN CEMENTO
-      const capRadius = Math.max(3.5, 5.5 * (camera.s / 0.02));
+      const capRadius = Math.max(2.2, Math.min(4.2, 1.8 + 15 * camera.s));
       [ [x1, y1], [x2, y2] ].forEach(([cx, cy], endIdx) => {
         ctx.beginPath();
         ctx.arc(cx, cy, capRadius, 0, Math.PI * 2);
         ctx.fillStyle = '#475569';
         ctx.fill();
         ctx.strokeStyle = '#0f172a';
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1;
         ctx.stroke();
 
-        // Fanali marittimi di navigazione (rosso / verde pulsanti)
+        // Fanale marittimo di navigazione (rosso / verde compatto)
         const lightCol = endIdx === 0 ? '#ef4444' : '#10b981';
-        const lightPulse = reduced ? 0.7 : (0.5 + 0.5 * Math.sin(time * 4 + endIdx));
         ctx.beginPath();
-        ctx.arc(cx, cy, capRadius * 1.6, 0, Math.PI * 2);
-        ctx.fillStyle = endIdx === 0 ? `rgba(239, 68, 68, ${0.35 * lightPulse})` : `rgba(16, 185, 129, ${0.35 * lightPulse})`;
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(cx, cy, capRadius * 0.6, 0, Math.PI * 2);
+        ctx.arc(cx, cy, Math.max(1.2, capRadius * 0.55), 0, Math.PI * 2);
         ctx.fillStyle = lightCol;
         ctx.fill();
       });
@@ -207,62 +202,28 @@ export function drawMose(rc: RenderContext): void {
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.strokeStyle = isDark ? 'rgba(56, 189, 248, 0.40)' : 'rgba(2, 132, 199, 0.35)';
-      ctx.lineWidth = Math.max(2.5, 4.0 * (camera.s / 0.02));
-      ctx.setLineDash([7, 5]);
+      ctx.lineWidth = Math.max(1.6, Math.min(3.0, 1.2 + 10 * camera.s));
+      ctx.setLineDash([6, 4]);
       ctx.stroke();
       ctx.setLineDash([]);
 
       // 2. Spalle di testata con fanali verdi marittimi fissi (via libera)
-      const capRadius = Math.max(2.8, 4.5 * (camera.s / 0.02));
+      const capRadius = Math.max(2.0, Math.min(3.6, 1.6 + 12 * camera.s));
       [ [x1, y1], [x2, y2] ].forEach(([cx, cy]) => {
         ctx.beginPath();
         ctx.arc(cx, cy, capRadius, 0, Math.PI * 2);
         ctx.fillStyle = isDark ? '#334155' : '#64748b';
         ctx.fill();
         ctx.strokeStyle = '#0f172a';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 0.8;
         ctx.stroke();
 
         // Fanale verde canale navigabile aperto
         ctx.beginPath();
-        ctx.arc(cx, cy, capRadius * 0.55, 0, Math.PI * 2);
+        ctx.arc(cx, cy, Math.max(1.0, capRadius * 0.5), 0, Math.PI * 2);
         ctx.fillStyle = '#10b981';
         ctx.fill();
       });
-    }
-
-    // 6. BADGE INFORMATIVO ELEGANTE
-    // Posizionato al punto medio della barriera con leggero offset
-    if (camera.s > 0.012) {
-      const bmx = (x1 + x2) * 0.5;
-      const bmy = (y1 + y2) * 0.5;
-      const offsetDist = Math.max(16, 22 * (camera.s / 0.02));
-      // Offset verso la laguna per non coprire il frangiflutti
-      const bx = bmx - nx * offsetDist;
-      const by = bmy - ny * offsetDist;
-
-      ctx.font = '700 8.5px "DM Mono", monospace';
-      const label = isGateActivated
-        ? `MOSE ${gate.inletName}: DIFESA ATTIVA (${gate.barriersCount}p)`
-        : `MOSE ${gate.inletName}: APERTO (${gate.barriersCount}p)`;
-      const tw = ctx.measureText(label).width;
-
-      ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.90)' : 'rgba(255, 255, 255, 0.92)';
-      ctx.strokeStyle = isGateActivated ? '#10b981' : (isDark ? '#475569' : '#94a3b8');
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(bx - tw / 2 - 5, by - 8, tw + 10, 16, 4);
-      ctx.fill();
-      ctx.stroke();
-
-      // Indicatore di stato circolare
-      ctx.beginPath();
-      ctx.arc(bx - tw / 2 + 2, by, 3, 0, Math.PI * 2);
-      ctx.fillStyle = isGateActivated ? '#10b981' : '#64748b';
-      ctx.fill();
-
-      ctx.fillStyle = isGateActivated ? (isDark ? '#34d399' : '#059669') : (isDark ? '#94a3b8' : '#475569');
-      ctx.fillText(label, bx - tw / 2 + 8, by + 3);
     }
 
     ctx.restore();

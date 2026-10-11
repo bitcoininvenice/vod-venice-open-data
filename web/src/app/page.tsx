@@ -130,8 +130,8 @@ export default function HomePage() {
   useEffect(() => {
     if (!isTideCyclePlaying) return;
     const interval = setInterval(() => {
-      // Ciclo sinusoidale fluido tra +75 cm e +142 cm (~16s di periodo)
-      const val = Math.round(75 + 67 * ((1 - Math.cos(Date.now() / 2500)) / 2));
+      // Ciclo sinusoidale fluido tra +75 cm e +195 cm (include gli estremi storici del 2019 e 1966)
+      const val = Math.round(75 + 120 * ((1 - Math.cos(Date.now() / 2800)) / 2));
       setSimulatedTideLevel(val);
     }, 60);
     return () => clearInterval(interval);
@@ -561,30 +561,32 @@ export default function HomePage() {
 
         {/* Floating Simulated Tide Alert Pill on Map */}
         {simulatedTideLevel !== null && (
-          <div className="absolute top-4 right-4 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-950/85 backdrop-blur-md border border-cyan-500/40 text-xs font-mono shadow-2xl flex-wrap max-w-sm sm:max-w-none">
-              <Waves className="w-4 h-4 text-cyan-400 motion-safe:animate-pulse shrink-0" />
-              <span className="text-slate-300">
-                {t('ui.floodModal.simPill')}:{' '}
-                <strong className={simulatedTideLevel >= 110 ? 'text-rose-400' : 'text-cyan-300'}>
-                  {formatSignedCm(simulatedTideLevel)}
-                </strong>
-                <span className="text-[10px] text-slate-400 ml-1.5 opacity-80">
-                  {simulatedTideLevel >= 110 && isMoseProtected
-                    ? `(~${getFloodedGroundPercentage(85)}% suolo · MOSE)`
-                    : `(~${getFloodedGroundPercentage(simulatedTideLevel)}% suolo)`}
+          <div className="absolute top-2 left-2 right-2 sm:left-auto sm:right-4 sm:top-16 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-950/90 backdrop-blur-md border border-cyan-500/40 text-xs font-mono shadow-2xl flex-wrap justify-between sm:justify-start max-w-full">
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Waves className="w-4 h-4 text-cyan-400 motion-safe:animate-pulse shrink-0" />
+                <span className="text-slate-300">
+                  <span className="hidden sm:inline">{t('ui.floodModal.simPill')}: </span>
+                  <strong className={simulatedTideLevel >= 110 ? 'text-rose-400' : 'text-cyan-300'}>
+                    {formatSignedCm(simulatedTideLevel)}
+                  </strong>
+                  <span className="text-[10px] text-slate-400 ml-1 opacity-80 whitespace-nowrap">
+                    {simulatedTideLevel >= 110 && isMoseProtected
+                      ? `(~${getFloodedGroundPercentage(85)}% · MOSE)`
+                      : `(~${getFloodedGroundPercentage(simulatedTideLevel)}%)`}
+                  </span>
                 </span>
-              </span>
+              </div>
 
-              {/* Controlli passo marea (-5 / +5 cm) */}
-              <div className="flex items-center gap-1 border-l border-slate-700/60 pl-2">
+              {/* Controlli passo marea (-5 / +5 cm fino a +200 cm) */}
+              <div className="flex items-center gap-1 border-l border-slate-700/60 pl-1.5 sm:pl-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => {
                     setIsTideCyclePlaying(false);
                     setSimulatedTideLevel((prev) => Math.max(50, (prev ?? 80) - 5));
                   }}
-                  className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-mono cursor-pointer"
+                  className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-mono cursor-pointer active:scale-95"
                   title="-5 cm"
                   aria-label="-5 cm"
                 >
@@ -594,9 +596,9 @@ export default function HomePage() {
                   type="button"
                   onClick={() => {
                     setIsTideCyclePlaying(false);
-                    setSimulatedTideLevel((prev) => Math.min(160, (prev ?? 80) + 5));
+                    setSimulatedTideLevel((prev) => Math.min(200, (prev ?? 80) + 5));
                   }}
-                  className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-mono cursor-pointer"
+                  className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-mono cursor-pointer active:scale-95"
                   title="+5 cm"
                   aria-label="+5 cm"
                 >
@@ -608,7 +610,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setIsTideCyclePlaying((p) => !p)}
-                className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono border transition-colors cursor-pointer ${
+                className={`flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-mono border transition-colors cursor-pointer shrink-0 ${
                   isTideCyclePlaying
                     ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400'
                     : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
@@ -624,7 +626,7 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => setIsMoseProtected((p) => !p)}
-                  className={`px-2 py-0.5 rounded text-[11px] font-mono border transition-colors cursor-pointer ${
+                  className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-mono border transition-colors cursor-pointer shrink-0 ${
                     isMoseProtected
                       ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/40'
                       : 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border-rose-500/40'
@@ -639,26 +641,28 @@ export default function HomePage() {
                 </button>
               )}
 
-              <button
-                type="button"
-                onClick={() => setIsTideModalOpen(true)}
-                className="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 transition-colors cursor-pointer text-[11px]"
-                title={t('ui.floodModal.simAdjustTitle')}
-              >
-                {t('ui.floodModal.simAdjust')}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsTideCyclePlaying(false);
-                  setSimulatedTideLevel(null);
-                }}
-                className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-                title={t('ui.floodModal.simReset')}
-                aria-label={t('ui.floodModal.simReset')}
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex items-center gap-1 ml-auto sm:ml-0 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsTideModalOpen(true)}
+                  className="px-1.5 sm:px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 transition-colors cursor-pointer text-[10px] sm:text-[11px]"
+                  title={t('ui.floodModal.simAdjustTitle')}
+                >
+                  {t('ui.floodModal.simAdjust')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsTideCyclePlaying(false);
+                    setSimulatedTideLevel(null);
+                  }}
+                  className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                  title={t('ui.floodModal.simReset')}
+                  aria-label={t('ui.floodModal.simReset')}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
         )}

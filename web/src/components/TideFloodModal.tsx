@@ -298,7 +298,7 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
                   <input
                     type="range"
                     min="50"
-                    max="160"
+                    max="200"
                     step="1"
                     value={simulatedCm}
                     onChange={(e) => handleLevelChange(Number(e.target.value))}
@@ -310,7 +310,8 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
                     <span>{t('ui.floodModal.tick80')}</span>
                     <span>{t('ui.floodModal.tick110')}</span>
                     <span>{t('ui.floodModal.tick140')}</span>
-                    <span>+160 cm</span>
+                    <span>+170 cm</span>
+                    <span>+200 cm</span>
                   </div>
 
                   {/* Quick Scenario Presets */}
@@ -322,6 +323,9 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
                       { cm: 110, label: t('ui.floodModal.presetMose') },
                       { cm: 130, label: t('ui.floodModal.presetAlert') },
                       { cm: 140, label: t('ui.floodModal.presetExceptional') },
+                      { cm: 187, label: '2019 (+187 cm)' },
+                      { cm: 194, label: '1966 (+194 cm)' },
+                      { cm: 200, label: 'Max (+200 cm)' },
                     ].map((sc) => (
                       <button
                         key={sc.cm}
