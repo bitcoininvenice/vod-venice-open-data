@@ -228,44 +228,6 @@ export function drawMose(rc: RenderContext): void {
         ctx.fill();
       });
 
-      // 7. BADGE INFORMATIVO DI STATO (zoom >= 0.02)
-      if (camera.s > 0.02) {
-        const midX = (x1 + x2) / 2;
-        const midY = (y1 + y2) / 2 - 12;
-
-        let badgeText = 'MOSE · ATTIVO';
-        let badgeColor = '#6ee7b7';
-        let borderColor = 'rgba(16, 185, 129, 0.6)';
-
-        if (dynamicPhase === 'IN_SOLLEVAMENTO') {
-          const pct = Math.round(dynamicProgress * 100);
-          badgeText = `MOSE · SOLLEVAMENTO (${pct}%)`;
-          badgeColor = '#fde047';
-          borderColor = 'rgba(234, 179, 8, 0.6)';
-        } else if (dynamicPhase === 'IN_ABBASSAMENTO') {
-          badgeText = 'MOSE · IN ABBASSAMENTO';
-          badgeColor = '#fed7aa';
-          borderColor = 'rgba(249, 115, 22, 0.6)';
-        }
-
-        ctx.font = 'bold 9px "DM Mono", monospace';
-        const txtWidth = ctx.measureText(badgeText).width;
-        const bw = txtWidth + 10;
-        const bh = 14;
-
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-        ctx.strokeStyle = borderColor;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(midX - bw / 2, midY - bh / 2, bw, bh, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = badgeColor;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(badgeText, midX, midY);
-      }
 
     } else {
       // MOSE ABBASSATO SUL FONDALE (CANALE LIBERO E NAVIGABILE)
