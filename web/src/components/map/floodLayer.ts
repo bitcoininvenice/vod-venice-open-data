@@ -11,6 +11,13 @@ export interface FloodZone {
   criticalSpots?: string;
 }
 
+/**
+ * Scala minima della camera (zoom quasi al massimo, ~65-100% dello zoom consentito)
+ * sotto la quale le etichette testuali delle quote di allagamento vengono nascoste
+ * per non coprire calli, canali e campi sommersi di Venezia.
+ */
+export const FLOOD_LABEL_MIN_SCALE = 0.80;
+
 export const VENICE_FLOOD_ZONES: FloodZone[] = [
   {
     id: 'san_marco',
@@ -416,9 +423,9 @@ export function drawFloodLayer(rc: RenderContext, activeTideCm: number | null): 
     }
   }
 
-  // 4. Etichette quota d'acqua visibili ESCLUSIVAMENTE con zoom profondo (camera.s >= 0.065)
-  // per non sovrapporsi in massa e coprire la vista d'insieme della citta
-  if (camera.s >= 0.065) {
+  // 4. Etichette quota d'acqua visibili ESCLUSIVAMENTE con zoom quasi al massimo (camera.s >= FLOOD_LABEL_MIN_SCALE)
+  // per non coprire calli, canali e zone sommerse di Venezia, mostrandole solo a ridosso del massimo ingrandimento
+  if (camera.s >= FLOOD_LABEL_MIN_SCALE) {
     for (const zone of VENICE_FLOOD_ZONES) {
       if (tide < zone.thresholdCm) continue;
       const waterDepth = tide - zone.thresholdCm;

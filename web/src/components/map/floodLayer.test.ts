@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { drawFloodLayer, VENICE_FLOOD_ZONES } from './floodLayer';
+import { drawFloodLayer, FLOOD_LABEL_MIN_SCALE, VENICE_FLOOD_ZONES } from './floodLayer';
 import type { RenderContext } from './renderContext';
 import { CARTA } from '@/lib/solar';
 
@@ -76,5 +76,23 @@ describe('floodLayer', () => {
     drawFloodLayer(rc, 115);
     expect(rc.ctx.save).toHaveBeenCalled();
     expect(rc.ctx.restore).toHaveBeenCalled();
+  });
+
+  it('hides flood depth labels at normal or medium zoom and only renders them near maximum zoom (>= FLOOD_LABEL_MIN_SCALE)', () => {
+    // 1. Zoom normale / panoramico di Venezia (s = 0.20): nessuna etichetta testuale renderizzata
+    const rcMedium = createMockRenderContext(115);
+    rcMedium.camera.s = 0.20;
+    rcMedium.sx = () => 400;
+    rcMedium.sy = () => 300;
+    drawFloodLayer(rcMedium, 115);
+    expect(rcMedium.ctx.fillText).not.toHaveBeenCalled();
+
+    // 2. Zoom quasi al massimo (s = 0.90 >= FLOOD_LABEL_MIN_SCALE): etichetta disegnata
+    const rcDeepZoom = createMockRenderContext(115);
+    rcDeepZoom.camera.s = 0.90;
+    rcDeepZoom.sx = () => 400;
+    rcDeepZoom.sy = () => 300;
+    drawFloodLayer(rcDeepZoom, 115);
+    expect(rcDeepZoom.ctx.fillText).toHaveBeenCalled();
   });
 });
