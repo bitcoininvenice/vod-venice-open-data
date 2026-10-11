@@ -468,7 +468,7 @@ export default function HomePage() {
       timelineSeconds: currentTimeSeconds,
       forecast: data.tideInfo?.forecast,
       liveTideLevel: data.tideLevel,
-      liveObservedAt: data.tideInfo?.observedAt,
+      liveObservedAt: data.tideInfo?.observedAt ?? undefined,
     });
   }, [simulatedTideLevel, isMoseProtected, currentTimeSeconds, data.tideInfo, data.tideLevel]);
 

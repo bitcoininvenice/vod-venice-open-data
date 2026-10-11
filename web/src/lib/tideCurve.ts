@@ -28,7 +28,7 @@ export interface ResolveTideOptions {
   timelineSeconds?: number;
   forecast?: TideForecast | null;
   liveTideLevel?: number | null;
-  liveObservedAt?: string;
+  liveObservedAt?: string | null;
   referenceDate?: Date;
 }
 

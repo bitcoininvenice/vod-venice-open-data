@@ -798,7 +798,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         timelineSeconds: currentTimeSeconds,
         forecast: data.tideInfo?.forecast,
         liveTideLevel: data.tideLevel,
-        liveObservedAt: data.tideInfo?.observedAt,
+        liveObservedAt: data.tideInfo?.observedAt ?? undefined,
       });
 
       const rawTide = tideState.seaTideCm;
