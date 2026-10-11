@@ -635,18 +635,18 @@ export default function HomePage() {
               : 'left-1/2 -translate-x-1/2 max-w-4xl'
           }`}
         >
-          {/* Overlay Pill Simulatore Marea (Mobile & Desktop: posizionato sopra la timeline) */}
+          {/* Overlay Simulatore Marea / Ciclo (Stessa larghezza e stile della Timeline) */}
           {simulatedTideLevel !== null && (
-            <div className="mb-2 flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-200">
-              <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-950/90 backdrop-blur-md border border-cyan-500/40 text-xs font-mono shadow-2xl flex-wrap justify-between sm:justify-start max-w-full">
-                <div className="flex items-center gap-1.5 shrink-0">
+            <div className="w-full mb-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <div className="w-full glass-panel rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 shadow-2xl border border-cyan-500/40 flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2 shrink-0">
                   <Waves className="w-4 h-4 text-cyan-400 motion-safe:animate-pulse shrink-0" />
                   <span className="text-slate-300">
-                    <span className="hidden sm:inline">{t('ui.floodModal.simPill')}: </span>
-                    <strong className={simulatedTideLevel >= 110 ? 'text-rose-400' : 'text-cyan-300'}>
+                    <span className="font-semibold text-cyan-200">{t('ui.floodModal.simPill')}: </span>
+                    <strong className={simulatedTideLevel >= 110 ? 'text-rose-400 font-bold' : 'text-cyan-300 font-bold'}>
                       {formatSignedCm(simulatedTideLevel)}
                     </strong>
-                    <span className="text-[10px] text-slate-400 ml-1 opacity-80 whitespace-nowrap">
+                    <span className="text-[11px] text-slate-400 ml-1.5 opacity-80 whitespace-nowrap">
                       {simulatedTideLevel >= 110 && isMoseProtected
                         ? `(~${getFloodedGroundPercentage(85)}% · MOSE)`
                         : `(~${getFloodedGroundPercentage(simulatedTideLevel)}%)`}
@@ -654,70 +654,70 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                {/* Controlli passo marea (-5 / +5 cm fino a +200 cm) */}
-                <div className="flex items-center gap-1 border-l border-slate-700/60 pl-1.5 sm:pl-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsTideCyclePlaying(false);
-                      setSimulatedTideLevel((prev) => Math.max(50, (prev ?? 80) - 5));
-                    }}
-                    className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-mono cursor-pointer active:scale-95"
-                    title="-5 cm"
-                    aria-label="-5 cm"
-                  >
-                    <Minus className="w-3 h-3" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsTideCyclePlaying(false);
-                      setSimulatedTideLevel((prev) => Math.min(200, (prev ?? 80) + 5));
-                    }}
-                    className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-mono cursor-pointer active:scale-95"
-                    title="+5 cm"
-                    aria-label="+5 cm"
-                  >
-                    <Plus className="w-3 h-3" />
-                  </button>
-                </div>
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap ml-auto">
+                  {/* Controlli passo marea (-5 / +5 cm fino a +200 cm) */}
+                  <div className="flex items-center gap-1 border-l border-slate-700/60 pl-1.5 sm:pl-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsTideCyclePlaying(false);
+                        setSimulatedTideLevel((prev) => Math.max(50, (prev ?? 80) - 5));
+                      }}
+                      className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-mono cursor-pointer active:scale-95"
+                      title="-5 cm"
+                      aria-label="-5 cm"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsTideCyclePlaying(false);
+                        setSimulatedTideLevel((prev) => Math.min(200, (prev ?? 80) + 5));
+                      }}
+                      className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-mono cursor-pointer active:scale-95"
+                      title="+5 cm"
+                      aria-label="+5 cm"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </div>
 
-                {/* Riproduzione ciclo marea sinusoidale (aumento/diminuzione fluido) */}
-                <button
-                  type="button"
-                  onClick={() => setIsTideCyclePlaying((p) => !p)}
-                  className={`flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-mono border transition-colors cursor-pointer shrink-0 ${
-                    isTideCyclePlaying
-                      ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400'
-                      : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
-                  }`}
-                  title={isTideCyclePlaying ? 'Pausa ciclo sinusoidale' : 'Avvia ciclo marea'}
-                >
-                  {isTideCyclePlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-                  <span>{isTideCyclePlaying ? 'Pausa' : 'Ciclo'}</span>
-                </button>
-
-                {/* Toggle Difesa MOSE quando la marea supera la soglia di allerta (>= 110 cm) */}
-                {simulatedTideLevel >= 110 && (
+                  {/* Riproduzione ciclo marea sinusoidale (aumento/diminuzione fluido) */}
                   <button
                     type="button"
-                    onClick={() => setIsMoseProtected((p) => !p)}
-                    className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-mono border transition-colors cursor-pointer shrink-0 ${
-                      isMoseProtected
-                        ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/40'
-                        : 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border-rose-500/40'
+                    onClick={() => setIsTideCyclePlaying((p) => !p)}
+                    className={`flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-mono border transition-colors cursor-pointer shrink-0 ${
+                      isTideCyclePlaying
+                        ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400'
+                        : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
                     }`}
-                    title={
-                      isMoseProtected
-                        ? 'MOSE attivo: paratie alzate, laguna protetta a +85cm. Clicca per disattivare e vedere la citta allagata'
-                        : 'MOSE disattivato: paratie abbassate, marea entra in citta. Clicca per attivare la difesa'
-                    }
+                    title={isTideCyclePlaying ? 'Pausa ciclo sinusoidale' : 'Avvia ciclo marea'}
                   >
-                    {isMoseProtected ? 'MOSE: Difesa Attiva' : 'MOSE: Disattivato'}
+                    {isTideCyclePlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                    <span>{isTideCyclePlaying ? 'Pausa' : 'Ciclo'}</span>
                   </button>
-                )}
 
-                <div className="flex items-center gap-1 ml-auto sm:ml-0 shrink-0">
+                  {/* Toggle Difesa MOSE quando la marea supera la soglia di allerta (>= 110 cm) */}
+                  {simulatedTideLevel >= 110 && (
+                    <button
+                      type="button"
+                      onClick={() => setIsMoseProtected((p) => !p)}
+                      className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-mono border transition-colors cursor-pointer shrink-0 ${
+                        isMoseProtected
+                          ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/40'
+                          : 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border-rose-500/40'
+                      }`}
+                      title={
+                        isMoseProtected
+                          ? 'MOSE attivo: paratie alzate, laguna protetta a +85cm. Clicca per disattivare e vedere la citta allagata'
+                          : 'MOSE disattivato: paratie abbassate, marea entra in citta. Clicca per attivare la difesa'
+                      }
+                    >
+                      {isMoseProtected ? 'MOSE: Difesa Attiva' : 'MOSE: Disattivato'}
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => setIsTideModalOpen(true)}
