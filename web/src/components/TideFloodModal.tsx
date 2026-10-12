@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Waves,
   X,
@@ -75,17 +75,39 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
   const isCycling = isPlayingCycle !== undefined ? isPlayingCycle : localCycling;
   const simulatedCm = simulatedTideLevel ?? draftCm ?? liveTideLevel ?? 65;
 
+  const modalCycleRef = useRef<{ startTime: number; startLevel: number; phaseOffset: number } | null>(null);
+
   // Se non c'è onToggleCycle globale passato dal parent, usa l'interval locale di fallback
   useEffect(() => {
-    if (onToggleCycle || !localCycling || !isOpen) return;
+    if (onToggleCycle || !localCycling || !isOpen) {
+      modalCycleRef.current = null;
+      return;
+    }
+
+    if (!modalCycleRef.current) {
+      const start = Math.max(55, Math.min(195, simulatedCm));
+      const ratio = Math.max(-1, Math.min(1, (start - 125) / 70));
+      modalCycleRef.current = {
+        startTime: Date.now(),
+        startLevel: start,
+        phaseOffset: Math.asin(ratio),
+      };
+      setDraftCm(start);
+      onSimulatedTideChange?.(start);
+    }
+
     const interval = setInterval(() => {
-      // Ciclo sinusoidale fluido tra +75 cm e +142 cm (~16s di periodo)
-      const val = Math.round(75 + 67 * ((1 - Math.cos(Date.now() / 2500)) / 2));
+      const params = modalCycleRef.current;
+      if (!params) return;
+      const elapsed = Date.now() - params.startTime;
+      const angle = (2 * Math.PI * elapsed) / 20000 + params.phaseOffset;
+      const val = Math.round(125 + 70 * Math.sin(angle));
       setDraftCm(val);
       onSimulatedTideChange?.(val);
     }, 60);
+
     return () => clearInterval(interval);
-  }, [localCycling, isOpen, onSimulatedTideChange, onToggleCycle]);
+  }, [localCycling, isOpen, onSimulatedTideChange, onToggleCycle, simulatedCm]);
 
   const handleToggleCycle = () => {
     if (onToggleCycle) {

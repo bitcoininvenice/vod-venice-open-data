@@ -128,16 +128,6 @@ export default function HomePage() {
   const [isTideCyclePlaying, setIsTideCyclePlaying] = useState<boolean>(false);
   const [isMoseProtected, setIsMoseProtected] = useState<boolean>(true);
 
-  useEffect(() => {
-    if (!isTideCyclePlaying) return;
-    const interval = setInterval(() => {
-      // Ciclo sinusoidale fluido tra +75 cm e +195 cm (include gli estremi storici del 2019 e 1966)
-      const val = Math.round(75 + 120 * ((1 - Math.cos(Date.now() / 2800)) / 2));
-      setSimulatedTideLevel(val);
-    }, 60);
-    return () => clearInterval(interval);
-  }, [isTideCyclePlaying]);
-
   // Dati della mappa: ogni API parte solo quando serve (livello acceso, ricerca, esportazione, schede),
   // le statiche una volta per sessione, quelle live con aggiornamento periodico (vedi lib/cityData.ts)
   const needs = useMemo(
@@ -472,6 +462,43 @@ export default function HomePage() {
     });
   }, [simulatedTideLevel, isMoseProtected, currentTimeSeconds, data.tideInfo, data.tideLevel]);
 
+  // Ancoraggio e continuità del ciclo sinusoidale di marea: parte sempre dalla quota attuale senza salti
+  const cycleParamsRef = useRef<{ startTime: number; startLevel: number; phaseOffset: number } | null>(null);
+  const simulatedTideLevelRef = useRef<number | null>(simulatedTideLevel);
+  simulatedTideLevelRef.current = simulatedTideLevel;
+  const currentDynamicTideRef = useRef(currentDynamicTide.lagoonTideCm);
+  currentDynamicTideRef.current = currentDynamicTide.lagoonTideCm;
+
+  useEffect(() => {
+    if (!isTideCyclePlaying) {
+      cycleParamsRef.current = null;
+      return;
+    }
+
+    if (!cycleParamsRef.current) {
+      const currentLevel = simulatedTideLevelRef.current ?? currentDynamicTideRef.current ?? 80;
+      const start = Math.max(55, Math.min(195, currentLevel));
+      const ratio = Math.max(-1, Math.min(1, (start - 125) / 70));
+      cycleParamsRef.current = {
+        startTime: Date.now(),
+        startLevel: start,
+        phaseOffset: Math.asin(ratio),
+      };
+      setSimulatedTideLevel(start);
+    }
+
+    const interval = setInterval(() => {
+      const params = cycleParamsRef.current;
+      if (!params) return;
+      const elapsed = Date.now() - params.startTime;
+      const angle = (2 * Math.PI * elapsed) / 20000 + params.phaseOffset;
+      const val = Math.round(125 + 70 * Math.sin(angle));
+      setSimulatedTideLevel(val);
+    }, 60);
+
+    return () => clearInterval(interval);
+  }, [isTideCyclePlaying]);
+
   // Rilevamento contestuale: true se sono accesi layer temporali (ACTV, Alilaguna, MOSE, passerelle) o simulatore
   const isTemporalActive = useMemo(() => {
     return hasActiveTemporalLayers(layers, simulatedTideLevel !== null);
@@ -722,7 +749,8 @@ export default function HomePage() {
               setIsTideModalOpen(true);
             }}
             onStartSimulator={() => {
-              setSimulatedTideLevel(110);
+              const currentLevel = currentDynamicTide.lagoonTideCm ?? data.tideLevel ?? 80;
+              setSimulatedTideLevel(currentLevel);
               trackLayerOpen('simulatore_marea');
             }}
             hasTemporalLayers={isTemporalActive}
