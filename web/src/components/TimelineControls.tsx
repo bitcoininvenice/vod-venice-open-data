@@ -20,11 +20,13 @@ import {
   Droplets,
   Plus,
   Minus,
-  X
+  X,
+  Wind
 } from 'lucide-react';
-import type { CityAirTemperature, DayType } from '@/lib/types';
+import type { CityAirTemperature, DayType, WindField } from '@/lib/types';
 import { formatTimeParts, getSolarPhase } from '@/lib/solar';
 import { useTranslation } from '@/lib/i18n';
+import { WIND_COLOR_STOPS } from '@/components/map/windLayer';
 
 export interface TideSimulatorProps {
   level: number;
@@ -69,6 +71,9 @@ export interface TimelineControlsProps {
   hasActiveLayers?: boolean;
   onOpenTideModal?: () => void;
   onStartSimulator?: () => void;
+  // Contextual Wind Props
+  showWind?: boolean;
+  windField?: WindField | null;
   // Dock state & contextual awareness
   hasTemporalLayers?: boolean;
   simulator?: TideSimulatorProps | null;
@@ -92,6 +97,8 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
   showTide = false,
   tideLevel,
   airTemp,
+  showWind = false,
+  windField = null,
   onSyncLiveTime,
   isLiveSynced,
   onShare,
@@ -281,6 +288,22 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
     );
   };
 
+  // Sezione comune: Badge Vento Open-Meteo
+  const renderWindBadge = () => {
+    if (!showWind || !windField) return null;
+    return (
+      <div
+        className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-mono bg-teal-500/10 border border-teal-500/25 text-[var(--ink-2)] shrink-0 animate-in fade-in duration-150"
+        title={`${t('ui.mapLabels.windTitle')} (${t('ui.mapLabels.windValidAt', { time: windField.validTime.slice(11, 16) })})`}
+      >
+        <Wind className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+        <span className="text-[var(--ink-3)] hidden md:inline">Vento:</span>
+        <span className="font-bold text-teal-300">0–90 km/h</span>
+        <span className="text-[var(--ink-3)] text-[10px] hidden lg:inline">({windField.validTime.slice(11, 16)})</span>
+      </div>
+    );
+  };
+
   // 1. MODALITA SIMULATORE MAREA & MOSE INTEGRATO (Unica scheda coordinata)
   if (simulator) {
     return (
@@ -298,6 +321,15 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
                 {simulator.floodedPercentText}
               </span>
             </span>
+            {showWind && windField && (
+              <span
+                className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono text-teal-400 pl-2 ml-1 border-l border-[var(--rule)]"
+                title={`${t('ui.mapLabels.windTitle')} (${t('ui.mapLabels.windValidAt', { time: windField.validTime.slice(11, 16) })})`}
+              >
+                <Wind className="w-3 h-3 text-teal-400 shrink-0" />
+                <span>0–90 km/h</span>
+              </span>
+            )}
           </div>
 
           {/* Azioni simulatore */}
@@ -466,6 +498,9 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
           {/* Marea CPSM */}
           {renderTideBadge()}
 
+          {/* Vento Open-Meteo */}
+          {renderWindBadge()}
+
           {/* Mobilita attiva */}
           {isTransitActive && (
             <div className="hidden md:flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-mono bg-[var(--rule)]/40 border border-[var(--rule)] text-[var(--ink-2)] shrink-0">
@@ -564,6 +599,9 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
           {/* Contextual Tide Badge */}
           {renderTideBadge()}
 
+          {/* Contextual Wind Badge */}
+          {renderWindBadge()}
+
           {/* Contextual Transit Badge */}
           {isTransitActive && (
             <div className="hidden lg:flex items-center gap-2 whitespace-nowrap pl-1 animate-in fade-in duration-150">
@@ -659,6 +697,23 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
 
       {/* Middle row: Interactive Time Scrubber Slider (00:00 - 24:00) */}
       <div className="flex flex-col gap-1">
+        {/* Intestazione di contesto marea se attiva senza flotta ACTV */}
+        {isTideActive && !isTransitActive && (
+          <div className="flex items-center justify-between text-[11px] font-mono text-[var(--ink-2)] px-1 mb-0.5">
+            <span className="flex items-center gap-1.5 font-medium text-[var(--ink)]">
+              <Waves className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <span>{t('ui.timeline.tideEvolution24h')}</span>
+              <span className="text-[var(--ink-3)] text-[10px] font-normal hidden sm:inline">
+                · {t('ui.timeline.tideEvolutionHint')}
+              </span>
+            </span>
+            {tideLevel !== null && tideLevel !== undefined && (
+              <span className={`font-bold tabular ${tideLevel >= 80 ? 'text-amber-400' : 'text-sky-400'}`}>
+                {t('ui.timeline.tideForecastEstimated', { cm: tideLevel > 0 ? `+${tideLevel}` : `${tideLevel}` })}
+              </span>
+            )}
+          </div>
+        )}
         <div className="relative w-full py-1">
           <input
             type="range"
@@ -754,6 +809,20 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
               {t('ui.timeline.flottaAlilaguna')}:{' '}
               <strong className="text-teal-400 tabular">{effectiveAli}</strong> {t('ui.timeline.battelliServizio')}
             </span>
+          </div>
+        ) : showWind && windField ? (
+          <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--ink-2)] w-full md:w-auto animate-in fade-in duration-150">
+            <span className="text-[var(--ink-3)] uppercase font-semibold">{t('ui.timeline.windScale')}:</span>
+            <div
+              className="w-24 sm:w-32 h-2 rounded-full border border-[var(--rule)]"
+              style={{
+                background: `linear-gradient(to right, ${WIND_COLOR_STOPS.filter(([s]) => s <= 25)
+                  .map(([s, [r, g, b]]) => `rgb(${r},${g},${b}) ${(s / 25) * 100}%`)
+                  .join(', ')})`,
+              }}
+            />
+            <span className="text-[var(--ink-3)]">0–90 km/h</span>
+            <span className="text-[var(--ink-3)] hidden lg:inline">· {t('ui.timeline.windForecastModel')}</span>
           </div>
         ) : (
           <div className="hidden sm:flex items-center text-[11px] text-[var(--ink-3)] font-mono">

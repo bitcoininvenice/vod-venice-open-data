@@ -384,7 +384,12 @@ export const itUi = {
     tideSliderSogliaMose: "+110 cm (Soglia MOSE)",
     tideSliderEccezionale: "+140 cm (Eccezionale)",
     tideSliderPicco: "+200 cm (Picco)",
-    tideSliderAria: "Quota marea simulata (+50 a +200 cm)"
+    tideSliderAria: "Quota marea simulata (+50 a +200 cm)",
+    tideEvolution24h: "Evoluzione Marea 24h (CPSM)",
+    tideEvolutionHint: "Scorri le ore per visualizzare la marea prevista",
+    tideForecastEstimated: "Quota prevista: {cm} cm",
+    windScale: "Scala Vento",
+    windForecastModel: "Previsione Open-Meteo"
   },
   feature: {
     stelleHotel: "5 stelle: {five}, 4 stelle: {four}, 3 stelle: {three}",

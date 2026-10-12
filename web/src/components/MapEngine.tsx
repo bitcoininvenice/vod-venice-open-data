@@ -80,6 +80,8 @@ export interface MapEngineProps {
   itinerary?: Itinerary | null;
   /** segnaposto di un luogo cercato (es. numero civico); approximate: posizione del civico noto più vicino */
   pin?: { lat: number; lon: number; approximate: boolean } | null;
+  /** Se true, nasconde la legenda fluttuante del vento in alto perché ospitata nella dashboard in basso */
+  hideFloatingWindLegend?: boolean;
 }
 
 export const MapEngine: React.FC<MapEngineProps> = ({
@@ -112,7 +114,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   pin = null,
   pickMode = false,
   onPickPoint,
-  itinerary = null
+  itinerary = null,
+  hideFloatingWindLegend = false
 }) => {
   const { t } = useTranslation();
   // alias: nel codice di disegno `t` è anche il nome locale dell'ora simulata
@@ -1010,12 +1013,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       />
 
       {/* Legende impilate in alto al centro: livelli attivi, poi i layer a campo (vento, fibra) */}
-      {(legend || (showMarineWind && windField) || (showFiber && fiberData)) && (
+      {(legend || (!hideFloatingWindLegend && showMarineWind && windField) || (showFiber && fiberData)) && (
       <div {...stopMapGestures} className="absolute left-1/2 -translate-x-1/2 top-3 z-20 flex flex-col gap-2 w-[min(20rem,calc(100vw-7rem))]">
       {/* Legenda unica dei livelli accesi */}
       {legend}
       {/* Legenda del vento animato: scala in km/h, fonte e ora di validità della previsione */}
-      {showMarineWind && windField && (
+      {!hideFloatingWindLegend && showMarineWind && windField && (
         <div className="pointer-events-none glass-panel rounded-xl border border-[var(--rule)] px-3 py-2 flex flex-col gap-1 shadow-lg">
           <div className="flex items-center justify-between gap-2 text-[10px] font-mono">
             <span className="font-bold text-[var(--ink)] uppercase">{tr('ui.mapLabels.windTitle')}</span>

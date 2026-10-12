@@ -596,6 +596,7 @@ export default function HomePage() {
           simulatedTideLevel={simulatedTideLevel}
           isMoseProtected={isMoseProtected}
           isDesktopLayerPanelOpen={isDesktopLayerPanelOpen}
+          hideFloatingWindLegend={isTemporalActive && layers.showMarineWind}
           pickMode={pickTarget !== null}
           onPickPoint={(lon, lat) => {
             if (!pickTarget) return;
@@ -710,6 +711,8 @@ export default function HomePage() {
             showTide={showMose || showPasserelle || currentDynamicTide.lagoonTideCm >= 80 || simulatedTideLevel != null}
             tideLevel={currentDynamicTide.lagoonTideCm}
             airTemp={data.cityTemp}
+            showWind={layers.showMarineWind}
+            windField={data.windField}
             onSyncLiveTime={handleSyncLiveTime}
             isLiveSynced={isLiveSynced}
             onShare={handleShare}

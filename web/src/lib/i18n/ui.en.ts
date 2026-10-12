@@ -386,7 +386,12 @@ export const enUi: UiTranslations = {
     tideSliderSogliaMose: "+110 cm (MOSE Threshold)",
     tideSliderEccezionale: "+140 cm (Exceptional)",
     tideSliderPicco: "+200 cm (Peak)",
-    tideSliderAria: "Simulated tide level (+50 to +200 cm)"
+    tideSliderAria: "Simulated tide level (+50 to +200 cm)",
+    tideEvolution24h: "24h Tide Forecast (CPSM)",
+    tideEvolutionHint: "Scrub hours to view forecast tide level",
+    tideForecastEstimated: "Forecast tide: {cm} cm",
+    windScale: "Wind Scale",
+    windForecastModel: "Open-Meteo Forecast"
   },
   feature: {
     stelleHotel: "5-star: {five}, 4-star: {four}, 3-star: {three}",
