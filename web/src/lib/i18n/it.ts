@@ -97,7 +97,7 @@ export const itTranslations: Translations = {
     hidePanel: 'Chiudi pannello',
     searchPlaceholder: 'Filtra per nome livello...',
     catMobility: 'Trasporti',
-    catLagoon: 'Ambiente',
+    catLagoon: 'Acqua alta',
     catCity: 'Città ',
     catRegional: 'Open Data Regione Veneto (dati.veneto.it)',
     catEnvironment: 'Monitoraggio Ambientale & Satelliti',

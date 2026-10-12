@@ -78,6 +78,7 @@ describe('layerState', () => {
     const r = initialLayersFromSearch('?preset=lagoon');
     expect(r?.preset).toBe('acqua-alta');
     expect(r!.layers.showMose).toBe(true);
+    expect(r!.layers.showPasserelle).toBe(true);
     expect(initialLayersFromSearch('?layers=all')?.preset).toBe(DEFAULT_PRESET);
     expect(initialLayersFromSearch('?preset=xyz')).toBeNull();
     expect(initialLayersFromSearch('')).toBeNull();

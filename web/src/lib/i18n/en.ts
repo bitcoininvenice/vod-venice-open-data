@@ -97,7 +97,7 @@ export const enTranslations: Translations = {
     hidePanel: 'Hide panel',
     searchPlaceholder: 'Filter by layer name...',
     catMobility: 'Mobility',
-    catLagoon: 'Environment',
+    catLagoon: 'High Water',
     catCity: 'City',
     catRegional: 'Veneto Regional Open Data (dati.veneto.it)',
     catEnvironment: 'Environmental Monitoring & Satellites',
