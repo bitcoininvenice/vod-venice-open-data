@@ -1329,7 +1329,7 @@ export const itUi = {
     muoversi: "Trasporti",
     muoversiDesc: "Vaporetti in tempo reale, fermate, Alilaguna e navi AIS",
     "acqua-alta": "Acqua alta",
-    "acqua-altaDesc": "MOSE, piattaforma oceanografica, vento sul mare e canali",
+    "acqua-altaDesc": "MOSE, piattaforma oceanografica e canali",
     ambiente: "Ambiente oggi",
     ambienteDesc: "Qualità dell’aria, pollini, sonde in laguna e vento",
     servizi: "Servizi utili",

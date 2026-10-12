@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { SIM_URL } from './simulation-data';
@@ -8,7 +8,10 @@ import { buildWalkGraph, type RawWalk } from './walkGraph';
 import { planTrip } from './tripPlanner';
 import { ACTV_STOPS_REFERENCE } from './stopsReference';
 
-const read = (url: string) => JSON.parse(readFileSync(path.join(process.cwd(), 'public', url), 'utf8'));
+const publicDir = existsSync(path.join(process.cwd(), 'public'))
+  ? path.join(process.cwd(), 'public')
+  : path.join(process.cwd(), 'web', 'public');
+const read = (url: string) => JSON.parse(readFileSync(path.join(publicDir, url), 'utf8'));
 const sim = buildSimulation(read(SIM_URL) as RawSimulation);
 const graph = buildWalkGraph(read(WALK_URL) as RawWalk);
 

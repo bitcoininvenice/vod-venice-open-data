@@ -1331,7 +1331,7 @@ export const enUi: UiTranslations = {
     muoversi: "Mobility",
     muoversiDesc: "Live waterbuses, stops, Alilaguna and AIS ships",
     "acqua-alta": "High water",
-    "acqua-altaDesc": "MOSE, oceanographic platform, sea wind and canals",
+    "acqua-altaDesc": "MOSE, oceanographic platform and canals",
     ambiente: "Environment",
     ambienteDesc: "Air quality, pollen, lagoon probes and wind",
     servizi: "Useful services",
