@@ -718,6 +718,10 @@ export default function HomePage() {
               trackLayerOpen('marea');
               setIsTideModalOpen(true);
             }}
+            onStartSimulator={() => {
+              setSimulatedTideLevel(110);
+              trackLayerOpen('simulatore_marea');
+            }}
             hasTemporalLayers={isTemporalActive}
             simulator={simulatorControls}
           />
@@ -859,6 +863,8 @@ export default function HomePage() {
           onSimulatedTideChange={setSimulatedTideLevel}
           isMoseProtected={isMoseProtected}
           onToggleMoseProtection={() => setIsMoseProtected((p) => !p)}
+          isPlayingCycle={isTideCyclePlaying}
+          onToggleCycle={() => setIsTideCyclePlaying((p) => !p)}
           forecast={data.tideInfo.forecast}
           marineWindStations={data.marineWindStations}
         />

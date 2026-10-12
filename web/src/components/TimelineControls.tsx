@@ -68,6 +68,7 @@ export interface TimelineControlsProps {
   onShare?: () => Promise<boolean | void> | void;
   hasActiveLayers?: boolean;
   onOpenTideModal?: () => void;
+  onStartSimulator?: () => void;
   // Dock state & contextual awareness
   hasTemporalLayers?: boolean;
   simulator?: TideSimulatorProps | null;
@@ -96,6 +97,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
   onShare,
   hasActiveLayers = false,
   onOpenTideModal,
+  onStartSimulator,
   hasTemporalLayers = true,
   simulator = null
 }) => {
@@ -243,26 +245,39 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
     );
   };
 
-  // Sezione comune: Badge Marea CPSM
+  // Sezione comune: Badge Marea CPSM con scorciatoia rapida Simula
   const renderTideBadge = () => {
     if (!isTideActive) return null;
     return (
-      <button
-        type="button"
-        onClick={onOpenTideModal}
-        className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-mono bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/25 text-[var(--ink-2)] shrink-0 animate-in fade-in duration-150 cursor-pointer transition-all"
-        title={t('ui.timeline.tideButtonTitle')}
-      >
-        <Waves className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-        <span className="text-[var(--ink-3)] hidden md:inline">{t('ui.timeline.mareaPuntaSalute')}:</span>
-        {tideLevel !== null && tideLevel !== undefined ? (
-          <span className={`font-bold tabular ${tideLevel >= 80 ? 'text-amber-400' : 'text-blue-300'}`}>
-            {tideLevel > 0 ? `+${tideLevel}` : tideLevel} cm
-          </span>
-        ) : (
-          <span className="text-[var(--ink-3)] font-mono">{t('ui.timeline.mareaNonDisponibile')}</span>
+      <div className="flex items-center gap-1 shrink-0 animate-in fade-in duration-150">
+        <button
+          type="button"
+          onClick={onOpenTideModal}
+          className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-mono bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/25 text-[var(--ink-2)] shrink-0 cursor-pointer transition-all"
+          title={t('ui.timeline.tideButtonTitle')}
+        >
+          <Waves className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+          <span className="text-[var(--ink-3)] hidden md:inline">{t('ui.timeline.mareaPuntaSalute')}:</span>
+          {tideLevel !== null && tideLevel !== undefined ? (
+            <span className={`font-bold tabular ${tideLevel >= 80 ? 'text-amber-400' : 'text-blue-300'}`}>
+              {tideLevel > 0 ? `+${tideLevel}` : tideLevel} cm
+            </span>
+          ) : (
+            <span className="text-[var(--ink-3)] font-mono">{t('ui.timeline.mareaNonDisponibile')}</span>
+          )}
+        </button>
+
+        {onStartSimulator && (
+          <button
+            type="button"
+            onClick={onStartSimulator}
+            className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-mono bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/35 transition-all cursor-pointer font-medium"
+            title="Avvia subito il simulatore marea & MOSE a 1 click sulla mappa"
+          >
+            <span>Simula</span>
+          </button>
         )}
-      </button>
+      </div>
     );
   };
 

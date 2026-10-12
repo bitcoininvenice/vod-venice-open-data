@@ -36,6 +36,8 @@ interface TideFloodModalProps {
   onToggleMoseProtection?: () => void;
   forecast?: TideForecast | null;
   marineWindStations?: MeteoMarineWindItem[];
+  isPlayingCycle?: boolean;
+  onToggleCycle?: () => void;
 }
 
 function formatExtremeStamp(atStr: string, language: 'it' | 'en'): string {
@@ -61,17 +63,21 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
   isMoseProtected = true,
   onToggleMoseProtection,
   forecast,
-  marineWindStations = []
+  marineWindStations = [],
+  isPlayingCycle,
+  onToggleCycle
 }) => {
   const { t, language } = useTranslation();
   type ModalTab = 'simulator' | 'forecast' | 'sirens' | 'meteo';
   const [activeTab, setActiveTab] = useState<ModalTab>('simulator');
   const [draftCm, setDraftCm] = useState<number | null>(null);
-  const [isCycling, setIsCycling] = useState(false);
+  const [localCycling, setLocalCycling] = useState(false);
+  const isCycling = isPlayingCycle !== undefined ? isPlayingCycle : localCycling;
   const simulatedCm = simulatedTideLevel ?? draftCm ?? liveTideLevel ?? 65;
 
+  // Se non c'è onToggleCycle globale passato dal parent, usa l'interval locale di fallback
   useEffect(() => {
-    if (!isCycling || !isOpen) return;
+    if (onToggleCycle || !localCycling || !isOpen) return;
     const interval = setInterval(() => {
       // Ciclo sinusoidale fluido tra +75 cm e +142 cm (~16s di periodo)
       const val = Math.round(75 + 67 * ((1 - Math.cos(Date.now() / 2500)) / 2));
@@ -79,16 +85,30 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
       onSimulatedTideChange?.(val);
     }, 60);
     return () => clearInterval(interval);
-  }, [isCycling, isOpen, onSimulatedTideChange]);
+  }, [localCycling, isOpen, onSimulatedTideChange, onToggleCycle]);
+
+  const handleToggleCycle = () => {
+    if (onToggleCycle) {
+      onToggleCycle();
+    } else {
+      setLocalCycling((c) => !c);
+    }
+  };
 
   const handleLevelChange = (cm: number) => {
-    setIsCycling(false);
+    if (isPlayingCycle && onToggleCycle) {
+      onToggleCycle();
+    }
+    setLocalCycling(false);
     setDraftCm(cm);
     onSimulatedTideChange?.(cm);
   };
 
   const handleResetToLive = () => {
-    setIsCycling(false);
+    if (isPlayingCycle && onToggleCycle) {
+      onToggleCycle();
+    }
+    setLocalCycling(false);
     setDraftCm(null);
     onSimulatedTideChange?.(null);
   };
@@ -270,15 +290,30 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
                   <div className="flex items-center gap-2 flex-wrap justify-end">
                     <button
                       type="button"
-                      onClick={() => setIsCycling((c) => !c)}
+                      onClick={handleToggleCycle}
                       className={`px-3 py-1.5 rounded-lg border text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5 ${
                         isCycling
                           ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 font-bold shadow-sm'
                           : 'bg-[var(--rule)]/40 hover:bg-[var(--rule)] text-[var(--ink-2)] border-transparent'
                       }`}
+                      title={isCycling ? 'Metti in pausa il ciclo continuo di marea' : 'Avvia il ciclo continuo sia nella modale che sulla mappa'}
                     >
                       {isCycling ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                      <span>{isCycling ? (language === 'it' ? 'Pausa ciclo' : 'Pause cycle') : (language === 'it' ? 'Avvia ciclo marea' : 'Start tide cycle')}</span>
+                      <span>{isCycling ? (language === 'it' ? 'Pausa simulazione' : 'Pause simulation') : (language === 'it' ? 'Avvia simulazione marea' : 'Start tide simulation')}</span>
+                    </button>
+
+                    {/* Bottone rapido: Vedi sulla mappa (chiude la modale con la simulazione attiva) */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSimulatedTideChange?.(simulatedCm);
+                        onClose();
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-white font-medium text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+                      title={language === 'it' ? 'Chiudi la modale e controlla la marea direttamente sulla mappa' : 'Close modal and control tide directly on map'}
+                    >
+                      <Compass className="w-3.5 h-3.5" />
+                      <span>{language === 'it' ? 'Vedi sulla mappa' : 'View on map'}</span>
                     </button>
 
                     {liveTideLevel !== null && (
