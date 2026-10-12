@@ -379,7 +379,7 @@ export const enUi: UiTranslations = {
     orologioUrbanoVenezia: "Solar clock and ephemeris of Venice (45.437° N, 12.335° E)",
     tideButtonTitle: "Tide at Punta della Salute (CPSM): open the simulator",
     espandiTimeline: "Expand timeline controls",
-    riduciTimeline: "Collapse timeline",
+    riduciTimeline: "Collapse",
     timelineRidottaAria: "Timeline controls collapsed",
     timelineEstesaAria: "Timeline controls expanded",
     tideSliderLabel: "Simulated tide level (Adriatic)",

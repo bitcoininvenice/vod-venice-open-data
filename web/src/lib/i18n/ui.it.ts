@@ -377,7 +377,7 @@ export const itUi = {
     orologioUrbanoVenezia: "Orologio solare ed effemeridi di Venezia (45.437° N, 12.335° E)",
     tideButtonTitle: "Marea a Punta della Salute (CPSM): apri il simulatore",
     espandiTimeline: "Espandi controlli orario",
-    riduciTimeline: "Riduci timeline",
+    riduciTimeline: "Riduci",
     timelineRidottaAria: "Controlli temporali ridotti",
     timelineEstesaAria: "Controlli temporali estesi",
     tideSliderLabel: "Quota marea simulata (Adriatico)",
