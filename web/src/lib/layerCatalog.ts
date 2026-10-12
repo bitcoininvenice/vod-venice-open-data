@@ -330,8 +330,8 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     portalName: 'CPSM – previsione di marea',
     descriptionIt: 'Verso e intensità stimati della corrente nelle tre bocche di porto e nei canali principali: flusso entrante, stanca e riflusso, all\'ora scelta nella timeline.',
     descriptionEn: 'Estimated direction and strength of the current in the three sea inlets and the main channels: flood, slack and ebb, at the time chosen on the timeline.',
-    technicalNotesIt: 'Nessun ente pubblica correnti lagunari misurate in tempo reale come open data. La fase viene dalla previsione CPSM di colmi e cavi (stanca entro 25 minuti da un estremo), l\'intensità da velocità di picco tipiche e indicative per canale. Senza previsione aggiornata la fase non è mostrata. Non usare per la navigazione.',
-    technicalNotesEn: 'No agency publishes measured real-time lagoon currents as open data. The phase comes from the CPSM forecast of highs and lows (slack within 25 minutes of an extreme), the strength from typical indicative peak speeds per channel. Without an up-to-date forecast no phase is shown. Not for navigation.',
+    technicalNotesIt: 'Nessun ente pubblica correnti lagunari misurate in tempo reale come open data. La fase viene dalla previsione CPSM di colmi e cavi (stanca entro 25 minuti da un estremo), l\'intensità da velocità di picco tipiche e indicative per canale. Il flusso scorre lungo gli assi dei canali di OpenStreetMap (ODbL). Senza previsione aggiornata la fase non è mostrata. Non usare per la navigazione.',
+    technicalNotesEn: 'No agency publishes measured real-time lagoon currents as open data. The phase comes from the CPSM forecast of highs and lows (slack within 25 minutes of an extreme), the strength from typical indicative peak speeds per channel. The flow follows the channel centrelines from OpenStreetMap (ODbL). Without an up-to-date forecast no phase is shown. Not for navigation.',
     endpointOrFile: '/api/tide & src/lib/lagoonCurrents.ts'
   },
   {

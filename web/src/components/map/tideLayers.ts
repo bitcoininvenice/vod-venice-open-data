@@ -1,9 +1,7 @@
-// Layer della marea: paratie del MOSE, percorsi su passerelle e correnti stimate.
+// Layer della marea: paratie del MOSE e percorsi su passerelle (le correnti sono in currentFlow.ts).
 import type { RenderContext } from './renderContext';
 import { MOSE_GATES } from '@/lib/moseGates';
 import { PASSERELLE_MIN_THRESHOLD_CM, isPasserellaExpected } from '@/lib/passerelle';
-import { computeLagoonCurrentState } from '@/lib/lagoonCurrents';
-import { dateAtRomeSeconds } from '@/lib/time';
 import { prefersReducedMotion } from './mapHelpers';
 
 export function drawMose(rc: RenderContext): void {
@@ -235,70 +233,6 @@ export function drawPasserelle(rc: RenderContext): void {
     ctx.lineWidth = coreWidth;
     ctx.stroke();
 
-    ctx.restore();
-  }
-}
-
-/**
- * Correnti di marea: tracciato dei canali con frecce animate nel verso del flusso.
- * Fase (flusso / stanca / riflusso) e intensita dalla marea CPSM; stima, non misura.
- */
-export function drawLagoonCurrents(rc: RenderContext): void {
-  const { ctx, isDark, sx, sy, mx, my, camera, currentTimeSeconds, showLagoonCurrents, lagoonCurrents, tideInfo, t } = rc;
-  if (!showLagoonCurrents || !lagoonCurrents || lagoonCurrents.length === 0) return;
-  // Fase all'ora della timeline; senza previsione valida i canali restano grigi, senza verso
-  const state = computeLagoonCurrentState(tideInfo?.forecast, dateAtRomeSeconds(currentTimeSeconds).getTime());
-  const slack = !state || state.flowDirection === 'SLACK';
-  const outbound = state?.flowDirection === 'OUTBOUND';
-  const baseColor = slack ? (isDark ? '148, 163, 184' : '100, 116, 139') : outbound ? '45, 212, 191' : '56, 189, 248';
-  const width = Math.max(2, Math.min(6, 1.5 + 30 * camera.s));
-
-  for (const ch of lagoonCurrents) {
-    const pts = ch.coordinates.map(([lon, lat]) => [sx(mx(lon)), sy(my(lat))] as [number, number]);
-    if (outbound) pts.reverse();
-    if (pts.length < 2) continue;
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    // Corridoio del canale
-    ctx.beginPath();
-    pts.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
-    ctx.strokeStyle = `rgba(${baseColor}, 0.22)`;
-    ctx.lineWidth = width * 2.4;
-    ctx.stroke();
-
-    // Tratteggio che scorre nel verso della corrente (velocita proporzionale all'intensita stimata)
-    const speed = (ch.maxSpeedKnots / 3) * (state?.speedFactor ?? 0);
-    ctx.setLineDash(slack ? [2, 6] : [10, 8]);
-    ctx.lineDashOffset = slack ? 0 : -((currentTimeSeconds * 40 * speed) % 18);
-    ctx.strokeStyle = `rgba(${baseColor}, ${slack ? 0.6 : 0.9})`;
-    ctx.lineWidth = width;
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Punta di freccia sul tratto finale
-    if (!slack) {
-      const [x1, y1] = pts[pts.length - 2];
-      const [x2, y2] = pts[pts.length - 1];
-      const ang = Math.atan2(y2 - y1, x2 - x1);
-      const size = Math.max(6, width * 2.6);
-      ctx.beginPath();
-      ctx.moveTo(x2, y2);
-      ctx.lineTo(x2 - size * Math.cos(ang - 0.45), y2 - size * Math.sin(ang - 0.45));
-      ctx.lineTo(x2 - size * Math.cos(ang + 0.45), y2 - size * Math.sin(ang + 0.45));
-      ctx.closePath();
-      ctx.fillStyle = `rgba(${baseColor}, 0.95)`;
-      ctx.fill();
-    }
-
-    if (camera.s > 0.03) {
-      const [lx, ly] = [sx(mx(ch.lon)), sy(my(ch.lat))];
-      const label = !state ? 'n.d.' : slack ? t('ui.lagoonHydro.slack') : `~${(ch.maxSpeedKnots * state.speedFactor).toFixed(1)} kn`;
-      ctx.font = '600 9px "DM Mono", monospace';
-      ctx.fillStyle = isDark ? '#e2e8f0' : '#0f172a';
-      ctx.fillText(label, lx + 8, ly - 6);
-    }
     ctx.restore();
   }
 }

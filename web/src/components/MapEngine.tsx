@@ -16,7 +16,8 @@ import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
 import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
-import { drawMose, drawPasserelle, drawLagoonCurrents } from './map/tideLayers';
+import { drawMose, drawPasserelle } from './map/tideLayers';
+import { drawCurrentFlow } from './map/currentFlow';
 import { drawShipRoutes, drawShips, drawAlilaguna } from './map/vesselLayers';
 import { drawMarineSignals, drawCanalLimits, drawBridges, drawGondolas, drawDocks } from './map/waterwayLayers';
 import { drawOceanStations, drawMarineWind } from './map/marineLayers';
@@ -924,7 +925,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
         drawPasserelle(rc);
 
-        drawLagoonCurrents(rc);
+        drawCurrentFlow(rc);
 
         drawMarineSignals(rc);
 
