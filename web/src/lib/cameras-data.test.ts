@@ -22,4 +22,14 @@ describe('catalogo telecamere', () => {
     expect(new Set(VENICE_CAMERAS.map((c) => c.id)).size).toBe(VENICE_CAMERAS.length);
     expect(VENICE_CAMERAS.filter((c) => c.type.startsWith('CCTV_')).every((c) => !c.hasLiveFeed)).toBe(true);
   });
+
+  it('include le 11 webcam ufficiali CPSM con snapshot e attribuzione corretta', () => {
+    const cpsm = VENICE_CAMERAS.filter((c) => c.source === 'CPSM_COMUNE_VENEZIA');
+    expect(cpsm.length).toBe(11);
+    expect(cpsm.every((c) => c.operator === 'Comune di Venezia – CPSM')).toBe(true);
+    expect(cpsm.every((c) => c.lat >= 45.2 && c.lat <= 45.6 && c.lon >= 12.2 && c.lon <= 12.5)).toBe(true);
+    const withSnapshots = cpsm.filter((c) => c.feedType === 'IMAGE_SNAPSHOT_15M');
+    expect(withSnapshots.length).toBe(10);
+    expect(withSnapshots.every((c) => c.snapshotUrl?.startsWith('https://www.comune.venezia.it/sites/default/files/publicCPSM2/webcam/'))).toBe(true);
+  });
 });

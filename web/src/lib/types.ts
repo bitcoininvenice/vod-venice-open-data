@@ -418,6 +418,7 @@ export interface VeniceCameraItem {
   feedType?: 'YOUTUBE_LIVE' | 'GARR_TV_STREAM' | 'IMAGE_SNAPSHOT_15M' | 'DIRECT_STREAM_LINK';
   streamEmbedUrl?: string;
   streamPageUrl?: string;
+  snapshotUrl?: string;
   privacyNoticeStatus?: 'PRESENTE' | 'ASSENTE' | 'INCOMPLETA' | 'NON_APPLICABILE_PANORAMICA';
   bearingDeg?: number;
   fovDeg?: number;

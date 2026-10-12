@@ -114,18 +114,32 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                 {t('ui.camera.imagesOwnedBy', { operator: camera.operator })}
               </p>
             </div>
-            {camera.streamPageUrl && (
-              <a
-                href={camera.streamPageUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-medium flex items-center gap-1.5 shadow-md shadow-cyan-600/20 transition-all"
-              >
-                <Play className="w-3.5 h-3.5" />
-                {t('ui.camera.apriDirettaUfficiale')}
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            )}
+            <div className="flex items-center gap-2 flex-wrap justify-center">
+              {camera.snapshotUrl && (
+                <a
+                  href={camera.snapshotUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-mono font-medium flex items-center gap-1.5 transition-all"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  {t('ui.camera.viewSnapshot')}
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+              {camera.streamPageUrl && (
+                <a
+                  href={camera.streamPageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-medium flex items-center gap-1.5 shadow-md shadow-cyan-600/20 transition-all"
+                >
+                  <Play className="w-3.5 h-3.5" />
+                  {t('ui.camera.apriDirettaUfficiale')}
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+            </div>
           </div>
         ) : (
           /* CCTV PRIVACY TRANSPARENCY NOTICE */
