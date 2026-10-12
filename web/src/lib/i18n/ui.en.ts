@@ -344,6 +344,13 @@ export const enUi: UiTranslations = {
     accessNo: "Not accessible"
   },
   timeline: {
+    simPause: "Pause",
+    simStart: "Start",
+    moseOn: "MOSE: defence on",
+    moseOff: "MOSE: off",
+    moseRaisedTitle: "MOSE raised: lagoon protected, city dry. Click to simulate without MOSE",
+    moseArmedTitle: "MOSE ready: in the simulation it rises from +110 cm. Click to simulate without MOSE",
+    moseOffTitle: "MOSE off: the tide enters the lagoon. Click to turn it back on",
     simulate: "Simulate",
     simulateTitle: "Start the tide and MOSE simulator on the map",
     n1Reale: "1× Real",

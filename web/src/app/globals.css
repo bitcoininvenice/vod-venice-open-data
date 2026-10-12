@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* dark: segue il tema della mappa (data-theme="notte"), non la modalità scura del sistema operativo */
+@custom-variant dark (&:where([data-theme="notte"], [data-theme="notte"] *));
+
 :root {
   color-scheme: dark;
   --ground: #0c1114;

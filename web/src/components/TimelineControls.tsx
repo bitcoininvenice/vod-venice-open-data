@@ -376,10 +376,10 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
                   ? 'bg-cyan-500/20 text-cyan-800 dark:text-cyan-100 border-cyan-500/60 font-semibold shadow-sm'
                   : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-800 dark:text-cyan-200 border-cyan-500/30 font-medium'
               }`}
-              title={simulator.isPlayingCycle ? 'Pausa ciclo sinusoidale' : 'Avvia ciclo marea'}
+              title={t(simulator.isPlayingCycle ? 'ui.floodModal.cyclePauseTitle' : 'ui.floodModal.cycleStartTitle')}
             >
               {simulator.isPlayingCycle ? <Pause className="w-3 h-3 text-cyan-700 dark:text-cyan-300" /> : <Play className="w-3 h-3 text-cyan-700 dark:text-cyan-300" />}
-              <span>{simulator.isPlayingCycle ? 'Pausa' : 'Avvia'}</span>
+              <span>{t(simulator.isPlayingCycle ? 'ui.timeline.simPause' : 'ui.timeline.simStart')}</span>
             </button>
 
             {/* Toggle Difesa MOSE (Sempre visibile a qualsiasi quota di marea) */}
@@ -391,15 +391,15 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
                   ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 border-emerald-500/40 font-semibold'
                   : 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-800 dark:text-rose-200 border-rose-500/40 font-semibold'
               }`}
-              title={
-                simulator.isProtected
-                  ? simulator.level >= 110
-                    ? 'MOSE attivo: barriere alzate, laguna protetta (0% allagamento). Clicca per disattivare e vedere la laguna allagata'
-                    : 'MOSE armato: difesa attiva, si alzera automaticamente sopra i 110cm. Clicca per disattivare'
-                  : 'MOSE disattivato: paratie a riposo sul fondo, marea libera in laguna. Clicca per attivare'
-              }
+              title={t(
+                !simulator.isProtected
+                  ? 'ui.timeline.moseOffTitle'
+                  : simulator.level >= 110
+                  ? 'ui.timeline.moseRaisedTitle'
+                  : 'ui.timeline.moseArmedTitle'
+              )}
             >
-              {simulator.isProtected ? 'MOSE: Difesa Attiva' : 'MOSE: Disattivato'}
+              {t(simulator.isProtected ? 'ui.timeline.moseOn' : 'ui.timeline.moseOff')}
             </button>
 
             {/* Scenari & Regolazione */}

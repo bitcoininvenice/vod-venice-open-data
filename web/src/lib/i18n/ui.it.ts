@@ -342,6 +342,13 @@ export const itUi = {
     accessNo: "Non accessibile"
   },
   timeline: {
+    simPause: "Pausa",
+    simStart: "Avvia",
+    moseOn: "MOSE: difesa attiva",
+    moseOff: "MOSE: disattivato",
+    moseRaisedTitle: "MOSE alzato: laguna protetta, città asciutta. Clicca per simulare senza MOSE",
+    moseArmedTitle: "MOSE pronto: nella simulazione si alza da +110 cm. Clicca per simulare senza MOSE",
+    moseOffTitle: "MOSE disattivato: la marea entra in laguna. Clicca per riattivarlo",
     simulate: "Simula",
     simulateTitle: "Avvia il simulatore di marea e MOSE sulla mappa",
     n1Reale: "1× Reale",
