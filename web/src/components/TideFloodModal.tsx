@@ -511,7 +511,7 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
               <div className="p-4 rounded-xl bg-[var(--rule)]/20 border border-[var(--rule)] flex flex-col gap-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono text-[var(--ink-2)] uppercase font-semibold">
-                    {t('ui.floodModal.passerelleActive')}
+                    {t('ui.floodModal.passerelleActive')} ({passerelleRoutes.filter((r) => r.active).length}/{passerelleRoutes.length})
                   </span>
                   <button
                     type="button"
@@ -526,7 +526,7 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
                   </button>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1.5 max-h-72 overflow-y-auto pr-1">
                   {passerelleRoutes.map((r) => (
                     <div
                       key={r.id}

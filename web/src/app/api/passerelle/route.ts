@@ -9,8 +9,8 @@ export async function GET() {
 
   return NextResponse.json({
     success: true,
-    kind: 'curated-reference',
-    source: 'Elenco curato del progetto, da verificare (riferimento: Comune di Venezia – CPSM). Lo stato di montaggio non è un dato in tempo reale.',
+    kind: 'official-plan',
+    source: 'Comune di Venezia – Centro Previsioni e Segnalazioni Maree (CPSM) & Veritas S.p.A. (Piano di Viabilità Pedonale su passerelle).',
     totalMeters,
     mountedCount,
     count: PASSERELLE_DATA.length,

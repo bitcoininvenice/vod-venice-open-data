@@ -428,7 +428,7 @@ export interface VeniceCameraItem {
 export interface PasserellaItem {
   id: string;
   name: string;
-  district: string; // 'San Marco' | 'Castello' | 'Cannaregio' | 'San Polo' | 'Dorsoduro' | 'Santa Croce'
+  district: string; // 'San Marco' | 'Castello' | 'Cannaregio' | 'San Polo' | 'Dorsoduro' | 'Santa Croce' | 'Giudecca' | 'Murano' | 'Burano' | 'San Michele'
   path: [number, number][]; // LineString [lon, lat] coordinate esatte delle passerelle
   lengthMeters: number;
   groundElevationCm: number; // Quota altimetrica minima del suolo (es. 80cm a San Marco, 95cm a Rialto)
@@ -437,6 +437,10 @@ export interface PasserellaItem {
   priority: 'PRIMARIA' | 'SECONDARIA';
   description: string;
   officialSource: string;
+  tavola?: string; // Codice tavola Veritas/CPSM (es. 'T1.1 A', 'T2.1 C')
+  modules?: string; // Specifica moduli passerella (es. '10 da 300x150')
+  cavalletti25?: number; // Numero cavalletti 25cm
+  cavalletti50?: number; // Numero cavalletti 50cm
 }
 
 export interface BriccolaSignalItem {

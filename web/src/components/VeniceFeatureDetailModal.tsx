@@ -767,7 +767,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             </>
           )}
 
-          {/* PASSERELLE (existing fallback) */}
+          {/* PASSERELLE */}
           {feature.type === 'passerella' && (
             <>
               <div className="grid grid-cols-2 gap-3">
@@ -780,6 +780,28 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                   <p className="text-xl font-bold font-mono text-cyan-400">+{feature.data.activationThresholdCm} cm</p>
                 </div>
               </div>
+              {feature.data.tavola && (
+                <div className="flex items-center justify-between text-xs font-mono p-2.5 rounded-lg bg-[var(--rule)]/20 border border-[var(--rule)]/40">
+                  <span className="text-[var(--ink-3)]">Tavola Piano Veritas/CPSM:</span>
+                  <span className="font-bold text-amber-400">{feature.data.tavola}</span>
+                </div>
+              )}
+              {feature.data.modules && (
+                <div className="flex items-center justify-between text-xs font-mono p-2.5 rounded-lg bg-[var(--rule)]/20 border border-[var(--rule)]/40">
+                  <span className="text-[var(--ink-3)]">Moduli passerella:</span>
+                  <span className="text-[var(--ink-1)]">{feature.data.modules}</span>
+                </div>
+              )}
+              {((feature.data.cavalletti25 ?? 0) > 0 || (feature.data.cavalletti50 ?? 0) > 0) && (
+                <div className="flex items-center justify-between text-xs font-mono p-2.5 rounded-lg bg-[var(--rule)]/20 border border-[var(--rule)]/40">
+                  <span className="text-[var(--ink-3)]">Cavalletti:</span>
+                  <span className="text-[var(--ink-2)]">
+                    {(feature.data.cavalletti25 ?? 0) > 0 ? `${feature.data.cavalletti25} da 25cm` : ''}
+                    {(feature.data.cavalletti25 ?? 0) > 0 && (feature.data.cavalletti50 ?? 0) > 0 ? ' · ' : ''}
+                    {(feature.data.cavalletti50 ?? 0) > 0 ? `${feature.data.cavalletti50} da 50cm` : ''}
+                  </span>
+                </div>
+              )}
               <p className="text-[var(--ink-2)]">{feature.data.description}</p>
             </>
           )}
