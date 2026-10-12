@@ -489,6 +489,10 @@ export default function HomePage() {
           : `(~${getFloodedGroundPercentage(simulatedTideLevel)}%)`,
       isProtected: isMoseProtected,
       isPlayingCycle: isTideCyclePlaying,
+      onSetLevel: (level: number) => {
+        setIsTideCyclePlaying(false);
+        setSimulatedTideLevel(Math.max(50, Math.min(200, level)));
+      },
       onStepLevel: (delta: number) => {
         setIsTideCyclePlaying(false);
         setSimulatedTideLevel((prev) => {

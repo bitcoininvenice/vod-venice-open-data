@@ -377,7 +377,14 @@ export const itUi = {
     espandiTimeline: "Espandi controlli orario",
     riduciTimeline: "Riduci timeline",
     timelineRidottaAria: "Controlli temporali ridotti",
-    timelineEstesaAria: "Controlli temporali estesi"
+    timelineEstesaAria: "Controlli temporali estesi",
+    tideSliderLabel: "Quota marea simulata (Adriatico)",
+    tideSliderNormale: "+50 cm",
+    tideSliderInizio: "+80 cm (Allagamento)",
+    tideSliderSogliaMose: "+110 cm (Soglia MOSE)",
+    tideSliderEccezionale: "+140 cm (Eccezionale)",
+    tideSliderPicco: "+200 cm (Picco)",
+    tideSliderAria: "Quota marea simulata (+50 a +200 cm)"
   },
   feature: {
     stelleHotel: "5 stelle: {five}, 4 stelle: {four}, 3 stelle: {three}",

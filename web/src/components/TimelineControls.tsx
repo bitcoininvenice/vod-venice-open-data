@@ -32,6 +32,7 @@ export interface TideSimulatorProps {
   floodedPercentText: string;
   isProtected: boolean;
   isPlayingCycle: boolean;
+  onSetLevel?: (level: number) => void;
   onStepLevel: (delta: number) => void;
   onToggleCycle: () => void;
   onToggleProtection: () => void;
@@ -363,46 +364,37 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
             >
               <X className="w-3.5 h-3.5" />
             </button>
-
-            {/* Toggle visualizzazione timeline estesa anche in simulazione */}
-            <button
-              type="button"
-              onClick={() => setIsExpanded((p) => !p)}
-              className="flex items-center gap-1 px-1.5 py-1 rounded-lg bg-[var(--rule)]/70 text-[var(--ink-2)] hover:text-[var(--ink)] border border-[var(--rule)] text-xs font-mono cursor-pointer transition-all ml-0.5"
-              title={isExpanded ? t('ui.timeline.riduciTimeline') : t('ui.timeline.espandiTimeline')}
-              aria-label={isExpanded ? t('ui.timeline.riduciTimeline') : t('ui.timeline.espandiTimeline')}
-            >
-              {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
-            </button>
           </div>
         </div>
 
-        {/* Timeline opzionale collegata se espansa durante il simulatore */}
-        {isExpanded && (
-          <div className="pt-2 border-t border-[var(--rule)]/60 flex flex-col gap-2 animate-in fade-in duration-150">
-            <div className="relative w-full py-0.5">
-              <input
-                type="range"
-                min={0}
-                max={1439}
-                step={1}
-                value={sliderValue}
-                onChange={(e) => onTimeChange(Number(e.target.value) * 60)}
-                className="w-full h-2 rounded-lg cursor-ew-resize appearance-none"
-                aria-label={t('ui.timeline.orarioGiorno')}
-              />
-            </div>
-            <div className="flex justify-between text-[10px] sm:text-[11px] font-mono text-[var(--ink-3)] px-1">
-              <span>00:00</span>
-              <span className="hidden sm:inline">04:00</span>
-              <span>08:00</span>
-              <span>12:00</span>
-              <span>16:00</span>
-              <span className="hidden sm:inline">20:00</span>
-              <span>24:00</span>
-            </div>
+        {/* Slider Continuo Quota Marea (+50 cm a +200 cm) con Soglie Storiche e Operative */}
+        <div className="pt-2 border-t border-[var(--rule)]/60 flex flex-col gap-1.5 animate-in fade-in duration-150">
+          <div className="flex items-center justify-between text-[11px] font-mono text-[var(--ink-2)] px-1">
+            <span className="text-[var(--ink-3)]">{t('ui.timeline.tideSliderLabel')}</span>
+            <span className="font-bold text-sky-600 dark:text-cyan-300 tabular">{simulator.formattedCm}</span>
           </div>
-        )}
+          <div className="relative w-full py-0.5">
+            <input
+              type="range"
+              min={50}
+              max={200}
+              step={1}
+              value={simulator.level}
+              onChange={(e) => {
+                simulator.onSetLevel?.(Number(e.target.value));
+              }}
+              className="w-full h-2 rounded-lg cursor-ew-resize appearance-none"
+              aria-label={t('ui.timeline.tideSliderAria')}
+            />
+          </div>
+          <div className="flex justify-between text-[10px] font-mono text-[var(--ink-3)] px-1">
+            <span>{t('ui.timeline.tideSliderNormale')}</span>
+            <span className="text-amber-500 font-semibold">{t('ui.timeline.tideSliderInizio')}</span>
+            <span className="text-rose-500 font-semibold">{t('ui.timeline.tideSliderSogliaMose')}</span>
+            <span className="hidden sm:inline">{t('ui.timeline.tideSliderEccezionale')}</span>
+            <span className="text-rose-600 dark:text-rose-400 font-bold">{t('ui.timeline.tideSliderPicco')}</span>
+          </div>
+        </div>
       </div>
     );
   }

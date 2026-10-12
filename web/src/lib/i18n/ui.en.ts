@@ -379,7 +379,14 @@ export const enUi: UiTranslations = {
     espandiTimeline: "Expand timeline controls",
     riduciTimeline: "Collapse timeline",
     timelineRidottaAria: "Timeline controls collapsed",
-    timelineEstesaAria: "Timeline controls expanded"
+    timelineEstesaAria: "Timeline controls expanded",
+    tideSliderLabel: "Simulated tide level (Adriatic)",
+    tideSliderNormale: "+50 cm",
+    tideSliderInizio: "+80 cm (Flooding)",
+    tideSliderSogliaMose: "+110 cm (MOSE Threshold)",
+    tideSliderEccezionale: "+140 cm (Exceptional)",
+    tideSliderPicco: "+200 cm (Peak)",
+    tideSliderAria: "Simulated tide level (+50 to +200 cm)"
   },
   feature: {
     stelleHotel: "5-star: {five}, 4-star: {four}, 3-star: {three}",
