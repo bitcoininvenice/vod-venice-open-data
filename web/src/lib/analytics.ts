@@ -2,6 +2,7 @@ import { track } from '@vercel/analytics';
 import { LAYER_SLUG_BY_KEY, type LayerKey } from '@/lib/urlLayers';
 import type { VeniceFeatureSelected } from '@/components/VeniceFeatureDetailModal';
 import type { MapObjectSelected } from '@/components/MapObjectPanel';
+import { featureLayer } from '@/lib/featureLayer';
 
 export function toLayerSlug(layer: LayerKey | string): string {
   if (layer in LAYER_SLUG_BY_KEY) {
@@ -10,59 +11,11 @@ export function toLayerSlug(layer: LayerKey | string): string {
   return layer;
 }
 
-const FEATURE_TO_LAYER_KEY: Record<Exclude<VeniceFeatureSelected['type'], 'civicPoi' | 'civicNumber'>, LayerKey> = {
-  passerella: 'showPasserelle',
-  briccola: 'showMarineSignals',
-  oceanStation: 'showOceanStations',
-  bathingWater: 'showBathingWaters',
-  urbanTree: 'showTrees',
-  evCharging: 'showEvCharging',
-  wifiHotspot: 'showWifiHotspots',
-  speedLimit: 'showCanalLimits',
-  bridgeClearance: 'showBridges',
-  gondolaStation: 'showGondolas',
-  publicDock: 'showDocks',
-  subsidence: 'showSubsidence',
-  lagoonMorphology: 'showMorphology',
-  marineWind: 'showMarineWind',
-  trainLive: 'showTrains',
-  wasteBoat: 'showWasteBoats',
-  nizioleto: 'showNizioleti',
-  veniceWell: 'showWells',
-  bellTower: 'showBellTowers',
-  fortressIsland: 'showFortresses',
-  emergencyDock: 'showEmergencyDocks',
-  publicDae: 'showDae',
-  pharmacy: 'showPharmacies',
-  heatIsland: 'showHeatIslands',
-  lagoonWater: 'showLagoonWater',
-  lagoonCurrent: 'showLagoonCurrents',
-  accommodation: 'showAccommodations',
-  bikeRoute: 'showBikeRoutes',
-  pollenStation: 'showPollenStations',
-  tributaryRiver: 'showTributaries',
-  parking: 'showParkings',
-  fountain: 'showCityAssets',
-  fiberCell: 'showFiber',
-  airStation: 'showAirQuality',
-  lagoonMarker: 'showMarineSignals',
-  canal: 'showCanals',
-  bdapWork: 'showBdapWorks',
-  loraGateway: 'showLoraGateways',
-  wifiVenue: 'showWifiVenues',
-  sportPlace: 'showSports',
-  nauticalPlace: 'showNautical',
-  parkPlace: 'showParks',
-};
-
 export function featureToLayerSlug(feature: VeniceFeatureSelected): string {
+  // i numeri civici non hanno un layer: la scheda nasce dalla ricerca
   if (feature.type === 'civicNumber') return 'civici';
-  if (feature.type === 'civicPoi') return feature.data.kind === 'recycling' ? 'ecocentri' : 'biblioteche';
-  const layerKey = FEATURE_TO_LAYER_KEY[feature.type];
-  if (layerKey && LAYER_SLUG_BY_KEY[layerKey]) {
-    return LAYER_SLUG_BY_KEY[layerKey];
-  }
-  return feature.type;
+  const layerKey = featureLayer(feature);
+  return layerKey ? LAYER_SLUG_BY_KEY[layerKey] : feature.type;
 }
 
 export function mapObjectToLayerSlug(object: MapObjectSelected): string {

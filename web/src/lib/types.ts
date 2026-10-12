@@ -430,12 +430,13 @@ export interface PasserellaItem {
   id: string;
   name: string;
   district: string; // 'San Marco' | 'Castello' | 'Cannaregio' | 'San Polo' | 'Dorsoduro' | 'Santa Croce' | 'Giudecca' | 'Murano' | 'Burano' | 'San Michele'
-  path: [number, number][]; // LineString [lon, lat] coordinate esatte delle passerelle
+  /** Tracciato indicativo [lon, lat]: la tabella del Comune non contiene coordinate */
+  path: [number, number][];
   lengthMeters: number;
-  groundElevationCm: number; // Quota altimetrica minima del suolo (es. 80cm a San Marco, 95cm a Rialto)
-  activationThresholdCm: number; // Soglia attivazione (es. 95cm o 110cm)
-  isMounted: boolean;
-  priority: 'PRIMARIA' | 'SECONDARIA';
+  /** Quota del piano (cm sullo ZMPS): il percorso viene allestito quando la marea la raggiunge */
+  activationThresholdCm: number;
+  /** Seconda configurazione dello stesso percorso (non conteggiata nei totali né disegnata) */
+  variantOf?: string;
   description: string;
   officialSource: string;
   tavola?: string; // Codice tavola Veritas/CPSM (es. 'T1.1 A', 'T2.1 C')

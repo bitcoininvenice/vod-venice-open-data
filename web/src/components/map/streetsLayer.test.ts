@@ -1,15 +1,17 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   indexRawWalk,
   paintStreets,
-  paintFloodedStreets,
-  isStreetsLoaded,
-  getStreetsStats,
   getFloodedEdgesStats,
   type RawWalkData,
   type StreetsPaintOptions,
 } from './streetsLayer';
 import { CARTA, NOTTE } from '@/lib/solar';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { WALK_URL } from '@/lib/walk-data';
+import { getFloodedGroundPercentage } from '@/lib/flood';
+import { toGrid } from '@/lib/positionDelay';
 
 describe('streetsLayer', () => {
   const sampleData: RawWalkData = {
@@ -105,5 +107,33 @@ describe('streetsLayer', () => {
 
     paintStreets(mockCtx, options);
     expect(mockCtx.save).not.toHaveBeenCalled();
+  });
+
+  it('nel centro storico la lunghezza di calli allagate segue la curva ufficiale CPSM', () => {
+    const raw = JSON.parse(readFileSync(join(process.cwd(), 'public', WALK_URL), 'utf8')) as RawWalkData;
+    const idx = indexRawWalk(raw);
+    const [x0, y0] = toGrid(12.300, 45.450);
+    const [x1, y1] = toGrid(12.372, 45.423);
+    let total = 0;
+    const lens: { h: number; len: number }[] = [];
+    for (let e = 0; e < idx.edgeCount; e++) {
+      if (idx.flags[e] !== 0) continue;
+      // offsets indicizza i float di allCoords: primo e ultimo punto sono i due nodi
+      const first = idx.offsets[e];
+      const last = first + 2 * (idx.lengths[e] - 1);
+      const cx = (idx.allCoords[first] + idx.allCoords[last]) / 2;
+      const cy = (idx.allCoords[first + 1] + idx.allCoords[last + 1]) / 2;
+      if (cx < x0 || cx > x1 || cy < y0 || cy > y1) continue;
+      const len = Math.max(1, raw.edges[4 * e + 2]);
+      lens.push({ h: idx.elevations[e], len });
+      total += len;
+    }
+    expect(lens.length).toBeGreaterThan(1000);
+    for (const cm of [100, 110, 120, 130, 140]) {
+      const flooded = lens.filter((l) => l.h <= cm).reduce((a, l) => a + l.len, 0) / total * 100;
+      expect(Math.abs(flooded - getFloodedGroundPercentage(cm)), `+${cm} cm`).toBeLessThan(2);
+    }
+    // nessun rumore casuale: due indicizzazioni danno le stesse quote
+    expect(Array.from(indexRawWalk(raw).elevations)).toEqual(Array.from(idx.elevations));
   });
 });

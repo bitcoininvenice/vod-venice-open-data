@@ -366,6 +366,8 @@ export interface DataNeeds {
   airportModal: boolean;
   tideModal: boolean;
   tideSimulated: boolean;
+  /** marea in città alla quota dei percorsi su passerelle: compaiono da sole */
+  tideHigh?: boolean;
 }
 
 /** Quali API servono adesso. */
@@ -391,7 +393,7 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
     pedestrianFlows: l.showPedestrianFlows,
     alilaguna: l.showAlilaguna || ui.alilagunaModal,
     satellites: l.showSatellites,
-    passerelle: l.showPasserelle || ui.tideSimulated || ui.tideModal,
+    passerelle: l.showPasserelle || ui.tideSimulated || ui.tideModal || !!ui.tideHigh,
     marineSensors: l.showOceanStations || l.showMarineSignals || ui.lists,
     veniceAssets: l.showBathingWaters || l.showTrees || l.showEvCharging || l.showWifiHotspots,
     waterways: l.showCanalLimits || l.showBridges || l.showGondolas || l.showDocks,

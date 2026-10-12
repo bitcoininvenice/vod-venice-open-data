@@ -6,6 +6,7 @@ import type { LayerVisibility } from '@/lib/layerState';
 import type { SportFilter } from '@/lib/sports';
 import type { SelectedTrip } from '@/lib/tripView';
 import type { Itinerary } from '@/lib/tripPlanner';
+import type { DynamicTideState } from '@/lib/tideCurve';
 
 export interface HighlightTrip extends SelectedTrip {
   color: string;
@@ -22,16 +23,10 @@ export interface RenderContext
     Pick<MapEngineProps, 'bufferRadiusMeters' | 'selectedCategory' | 'selectedDay' | 'paletteTheme'> {
   /** solo opere pubbliche con posizione */
   cantieri: LocatedCantiere[];
-  /** livello di marea disegnato nella citta (calmierato dal MOSE se attivo) */
+  /** livello di marea in città (0 se non disponibile) */
   tideLevel: number;
-  /** livello di marea in mare aperto prima dell'eventuale difesa MOSE */
-  rawTideLevel?: number;
-  /** se il MOSE è attivo e protegge la laguna quando marea >= 110 cm */
-  isMoseProtected?: boolean;
-  /** fase operativa dinamica del MOSE (sollevamento 30 min, attivato, abbassamento 15 min, abbassato) */
-  mosePhase?: 'ABBASSATO' | 'IN_SOLLEVAMENTO' | 'ATTIVATO' | 'IN_ABBASSAMENTO';
-  /** progresso di sollevamento da 0.0 (fondo) a 1.0 (eretto) */
-  moseLiftProgress?: number;
+  /** stato completo della marea e del MOSE (con origine dei dati) */
+  tide: DynamicTideState;
   sportFilter: SportFilter;
   /** itinerario del planner */
   itinerary: Itinerary | null;

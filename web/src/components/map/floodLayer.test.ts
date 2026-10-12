@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { drawFloodLayer, FLOOD_LABEL_MIN_SCALE, VENICE_FLOOD_ZONES } from './floodLayer';
+import { drawFloodLayer, VENICE_FLOOD_ZONES } from './floodLayer';
 import type { RenderContext } from './renderContext';
 import { CARTA } from '@/lib/solar';
 

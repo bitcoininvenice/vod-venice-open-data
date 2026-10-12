@@ -1,5 +1,6 @@
 import type { RenderContext } from './renderContext';
 import { isStreetsLoaded, paintFloodedStreets } from './streetsLayer';
+import { prefersReducedMotion } from './mapHelpers';
 
 export interface FloodZone {
   id: string;
@@ -321,8 +322,6 @@ export const VENICE_FLOOD_ZONES: FloodZone[] = [
   }
 ];
 
-const reducedMotion = (): boolean =>
-  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
 
 interface FloodedOpenSpace {
   id: string;
@@ -627,7 +626,7 @@ export function drawFloodLayer(rc: RenderContext, activeTideCm: number | null): 
   if (tide === null || tide === undefined || tide < 80) return;
 
   const { ctx, sx, sy, mx, my, camera, zoomed, cw, ch } = rc;
-  const animate = !reducedMotion();
+  const animate = !prefersReducedMotion();
   const time = animate ? Date.now() / 900 : 0;
 
   // 1. Allagamento volumetrico delle calli e ponti emersi

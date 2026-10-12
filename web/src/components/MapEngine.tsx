@@ -16,7 +16,10 @@ import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
 import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
-import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, drawLagoonCurrents, drawMarineSignals, drawOceanStations, drawCanalLimits, drawBridges, drawGondolas, drawDocks, drawMarineWind } from './map/lagoonLayers';
+import { drawMose, drawPasserelle, drawLagoonCurrents } from './map/tideLayers';
+import { drawShipRoutes, drawShips, drawAlilaguna } from './map/vesselLayers';
+import { drawMarineSignals, drawCanalLimits, drawBridges, drawGondolas, drawDocks } from './map/waterwayLayers';
+import { drawOceanStations, drawMarineWind } from './map/marineLayers';
 import { bdapRadius, drawPin, drawParks, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 import { drawFloodLayer } from './map/floodLayer';
@@ -83,6 +86,9 @@ export interface MapEngineProps {
   /** Se true, nasconde la legenda fluttuante del vento in alto perché ospitata nella dashboard in basso */
   hideFloatingWindLegend?: boolean;
 }
+
+/** Livello in città oltre il quale l'allagamento compare anche senza layer marea attivi */
+const AUTO_FLOOD_CM = 90;
 
 export const MapEngine: React.FC<MapEngineProps> = ({
   layers,
@@ -803,14 +809,17 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         timelineSeconds: currentTimeSeconds,
         forecast: data.tideInfo?.forecast,
         liveTideLevel: data.tideLevel,
-        liveObservedAt: data.tideInfo?.observedAt ?? undefined,
+        liveObservedAt: data.tideInfo?.observedAt,
+        moseGates: data.moseGates,
       });
 
-      const rawTide = tideState.seaTideCm;
-      const effectiveTideLevel = tideState.lagoonTideCm;
+      // Livello in città: misura CPSM vicino all'ora attuale, previsione più avanti, simulatore se attivo
+      const effectiveTideLevel = tideState.lagoonTideCm ?? 0;
       const isTideContextActive = simulatedTideLevel != null || layers.showPasserelle || layers.showMose || layers.showOceanStations;
+      // Durante un evento reale l'allagamento compare da solo: da +90 cm (sotto la curva CPSM è quasi nulla)
+      const shouldRenderFlood = effectiveTideLevel >= 80 && (isTideContextActive || effectiveTideLevel >= AUTO_FLOOD_CM);
 
-      if ((zoomed || simulatedTideLevel != null || (isTideContextActive && effectiveTideLevel >= 80) || effectiveTideLevel >= 110) && !isStreetsLoaded()) {
+      if ((zoomed || shouldRenderFlood) && !isStreetsLoaded()) {
         requestStreets(() => setLandHiReady((prev) => !prev));
       }
       drawBaseMap(ctx, { cw, ch, dpr, camera, pal, is3DView, zoomed: zoomed && isLandHiLoaded(), landLo: LAND_LO, zoomFactor });
@@ -847,10 +856,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         paletteTheme,
         sportFilter,
         tideLevel: effectiveTideLevel,
-        rawTideLevel: rawTide,
-        isMoseProtected: tideState.isMoseRaised,
-        mosePhase: tideState.moseStatus,
-        moseLiftProgress: tideState.moseLiftProgress,
+        tide: tideState,
         pin,
         itinerary,
         selectedTrip: selectedTrip && selectedVehicle
@@ -877,13 +883,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
         drawSpatialBuffer(rc);
 
-        // Zone allagate (stima indicativa):
-        // Disegnate solo se l'utente ha attivato un contesto di marea (simulatore, passerelle, MOSE, stazioni marea)
-        // oppure in caso di allerta alta/eccezionale (>= 110 cm). A mappa pulita senza layer marea attivi, non si allaga.
-        const shouldRenderFlood = simulatedTideLevel != null || isTideContextActive || effectiveTideLevel >= 110;
-        if (shouldRenderFlood && (effectiveTideLevel >= 80 || simulatedTideLevel != null || layers.showPasserelle)) {
-          unguarded(() => drawFloodLayer(rc, rc.tideLevel));
-        }
+        // Zone allagate (stima indicativa): con un contesto di marea attivo da +80 cm, sempre da +90 cm
+        if (shouldRenderFlood) unguarded(() => drawFloodLayer(rc, rc.tideLevel));
 
         drawVehicles(rc);
 
@@ -992,7 +993,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     return () => cancelAnimationFrame(animId);
   }, [
     camera, KY, H, W, mx, my, tr, layers, data, cantieri, selectedDay, paletteTheme, bufferRadiusMeters, selectedCategory,
-    sportFilter, simulatedTideLevel, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
+    sportFilter, simulatedTideLevel, isMoseProtected, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
     alilagunaBoats, is3DView, landHiReady, selectedTrip, selectedVehicle, pin, itinerary,
 ]);
 

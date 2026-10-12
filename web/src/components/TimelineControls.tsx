@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import type { DynamicTideState, TideSource } from '@/lib/tideCurve';
 import {
   Play,
   Pause,
@@ -61,6 +62,8 @@ export interface TimelineControlsProps {
   // Contextual Tide Props
   showTide?: boolean;
   tideLevel?: number | null;
+  /** Origine del livello e stato del MOSE (misurato, stimato dalla previsione o simulato) */
+  tideStatus?: Pick<DynamicTideState, 'levelSource' | 'moseStatus' | 'moseBasis' | 'forecastStale'>;
   /** Temperatura dell'aria nel centro storico (mostrata solo all'ora attuale) */
   airTemp?: CityAirTemperature | null;
   // Live sync
@@ -79,6 +82,13 @@ export interface TimelineControlsProps {
   simulator?: TideSimulatorProps | null;
 }
 
+const TIDE_LABEL: Record<TideSource, string> = {
+  measured: 'ui.timeline.tideMeasured',
+  forecast: 'ui.timeline.tideForecastEstimated',
+  simulated: 'ui.timeline.tideSimulated',
+  none: 'ui.timeline.tideForecastEstimated',
+};
+
 export const TimelineControls: React.FC<TimelineControlsProps> = ({
   currentTimeSeconds,
   onTimeChange,
@@ -96,6 +106,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
   peakTime,
   showTide = false,
   tideLevel,
+  tideStatus,
   airTemp,
   showWind = false,
   windField = null,
@@ -279,9 +290,9 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
             type="button"
             onClick={onStartSimulator}
             className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-mono bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/35 transition-all cursor-pointer font-medium"
-            title="Avvia subito il simulatore marea & MOSE a 1 click sulla mappa"
+            title={t('ui.timeline.simulateTitle')}
           >
-            <span>Simula</span>
+            <span>{t('ui.timeline.simulate')}</span>
           </button>
         )}
       </div>
@@ -669,11 +680,21 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
                 · {t('ui.timeline.tideEvolutionHint')}
               </span>
             </span>
-            {tideLevel !== null && tideLevel !== undefined && (
+            {tideLevel !== null && tideLevel !== undefined ? (
               <span className={`font-bold tabular ${tideLevel >= 80 ? 'text-amber-400' : 'text-sky-400'}`}>
-                {t('ui.timeline.tideForecastEstimated', { cm: tideLevel > 0 ? `+${tideLevel}` : `${tideLevel}` })}
+                {t(TIDE_LABEL[tideStatus?.levelSource ?? 'forecast'], { cm: tideLevel > 0 ? `+${tideLevel}` : `${tideLevel}` })}
               </span>
+            ) : (
+              <span className="text-[var(--ink-3)]">{t('ui.timeline.tideNoData')}</span>
             )}
+          </div>
+        )}
+        {isTideActive && tideStatus && (tideStatus.forecastStale || (tideStatus.moseStatus !== 'ABBASSATO' && tideStatus.levelSource !== 'simulated')) && (
+          <div className="text-[10px] font-mono px-1 mb-0.5 text-amber-400">
+            {tideStatus.moseStatus !== 'ABBASSATO' && tideStatus.levelSource !== 'simulated' && (
+              <span className="mr-3">{t(tideStatus.moseBasis === 'measured' ? 'ui.timeline.moseMeasured' : 'ui.timeline.moseForecast')}</span>
+            )}
+            {tideStatus.forecastStale && <span>{t('ui.timeline.tideForecastStale')}</span>}
           </div>
         )}
         <div className="relative w-full py-1">

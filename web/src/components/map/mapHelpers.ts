@@ -3,6 +3,10 @@ import type { FlightItem, SatelliteItem } from '@/lib/types';
 import { dateAtRomeSeconds } from '@/lib/time';
 import { groundTrack, headingAt, satrecFor, stateAt } from '@/lib/orbits';
 
+/** true se l'utente ha chiesto di ridurre le animazioni */
+export const prefersReducedMotion = (): boolean =>
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+
 // Live kinematics for airplanes around Venice (continuous 60 FPS motion synced to timeline)
 export function getLiveFlight(
   f: FlightItem,

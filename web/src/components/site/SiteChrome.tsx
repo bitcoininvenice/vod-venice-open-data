@@ -9,7 +9,7 @@ import { useTranslation } from '@/lib/i18n';
 /** Numero di layer della mappa: unica fonte per intestazioni, piè di pagina e pagina 404. */
 export const LAYER_COUNT = ALL_LAYER_KEYS.length;
 
-export type SitePage = 'features' | 'layers' | 'metrics' | 'sources' | 'mcp' | 'notFound';
+export type SitePage = 'features' | 'layers' | 'metrics' | 'sources' | 'mcp' | 'privacy' | 'notFound';
 
 const NAV_CLS =
   'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-[var(--ink-2)] hover:text-[var(--ink)] bg-[var(--rule)]/60 hover:bg-[var(--rule)] transition-all cursor-pointer border border-[var(--rule)]';
@@ -25,10 +25,11 @@ const BADGE_CLS: Record<SitePage, string> = {
   metrics: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
   sources: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
   mcp: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
+  privacy: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
   notFound: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
 };
 
-const BADGE_TEXT: Record<SitePage, string> = { features: '/features', layers: '/layers', metrics: '/metrics', sources: '/sources', mcp: '/mcp', notFound: '/404' };
+const BADGE_TEXT: Record<SitePage, string> = { features: '/features', layers: '/layers', metrics: '/metrics', sources: '/sources', mcp: '/mcp', privacy: '/privacy', notFound: '/404' };
 
 /** Voci di navigazione comuni alle pagine secondarie. */
 function useNavItems() {
@@ -113,6 +114,9 @@ export function SiteFooter() {
               {it.label}
             </Link>
           ))}
+          <Link href="/privacy" className="hover:text-cyan-400 transition-colors">
+            {t('ui.privacyPage.navLabel')}
+          </Link>
         </div>
       </div>
     </footer>

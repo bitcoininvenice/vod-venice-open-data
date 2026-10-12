@@ -586,8 +586,19 @@ test('llms.txt descrive il sito e il server MCP', async ({ request }) => {
   expect(text).toContain('fiber_coverage');
 });
 
+test('pagina /privacy: nessun cookie, statistiche aggregate e link dal piè di pagina', async ({ page }) => {
+  await page.goto('/features');
+  await page.getByRole('contentinfo').getByRole('link', { name: 'Privacy' }).click();
+  await expect(page).toHaveURL(/\/privacy$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Privacy' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Nessun cookie, nessun account' })).toBeVisible();
+  await expect(page.getByText(/Vercel Web Analytics/)).toBeVisible();
+  // il sito non imposta cookie
+  expect(await page.context().cookies()).toHaveLength(0);
+});
+
 test('SEO: titolo, descrizione e canonico propri per ogni pagina, anteprima social e dati strutturati', async ({ request }) => {
-  const pages = ['/', '/features', '/layers', '/metrics', '/sources', '/mcp'];
+  const pages = ['/', '/features', '/layers', '/metrics', '/sources', '/mcp', '/privacy'];
   const titles = new Set<string>();
   for (const path of pages) {
     const html = await (await request.get(path)).text();
@@ -777,6 +788,19 @@ test.describe('API', () => {
       expect(t.humidityPercent === null || (t.humidityPercent >= 0 && t.humidityPercent <= 100)).toBe(true);
       expect(t.observedAt).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/);
     }
+  });
+
+  test('passerelle: i 72 percorsi del piano con la quota, senza uno stato di montaggio inventato', async ({ request }) => {
+    const body = await (await request.get('/api/passerelle')).json();
+    expect(body.success).toBe(true);
+    expect(body.count).toBe(72);
+    expect(body.data).toHaveLength(72);
+    expect(Math.round(body.totalMeters)).toBe(3715);
+    for (const p of body.data) {
+      expect(p).not.toHaveProperty('isMounted');
+      expect(p.activationThresholdCm).toBeGreaterThanOrEqual(80);
+    }
+    expect(body.source).toContain('indicativi');
   });
 
   test('tide risponde con il contratto atteso anche se la fonte è giù', async ({ request }) => {

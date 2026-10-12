@@ -1,17 +1,10 @@
 import { WALK_URL } from '@/lib/walk-data';
 import type { ColorScheme } from '@/lib/solar';
+import { getFloodedGroundPercentage } from '@/lib/flood';
+import { toGrid } from '@/lib/positionDelay';
 
-/**
- * Coordinate griglia virtuale condivise con MapEngine e baseMap.
- */
-const GRID_FRAME = [12.135, 12.47, 45.205, 45.555] as const;
-const GRID_W = 26194;
-const GRID_H = 38701;
-const KX = GRID_W / (GRID_FRAME[1] - GRID_FRAME[0]);
-const KY = GRID_H / (GRID_FRAME[3] - GRID_FRAME[2]);
-
-const mx = (lon: number): number => (lon - GRID_FRAME[0]) * KX;
-const my = (lat: number): number => (GRID_FRAME[3] - lat) * KY;
+const mx = (lon: number): number => toGrid(lon, 0)[0];
+const my = (lat: number): number => toGrid(0, lat)[1];
 
 export interface RawWalkData {
   origin: [number, number];
@@ -31,6 +24,10 @@ export interface IndexedStreets {
   elevations: Int16Array;
 }
 
+/**
+ * Quote indicative del piano di calpestio (cm sullo ZMPS) in punti noti: ordinano le calli dalla più bassa
+ * alla più alta. Nel centro storico le quote finali vengono poi calibrate sulla curva ufficiale CPSM.
+ */
 const FLOOD_ANCHORS = [
   { lon: 12.3385, lat: 45.4338, h: 78, r: 120 }, // San Marco Piazzetta (punto piu basso)
   { lon: 12.3370, lat: 45.4344, h: 84, r: 180 }, // San Marco Piazza
@@ -109,6 +106,53 @@ export function getFloodedEdgesStats(tideCm: number): { floodedCount: number; to
   return { floodedCount: flooded, totalCalli: calli, percentage };
 }
 
+// Centro storico (con Giudecca), l'area a cui si riferisce la curva CPSM del suolo allagato
+const [CS_X0, CS_Y0] = toGrid(12.300, 45.450);
+const [CS_X1, CS_Y1] = toGrid(12.372, 45.423);
+const isCentroStorico = (x: number, y: number) => x >= CS_X0 && x <= CS_X1 && y >= CS_Y0 && y <= CS_Y1;
+
+/** Quota (cm) a cui la curva CPSM raggiunge la percentuale indicata di suolo allagato. */
+function levelForFloodedPercent(pct: number): number {
+  let lo = 80;
+  let hi = 170;
+  if (pct <= getFloodedGroundPercentage(lo)) return lo;
+  for (let i = 0; i < 30; i++) {
+    const mid = (lo + hi) / 2;
+    if (getFloodedGroundPercentage(mid) < pct) lo = mid;
+    else hi = mid;
+  }
+  return hi;
+}
+
+/**
+ * Nel centro storico sostituisce le quote stimate con quelle che riproducono la curva ufficiale CPSM:
+ * le calli restano nell'ordine dato dagli anchor, e la quota di lunghezza allagata a ciascun livello
+ * coincide con la percentuale di suolo allagato pubblicata (stima indicativa, non un rilievo altimetrico).
+ */
+export function calibrateToOfficialCurve(
+  elevations: Int16Array,
+  rawHeights: Float32Array,
+  inArea: Uint8Array,
+  flags: Uint8Array,
+  edges: number[]
+): void {
+  const ids: number[] = [];
+  let total = 0;
+  for (let e = 0; e < elevations.length; e++) {
+    if (flags[e] !== 0 || !inArea[e]) continue;
+    ids.push(e);
+    total += Math.max(1, edges[4 * e + 2]);
+  }
+  if (ids.length === 0 || total === 0) return;
+  ids.sort((a, b) => rawHeights[a] - rawHeights[b] || a - b);
+  let cum = 0;
+  for (const e of ids) {
+    const len = Math.max(1, edges[4 * e + 2]);
+    elevations[e] = Math.ceil(levelForFloodedPercent(((cum + len / 2) / total) * 100) - 1e-6);
+    cum += len;
+  }
+}
+
 export function indexRawWalk(data: RawWalkData): IndexedStreets {
   const n = data.nodes.length / 2;
   const m = data.edges.length / 4;
@@ -136,6 +180,8 @@ export function indexRawWalk(data: RawWalkData): IndexedStreets {
   const flags = new Uint8Array(m);
   const boxes = new Float32Array(m * 4);
   const elevations = new Int16Array(m);
+  const rawHeights = new Float32Array(m);
+  const inCentroStorico = new Uint8Array(m);
 
   let ptr = 0;
   for (let e = 0; e < m; e++) {
@@ -203,13 +249,14 @@ export function indexRawWalk(data: RawWalkData): IndexedStreets {
         }
       }
 
-      // Micro-variazioni del piano stradale
-      const hash = Math.sin(ex * 12.9898 + ey * 78.233) * 43758.5453;
-      const jitter = ((hash - Math.floor(hash)) - 0.5) * 4;
-      elevations[e] = Math.round(weightedH / totalW + jitter);
+      elevations[e] = Math.round(weightedH / totalW);
+      rawHeights[e] = weightedH / totalW;
+      inCentroStorico[e] = isCentroStorico(ex, ey) ? 1 : 0;
     }
   }
   offsets[m] = ptr;
+
+  calibrateToOfficialCurve(elevations, rawHeights, inCentroStorico, flags, data.edges);
 
   return {
     edgeCount: m,

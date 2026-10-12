@@ -1,5 +1,6 @@
 import type { WindField } from '@/lib/types';
 import type { RenderContext } from './renderContext';
+import { prefersReducedMotion } from './mapHelpers';
 
 /**
  * Vento animato in stile Windy: un campo colorato per intensità e particelle che seguono le linee
@@ -71,8 +72,6 @@ const state: {
   lastFrame: number;
 } = { field: null, particles: [], colorCanvas: null, lastFrame: 0 };
 
-const prefersReducedMotion = () =>
-  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
 
 function buildColorCanvas(field: WindField): HTMLCanvasElement {
   const c = document.createElement('canvas');

@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { fetchPlatformMetrics } from '@/lib/db';
 import { peekShipsCount } from '@/server/sources/aisstream';
 import { SATELLITES_DATA } from '@/lib/satellitesData';
-import { PASSERELLE_DATA } from '@/lib/passerelleData';
+import { PASSERELLE_ROUTES, PASSERELLE_TOTAL_METERS } from '@/lib/passerelleData';
+import { expectedPasserelle } from '@/lib/passerelle';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { romeSecondsOfDay } from '@/lib/time';
 import { fetchUpstream } from '@/server/upstream';
@@ -26,15 +27,17 @@ export async function GET() {
     tempAcqua: waterTemp.ok ? waterTemp.data : undefined,
   });
 
+  const tideLevelCm = tide.ok ? tide.data.find((s) => s.id === REFERENCE_STATION_ID)?.levelCm ?? null : null;
   const metrics = await fetchPlatformMetrics({
     ...gtfsNetworkStats(),
     alilagunaBoatsNow: getScheduledAlilagunaBoats(Math.floor(romeSecondsOfDay())).length,
     shipsCount: peekShipsCount(),
-    tideLevelCm: tide.ok ? tide.data.find((s) => s.id === REFERENCE_STATION_ID)?.levelCm ?? null : null,
+    tideLevelCm,
     activeFlightsCount: flights.ok ? flights.data.length : null,
     satellitesCount: SATELLITES_DATA.length,
-    passerelleTotalMeters: PASSERELLE_DATA.reduce((acc, p) => acc + p.lengthMeters, 0),
-    passerelleMountedCount: PASSERELLE_DATA.filter((p) => p.isMounted).length,
+    passerelleTotalMeters: PASSERELLE_TOTAL_METERS,
+    // percorsi previsti dal piano con la marea misurata adesso
+    passerelleMountedCount: expectedPasserelle(PASSERELLE_ROUTES, tideLevelCm).length,
     cpsmStationsCount: tide.ok ? tide.data.length : null,
     cnrWaveHeightMeters: platform.waveHeightMeters,
     cnrWaterTempC: platform.waterTempC,

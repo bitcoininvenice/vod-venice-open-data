@@ -1,26 +1,34 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import type { TideForecastExtreme } from '@/lib/contracts/tide';
+import React, { useEffect, useState, useMemo } from 'react';
+import type { TideForecast } from '@/lib/contracts/tide';
 import { formatSignedCm, romeLocalToDate } from '@/lib/time';
 import { getFloodedGroundPercentage } from '@/lib/flood';
 import { useTranslation } from '@/lib/i18n';
 import { TrendingUp, TrendingDown, Waves, Play } from 'lucide-react';
 
 interface TideForecastChartProps {
-  extremes: TideForecastExtreme[];
+  forecast: TideForecast;
   liveTideLevel?: number | null;
   onSimulateLevel?: (cm: number) => void;
 }
 
 export const TideForecastChart: React.FC<TideForecastChartProps> = ({
-  extremes,
+  forecast,
   liveTideLevel,
   onSimulateLevel,
 }) => {
   const { t, language } = useTranslation();
+  const extremes = forecast.extremes;
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  // Linea "adesso", aggiornata ogni minuto
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  const locale = language === 'it' ? 'it-IT' : 'en-GB';
 
   // 1. Ordina e calcola timestamp reali di ciascun estremale
   const parsed = useMemo(() => {
@@ -108,25 +116,13 @@ export const TideForecastChart: React.FC<TideForecastChartProps> = ({
     yTicks.push(v);
   }
 
-  // 5. Ripartizione per giornate (mezzanotti 00:00)
+  // 5. Mezzanotti in ora di Roma (le date degli estremi sono già locali di Venezia)
+  const dayFormat = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', timeZone: 'Europe/Rome' });
   const dayDividers: { time: number; x: number; label: string }[] = [];
-  const startDay = new Date(parsed[0].date);
-  startDay.setHours(0, 0, 0, 0);
-
-  const endDay = new Date(parsed[parsed.length - 1].date);
-  endDay.setHours(24, 0, 0, 0);
-
-  const curDay = new Date(startDay);
-  while (curDay.getTime() <= endDay.getTime()) {
-    const tMs = curDay.getTime();
-    if (tMs >= minTime && tMs <= maxTime) {
-      const dayName = new Intl.DateTimeFormat(language === 'it' ? 'it-IT' : 'en-US', {
-        day: 'numeric',
-        month: 'long',
-      }).format(curDay);
-      dayDividers.push({ time: tMs, x: timeToX(tMs), label: dayName });
-    }
-    curDay.setDate(curDay.getDate() + 1);
+  const days = Array.from(new Set(parsed.map((p) => p.at.slice(0, 10))));
+  for (const day of days) {
+    const tMs = romeLocalToDate(`${day} 00:00:00`).getTime();
+    if (tMs > minTime && tMs <= maxTime) dayDividers.push({ time: tMs, x: timeToX(tMs), label: dayFormat.format(tMs) });
   }
 
   // Etichette dei giorni centrati tra i divisori
@@ -138,11 +134,7 @@ export const TideForecastChart: React.FC<TideForecastChartProps> = ({
     const t1 = uniqueBoundaries[i];
     const t2 = uniqueBoundaries[i + 1];
     const midTime = (t1 + t2) / 2;
-    const midDate = new Date(midTime);
-    const dayLabel = new Intl.DateTimeFormat(language === 'it' ? 'it-IT' : 'en-US', {
-      day: 'numeric',
-      month: 'long',
-    }).format(midDate);
+    const dayLabel = dayFormat.format(midTime);
 
     const x1 = timeToX(t1);
     const x2 = timeToX(t2);
@@ -152,7 +144,6 @@ export const TideForecastChart: React.FC<TideForecastChartProps> = ({
   }
 
   // Istante attuale (adesso)
-  const nowMs = Date.now();
   const hasNow = nowMs >= minTime && nowMs <= maxTime;
   const nowX = hasNow ? timeToX(nowMs) : null;
 
@@ -167,14 +158,14 @@ export const TideForecastChart: React.FC<TideForecastChartProps> = ({
         <div className="flex items-center gap-2">
           <Waves className="w-4 h-4 text-rose-400" />
           <span className="font-bold text-[var(--ink)]">
-            {language === 'it' ? 'Curva di Marea Prevista (CPSM)' : 'Official Predicted Tide Curve (CPSM)'}
+            {t('ui.tideChart.title')}
           </span>
         </div>
         <div className="flex items-center gap-3 text-[11px] text-[var(--ink-3)]">
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block" />
             <strong className="text-[var(--ink-2)]">
-              {language === 'it' ? 'Marea prevista' : 'Predicted tide'}
+              {t('ui.tideChart.predicted')}
             </strong>
           </span>
           <span className="flex items-center gap-1.5">
@@ -189,6 +180,10 @@ export const TideForecastChart: React.FC<TideForecastChartProps> = ({
           )}
         </div>
       </div>
+
+      {forecast.stale && (
+        <p className="text-[11px] font-mono text-amber-400">{t('ui.tideChart.stale', { at: forecast.issuedAt.slice(0, 16) })}</p>
+      )}
 
       {/* SVG Container Interattivo */}
       <div className="relative w-full aspect-[800/310] max-h-[340px] select-none">
@@ -278,7 +273,7 @@ export const TideForecastChart: React.FC<TideForecastChartProps> = ({
             fill="var(--ink-3)"
             transform={`rotate(-90 12 ${svgHeight / 2})`}
           >
-            {language === 'it' ? 'Misura in centimetri' : 'Height in centimetres'}
+            {t('ui.tideChart.axis')}
           </text>
 
           {/* Separatori e Intestazioni Giorni (in alto) */}
@@ -330,7 +325,7 @@ export const TideForecastChart: React.FC<TideForecastChartProps> = ({
                 fontWeight="bold"
                 fill="#38bdf8"
               >
-                {language === 'it' ? 'Adesso' : 'Now'}
+                {t('ui.tideChart.now')}
               </text>
               {liveTideLevel !== null && liveTideLevel !== undefined && (
                 <circle
@@ -419,19 +414,20 @@ export const TideForecastChart: React.FC<TideForecastChartProps> = ({
             }}
           >
             <div className="font-bold text-xs text-[var(--ink)]">
-              {new Intl.DateTimeFormat(language === 'it' ? 'it-IT' : 'en-US', {
+              {new Intl.DateTimeFormat(locale, {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit',
+                timeZone: 'Europe/Rome',
               }).format(activePoint.date)}
             </div>
 
             <div className="flex items-center gap-1.5 pt-0.5">
               <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
               <span>
-                {language === 'it' ? 'Marea prevista:' : 'Forecast tide:'}{' '}
+                {t('ui.tideChart.predicted')}:{' '}
                 <strong
                   className={`text-sm ${
                     activePoint.levelCm >= 110
@@ -463,7 +459,7 @@ export const TideForecastChart: React.FC<TideForecastChartProps> = ({
 
               {getFloodedGroundPercentage(activePoint.levelCm) > 0 && (
                 <span className="text-amber-400 font-semibold">
-                  {getFloodedGroundPercentage(activePoint.levelCm)}% allagato
+                  {t('ui.tideChart.flooded', { pct: getFloodedGroundPercentage(activePoint.levelCm) })}
                 </span>
               )}
             </div>
@@ -471,7 +467,7 @@ export const TideForecastChart: React.FC<TideForecastChartProps> = ({
             {onSimulateLevel && (
               <div className="text-[9px] text-cyan-400 pt-0.5 font-bold flex items-center gap-1">
                 <Play className="w-2.5 h-2.5" />
-                <span>{language === 'it' ? 'Clicca per simulare' : 'Click to simulate'}</span>
+                <span>{t('ui.tideChart.clickToSimulate')}</span>
               </div>
             )}
           </div>
@@ -480,16 +476,8 @@ export const TideForecastChart: React.FC<TideForecastChartProps> = ({
 
       {/* Didascalia ufficiale istituzionale ZMPS */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] font-mono text-[var(--ink-3)] pt-1 border-t border-[var(--rule)]/40 gap-1">
-        <span>
-          {language === 'it'
-            ? 'Valori riferiti allo zero mareografico di Punta della Salute (ZMPS).'
-            : 'Heights referred to the historic Punta della Salute datum (ZMPS).'}
-        </span>
-        <span className="text-[var(--ink-2)] font-semibold">
-          {language === 'it'
-            ? 'Clicca sui punti per ottenere maggiori informazioni o simularli.'
-            : 'Click on points to view details or simulate them.'}
-        </span>
+        <span>{t('ui.tideChart.datum')}</span>
+        <span className="text-[var(--ink-2)] font-semibold">{t('ui.tideChart.clickHint')}</span>
       </div>
     </div>
   );

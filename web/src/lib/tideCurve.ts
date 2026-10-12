@@ -1,48 +1,186 @@
 import type { TideForecast, TideForecastExtreme } from '@/lib/contracts/tide';
+import type { MoseGateItem } from '@/lib/types';
 import { dateAtRomeSeconds, romeLocalToDate } from '@/lib/time';
 
 export type MoseStatus = 'ABBASSATO' | 'IN_SOLLEVAMENTO' | 'ATTIVATO' | 'IN_ABBASSAMENTO';
 
+/** Origine del livello in città: misura CPSM, previsione CPSM, simulatore o nessun dato. */
+export type TideSource = 'measured' | 'forecast' | 'simulated' | 'none';
+
+/**
+ * Su cosa si basa lo stato del MOSE (il Consorzio non pubblica lo stato delle paratie come open data):
+ * - measured: dedotto dalle misure CPSM lato mare / lato laguna alle bocche di porto
+ * - forecast: chiusura probabile secondo la previsione CPSM (picco >= 110 cm)
+ * - simulated: scelto nel simulatore
+ */
+export type MoseBasis = 'measured' | 'forecast' | 'simulated' | 'none';
+
 export interface DynamicTideState {
-  /** Livello di marea in mare aperto (Adriatico), privo di sbarramenti */
-  seaTideCm: number;
-  /** Livello di marea all'interno della laguna (calmierato dal MOSE quando attivo) */
-  lagoonTideCm: number;
-  /** Stato operativo della schiera di paratie del MOSE */
+  /** Livello atteso senza MOSE (previsione CPSM, o misura lato mare). null se non disponibile. */
+  seaTideCm: number | null;
+  /** Livello in città: quello che allaga calli e attiva le passerelle. null se non disponibile. */
+  lagoonTideCm: number | null;
+  levelSource: TideSource;
   moseStatus: MoseStatus;
-  /** Frazione di elevazione delle paratie da 0.0 (abbassate a fondo) a 1.0 (erette a 100%) */
+  /** Elevazione delle paratie da 0 (sul fondale) a 1 (erette) */
   moseLiftProgress: number;
-  /** Tendenza della marea marina */
+  moseBasis: MoseBasis;
   trend: 'IN_AUMENTO' | 'IN_CALO' | 'STAZIONARIO';
-  /** True se il MOSE è attualmente in sollevamento o completamente alzato */
+  /** True se il MOSE è in sollevamento o alzato */
   isMoseRaised: boolean;
-  /** True se il livello interno supera la soglia di allagamento di Piazza San Marco (+80 cm) */
+  /** True se il livello in città supera +80 cm (prime zone allagate) */
   isFlooded: boolean;
-  /** Estremale successivo di riferimento */
+  /** true se la previsione CPSM c'è ma è troppo vecchia per essere usata */
+  forecastStale: boolean;
   nextExtreme: TideForecastExtreme | null;
 }
 
 export interface ResolveTideOptions {
   simulatedTideLevel?: number | null;
+  /** Solo per il simulatore: se false simula l'evento senza MOSE */
   isMoseProtected?: boolean;
   timelineSeconds?: number;
   forecast?: TideForecast | null;
+  /** Misura di Punta della Salute (già comprensiva dell'effetto del MOSE) */
   liveTideLevel?: number | null;
   liveObservedAt?: string | null;
+  /** Schiere MOSE con le misure lato mare / lato laguna */
+  moseGates?: MoseGateItem[];
   referenceDate?: Date;
 }
 
-const LIFT_DURATION_MS = 30 * 60 * 1000; // 30 minuti di sollevamento
-const LOWER_DURATION_MS = 15 * 60 * 1000; // 15 minuti di abbassamento
-const ANTICIPATION_MS = 45 * 60 * 1000; // Procedura avviata 45 min prima del picco
-const MOSE_SIMULATOR_PROTECTED_LAGUNA_CM = 70; // Nel simulatore utente: protezione integrale (0% allagamento, San Marco e calli asciutte)
-const MOSE_PROTECTED_LAGUNA_MAX_CM = 85; // Nei dati reali/previsioni: quota lagunare reale di equilibrio con barriere alzate
-const MOSE_THRESHOLD_CM = 110; // Soglia ufficiale di attivazione MOSE
+const MIN = 60 * 1000;
+const LIFT_DURATION_MS = 30 * MIN;
+const LOWER_DURATION_MS = 15 * MIN;
+const ANTICIPATION_MS = 45 * MIN; // manovra avviata circa 45 min prima del picco
+const CLOSURE_AFTER_PEAK_MS = 75 * MIN;
+/** Una misura vale come "attuale" entro questa finestra */
+const LIVE_WINDOW_MS = 20 * MIN;
+/** Simulatore: protezione integrale (città asciutta) */
+const MOSE_SIMULATOR_PROTECTED_LAGUNA_CM = 70;
+/** Stima del livello mantenuto in laguna a paratie alzate */
+const MOSE_PROTECTED_LAGUNA_MAX_CM = 85;
+/** Soglia di attivazione del MOSE (previsione >= 110 cm) */
+export const MOSE_THRESHOLD_CM = 110;
+/** Chiusura rilevata: mare oltre questa quota... */
+const CLOSURE_SEA_MIN_CM = 100;
+/** ...e laguna più bassa di almeno tanti cm (lo sfasamento ordinario della marea resta sotto i 25 cm) */
+const CLOSURE_GAP_CM = 30;
+
+export interface CurvePoint { time: number; levelCm: number; type: 'max' | 'min' | 'live'; extreme?: TideForecastExtreme }
+
+// La mappa calcola lo stato a ogni frame: gli orari della previsione si convertono una volta sola
+const parsedForecasts = new WeakMap<TideForecast, CurvePoint[]>();
+/** Estremi della previsione CPSM ordinati, con orari già convertiti (vuoto se assente o scaduta). */
+export function parseForecastExtremes(forecast: TideForecast | null | undefined): CurvePoint[] {
+  if (!forecast || forecast.stale) return [];
+  let points = parsedForecasts.get(forecast);
+  if (!points) {
+    points = forecast.extremes
+      .map((e) => ({ time: romeLocalToDate(e.at).getTime(), levelCm: e.levelCm, type: e.type, extreme: e }))
+      .sort((a, b) => a.time - b.time);
+    parsedForecasts.set(forecast, points);
+  }
+  return points;
+}
+let lastObserved: { local: string; time: number } | null = null;
+function observedTime(local: string): number {
+  if (lastObserved?.local !== local) lastObserved = { local, time: romeLocalToDate(local).getTime() };
+  return lastObserved.time;
+}
+
+/** Una coppia di stazioni per bocca di porto (Lido Nord e Sud condividono le stesse). */
+function inletReadings(gates: MoseGateItem[]): { sea: number; lagoon: number }[] {
+  const seen = new Set<string>();
+  const out: { sea: number; lagoon: number }[] = [];
+  for (const g of gates) {
+    if (g.tideSeaCm == null || g.tideLagoonCm == null) continue;
+    const key = `${g.tideSeaCm}|${g.tideLagoonCm}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ sea: g.tideSeaCm, lagoon: g.tideLagoonCm });
+  }
+  return out;
+}
+
+/** true/false se le misure alle bocche indicano paratie chiuse/aperte; null se mancano le misure. */
+export function measuredMoseClosure(gates: MoseGateItem[] | undefined): boolean | null {
+  const readings = inletReadings(gates ?? []);
+  if (readings.length < 2) return null;
+  const closed = readings.filter((r) => r.sea >= CLOSURE_SEA_MIN_CM && r.sea - r.lagoon >= CLOSURE_GAP_CM).length;
+  return closed >= 2;
+}
+
+/** Interpolazione armonica (semi-coseno) tra punti consecutivi; null fuori dall'intervallo coperto. */
+function interpolate(points: CurvePoint[], t: number): { levelCm: number; trend: DynamicTideState['trend'] } | null {
+  if (points.length === 0) return null;
+  if (points.length === 1) {
+    return Math.abs(t - points[0].time) <= LIVE_WINDOW_MS ? { levelCm: points[0].levelCm, trend: 'STAZIONARIO' } : null;
+  }
+  if (t < points[0].time || t > points[points.length - 1].time) return null;
+  let i = 0;
+  while (i < points.length - 2 && points[i + 1].time <= t) i++;
+  const a = points[i];
+  const b = points[i + 1];
+  const span = b.time - a.time;
+  const alpha = span > 0 ? Math.max(0, Math.min(1, (t - a.time) / span)) : 0;
+  const mid = (a.levelCm + b.levelCm) / 2;
+  const half = (a.levelCm - b.levelCm) / 2;
+  return {
+    levelCm: Math.round(mid + half * Math.cos(Math.PI * alpha)),
+    trend: b.levelCm > a.levelCm ? 'IN_AUMENTO' : b.levelCm < a.levelCm ? 'IN_CALO' : 'STAZIONARIO',
+  };
+}
+
+/** Fase del MOSE dedotta dai picchi previsti >= 110 cm. */
+function forecastMosePhase(extremes: CurvePoint[], t: number): { status: MoseStatus; progress: number } {
+  for (const peak of extremes) {
+    if (peak.type !== 'max' || peak.levelCm < MOSE_THRESHOLD_CM) continue;
+    const start = peak.time - ANTICIPATION_MS;
+    const raised = start + LIFT_DURATION_MS;
+    const lowerStart = peak.time + CLOSURE_AFTER_PEAK_MS;
+    const lowered = lowerStart + LOWER_DURATION_MS;
+    if (t >= start && t < raised) return { status: 'IN_SOLLEVAMENTO', progress: (t - start) / LIFT_DURATION_MS };
+    if (t >= raised && t < lowerStart) return { status: 'ATTIVATO', progress: 1 };
+    if (t >= lowerStart && t < lowered) return { status: 'IN_ABBASSAMENTO', progress: 1 - (t - lowerStart) / LOWER_DURATION_MS };
+  }
+  return { status: 'ABBASSATO', progress: 0 };
+}
+
+/** Livello in laguna stimato dal livello senza MOSE e dalla fase delle paratie. */
+function protectedLevel(seaCm: number, status: MoseStatus, progress: number): number {
+  const excess = Math.max(0, seaCm - MOSE_PROTECTED_LAGUNA_MAX_CM);
+  if (status === 'ATTIVATO') return Math.min(MOSE_PROTECTED_LAGUNA_MAX_CM, seaCm);
+  if (status === 'IN_SOLLEVAMENTO' || status === 'IN_ABBASSAMENTO') return Math.round(seaCm - progress * excess);
+  return seaCm;
+}
+
+function simulatedState(level: number, isMoseProtected: boolean): DynamicTideState {
+  const seaTideCm = Math.round(level);
+  const moseActive = isMoseProtected && seaTideCm >= MOSE_THRESHOLD_CM;
+  const lagoonTideCm = moseActive ? MOSE_SIMULATOR_PROTECTED_LAGUNA_CM : seaTideCm;
+  return {
+    seaTideCm,
+    lagoonTideCm,
+    levelSource: 'simulated',
+    moseStatus: moseActive ? 'ATTIVATO' : 'ABBASSATO',
+    moseLiftProgress: moseActive ? 1 : 0,
+    moseBasis: 'simulated',
+    trend: 'STAZIONARIO',
+    isMoseRaised: moseActive,
+    isFlooded: lagoonTideCm >= 80,
+    forecastStale: false,
+    nextExtreme: null,
+  };
+}
 
 /**
- * Calcola l'andamento reale o simulato della marea e lo stato operativo del MOSE
- * con interpolazione armonica sinusoidale tra gli estremi CPSM e dinamica temporale
- * delle manovre di sollevamento (30 min) e abbassamento (15 min).
+ * Stato della marea in città e del MOSE, reale o simulato.
+ *
+ * Modalità reale: la misura di Punta della Salute è già il livello in laguna (MOSE compreso), quindi
+ * vicino all'ora attuale si usa quella; più avanti nel tempo la previsione CPSM (che è il livello atteso
+ * senza MOSE), ridotta dalla stima della chiusura. Lo stato delle paratie viene dalle misure alle bocche
+ * quando disponibili, altrimenti è una stima dalla previsione (moseBasis lo dichiara).
  */
 export function resolveTideState(options: ResolveTideOptions): DynamicTideState {
   const {
@@ -51,169 +189,69 @@ export function resolveTideState(options: ResolveTideOptions): DynamicTideState 
     timelineSeconds,
     forecast,
     liveTideLevel,
+    liveObservedAt,
+    moseGates,
     referenceDate = new Date(),
   } = options;
 
-  // 1. MODALITA SIMULATORE MANUALE: L'utente imposta arbitrariamente la quota
-  if (simulatedTideLevel !== null && simulatedTideLevel !== undefined) {
-    const seaTideCm = Math.round(simulatedTideLevel);
-    const moseActive = isMoseProtected && seaTideCm >= MOSE_THRESHOLD_CM;
-    const lagoonTideCm = moseActive ? MOSE_SIMULATOR_PROTECTED_LAGUNA_CM : seaTideCm;
-    const moseStatus: MoseStatus = moseActive ? 'ATTIVATO' : 'ABBASSATO';
+  if (simulatedTideLevel != null) return simulatedState(simulatedTideLevel, isMoseProtected);
 
-    return {
-      seaTideCm,
-      lagoonTideCm,
-      moseStatus,
-      moseLiftProgress: moseActive ? 1.0 : 0.0,
-      trend: 'STAZIONARIO',
-      isMoseRaised: moseActive,
-      isFlooded: lagoonTideCm >= 80,
-      nextExtreme: null,
-    };
+  const target = (timelineSeconds !== undefined ? dateAtRomeSeconds(timelineSeconds, referenceDate) : referenceDate).getTime();
+  const now = referenceDate.getTime();
+  const forecastStale = !!forecast?.stale;
+  const extremes = parseForecastExtremes(forecast);
+
+  const liveTime = liveObservedAt ? observedTime(liveObservedAt) : now;
+  const live = liveTideLevel != null && Number.isFinite(liveTime) ? { time: liveTime, levelCm: liveTideLevel } : null;
+  const nearLive = !!live && Math.abs(target - live.time) <= LIVE_WINDOW_MS;
+
+  // Stato del MOSE: misure alle bocche (solo vicino all'ora attuale), altrimenti previsione
+  const measuredClosed = Math.abs(target - now) <= LIVE_WINDOW_MS ? measuredMoseClosure(moseGates) : null;
+  const predicted = forecastMosePhase(extremes, target);
+  let mose: { status: MoseStatus; progress: number; basis: MoseBasis };
+  if (measuredClosed) mose = { status: 'ATTIVATO', progress: 1, basis: 'measured' };
+  else if (predicted.status !== 'ABBASSATO') mose = { ...predicted, basis: 'forecast' };
+  else mose = { status: 'ABBASSATO', progress: 0, basis: measuredClosed === false ? 'measured' : extremes.length > 0 ? 'forecast' : 'none' };
+  mose.progress = Math.max(0, Math.min(1, mose.progress));
+
+  // Curva senza MOSE: estremi previsti, ancorata alla misura quando la misura non è "dietro" le paratie
+  const anchorLive = live && !measuredClosed && predicted.status === 'ABBASSATO' ? live : null;
+  const curve: CurvePoint[] = anchorLive
+    ? [...extremes.filter((e) => Math.abs(e.time - anchorLive.time) > LIVE_WINDOW_MS), { ...anchorLive, type: 'live' as const }]
+        .sort((a, b) => a.time - b.time)
+    : extremes;
+  const sea = interpolate(curve, target);
+
+  // Livello in città: misura vicino all'ora attuale, altrimenti previsione ridotta dalla chiusura stimata
+  let lagoonTideCm: number | null = null;
+  let levelSource: TideSource = 'none';
+  if (nearLive && live) {
+    lagoonTideCm = Math.round(live.levelCm);
+    levelSource = 'measured';
+  } else if (sea) {
+    lagoonTideCm = protectedLevel(sea.levelCm, mose.status, mose.progress);
+    levelSource = 'forecast';
   }
 
-  // 2. MODALITA REALE / TIMELINE DINAMICA: Calcolata da orario e previsioni CPSM
-  const targetDate = timelineSeconds !== undefined
-    ? dateAtRomeSeconds(timelineSeconds, referenceDate)
-    : referenceDate;
-  const targetTime = targetDate.getTime();
+  const measuredSea = inletReadings(moseGates ?? []).map((r) => r.sea);
+  const seaTideCm = sea?.levelCm
+    ?? (measuredClosed && measuredSea.length ? Math.round(measuredSea.reduce((a, b) => a + b, 0) / measuredSea.length) : null)
+    ?? lagoonTideCm;
 
-  const extremes = forecast?.extremes ?? [];
-  if (extremes.length === 0) {
-    // Nessuna previsione disponibile: fallback sulla misura live di Punta della Salute
-    const seaTideCm = Math.round(liveTideLevel ?? 50);
-    const moseActive = isMoseProtected && seaTideCm >= MOSE_THRESHOLD_CM;
-    const lagoonTideCm = moseActive ? MOSE_PROTECTED_LAGUNA_MAX_CM : seaTideCm;
-
-    return {
-      seaTideCm,
-      lagoonTideCm,
-      moseStatus: moseActive ? 'ATTIVATO' : 'ABBASSATO',
-      moseLiftProgress: moseActive ? 1.0 : 0.0,
-      trend: 'STAZIONARIO',
-      isMoseRaised: moseActive,
-      isFlooded: lagoonTideCm >= 80,
-      nextExtreme: null,
-    };
-  }
-
-  // Mappatura temporale degli estremi ordinati
-  const parsedExtremes = extremes
-    .map((e) => ({
-      at: e.at,
-      type: e.type,
-      levelCm: e.levelCm,
-      time: romeLocalToDate(e.at).getTime(),
-    }))
-    .sort((a, b) => a.time - b.time);
-
-  // Trova il prossimo estremale dopo targetTime
-  const nextExt = parsedExtremes.find((e) => e.time > targetTime) ?? null;
-
-  // Calcolo quota mare tramite interpolazione sinusoidale (armonica di marea)
-  let seaTideCm: number;
-  let trend: 'IN_AUMENTO' | 'IN_CALO' | 'STAZIONARIO' = 'STAZIONARIO';
-
-  if (targetTime <= parsedExtremes[0].time) {
-    // Prima del primo estremale: usa il primo estremale o il dato live se coerente
-    seaTideCm = parsedExtremes[0].levelCm;
-    trend = parsedExtremes[0].type === 'max' ? 'IN_AUMENTO' : 'IN_CALO';
-  } else if (targetTime >= parsedExtremes[parsedExtremes.length - 1].time) {
-    // Oltre l'ultimo estremale: usa l'ultimo valore disponibile
-    seaTideCm = parsedExtremes[parsedExtremes.length - 1].levelCm;
-    trend = 'STAZIONARIO';
-  } else {
-    // Tra due estremali consecutivi i e i+1
-    let idx = 0;
-    while (idx < parsedExtremes.length - 1 && parsedExtremes[idx + 1].time <= targetTime) {
-      idx++;
-    }
-
-    const e1 = parsedExtremes[idx];
-    const e2 = parsedExtremes[idx + 1];
-    const duration = e2.time - e1.time;
-
-    if (duration <= 0) {
-      seaTideCm = e1.levelCm;
-    } else {
-      const alpha = Math.max(0, Math.min(1, (targetTime - e1.time) / duration));
-      // Curva di marea: h(alpha) = mid + amp * cos(pi * alpha) se e1 e' un picco
-      // o h(alpha) = mid - amp * cos(pi * alpha) se e1 e' un minimo
-      const mid = (e1.levelCm + e2.levelCm) / 2;
-      const halfSpan = (e1.levelCm - e2.levelCm) / 2;
-      const interpolated = mid + halfSpan * Math.cos(Math.PI * alpha);
-      seaTideCm = Math.round(interpolated);
-      trend = e2.levelCm >= e1.levelCm ? 'IN_AUMENTO' : 'IN_CALO';
-    }
-  }
-
-  // Se siamo vicini a now e abbiamo una lettura live reale, effettua una correzione morbida
-  const diffFromNowMs = Math.abs(targetTime - referenceDate.getTime());
-  if (liveTideLevel !== null && liveTideLevel !== undefined && diffFromNowMs < 20 * 60 * 1000) {
-    const weight = 1 - diffFromNowMs / (20 * 60 * 1000);
-    seaTideCm = Math.round((1 - weight) * seaTideCm + weight * liveTideLevel);
-  }
-
-  // 3. DINAMICA OPERATIVA DEL MOSE
-  // Cerca se c'e un picco di marea >= 110 cm che richiede la chiusura
-  let moseStatus: MoseStatus = 'ABBASSATO';
-  let moseLiftProgress = 0.0;
-
-  if (isMoseProtected) {
-    // Trova tutti i picchi >= MOSE_THRESHOLD_CM
-    const highPeaks = parsedExtremes.filter((e) => e.type === 'max' && e.levelCm >= MOSE_THRESHOLD_CM);
-
-    for (const peak of highPeaks) {
-      const peakTime = peak.time;
-      const startTime = peakTime - ANTICIPATION_MS; // -45 min: inizio manovra
-      const raisedTime = startTime + LIFT_DURATION_MS; // -15 min: barriera completamente eretta
-
-      // Durata dell'evento sopra 105 cm dopo il picco (stima da semionda ~1.5 - 2 ore)
-      const lowerStartTime = peakTime + 75 * 60 * 1000;
-      const fullyLoweredTime = lowerStartTime + LOWER_DURATION_MS;
-
-      if (targetTime >= startTime && targetTime < raisedTime) {
-        // FASE 1: IN SOLLEVAMENTO (30 minuti di alzata con aria compressa)
-        moseStatus = 'IN_SOLLEVAMENTO';
-        moseLiftProgress = Math.max(0, Math.min(1, (targetTime - startTime) / LIFT_DURATION_MS));
-        break;
-      } else if (targetTime >= raisedTime && targetTime < lowerStartTime) {
-        // FASE 2: ATTIVATO (barriera ermetica sollevata al 100%)
-        moseStatus = 'ATTIVATO';
-        moseLiftProgress = 1.0;
-        break;
-      } else if (targetTime >= lowerStartTime && targetTime < fullyLoweredTime) {
-        // FASE 3: IN ABBASSAMENTO (15 minuti di allagamento per gravita)
-        moseStatus = 'IN_ABBASSAMENTO';
-        moseLiftProgress = Math.max(0, Math.min(1, 1 - (targetTime - lowerStartTime) / LOWER_DURATION_MS));
-        break;
-      }
-    }
-  }
-
-  // 4. CALCOLO LIVELLO LAGUNARE PROTETTO
-  let lagoonTideCm = seaTideCm;
-  if (moseStatus === 'ATTIVATO') {
-    lagoonTideCm = Math.min(MOSE_PROTECTED_LAGUNA_MAX_CM, seaTideCm);
-  } else if (moseStatus === 'IN_SOLLEVAMENTO') {
-    const choke = moseLiftProgress;
-    lagoonTideCm = Math.round(seaTideCm - choke * Math.max(0, seaTideCm - MOSE_PROTECTED_LAGUNA_MAX_CM));
-  } else if (moseStatus === 'IN_ABBASSAMENTO') {
-    const choke = moseLiftProgress;
-    lagoonTideCm = Math.round(MOSE_PROTECTED_LAGUNA_MAX_CM + (1 - choke) * Math.max(0, seaTideCm - MOSE_PROTECTED_LAGUNA_MAX_CM));
-  }
-
-  const isMoseRaised = moseStatus === 'ATTIVATO' || moseStatus === 'IN_SOLLEVAMENTO';
+  const next = extremes.find((e) => e.time > target) ?? null;
+  const nextExtreme = next?.extreme ?? null;
 
   return {
     seaTideCm,
     lagoonTideCm,
-    moseStatus,
-    moseLiftProgress,
-    trend,
-    isMoseRaised,
-    isFlooded: lagoonTideCm >= 80,
-    nextExtreme: nextExt ? { at: nextExt.at, type: nextExt.type, levelCm: nextExt.levelCm } : null,
+    levelSource,
+    moseStatus: mose.status,
+    moseLiftProgress: mose.progress,
+    moseBasis: mose.basis,
+    trend: sea?.trend ?? 'STAZIONARIO',
+    isMoseRaised: mose.status === 'ATTIVATO' || mose.status === 'IN_SOLLEVAMENTO',
+    isFlooded: (lagoonTideCm ?? 0) >= 80,
+    forecastStale,
+    nextExtreme,
   };
 }

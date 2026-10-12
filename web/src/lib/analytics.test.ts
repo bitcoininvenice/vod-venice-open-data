@@ -34,28 +34,28 @@ describe('analytics helpers', () => {
     expect(
       featureToLayerSlug({
         type: 'passerella',
-        data: { id: 'p1', name: 'Passerella 1', geometry: [], elevationCm: 110 } as any,
+        data: { id: 'p1', name: 'Passerella 1', geometry: [], elevationCm: 110 } as never,
       })
     ).toBe('passerelle');
 
     expect(
       featureToLayerSlug({
         type: 'civicNumber',
-        data: { number: '123' } as any,
+        data: { number: '123' } as never,
       })
     ).toBe('civici');
 
     expect(
       featureToLayerSlug({
         type: 'civicPoi',
-        data: { kind: 'recycling' } as any,
+        data: { kind: 'recycling' } as never,
       })
     ).toBe('ecocentri');
 
     expect(
       featureToLayerSlug({
         type: 'civicPoi',
-        data: { kind: 'library' } as any,
+        data: { kind: 'library' } as never,
       })
     ).toBe('biblioteche');
   });
@@ -64,35 +64,35 @@ describe('analytics helpers', () => {
     expect(
       mapObjectToLayerSlug({
         type: 'ship',
-        data: { id: 'ship-1', name: 'San Marco' } as any,
+        data: { id: 'ship-1', name: 'San Marco' } as never,
       })
     ).toBe('navi_ais');
 
     expect(
       mapObjectToLayerSlug({
         type: 'flight',
-        data: { icao24: 'abc123' } as any,
+        data: { icao24: 'abc123' } as never,
       })
     ).toBe('voli_vce');
 
     expect(
       mapObjectToLayerSlug({
         type: 'vehicle',
-        data: { source: 'gps' } as any,
+        data: { source: 'gps' } as never,
       })
     ).toBe('vaporetti_realtime');
 
     expect(
       mapObjectToLayerSlug({
         type: 'vehicle',
-        data: { source: 'schedule' } as any,
+        data: { source: 'schedule' } as never,
       })
     ).toBe('vaporetti_live');
 
     expect(
       mapObjectToLayerSlug({
         type: 'alilagunaBoat',
-        data: {} as any,
+        data: {} as never,
       })
     ).toBe('alilaguna');
   });

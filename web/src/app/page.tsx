@@ -33,6 +33,7 @@ import { simClock } from '@/lib/simClock';
 import { readPreference, usePreference, writePreference, THEME_PREFERENCE_KEY } from '@/lib/localPreference';
 import { track } from '@vercel/analytics';
 import { trackLayerToggle, trackLayerOpen, featureToLayerSlug, mapObjectToLayerSlug } from '@/lib/analytics';
+import { PASSERELLE_MIN_THRESHOLD_CM } from '@/lib/passerelle';
 import { resolveTideState } from '@/lib/tideCurve';
 
 // Finestre e schede meno frequenti: il loro codice si scarica solo quando si aprono
@@ -130,6 +131,8 @@ export default function HomePage() {
 
   // Dati della mappa: ogni API parte solo quando serve (livello acceso, ricerca, esportazione, schede),
   // le statiche una volta per sessione, quelle live con aggiornamento periodico (vedi lib/cityData.ts)
+  // true quando la marea in città (reale o simulata) raggiunge la quota più bassa del piano passerelle
+  const [tideReachesPasserelle, setTideReachesPasserelle] = useState(false);
   const needs = useMemo(
     () =>
       neededResources(layers, {
@@ -138,8 +141,9 @@ export default function HomePage() {
         airportModal: isAirportModalOpen,
         tideModal: isTideModalOpen,
         tideSimulated: simulatedTideLevel !== null,
+        tideHigh: tideReachesPasserelle,
       }),
-    [layers, isSearchOpen, isExportModalOpen, isAlilagunaModalOpen, isAirportModalOpen, isTideModalOpen, simulatedTideLevel]
+    [layers, isSearchOpen, isExportModalOpen, isAlilagunaModalOpen, isAirportModalOpen, isTideModalOpen, simulatedTideLevel, tideReachesPasserelle]
   );
   const data = useCityData(needs);
   const locatedCantieri = useMemo(() => data.cantieri.filter(isLocated), [data.cantieri]);
@@ -458,16 +462,21 @@ export default function HomePage() {
       timelineSeconds: currentTimeSeconds,
       forecast: data.tideInfo?.forecast,
       liveTideLevel: data.tideLevel,
-      liveObservedAt: data.tideInfo?.observedAt ?? undefined,
+      liveObservedAt: data.tideInfo?.observedAt,
+      moseGates: data.moseGates,
     });
-  }, [simulatedTideLevel, isMoseProtected, currentTimeSeconds, data.tideInfo, data.tideLevel]);
+  }, [simulatedTideLevel, isMoseProtected, currentTimeSeconds, data.tideInfo, data.tideLevel, data.moseGates]);
+
+  const reachesPasserelle = (currentDynamicTide.lagoonTideCm ?? 0) >= PASSERELLE_MIN_THRESHOLD_CM;
+  if (reachesPasserelle !== tideReachesPasserelle) setTideReachesPasserelle(reachesPasserelle);
 
   // Ancoraggio e continuità del ciclo sinusoidale di marea: parte sempre dalla quota attuale senza salti
   const cycleParamsRef = useRef<{ startTime: number; startLevel: number; phaseOffset: number } | null>(null);
-  const simulatedTideLevelRef = useRef<number | null>(simulatedTideLevel);
-  simulatedTideLevelRef.current = simulatedTideLevel;
-  const currentDynamicTideRef = useRef(currentDynamicTide.lagoonTideCm);
-  currentDynamicTideRef.current = currentDynamicTide.lagoonTideCm;
+  // Livello di partenza del ciclo, letto dall'effetto senza farlo ripartire a ogni secondo
+  const cycleStartLevelRef = useRef<number | null>(null);
+  useEffect(() => {
+    cycleStartLevelRef.current = simulatedTideLevel ?? currentDynamicTide.lagoonTideCm;
+  }, [simulatedTideLevel, currentDynamicTide.lagoonTideCm]);
 
   useEffect(() => {
     if (!isTideCyclePlaying) {
@@ -476,7 +485,7 @@ export default function HomePage() {
     }
 
     if (!cycleParamsRef.current) {
-      const currentLevel = simulatedTideLevelRef.current ?? currentDynamicTideRef.current ?? 80;
+      const currentLevel = cycleStartLevelRef.current ?? 80;
       const start = Math.max(55, Math.min(195, currentLevel));
       const ratio = Math.max(-1, Math.min(1, (start - 125) / 70));
       cycleParamsRef.current = {
@@ -735,8 +744,9 @@ export default function HomePage() {
             alilagunaBoatsCount={alilagunaBoats.length}
             peakCount={simulation ? dayActivity(selectedDay).peakCount : undefined}
             peakTime={simulation ? dayActivity(selectedDay).peakTime : undefined}
-            showTide={showMose || showPasserelle || currentDynamicTide.lagoonTideCm >= 80 || simulatedTideLevel != null}
+            showTide={showMose || showPasserelle || currentDynamicTide.isFlooded || simulatedTideLevel != null}
             tideLevel={currentDynamicTide.lagoonTideCm}
+            tideStatus={currentDynamicTide}
             airTemp={data.cityTemp}
             showWind={layers.showMarineWind}
             windField={data.windField}
@@ -846,7 +856,7 @@ export default function HomePage() {
             feature={selectedFeature}
             onClose={() => setSelectedFeature(null)}
             currentTideLevelCm={data.tideLevel ?? undefined}
-            tideExtremes={data.tideInfo.forecast?.extremes ?? null}
+            tideForecast={data.tideInfo.forecast}
             onPlanTo={openPlanner}
           />
         )}
@@ -899,6 +909,7 @@ export default function HomePage() {
           onToggleCycle={() => setIsTideCyclePlaying((p) => !p)}
           forecast={data.tideInfo.forecast}
           marineWindStations={data.marineWindStations}
+          passerelle={data.passerelle}
           tideStations={data.cpsmStations}
           lagoonWater={data.lagoonWaterQuality}
           onActivateCurrents={() => {

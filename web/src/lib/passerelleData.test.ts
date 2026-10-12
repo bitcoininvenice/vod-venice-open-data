@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { PASSERELLE_DATA } from './passerelleData';
+import { PASSERELLE_DATA, PASSERELLE_ROUTES, PASSERELLE_TOTAL_METERS } from './passerelleData';
+import { PASSERELLE_MIN_THRESHOLD_CM, expectedPasserelle, isPasserellaExpected } from './passerelle';
 import { LAYER_CATALOG } from './layerCatalog';
 
 describe('dataset ufficiale passerelle CPSM & Veritas', () => {
-  it('contiene tutte le 75 tratte censite nel piano ufficiale', () => {
-    expect(PASSERELLE_DATA).toHaveLength(75);
+  it('contiene i 72 percorsi della tabella (più la variante di T 9.1 A)', () => {
+    expect(PASSERELLE_ROUTES).toHaveLength(72);
+    expect(PASSERELLE_DATA.filter((p) => p.variantOf)).toHaveLength(1);
+    // le due righe in rosso, senza lunghezza né quota, non sono percorsi
+    expect(PASSERELLE_DATA.every((p) => p.lengthMeters > 0)).toBe(true);
   });
 
   it('ha id univoci per ogni tratta', () => {
@@ -12,9 +16,18 @@ describe('dataset ufficiale passerelle CPSM & Veritas', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('ha uno sviluppo metrico complessivo coerente con il piano (3.743 m)', () => {
-    const totalMeters = PASSERELLE_DATA.reduce((sum, p) => sum + p.lengthMeters, 0);
-    expect(totalMeters).toBeCloseTo(3743, 0);
+  it('somma le lunghezze della tabella senza contare due volte la variante (3.715 m)', () => {
+    expect(PASSERELLE_TOTAL_METERS).toBeCloseTo(3715, 0);
+  });
+
+  it('un percorso è previsto quando la marea raggiunge la sua quota', () => {
+    expect(Math.min(...PASSERELLE_ROUTES.map((p) => p.activationThresholdCm))).toBe(PASSERELLE_MIN_THRESHOLD_CM);
+    const ferrovia = PASSERELLE_ROUTES.find((p) => p.id === 'PASS-T3.2A')!;
+    expect(isPasserellaExpected(ferrovia, 139)).toBe(false);
+    expect(isPasserellaExpected(ferrovia, 140)).toBe(true);
+    expect(expectedPasserelle(PASSERELLE_ROUTES, 79)).toHaveLength(0);
+    expect(expectedPasserelle(PASSERELLE_ROUTES, null)).toHaveLength(0);
+    expect(expectedPasserelle(PASSERELLE_ROUTES, 140)).toHaveLength(72);
   });
 
   it('include tutti i sestieri storici e le isole previste', () => {
@@ -35,7 +48,6 @@ describe('dataset ufficiale passerelle CPSM & Veritas', () => {
     for (const p of PASSERELLE_DATA) {
       expect(p.activationThresholdCm).toBeGreaterThanOrEqual(80);
       expect(p.activationThresholdCm).toBeLessThanOrEqual(140);
-      expect(p.groundElevationCm).toBe(p.activationThresholdCm);
     }
   });
 
