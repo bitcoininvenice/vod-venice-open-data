@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Footprints, MapPin, Route, Ship, ArrowDownUp, Crosshair } from 'lucide-react';
+import { Footprints, MapPin, Route, Ship, ArrowDownUp, Crosshair, Droplets } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { InfoHeader, InfoPanel } from '@/components/ui/InfoPanel';
 import { useSimulation } from '@/lib/simulationModel';
 import { buildWalkGraph, type RawWalk, type WalkGraph } from '@/lib/walkGraph';
 import { WALK_URL } from '@/lib/walk-data';
-import { planTrip, type Itinerary, type PlannerPoint } from '@/lib/tripPlanner';
+import { planTrip, type Itinerary, type PlanMode, type PlannerPoint } from '@/lib/tripPlanner';
+import type { PasserellaItem } from '@/lib/types';
 import { ACTV_STOPS_REFERENCE } from '@/lib/stopsReference';
 import { clock } from '@/lib/tripView';
 import { romeDayType, romeSecondsOfDay } from '@/lib/time';
@@ -43,7 +44,14 @@ interface TripPlannerPanelProps {
   picking: PickTarget | null;
   /** itinerario calcolato, da disegnare sulla mappa */
   onItinerary: (it: Itinerary | null) => void;
+  /** livello di marea in città all'ora indicata (secondi dalla mezzanotte): reale, previsto o simulato */
+  tideAt?: (seconds: number) => number | null;
+  /** percorsi su passerelle del piano */
+  passerelle?: PasserellaItem[];
 }
+
+const ACTV_SITE = 'https://actv.avmspa.it/it';
+const MODES: PlanMode[] = ['fastest', 'walk', 'boat'];
 
 const WATER_STOPS = ACTV_STOPS_REFERENCE.filter((s) => s.mode === 'navigazione' || s.mode === 'ferry');
 
@@ -140,12 +148,13 @@ const PlaceInput: React.FC<{
  * Trip planner a piedi + vaporetto: luoghi di partenza e arrivo, ora di partenza, itinerario migliore
  * sull'orario ufficiale ACTV e sulla rete pedonale OpenStreetMap, con l'alternativa solo a piedi.
  */
-export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClose, from, to, onChange, onPick, picking, onItinerary }) => {
+export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClose, from, to, onChange, onPick, picking, onItinerary, tideAt, passerelle }) => {
   const { t } = useTranslation();
   const sim = useSimulation(open);
   const [walk, setWalk] = useState<WalkGraph | null>(null);
   const [walkError, setWalkError] = useState(false);
   const [time, setTime] = useState('');
+  const [mode, setMode] = useState<PlanMode>('fastest');
   useEffect(() => {
     if (!open || walk) return;
     loadWalk().then(setWalk, () => setWalkError(true));
@@ -154,8 +163,8 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
   const result = useMemo(() => {
     if (!open || !sim || !walk || !from || !to) return null;
     const now = /^\d{2}:\d{2}$/.test(time) ? Number(time.slice(0, 2)) * 3600 + Number(time.slice(3)) * 60 : romeSecondsOfDay();
-    return planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, now, romeDayType());
-  }, [open, sim, walk, from, to, time]);
+    return planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, now, romeDayType(), { mode, tideAt, passerelle });
+  }, [open, sim, walk, from, to, time, mode, tideAt, passerelle]);
 
   useEffect(() => {
     onItinerary(result?.best ?? null);
@@ -193,6 +202,22 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
           />
           {!time && <span className="text-[var(--ink-3)]">{t('ui.planner.now')}</span>}
         </label>
+        <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('ui.planner.modeLabel')}>
+          {MODES.map((m) => (
+            <button
+              key={m}
+              type="button"
+              role="radio"
+              aria-checked={mode === m}
+              onClick={() => setMode(m)}
+              className={`px-2.5 py-1 rounded-lg text-[11px] border cursor-pointer ${
+                mode === m ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 font-semibold' : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)]'
+              }`}
+            >
+              {t(`ui.planner.mode_${m}`)}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading && from && to && <p className="text-xs text-[var(--ink-3)]">{t('ui.planner.loading')}</p>}
@@ -214,6 +239,9 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
                   <Footprints className="w-4 h-4 text-[var(--ink-3)] shrink-0 mt-0.5" aria-hidden />
                   <span className="text-[var(--ink-2)]">
                     {t('ui.planner.walkLeg', { min: minutes(leg.seconds), m: Math.round(leg.meters / 10) * 10, to: leg.to })}
+                    {leg.wetMeters >= 10 && (
+                      <span className="block text-[11px] text-amber-400">{t('ui.planner.legWet', { m: Math.round(leg.wetMeters / 10) * 10, cm: leg.maxDepthCm })}</span>
+                    )}
                   </span>
                 </li>
               ) : (
@@ -235,6 +263,30 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
               ),
             )}
           </ol>
+          {result?.floodLevelCm != null && (
+            <div className="flex flex-col gap-1 p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-[11px] text-[var(--ink-2)]" data-testid="planner-flood">
+              <span className="flex items-center gap-1.5 font-semibold text-sky-300">
+                <Droplets className="w-3.5 h-3.5" aria-hidden />
+                {t('ui.planner.floodTitle', { cm: result.floodLevelCm })}
+              </span>
+              <span>
+                {best.wetMeters >= 10
+                  ? t('ui.planner.wetSummary', { m: Math.round(best.wetMeters / 10) * 10, cm: best.maxDepthCm })
+                  : t('ui.planner.drySummary')}
+              </span>
+              {best.passerellaMeters >= 10 && <span>{t('ui.planner.passerelleUsed', { m: Math.round(best.passerellaMeters / 10) * 10 })}</span>}
+              {best.rides === 0 && result.shortestWalkWetMeters != null && result.shortestWalkWetMeters - best.wetMeters >= 20 && (
+                <span>{t('ui.planner.dryComparison', { m: Math.round(result.shortestWalkWetMeters / 10) * 10 })}</span>
+              )}
+              <span className="text-[10px] text-[var(--ink-3)]">{t('ui.planner.floodEstimate')}</span>
+            </div>
+          )}
+          {best.ridesInHighWater && (
+            <p className="text-[11px] text-amber-400" data-testid="planner-actv-warning">
+              {t('ui.planner.actvHighWater')}{' '}
+              <a href={ACTV_SITE} target="_blank" rel="noopener noreferrer" className="underline">actv.avmspa.it</a>
+            </p>
+          )}
           {result?.walkOnly && best.rides > 0 && (
             <p className="text-[11px] text-[var(--ink-3)]">{t('ui.planner.walkAlternative', { min: minutes(result.walkOnly.arrive - result.walkOnly.depart) })}</p>
           )}

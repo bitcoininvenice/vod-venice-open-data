@@ -420,6 +420,26 @@ test('come arrivare: da Ferrovia a Murano in vaporetto, con l\'itinerario sulla 
   await expect(result).toContainText(/\d{2}:\d{2} → \d{2}:\d{2}/);
 });
 
+test('come arrivare: modalità solo a piedi e preferisci vaporetto', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  await page.goto('/');
+  await page.locator('canvas').waitFor();
+  await page.getByTestId('open-planner').click();
+  const panel = page.locator('[data-info-panel]');
+  await panel.getByTestId('planner-from').getByRole('textbox').fill('Ferrovia');
+  await panel.getByRole('button', { name: /^Ferrovia$/ }).click();
+  await panel.getByTestId('planner-to').getByRole('textbox').fill('Murano Colonna');
+  await panel.getByRole('button', { name: /^Murano Colonna$/ }).click();
+  await expect(panel.getByTestId('planner-result')).toBeVisible({ timeout: 15000 });
+  // Murano non si raggiunge solo a piedi
+  await panel.getByRole('radio', { name: 'Solo a piedi' }).click();
+  await expect(panel.getByRole('radio', { name: 'Solo a piedi' })).toHaveAttribute('aria-checked', 'true');
+  await expect(panel.getByTestId('planner-result')).toBeHidden();
+  await expect(panel).toContainText('Nessun percorso trovato');
+  await panel.getByRole('radio', { name: 'Preferisci vaporetto' }).click();
+  await expect(panel.getByTestId('planner-result')).toContainText(/direzione .* fermate/);
+});
+
 test('come arrivare qui dalla scheda della fermata imposta la destinazione', async ({ page }) => {
   await page.goto('/?layers=fermate');
   await page.locator('canvas').waitFor();

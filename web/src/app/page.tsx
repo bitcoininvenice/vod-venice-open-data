@@ -131,6 +131,7 @@ export default function HomePage() {
 
   // Dati della mappa: ogni API parte solo quando serve (livello acceso, ricerca, esportazione, schede),
   // le statiche una volta per sessione, quelle live con aggiornamento periodico (vedi lib/cityData.ts)
+  const [isPlannerOpen, setIsPlannerOpen] = useState(false);
   // true quando la marea in città (reale o simulata) raggiunge la quota più bassa del piano passerelle
   const [tideReachesPasserelle, setTideReachesPasserelle] = useState(false);
   const needs = useMemo(
@@ -142,8 +143,9 @@ export default function HomePage() {
         tideModal: isTideModalOpen,
         tideSimulated: simulatedTideLevel !== null,
         tideHigh: tideReachesPasserelle,
+        planner: isPlannerOpen,
       }),
-    [layers, isSearchOpen, isExportModalOpen, isAlilagunaModalOpen, isAirportModalOpen, isTideModalOpen, simulatedTideLevel, tideReachesPasserelle]
+    [layers, isSearchOpen, isExportModalOpen, isAlilagunaModalOpen, isAirportModalOpen, isTideModalOpen, simulatedTideLevel, tideReachesPasserelle, isPlannerOpen]
   );
   const data = useCityData(needs);
   const locatedCantieri = useMemo(() => data.cantieri.filter(isLocated), [data.cantieri]);
@@ -173,7 +175,6 @@ export default function HomePage() {
     setIsAlilagunaModalOpen(false);
   }, []);
   // Trip planner: luoghi scelti, eventuale scelta di un punto sulla mappa, itinerario da disegnare
-  const [isPlannerOpen, setIsPlannerOpen] = useState(false);
   const [plannerFrom, setPlannerFrom] = useState<PlannerPoint | null>(null);
   const [plannerTo, setPlannerTo] = useState<PlannerPoint | null>(null);
   const [pickTarget, setPickTarget] = useState<PickTarget | null>(null);
@@ -469,6 +470,21 @@ export default function HomePage() {
 
   const reachesPasserelle = (currentDynamicTide.lagoonTideCm ?? 0) >= PASSERELLE_MIN_THRESHOLD_CM;
   if (reachesPasserelle !== tideReachesPasserelle) setTideReachesPasserelle(reachesPasserelle);
+
+  // Marea in città all'ora di ogni tratto del planner: stesso modello della mappa (simulatore compreso)
+  const plannerTideAt = useCallback(
+    (seconds: number) =>
+      resolveTideState({
+        simulatedTideLevel,
+        isMoseProtected,
+        timelineSeconds: seconds,
+        forecast: data.tideInfo?.forecast,
+        liveTideLevel: data.tideLevel,
+        liveObservedAt: data.tideInfo?.observedAt,
+        moseGates: data.moseGates,
+      }).lagoonTideCm,
+    [simulatedTideLevel, isMoseProtected, data.tideInfo, data.tideLevel, data.moseGates]
+  );
 
   // Ancoraggio e continuità del ciclo sinusoidale di marea: parte sempre dalla quota attuale senza salti
   const cycleParamsRef = useRef<{ startTime: number; startLevel: number; phaseOffset: number } | null>(null);
@@ -801,6 +817,8 @@ export default function HomePage() {
           onPick={(which) => setPickTarget((cur) => (cur === which ? null : which))}
           picking={pickTarget}
           onItinerary={setItinerary}
+          tideAt={plannerTideAt}
+          passerelle={data.passerelle}
         />
         <MapObjectPanel
           object={selectedObject}

@@ -2,6 +2,7 @@
  * Rete pedonale di Venezia (OpenStreetMap, pipeline/import_osm_walk.py) e percorsi a piedi più brevi.
  * Il file (circa 200 KB compressi) si scarica solo quando serve il planner; il calcolo è nel browser.
  */
+import { edgeElevations } from './streetElevation';
 
 export interface RawWalk {
   origin: [number, number];
@@ -27,6 +28,8 @@ export interface WalkGraph {
   /** lunghezza in metri */
   edgeLen: Float32Array;
   edgeFlags: Uint8Array;
+  /** quota stimata dell'arco (cm sullo ZMPS), la stessa delle calli allagate in mappa */
+  edgeElev: Int16Array;
   edgeGeom: Float64Array[];
 }
 
@@ -72,7 +75,7 @@ export function buildWalkGraph(raw: RawWalk): WalkGraph {
     }
     return out;
   });
-  return { lon, lat, off, adj, adjEdge, edgeA, edgeB, edgeLen, edgeFlags, edgeGeom };
+  return { lon, lat, off, adj, adjEdge, edgeA, edgeB, edgeLen, edgeFlags, edgeElev: edgeElevations(raw), edgeGeom };
 }
 
 /** Distanza in metri tra due punti (approssimazione equirettangolare, adatta a scala urbana). */
@@ -96,18 +99,25 @@ export function nearestNode(g: WalkGraph, lon: number, lat: number): { node: num
 }
 
 export interface ShortestPaths {
-  /** distanza in metri da ogni nodo (Infinity se irraggiungibile) */
+  /** costo da ogni nodo (Infinity se irraggiungibile): metri, moltiplicati per il peso dell'arco se indicato */
   dist: Float64Array;
+  /** metri reali lungo il percorso scelto */
+  meters: Float64Array;
   /** arco con cui si arriva al nodo nel percorso migliore (-1 per la sorgente) */
   via: Int32Array;
 }
 
-/** Dijkstra da un nodo, fermandosi oltre `maxMeters`. */
-export function shortestPaths(g: WalkGraph, source: number, maxMeters = Infinity): ShortestPaths {
+/**
+ * Dijkstra da un nodo, fermandosi oltre `maxMeters` di costo.
+ * `weight` (facoltativo) moltiplica la lunghezza di ogni arco, per esempio per evitare le calli allagate.
+ */
+export function shortestPaths(g: WalkGraph, source: number, maxMeters = Infinity, weight?: Float32Array): ShortestPaths {
   const n = g.lon.length;
   const dist = new Float64Array(n).fill(Infinity);
+  const meters = new Float64Array(n).fill(Infinity);
   const via = new Int32Array(n).fill(-1);
   dist[source] = 0;
+  meters[source] = 0;
   // coda di priorità a heap binario (nodo, distanza)
   const heapN: number[] = [source];
   const heapD: number[] = [0];
@@ -151,15 +161,28 @@ export function shortestPaths(g: WalkGraph, source: number, maxMeters = Infinity
     for (let k = g.off[u]; k < g.off[u + 1]; k++) {
       const v = g.adj[k];
       const e = g.adjEdge[k];
-      const nd = d + g.edgeLen[e];
+      const nd = d + g.edgeLen[e] * (weight ? weight[e] : 1);
       if (nd < dist[v]) {
         dist[v] = nd;
+        meters[v] = meters[u] + g.edgeLen[e];
         via[v] = e;
         push(v, nd);
       }
     }
   }
-  return { dist, via };
+  return { dist, meters, via };
+}
+
+/** Archi del percorso dalla sorgente al nodo `target` (dall'ultimo al primo). */
+export function pathEdges(g: WalkGraph, sp: ShortestPaths, target: number): number[] {
+  const out: number[] = [];
+  let u = target;
+  while (sp.via[u] !== -1) {
+    const e = sp.via[u];
+    out.push(e);
+    u = g.edgeA[e] === u ? g.edgeB[e] : g.edgeA[e];
+  }
+  return out;
 }
 
 /** Tracciato [lon, lat][] dalla sorgente al nodo `target`, con la geometria degli archi. */

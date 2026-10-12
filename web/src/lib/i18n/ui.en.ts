@@ -1797,6 +1797,18 @@ export const enUi: UiTranslations = {
     note: "In Venice house numbers run by sestiere, not by street; Giudecca has its own numbering. The City does not publish house numbers as open data: OpenStreetMap covers part of them, well in Cannaregio, San Polo and Santa Croce and poorly in Dorsoduro."
   },
   planner: {
+    modeLabel: "Route type",
+    mode_fastest: "Fastest",
+    mode_walk: "Walk only",
+    mode_boat: "Prefer waterbus",
+    floodTitle: "High water: tide up to +{cm} cm along the route",
+    drySummary: "Route chosen to stay as dry as possible: no flooded streets expected.",
+    wetSummary: "Route chosen to stay as dry as possible, but about {m} m are probably flooded (up to ~{cm} cm of water): boots recommended.",
+    passerelleUsed: "About {m} m on walkways expected in the City plan.",
+    dryComparison: "The shortest route would cross about {m} m of flooded streets.",
+    legWet: "about {m} m probably flooded (up to ~{cm} cm)",
+    floodEstimate: "Estimate: street levels and walkway lines are approximate; tide from CPSM measurements and forecast, or from the simulator.",
+    actvHighWater: "With the tide above +110 cm ACTV may divert or reduce some lines, and this uses the normal timetable: check the notices at",
     title: "Get there",
     category: "On foot and by waterbus",
     from: "From",
@@ -1818,7 +1830,7 @@ export const enUi: UiTranslations = {
     walkAlternative: "Walking only: {min} min.",
     walkBest: "Walking is faster than waiting for the waterbus.",
     planHere: "Get there",
-    note: "Official ACTV timetable (GTFS) and OpenStreetMap walking network, at 4.5 km/h. It does not consider delays, crowding, closures or high water; at most one change, at the same stop. Always check on site."
+    note: "Official ACTV timetable (GTFS) and OpenStreetMap walking network, at 4.5 km/h. With high water the walking parts avoid flooded streets where possible. It does not consider delays, crowding, closures or ACTV service changes; at most one change, at the same stop. Always check on site."
   },
   featuresPage: {
     navLabel: "Features",
@@ -1836,7 +1848,7 @@ export const enUi: UiTranslations = {
     group_developers: "For developers and AI",
     group_trust: "Transparency",
     planner_title: "Get there",
-    planner_desc: "Walking and waterbus route from a stop, a house number or a point on the map, on the official ACTV timetable and the OpenStreetMap walking network, with the walking-only alternative.",
+    planner_desc: "Walking and waterbus route from a stop, a house number or a point on the map, on the official ACTV timetable and the OpenStreetMap walking network, with the walking-only alternative. With high water, real or simulated, it proposes the route most likely to stay dry, walkways included; you can choose fastest, walk only or prefer waterbus.",
     realtime_title: "Live waterbuses",
     realtime_desc: "GPS positions of ACTV vehicles with the delay computed from the position against the official timetable and checked with ACTV's own figure.",
     tripHighlight_title: "Selected vehicle's trip",

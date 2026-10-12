@@ -1795,6 +1795,18 @@ export const itUi = {
     note: "A Venezia i numeri civici sono per sestiere, non per via; la Giudecca ha una numerazione propria. Il Comune non pubblica i civici come open data: OpenStreetMap ne copre una parte, con buona copertura a Cannaregio, San Polo e Santa Croce e scarsa a Dorsoduro."
   },
   planner: {
+    modeLabel: "Tipo di percorso",
+    mode_fastest: "Più veloce",
+    mode_walk: "Solo a piedi",
+    mode_boat: "Preferisci vaporetto",
+    floodTitle: "Acqua alta: marea fino a +{cm} cm lungo il percorso",
+    drySummary: "Percorso scelto per restare il più possibile all'asciutto: nessuna calle allagata prevista.",
+    wetSummary: "Percorso scelto per restare il più possibile all'asciutto, ma circa {m} m sono probabilmente allagati (fino a ~{cm} cm d'acqua): meglio gli stivali.",
+    passerelleUsed: "Circa {m} m su passerelle previste dal piano del Comune.",
+    dryComparison: "Il percorso più breve passerebbe per circa {m} m di calli allagate.",
+    legWet: "circa {m} m probabilmente allagati (fino a ~{cm} cm)",
+    floodEstimate: "Stima: le quote delle calli e i tracciati delle passerelle sono indicativi; livello da misura e previsione CPSM, o dal simulatore.",
+    actvHighWater: "Con la marea oltre +110 cm ACTV può deviare o ridurre alcune linee, e l'orario usato qui è quello normale: controlla gli avvisi su",
     title: "Come arrivare",
     category: "A piedi e in vaporetto",
     from: "Da",
@@ -1816,7 +1828,7 @@ export const itUi = {
     walkAlternative: "Solo a piedi: {min} min.",
     walkBest: "A piedi si fa prima che aspettando il vaporetto.",
     planHere: "Come arrivare qui",
-    note: "Orario ufficiale ACTV (GTFS) e rete pedonale OpenStreetMap, a 4,5 km/h. Non considera ritardi, affollamento, chiusure né acqua alta; massimo un cambio, alla stessa fermata. Verifica sempre sul posto."
+    note: "Orario ufficiale ACTV (GTFS) e rete pedonale OpenStreetMap, a 4,5 km/h. Con l'acqua alta i tratti a piedi evitano, se possibile, le calli allagate. Non considera ritardi, affollamento, chiusure né variazioni del servizio ACTV; massimo un cambio, alla stessa fermata. Verifica sempre sul posto."
   },
   featuresPage: {
     navLabel: "Funzionalità",
@@ -1834,7 +1846,7 @@ export const itUi = {
     group_developers: "Per sviluppatori e AI",
     group_trust: "Trasparenza",
     planner_title: "Come arrivare",
-    planner_desc: "Itinerario a piedi e in vaporetto da una fermata, un numero civico o un punto della mappa, sull'orario ufficiale ACTV e sulla rete pedonale OpenStreetMap, con l'alternativa solo a piedi.",
+    planner_desc: "Itinerario a piedi e in vaporetto da una fermata, un numero civico o un punto della mappa, sull'orario ufficiale ACTV e sulla rete pedonale OpenStreetMap, con l'alternativa solo a piedi. Con l'acqua alta, reale o simulata, propone il percorso con più probabilità di restare all'asciutto, passerelle comprese; si può scegliere più veloce, solo a piedi o preferisci vaporetto.",
     realtime_title: "Vaporetti in tempo reale",
     realtime_desc: "Posizioni GPS dei mezzi ACTV con il ritardo calcolato dalla posizione sull'orario ufficiale e verificato con quello dichiarato da ACTV.",
     tripHighlight_title: "Corsa del mezzo selezionato",
