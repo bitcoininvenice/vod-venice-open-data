@@ -10,6 +10,9 @@ const LINES = data.lines as Record<string, { color: string; text: string | null 
 /** Categorie di mezzo della rete di navigazione (le uniche con il colore di linea). */
 const WATER = new Set(['vaporetto', 'motoscafo', 'motonave', 'ferry', 'island']);
 
+/** true per i mezzi acquei (navigazione), false per bus e tram di terraferma */
+export const isWaterCategory = (category: string | null | undefined): boolean => !!category && WATER.has(category);
+
 /** Colore ufficiale della linea, solo per i mezzi di navigazione; null se non noto. */
 export function lineColor(line: string | null | undefined, category?: string | null): string | null {
   if (!line || (category && !WATER.has(category))) return null;

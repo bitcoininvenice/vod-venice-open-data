@@ -4,6 +4,7 @@ import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { MARITIME_ROUTES } from '@/lib/shipsData';
 import type { ShipCategory } from '@/lib/types';
 import { prefersReducedMotion } from './mapHelpers';
+import { drawBoatGlyph } from './vehicleGlyphs';
 
 export function drawShipRoutes(rc: RenderContext): void {
   const { ctx, isDark, sx, sy, mx, my, camera, showShipRoutes } = rc;
@@ -288,24 +289,15 @@ export function drawAlilaguna(rc: RenderContext): void {
         ctx.fillStyle = wakeGrad;
         ctx.fill();
 
-        // Waterbus Hull
-        ctx.beginPath();
-        ctx.moveTo(0, -10); // bow
-        ctx.lineTo(4.5, -3);
-        ctx.lineTo(4.5, 9);
-        ctx.lineTo(-4.5, 9);
-        ctx.lineTo(-4.5, -3);
-        ctx.closePath();
-        ctx.fillStyle = b.color;
-        ctx.fill();
-        ctx.strokeStyle = isSelected ? '#fbbf24' : (isDark ? '#ffffff' : '#0f172a');
-        ctx.lineWidth = isSelected ? 2.2 : 1.2;
-        ctx.stroke();
-
-        // Cabin Roof
-        ctx.fillStyle = isDark ? '#ffffff' : '#e2e8f0';
-        ctx.fillRect(-2.5, -3, 5, 8);
         ctx.restore();
+
+        // Scafo e cabina (icona condivisa con i mezzi ACTV)
+        drawBoatGlyph(ctx, bx, by, headingRad, {
+          fill: b.color,
+          stroke: isSelected ? '#fbbf24' : (isDark ? '#ffffff' : '#0f172a'),
+          lineWidth: isSelected ? 2.2 : 1.2,
+          roof: isDark ? '#ffffff' : '#e2e8f0',
+        });
 
         // Boat label badge
         ctx.save();

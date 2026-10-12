@@ -11,6 +11,7 @@ import { metersBetween, nearestNode, pathCoords, pathEdges, shortestPaths, type 
 import { addSummaries, floodWeights, summarizeEdges, WET_COST, type FloodWeights, type WetSummary } from './dryRouting';
 import { MOSE_THRESHOLD_CM } from './tideCurve';
 import type { DayType, PasserellaItem, StopItem } from './types';
+import { isWaterCategory } from './actvLines';
 
 /** Velocità a piedi (m/s): circa 4,5 km/h, ponti e calli strette compresi. */
 export const WALK_SPEED = 1.25;
@@ -26,7 +27,6 @@ const MAX_SNAP_M = 250;
 /** Modalità "preferisci vaporetto": tratti a piedi verso e dai pontili al massimo di (m) */
 export const BOAT_ACCESS_M = 600;
 
-const WATER = new Set(['vaporetto', 'motoscafo', 'motonave', 'ferry', 'island']);
 
 export interface PlannerPoint {
   lon: number;
@@ -90,7 +90,7 @@ function profileStops(sim: SimModel, stops: StopItem[]): Map<SimProfile, { stop:
   cached = new Map();
   const pt: [number, number] = [0, 0];
   for (const p of sim.profs) {
-    if (!WATER.has(p.route.cat)) continue;
+    if (!isWaterCategory(p.route.cat)) continue;
     const seq: { stop: number; k: number }[] = [];
     for (let k = 0; k < p.Dd.length; k++) {
       pointAt(p.sh, p.Dd[k], pt);

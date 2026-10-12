@@ -3,6 +3,7 @@ import type { RenderContext } from './renderContext';
 import { distAt, getSimulation, pointAt } from '@/lib/simulationModel';
 import { DELAY_COLORS, isFresh } from '@/lib/realtimeDelay';
 import { lineColor, needsDarkOutline } from '@/lib/actvLines';
+import { drawVehicleGlyph, headingFromMotion } from './vehicleGlyphs';
 import type { SimModel, SimProfile } from '@/lib/simulationCore';
 import { clock, tripStops, type TripStop } from '@/lib/tripView';
 
@@ -86,6 +87,8 @@ export function drawVehicles(rc: RenderContext): void {
       const { tP, t0, t1, count } = tripsData;
       const t = currentTimeSeconds;
       const trailSec = 45; // Ghosting trail duration
+      // icone più piccole a scala urbana intera, piene da vicino
+      const glyphScale = Math.max(0.6, Math.min(1.1, 0.45 + 12 * rc.camera.s));
 
 
       const ptNow: [number, number] = [0, 0];
@@ -119,17 +122,16 @@ export function drawVehicles(rc: RenderContext): void {
         ctx.globalAlpha = 0.45;
         ctx.stroke();
 
-        // Vehicle Glow & Dot
-        ctx.beginPath();
-        ctx.arc(vx, vy, 4.5, 0, Math.PI * 2);
-        ctx.fillStyle = col;
+        // Icona orientata nel verso di marcia: barca per i mezzi acquei, autobus o tram in terraferma
+        const heading = headingFromMotion(sx(ptTail[0]), sy(ptTail[1]), vx, vy) ?? 0;
         ctx.globalAlpha = 0.95;
-        ctx.fill();
-        if (!isDark && needsDarkOutline(col)) {
-          ctx.strokeStyle = '#334155';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-        }
+        drawVehicleGlyph(ctx, rCat, vx, vy, heading, {
+          fill: col,
+          stroke: !isDark && needsDarkOutline(col) ? '#334155' : isDark ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.85)',
+          lineWidth: 1,
+          scale: glyphScale,
+          roof: isDark ? '#e2e8f0' : '#ffffff',
+        });
       }
 
       ctx.globalCompositeOperation = 'source-over';
@@ -140,7 +142,7 @@ export function drawVehicles(rc: RenderContext): void {
 
 export function drawRealtimeVehicles(rc: RenderContext): void {
   const { ctx, cw, ch, pal, isDark, sx, sy, mx, my, camera, showRealtimeVehicles, realtimeVehicles, selectedCategory } = rc;
-  // 5b. Posizioni reali GTFS-RT: rombo con bordo bianco, distinguibile dai mezzi simulati (cerchi)
+  // 5b. Posizioni reali GTFS-RT: stessa icona dei mezzi da orario ma con bordo marcato e punto «live»
   if (showRealtimeVehicles && realtimeVehicles.length > 0) {
     for (const v of realtimeVehicles) {
       const cat = v.category || 'vaporetto';
@@ -149,15 +151,23 @@ export function drawRealtimeVehicles(rc: RenderContext): void {
       const vy = sy(my(v.lat));
       if (vx < -20 || vx > cw + 20 || vy < -20 || vy > ch + 20) continue;
       const col = lineColor(v.line, cat) ?? pal.cats[cat] ?? '#34d399';
-      ctx.save();
-      ctx.translate(vx, vy);
-      ctx.rotate(Math.PI / 4);
-      ctx.fillStyle = col;
-      ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
-      ctx.lineWidth = 1.5;
-      ctx.fillRect(-4.5, -4.5, 9, 9);
-      ctx.strokeRect(-4.5, -4.5, 9, 9);
-      ctx.restore();
+      // direzione dal GPS (gradi da nord, in senso orario); senza direzione l'icona punta a nord
+      const heading = ((v.bearing ?? 0) * Math.PI) / 180;
+      drawVehicleGlyph(ctx, cat, vx, vy, heading, {
+        fill: col,
+        stroke: isDark ? '#ffffff' : '#0f172a',
+        lineWidth: 1.8,
+        scale: Math.max(0.75, Math.min(1.2, 0.6 + 12 * camera.s)),
+        roof: isDark ? '#e2e8f0' : '#ffffff',
+      });
+      // punto «live»: distingue la posizione reale da quella calcolata dall'orario
+      ctx.beginPath();
+      ctx.arc(vx + 6, vy - 6, 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = '#22c55e';
+      ctx.fill();
+      ctx.strokeStyle = isDark ? '#0f172a' : '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
       // Anello del ritardo stimato da ACTV (solo se recente): verde in orario, giallo 3-5 min, rosso oltre
       if (v.delay && isFresh(v.delay.updatedAt)) {
         ctx.beginPath();
