@@ -375,7 +375,11 @@ export const enUi: UiTranslations = {
     flottaAlilaguna: "Alilaguna",
     battelliServizio: "scheduled boats",
     orologioUrbanoVenezia: "Solar clock and ephemeris of Venice (45.437° N, 12.335° E)",
-    tideButtonTitle: "Tide at Punta della Salute (CPSM): open the simulator"
+    tideButtonTitle: "Tide at Punta della Salute (CPSM): open the simulator",
+    espandiTimeline: "Expand timeline controls",
+    riduciTimeline: "Collapse timeline",
+    timelineRidottaAria: "Timeline controls collapsed",
+    timelineEstesaAria: "Timeline controls expanded"
   },
   feature: {
     stelleHotel: "5-star: {five}, 4-star: {four}, 3-star: {three}",

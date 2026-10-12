@@ -373,7 +373,11 @@ export const itUi = {
     flottaAlilaguna: "Alilaguna",
     battelliServizio: "battelli da orario",
     orologioUrbanoVenezia: "Orologio solare ed effemeridi di Venezia (45.437° N, 12.335° E)",
-    tideButtonTitle: "Marea a Punta della Salute (CPSM): apri il simulatore"
+    tideButtonTitle: "Marea a Punta della Salute (CPSM): apri il simulatore",
+    espandiTimeline: "Espandi controlli orario",
+    riduciTimeline: "Riduci timeline",
+    timelineRidottaAria: "Controlli temporali ridotti",
+    timelineEstesaAria: "Controlli temporali estesi"
   },
   feature: {
     stelleHotel: "5 stelle: {five}, 4 stelle: {four}, 3 stelle: {three}",

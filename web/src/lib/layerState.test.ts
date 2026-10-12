@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { allLayers, countActiveLayers, DEFAULT_PRESET, initialLayersFromSearch, isMapPreset, layersFrom, makeLayerSetters, matchingPreset, PRESET_LAYERS, presetLayers, resolvePreset, SCENARIO_PRESETS, type LayerVisibility } from './layerState';
+import { allLayers, countActiveLayers, DEFAULT_PRESET, hasActiveTemporalLayers, initialLayersFromSearch, isMapPreset, layersFrom, makeLayerSetters, matchingPreset, PRESET_LAYERS, presetLayers, resolvePreset, SCENARIO_PRESETS, type LayerVisibility } from './layerState';
 import { ALL_LAYER_KEYS, LAYER_SLUG_BY_KEY } from './urlLayers';
 import { LAYER_CATALOG } from './layerCatalog';
 
@@ -82,4 +82,30 @@ describe('layerState', () => {
     expect(initialLayersFromSearch('?preset=xyz')).toBeNull();
     expect(initialLayersFromSearch('')).toBeNull();
   });
+
+  it('hasActiveTemporalLayers rileva correttamente layer temporali vs statici', () => {
+    // Solo layer statici: falso
+    const staticOnly = layersFrom({ showDae: true, showCityAssets: true, showTrees: true });
+    expect(hasActiveTemporalLayers(staticOnly, false)).toBe(false);
+
+    // Con simulatore marea: sempre vero anche senza layer attivi
+    expect(hasActiveTemporalLayers(allLayers(false), true)).toBe(true);
+
+    // Con vaporetti ACTV
+    const withActv = layersFrom({ showVehicles: true });
+    expect(hasActiveTemporalLayers(withActv, false)).toBe(true);
+
+    // Con Alilaguna
+    const withAli = layersFrom({ showAlilaguna: true });
+    expect(hasActiveTemporalLayers(withAli, false)).toBe(true);
+
+    // Con MOSE
+    const withMose = layersFrom({ showMose: true });
+    expect(hasActiveTemporalLayers(withMose, false)).toBe(true);
+
+    // Con Passerelle
+    const withPass = layersFrom({ showPasserelle: true });
+    expect(hasActiveTemporalLayers(withPass, false)).toBe(true);
+  });
 });
+

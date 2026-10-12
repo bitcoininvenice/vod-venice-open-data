@@ -7,7 +7,7 @@ import { MapEngine } from '@/components/MapEngine';
 import { TimelineControls } from '@/components/TimelineControls';
 import { LayerPanel } from '@/components/LayerPanel';
 import { buildLayersParam, buildShareUrl, type LayerKey } from '@/lib/urlLayers';
-import { allLayers, countActiveLayers, DEFAULT_PRESET, initialLayersFromSearch, makeLayerSetters, presetLayers, type LayerVisibility, type MapPreset } from '@/lib/layerState';
+import { allLayers, countActiveLayers, DEFAULT_PRESET, hasActiveTemporalLayers, initialLayersFromSearch, makeLayerSetters, presetLayers, type LayerVisibility, type MapPreset } from '@/lib/layerState';
 import { copyToClipboard } from '@/lib/dataExport';
 import { layerCounts as countLayerItems, neededResources } from '@/lib/cityData';
 import { useCityData } from '@/lib/useCityData';
@@ -20,7 +20,7 @@ import type { SportFilter } from '@/lib/sports';
 import { ActiveLayersLegend } from '@/components/ActiveLayersLegend';
 import type { VeniceFeatureSelected } from '@/components/VeniceFeatureDetailModal';
 import type { SearchResultItem } from '@/components/GlobalSearchModal';
-import { Layers, Waves, X, Play, Pause, Plus, Minus } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import { getFloodedGroundPercentage } from '@/lib/flood';
 import { isLocated, type CameraViewPreset, type PaletteTheme, type DayType, type TransportModeCategory, type StopItem, type CantiereItem, type SatelliteItem, type VeniceCameraItem } from '@/lib/types';
 import { NOTTE, CARTA, getDynamicPalette, isDaylightTheme } from '@/lib/solar';
@@ -472,6 +472,40 @@ export default function HomePage() {
     });
   }, [simulatedTideLevel, isMoseProtected, currentTimeSeconds, data.tideInfo, data.tideLevel]);
 
+  // Rilevamento contestuale: true se sono accesi layer temporali (ACTV, Alilaguna, MOSE, passerelle) o simulatore
+  const isTemporalActive = useMemo(() => {
+    return hasActiveTemporalLayers(layers, simulatedTideLevel !== null);
+  }, [layers, simulatedTideLevel]);
+
+  // Controlli simulatore marea/MOSE integrati direttamente nel bottom dock
+  const simulatorControls = useMemo(() => {
+    if (simulatedTideLevel === null) return null;
+    return {
+      level: simulatedTideLevel,
+      formattedCm: formatSignedCm(simulatedTideLevel),
+      floodedPercentText:
+        simulatedTideLevel >= 110 && isMoseProtected
+          ? `(~${getFloodedGroundPercentage(85)}% · MOSE)`
+          : `(~${getFloodedGroundPercentage(simulatedTideLevel)}%)`,
+      isProtected: isMoseProtected,
+      isPlayingCycle: isTideCyclePlaying,
+      onStepLevel: (delta: number) => {
+        setIsTideCyclePlaying(false);
+        setSimulatedTideLevel((prev) => {
+          const next = (prev ?? 80) + delta;
+          return Math.max(50, Math.min(200, next));
+        });
+      },
+      onToggleCycle: () => setIsTideCyclePlaying((p) => !p),
+      onToggleProtection: () => setIsMoseProtected((p) => !p),
+      onOpenModal: () => setIsTideModalOpen(true),
+      onReset: () => {
+        setIsTideCyclePlaying(false);
+        setSimulatedTideLevel(null);
+      },
+    };
+  }, [simulatedTideLevel, isMoseProtected, isTideCyclePlaying]);
+
   return (
     <main className="relative w-screen h-screen overflow-hidden flex flex-col bg-[var(--ground)]">
       {/* Top Header */}
@@ -648,114 +682,6 @@ export default function HomePage() {
               : 'left-1/2 -translate-x-1/2 max-w-4xl'
           }`}
         >
-          {/* Overlay Simulatore Marea / Ciclo (Stessa larghezza e stile della Timeline) */}
-          {simulatedTideLevel !== null && (
-            <div className="w-full mb-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
-              <div className="w-full glass-panel rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 shadow-2xl border border-cyan-500/40 flex items-center justify-between gap-2 flex-wrap">
-                <div className="flex items-center gap-2 shrink-0">
-                  <Waves className="w-4 h-4 text-cyan-600 dark:text-cyan-400 motion-safe:animate-pulse shrink-0" />
-                  <span className="text-[var(--ink-2)]">
-                    <span className="font-semibold text-[var(--ink)]">{t('ui.floodModal.simPill')}: </span>
-                    <strong className={simulatedTideLevel >= 110 ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-sky-700 dark:text-cyan-300 font-bold'}>
-                      {formatSignedCm(simulatedTideLevel)}
-                    </strong>
-                    <span className="text-[11px] text-[var(--ink-2)] ml-1.5 opacity-90 whitespace-nowrap">
-                      {simulatedTideLevel >= 110 && isMoseProtected
-                        ? `(~${getFloodedGroundPercentage(85)}% · MOSE)`
-                        : `(~${getFloodedGroundPercentage(simulatedTideLevel)}%)`}
-                    </span>
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap ml-auto">
-                  {/* Controlli passo marea (-5 / +5 cm fino a +200 cm) */}
-                  <div className="flex items-center gap-1 border-l border-[var(--rule)] pl-1.5 sm:pl-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsTideCyclePlaying(false);
-                        setSimulatedTideLevel((prev) => Math.max(50, (prev ?? 80) - 5));
-                      }}
-                      className="px-1.5 py-0.5 rounded bg-[var(--rule)]/70 hover:bg-[var(--rule)] text-[var(--ink)] text-[10px] font-mono cursor-pointer active:scale-95 border border-[var(--rule)]"
-                      title="-5 cm"
-                      aria-label="-5 cm"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsTideCyclePlaying(false);
-                        setSimulatedTideLevel((prev) => Math.min(200, (prev ?? 80) + 5));
-                      }}
-                      className="px-1.5 py-0.5 rounded bg-[var(--rule)]/70 hover:bg-[var(--rule)] text-[var(--ink)] text-[10px] font-mono cursor-pointer active:scale-95 border border-[var(--rule)]"
-                      title="+5 cm"
-                      aria-label="+5 cm"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  </div>
-
-                  {/* Riproduzione ciclo marea sinusoidale (aumento/diminuzione fluido) */}
-                  <button
-                    type="button"
-                    onClick={() => setIsTideCyclePlaying((p) => !p)}
-                    className={`flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-mono border transition-colors cursor-pointer shrink-0 ${
-                      isTideCyclePlaying
-                        ? 'bg-cyan-500/20 text-cyan-800 dark:text-cyan-100 border-cyan-500/60 font-semibold shadow-sm'
-                        : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-800 dark:text-cyan-200 border-cyan-500/30 font-medium'
-                    }`}
-                    title={isTideCyclePlaying ? 'Pausa ciclo sinusoidale' : 'Avvia ciclo marea'}
-                  >
-                    {isTideCyclePlaying ? <Pause className="w-3 h-3 text-cyan-700 dark:text-cyan-300" /> : <Play className="w-3 h-3 text-cyan-700 dark:text-cyan-300" />}
-                    <span>{isTideCyclePlaying ? 'Pausa' : 'Avvia'}</span>
-                  </button>
-
-                  {/* Toggle Difesa MOSE quando la marea supera la soglia di allerta (>= 110 cm) */}
-                  {simulatedTideLevel >= 110 && (
-                    <button
-                      type="button"
-                      onClick={() => setIsMoseProtected((p) => !p)}
-                      className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-mono border transition-colors cursor-pointer shrink-0 ${
-                        isMoseProtected
-                          ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 border-emerald-500/40 font-semibold'
-                          : 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-800 dark:text-rose-200 border-rose-500/40 font-semibold'
-                      }`}
-                      title={
-                        isMoseProtected
-                          ? 'MOSE attivo: paratie alzate, laguna protetta a +85cm. Clicca per disattivare e vedere la citta allagata'
-                          : 'MOSE disattivato: paratie abbassate, marea entra in citta. Clicca per attivare la difesa'
-                      }
-                    >
-                      {isMoseProtected ? 'MOSE: Difesa Attiva' : 'MOSE: Disattivato'}
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => setIsTideModalOpen(true)}
-                    className="px-1.5 sm:px-2 py-0.5 rounded bg-[var(--rule)]/60 hover:bg-[var(--rule)] text-[var(--ink)] border border-[var(--rule)] transition-colors cursor-pointer text-[10px] sm:text-[11px] font-medium"
-                    title={t('ui.floodModal.simAdjustTitle')}
-                  >
-                    {t('ui.floodModal.simAdjust')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsTideCyclePlaying(false);
-                      setSimulatedTideLevel(null);
-                    }}
-                    className="p-1 rounded text-[var(--ink-3)] hover:text-[var(--ink)] hover:bg-[var(--rule)] transition-colors cursor-pointer"
-                    title={t('ui.floodModal.simReset')}
-                    aria-label={t('ui.floodModal.simReset')}
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
           <TimelineControls
             currentTimeSeconds={currentTimeSeconds}
             onTimeChange={(val) => {
@@ -788,6 +714,8 @@ export default function HomePage() {
               trackLayerOpen('marea');
               setIsTideModalOpen(true);
             }}
+            hasTemporalLayers={isTemporalActive}
+            simulator={simulatorControls}
           />
         </div>
           {/* Scheda informativa unica (agganciata a destra su desktop, cassetto su mobile) */}

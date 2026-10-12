@@ -112,3 +112,19 @@ export function initialLayersFromSearch(search: string): { layers: LayerVisibili
   if (preset) return { layers: presetLayers(preset), preset };
   return null;
 }
+
+/**
+ * Restituisce true se almeno un layer attivo dipende dallo scorrimento temporale o dagli orari,
+ * oppure se e attivo il simulatore di marea.
+ */
+export function hasActiveTemporalLayers(layers: LayerVisibility, hasSimulator = false): boolean {
+  if (hasSimulator) return true;
+  return Boolean(
+    layers.showVehicles ||
+    layers.showRealtimeVehicles ||
+    layers.showAlilaguna ||
+    layers.showMose ||
+    layers.showPasserelle
+  );
+}
+
