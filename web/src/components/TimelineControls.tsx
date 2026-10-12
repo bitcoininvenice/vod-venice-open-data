@@ -511,24 +511,9 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
           )}
         </div>
 
-        {/* Destra: Condivisione, Play/Pausa e Chevron di Espansione */}
+        {/* Destra: Condivisione e Chevron di Espansione */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
           {renderShareButton()}
-
-          {/* Quick Play/Pause button */}
-          <button
-            type="button"
-            onClick={onTogglePlay}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-xl font-medium text-xs transition-all cursor-pointer ${
-              isPlaying
-                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 hover:bg-amber-500/30'
-                : 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/20 hover:bg-cyan-400'
-            }`}
-            title={isPlaying ? t('ui.timeline.pausa') : t('ui.timeline.avvia')}
-          >
-            {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-            <span className="hidden sm:inline">{isPlaying ? t('ui.timeline.pausa') : t('ui.timeline.avvia')}</span>
-          </button>
 
           {/* Chevron Espandi */}
           <button
@@ -633,32 +618,9 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
           )}
         </div>
 
-        {/* Right Section: Share button, Play/Pause button, Desktop Day Selector, Collapse Button */}
+        {/* Right Section: Share button, Desktop Day Selector, Collapse Button */}
         <div className="flex items-center gap-2 shrink-0">
           {renderShareButton()}
-
-          {/* Quick Play/Pause button */}
-          <button
-            type="button"
-            onClick={onTogglePlay}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-xs transition-all cursor-pointer ${
-              isPlaying
-                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 hover:bg-amber-500/30'
-                : 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/20 hover:bg-cyan-400'
-            }`}
-          >
-            {isPlaying ? (
-              <>
-                <Pause className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{t('ui.timeline.pausa')}</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span className="hidden sm:inline">{t('ui.timeline.avvia')}</span>
-              </>
-            )}
-          </button>
 
           {/* Desktop Day Selector (Contextual: visible only if ACTV GTFS layer is active) */}
           {showVehicles && (
@@ -764,9 +726,26 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
           </div>
         )}
 
-        {/* Speed Presets (Always active for time travel across 24h) */}
+        {/* Playback orario 24h & Selettore Velocità (Raggruppati per il moto temporale) */}
         <div className="flex items-center justify-between w-full md:w-auto gap-2">
           <div className="flex items-center gap-1 bg-[var(--rule)]/60 p-0.5 rounded-lg border border-[var(--rule)] w-full md:w-auto justify-between md:justify-start">
+            <button
+              type="button"
+              onClick={onTogglePlay}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-mono font-medium transition-all cursor-pointer ${
+                isPlaying
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
+                  : 'bg-cyan-500 text-white shadow-sm hover:bg-cyan-400'
+              }`}
+              title={isPlaying ? t('ui.timeline.pausaOrarioTooltip') : t('ui.timeline.avviaOrarioTooltip')}
+              aria-label={isPlaying ? t('ui.timeline.pausa') : t('ui.timeline.avvia')}
+            >
+              {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 fill-current" />}
+              <span className="text-[11px]">{isPlaying ? t('ui.timeline.pausa') : t('ui.timeline.avvia')}</span>
+            </button>
+
+            <div className="h-3.5 w-px bg-[var(--rule)] mx-0.5" />
+
             <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono px-1.5 hidden sm:inline">
               {t('timeline.speed')}
             </span>

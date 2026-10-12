@@ -349,6 +349,8 @@ export const itUi = {
     corseOrario: "corse da orario",
     pausa: "Pausa",
     avvia: "Avvia",
+    pausaOrarioTooltip: "Metti in pausa lo scorrimento dell'orario 24h",
+    avviaOrarioTooltip: "Avvia lo scorrimento dell'orario 24h",
     mostraOpzioniVelocitaCalendario: "Mostra opzioni velocità e calendario",
     orarioGiorno: "Orario del giorno",
     giorno: "Giorno:",

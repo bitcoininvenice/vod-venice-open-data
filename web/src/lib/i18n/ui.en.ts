@@ -351,6 +351,8 @@ export const enUi: UiTranslations = {
     corseOrario: "scheduled trips",
     pausa: "Pause",
     avvia: "Play",
+    pausaOrarioTooltip: "Pause 24h time playback",
+    avviaOrarioTooltip: "Start 24h time playback",
     mostraOpzioniVelocitaCalendario: "Show speed and calendar options",
     orarioGiorno: "Time of day",
     giorno: "Day:",
