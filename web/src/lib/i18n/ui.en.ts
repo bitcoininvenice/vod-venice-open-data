@@ -378,7 +378,7 @@ export const enUi: UiTranslations = {
     battelliServizio: "scheduled boats",
     orologioUrbanoVenezia: "Solar clock and ephemeris of Venice (45.437° N, 12.335° E)",
     tideButtonTitle: "Tide at Punta della Salute (CPSM): open the simulator",
-    espandiTimeline: "Expand timeline controls",
+    espandiTimeline: "Expand",
     riduciTimeline: "Collapse",
     timelineRidottaAria: "Timeline controls collapsed",
     timelineEstesaAria: "Timeline controls expanded",
