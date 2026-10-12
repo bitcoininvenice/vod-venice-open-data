@@ -35,7 +35,8 @@ export interface ResolveTideOptions {
 const LIFT_DURATION_MS = 30 * 60 * 1000; // 30 minuti di sollevamento
 const LOWER_DURATION_MS = 15 * 60 * 1000; // 15 minuti di abbassamento
 const ANTICIPATION_MS = 45 * 60 * 1000; // Procedura avviata 45 min prima del picco
-const MOSE_PROTECTED_LAGUNA_MAX_CM = 85; // Quota massima di equilibrio lagunare con MOSE alzato
+const MOSE_SIMULATOR_PROTECTED_LAGUNA_CM = 70; // Nel simulatore utente: protezione integrale (0% allagamento, San Marco e calli asciutte)
+const MOSE_PROTECTED_LAGUNA_MAX_CM = 85; // Nei dati reali/previsioni: quota lagunare reale di equilibrio con barriere alzate
 const MOSE_THRESHOLD_CM = 110; // Soglia ufficiale di attivazione MOSE
 
 /**
@@ -57,7 +58,7 @@ export function resolveTideState(options: ResolveTideOptions): DynamicTideState 
   if (simulatedTideLevel !== null && simulatedTideLevel !== undefined) {
     const seaTideCm = Math.round(simulatedTideLevel);
     const moseActive = isMoseProtected && seaTideCm >= MOSE_THRESHOLD_CM;
-    const lagoonTideCm = moseActive ? MOSE_PROTECTED_LAGUNA_MAX_CM : seaTideCm;
+    const lagoonTideCm = moseActive ? MOSE_SIMULATOR_PROTECTED_LAGUNA_CM : seaTideCm;
     const moseStatus: MoseStatus = moseActive ? 'ATTIVATO' : 'ABBASSATO';
 
     return {

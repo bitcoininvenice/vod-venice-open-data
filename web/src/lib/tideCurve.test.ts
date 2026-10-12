@@ -20,9 +20,10 @@ describe('tideCurve', () => {
       isMoseProtected: true,
     });
     expect(res.seaTideCm).toBe(140);
-    expect(res.lagoonTideCm).toBe(85);
+    expect(res.lagoonTideCm).toBe(70);
     expect(res.moseStatus).toBe('ATTIVATO');
     expect(res.isMoseRaised).toBe(true);
+    expect(res.isFlooded).toBe(false);
     expect(res.moseLiftProgress).toBe(1.0);
   });
 

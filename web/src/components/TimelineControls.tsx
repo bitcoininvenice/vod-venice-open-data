@@ -383,7 +383,7 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
               title={
                 simulator.isProtected
                   ? simulator.level >= 110
-                    ? 'MOSE attivo: barriere alzate, laguna protetta a +85cm. Clicca per disattivare e vedere la laguna allagata'
+                    ? 'MOSE attivo: barriere alzate, laguna protetta (0% allagamento). Clicca per disattivare e vedere la laguna allagata'
                     : 'MOSE armato: difesa attiva, si alzera automaticamente sopra i 110cm. Clicca per disattivare'
                   : 'MOSE disattivato: paratie a riposo sul fondo, marea libera in laguna. Clicca per attivare'
               }

@@ -367,7 +367,7 @@ export const enUi: UiTranslations = {
     albaAlle: "Sunrise",
     tramontoAlle: "Sunset",
     notteAlle: "Night",
-    mareaPuntaSalute: "Punta Salute Tide",
+    mareaPuntaSalute: "Tide",
     mareaNonDisponibile: "n/a",
     airTempTitle: "Air temperature at {station} (Tide Centre, City of Venice), measured at {time}",
     airTempHumidityTitle: "Air temperature and relative humidity at {station} (Tide Centre, City of Venice), measured at {time}",

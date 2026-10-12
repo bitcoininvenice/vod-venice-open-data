@@ -512,7 +512,7 @@ export default function HomePage() {
       formattedCm: formatSignedCm(simulatedTideLevel),
       floodedPercentText:
         simulatedTideLevel >= 110 && isMoseProtected
-          ? `(~${getFloodedGroundPercentage(85)}% · MOSE)`
+          ? '(0% · MOSE)'
           : `(~${getFloodedGroundPercentage(simulatedTideLevel)}%)`,
       isProtected: isMoseProtected,
       isPlayingCycle: isTideCyclePlaying,

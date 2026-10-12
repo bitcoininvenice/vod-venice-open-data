@@ -168,14 +168,15 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
   if (!isOpen) return null;
 
   const floodedPercent = (isMoseProtected && simulatedCm >= 110)
-    ? getFloodedGroundPercentage(85)
+    ? 0
     : getFloodedGroundPercentage(simulatedCm);
   const isMoseRaised = simulatedCm >= 110 && isMoseProtected;
 
   // Tratte passerelle dal dataset usato anche dalla mappa (una sola fonte)
+  const effectiveCm = (isMoseProtected && simulatedCm >= 110) ? 70 : simulatedCm;
   const passerelleRoutes = [...PASSERELLE_DATA]
     .sort((x, y) => x.activationThresholdCm - y.activationThresholdCm)
-    .map((p) => ({ id: p.id, threshold: p.activationThresholdCm, name: p.name, active: simulatedCm >= p.activationThresholdCm }));
+    .map((p) => ({ id: p.id, threshold: p.activationThresholdCm, name: p.name, active: effectiveCm >= p.activationThresholdCm }));
 
   // Classificazione CPSM della marea (stessa di server/sources/tide.ts)
   const getTideCode = (cm: number) => {
@@ -454,7 +455,7 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
                         : 'bg-rose-500/10 text-rose-400 border-rose-500/30 font-semibold'
                     }`}>
                       {isMoseProtected
-                        ? (simulatedCm >= 110 ? 'DIFESA ATTIVA (CENTRO STORICO ~85 cm)' : 'DIFESA ARMATA (SOGLIA 110 cm)')
+                        ? (simulatedCm >= 110 ? 'DIFESA ATTIVA (CITTA PROTETTA · 0% ALLAGAMENTO)' : 'DIFESA ARMATA (SOGLIA 110 cm)')
                         : 'DISATTIVATO (MAREA INTEGRALE IN CITTA)'}
                     </span>
                   </div>
