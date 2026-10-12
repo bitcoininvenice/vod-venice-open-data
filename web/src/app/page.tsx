@@ -90,7 +90,7 @@ export default function HomePage() {
   // Layer toggles (Default to false on clean map startup)
   const [layers, setLayers] = useState<LayerVisibility>(() => allLayers(false));
   const { showRoutes, showVehicles, showMose, showAlilaguna, showPasserelle } = layers;
-  const { setShowPasserelle } = useMemo(() => makeLayerSetters(setLayers), []);
+  const { setShowPasserelle, setShowLagoonCurrents, setShowLagoonWater } = useMemo(() => makeLayerSetters(setLayers), []);
 
   // 1. Viabilità Acquea & Canali
   // 2. Idrografia, Subsidenza & Morfologia
@@ -846,6 +846,7 @@ export default function HomePage() {
             feature={selectedFeature}
             onClose={() => setSelectedFeature(null)}
             currentTideLevelCm={data.tideLevel ?? undefined}
+            tideExtremes={data.tideInfo.forecast?.extremes ?? null}
             onPlanTo={openPlanner}
           />
         )}
@@ -898,6 +899,16 @@ export default function HomePage() {
           onToggleCycle={() => setIsTideCyclePlaying((p) => !p)}
           forecast={data.tideInfo.forecast}
           marineWindStations={data.marineWindStations}
+          tideStations={data.cpsmStations}
+          lagoonWater={data.lagoonWaterQuality}
+          onActivateCurrents={() => {
+            trackLayerToggle('showLagoonCurrents', true);
+            setShowLagoonCurrents(true);
+          }}
+          onActivateLagoonWater={() => {
+            trackLayerToggle('showLagoonWater', true);
+            setShowLagoonWater(true);
+          }}
         />
       )}
 

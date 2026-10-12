@@ -65,7 +65,7 @@ export function countActiveLayers(v: LayerVisibility): number {
  */
 export const PRESET_LAYERS: Record<Exclude<MapPreset, 'clean'>, LayerKey[]> = {
   muoversi: ['showVehicles', 'showRealtimeVehicles', 'showStops', 'showAlilaguna', 'showShips'],
-  'acqua-alta': ['showMose', 'showPasserelle', 'showOceanStations', 'showCanals'],
+  'acqua-alta': ['showMose', 'showPasserelle', 'showLagoonCurrents', 'showOceanStations', 'showCanals'],
   ambiente: ['showAirQuality', 'showPollenStations', 'showLagoonWater', 'showMarineWind', 'showParks'],
   servizi: ['showPharmacies', 'showDae', 'showCityAssets', 'showRecyclingCentres', 'showWifiHotspots'],
   citta: ['showLibraries', 'showCameras', 'showCantieri', 'showBdapWorks', 'showTrees', 'showCanals'],
@@ -124,7 +124,8 @@ export function hasActiveTemporalLayers(layers: LayerVisibility, hasSimulator = 
     layers.showRealtimeVehicles ||
     layers.showAlilaguna ||
     layers.showMose ||
-    layers.showPasserelle
+    layers.showPasserelle ||
+    layers.showLagoonCurrents
   );
 }
 

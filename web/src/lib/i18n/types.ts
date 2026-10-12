@@ -131,6 +131,7 @@ export interface Translations {
     layerPublicDocks: string;
     layerMose: string;
     layerPasserelle: string;
+    layerLagoonCurrents: string;
     layerMarineSignals: string;
     layerOceanStations: string;
     layerBathingWaters: string;

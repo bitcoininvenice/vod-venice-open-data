@@ -35,6 +35,7 @@ import { ACTV_STOPS_REFERENCE } from './stopsReference';
 import { OPEN_PUBLIC_DAE } from './dae-data';
 import { OPEN_PHARMACIES } from './pharmacies-data';
 import { VENICE_CAMERAS } from './cameras-data';
+import { LAGOON_CURRENT_CHANNELS, type LagoonCurrentChannel } from './lagoonCurrents';
 
 export interface TideInfo {
   observedAt: string | null;
@@ -80,6 +81,7 @@ export interface CityData {
   subsidencePoints: SubsidenceInSARItem[];
   lagoonMorphology: LagoonMorphologyItem[];
   lagoonWaterQuality: LagoonWaterQualityItem[];
+  lagoonCurrents: LagoonCurrentChannel[];
   lagoonTributaryRivers: LagoonTributaryRiverItem[];
   airStations: AirQualityItem[];
   pollenMonitoringStations: PollenMonitoringStationItem[];
@@ -135,6 +137,7 @@ export const INITIAL_CITY_DATA: CityData = {
   wasteBoats: OPEN_VERITAS_WASTE_BOATS,
   regionalBikeRoutes: REGIONAL_BIKE_ROUTES,
   lagoonNetwork: null,
+  lagoonCurrents: LAGOON_CURRENT_CHANNELS,
   passerelle: [],
   briccole: [],
   oceanStations: [],
@@ -398,7 +401,7 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
     heritage: l.showNizioleti || l.showWells || l.showBellTowers || l.showFortresses || ui.lists,
     emergencyHealth: l.showEmergencyDocks || l.showDae || l.showPharmacies || ui.lists,
     urbanMicroclimate: l.showHeatIslands,
-    regionalData: l.showLagoonWater || l.showAccommodations || l.showBikeRoutes || l.showPollenStations || l.showTributaries,
+    regionalData: l.showLagoonWater || l.showAccommodations || l.showBikeRoutes || l.showPollenStations || l.showTributaries || ui.tideModal,
   };
 }
 
@@ -457,5 +460,6 @@ export function layerCounts(d: CityData, extra: { scheduledVehicles: number; ali
     showBikeRoutes: d.regionalBikeRoutes.length,
     showPollenStations: d.pollenMonitoringStations.length,
     showTributaries: d.lagoonTributaryRivers.length,
+    showLagoonCurrents: d.lagoonCurrents.length,
   };
 }

@@ -26,7 +26,7 @@ describe('registro delle risorse', () => {
 
   it('ogni livello che mostra dati caricati richiede almeno una risorsa', () => {
     // livelli disegnati da dati inclusi nella build o calcolati (nessuna API)
-    const builtIn = new Set(['showRoutes', 'showVehicles', 'showMose', 'showShipRoutes']);
+    const builtIn = new Set(['showRoutes', 'showVehicles', 'showMose', 'showShipRoutes', 'showLagoonCurrents']);
     const base = neededResources(allLayers(false), noUi);
     for (const key of ALL_LAYER_KEYS) {
       if (builtIn.has(key)) continue;

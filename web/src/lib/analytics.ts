@@ -36,6 +36,7 @@ const FEATURE_TO_LAYER_KEY: Record<Exclude<VeniceFeatureSelected['type'], 'civic
   pharmacy: 'showPharmacies',
   heatIsland: 'showHeatIslands',
   lagoonWater: 'showLagoonWater',
+  lagoonCurrent: 'showLagoonCurrents',
   accommodation: 'showAccommodations',
   bikeRoute: 'showBikeRoutes',
   pollenStation: 'showPollenStations',

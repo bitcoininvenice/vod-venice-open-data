@@ -1088,3 +1088,5 @@ export interface CityAirTemperature {
   /** ora locale Europe/Rome della misura, "YYYY-MM-DD HH:mm:ss" */
   observedAt: string;
 }
+
+export type { LagoonCurrentChannel, LagoonCurrentPhase, LagoonCurrentState } from './lagoonCurrents';

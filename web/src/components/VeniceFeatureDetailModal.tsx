@@ -82,6 +82,13 @@ import { sportColor } from '@/lib/sports';
 import { CAMPO_LICENSE_PAGE } from '@/server/sources/campo';
 import type { LayerKey } from '@/lib/urlLayers';
 
+import {
+  LagoonCurrentChannel,
+  computeLagoonCurrentState,
+  evaluateArpavWaterQuality,
+  OFFICIAL_LAGOON_SOURCES
+} from '@/lib/lagoonCurrents';
+
 export type VeniceFeatureSelected =
   | { type: 'passerella'; data: PasserellaItem }
   | { type: 'briccola'; data: BriccolaSignalItem }
@@ -108,6 +115,7 @@ export type VeniceFeatureSelected =
   | { type: 'pharmacy'; data: PharmacyItem }
   | { type: 'heatIsland'; data: HeatIslandSurfaceTempItem }
   | { type: 'lagoonWater'; data: LagoonWaterQualityItem }
+  | { type: 'lagoonCurrent'; data: LagoonCurrentChannel }
   | { type: 'accommodation'; data: TouristAccommodationItem }
   | { type: 'bikeRoute'; data: RegionalBikeRouteItem }
   | { type: 'pollenStation'; data: PollenMonitoringStationItem }
@@ -131,6 +139,8 @@ interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
   onClose: () => void;
   currentTideLevelCm?: number;
+  /** estremali di previsione CPSM, per la fase delle correnti */
+  tideExtremes?: { at: string; levelCm: number }[] | null;
   /** apre il planner con il luogo come destinazione */
   onPlanTo?: (point: { lon: number; lat: number; label: string }) => void;
 }
@@ -139,9 +149,11 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
   feature,
   onClose,
   currentTideLevelCm,
+  tideExtremes,
   onPlanTo
 }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const isIt = language === 'it';
   if (!feature) return null;
 
   return (
@@ -223,6 +235,9 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             )}
             {feature.type === 'lagoonWater' && (
               <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400"><Droplet className="w-5 h-5" /></div>
+            )}
+            {feature.type === 'lagoonCurrent' && (
+              <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400"><Compass className="w-5 h-5" /></div>
             )}
             {feature.type === 'accommodation' && (
               <div className="p-2 rounded-xl bg-fuchsia-500/20 text-fuchsia-400"><Building2 className="w-5 h-5" /></div>
@@ -315,6 +330,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'pharmacy' && feature.data.name}
                 {feature.type === 'heatIsland' && `${t('ui.feature.isolaCalore')}: ${feature.data.zoneName}`}
                 {feature.type === 'lagoonWater' && `${t('ui.feature.acqueArpav')}: ${feature.data.stationName}`}
+                {feature.type === 'lagoonCurrent' && feature.data.name}
                 {feature.type === 'accommodation' && `${t('ui.feature.pressioneRicettiva')}: ${feature.data.zoneName}`}
                 {feature.type === 'bikeRoute' && feature.data.routeName}
                 {feature.type === 'pollenStation' && feature.data.stationName}
@@ -342,6 +358,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'nizioleto' && `${t('ui.feature.sestiere')} ${feature.data.sestiere} · ${t('ui.feature.civico')} ${feature.data.civicNumber}`}
                 {feature.type === 'emergencyDock' && `SUEM 118 · ${feature.data.hospital}`}
                 {feature.type === 'heatIsland' && `${t('ui.feature.tempSuperficiale')}: ${feature.data.surfaceTempCelsius}°C`}
+                {feature.type === 'lagoonCurrent' && (isIt ? 'Correnti di marea · stima idrodinamica' : 'Tidal currents · hydrodynamic estimate')}
                 {feature.type === 'lagoonWater' && t('ui.feature.lagoonSampled', { date: feature.data.sampledAt.split('-').reverse().join('/'), depth: feature.data.depthMeters })}
                 {feature.type === 'accommodation' && `${t('ui.feature.densita')}: ${feature.data.densityCategory} · ${feature.data.bedsPerResidentRatio} ${t('ui.feature.postiLettoResidente')}`}
                 {feature.type === 'bikeRoute' && `${t('ui.feature.lunghezza')}: ${feature.data.lengthKm} km · ${feature.data.section}`}
@@ -1036,11 +1053,68 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <span className="text-[11px] text-[var(--ink-3)]">
                 {t('ui.feature.conducibilita')}: <b>{feature.data.conductivityMsCm ?? 'n.d.'} mS/cm</b> · {t('ui.feature.lagoonSamplingDays', { n: feature.data.samplingDays })}
               </span>
+              {(() => {
+                const q = evaluateArpavWaterQuality(feature.data.chlorophyllUgL, feature.data.dissolvedOxygenPercent, feature.data.salinityPsu);
+                return (
+                  <div className={`p-3 rounded-xl border flex flex-col gap-1 ${q.statusBadgeColor}`}>
+                    <span className="text-[10px] uppercase font-mono font-bold">{isIt ? q.titleIt : q.titleEn}</span>
+                    <span className="text-xs text-[var(--ink-2)]">{isIt ? q.notesIt : q.notesEn}</span>
+                    <span className="text-[10px] text-[var(--ink-3)]">
+                      {isIt
+                        ? 'Classe calcolata da VOD su clorofilla e ossigeno: non e la classificazione ufficiale WFD, che ARPAV pubblica per corpo idrico integrando elementi biologici e nutrienti.'
+                        : 'Class computed by VOD from chlorophyll and oxygen: not the official WFD classification, which ARPAV publishes per water body combining biological elements and nutrients.'}
+                    </span>
+                    <a href={OFFICIAL_LAGOON_SOURCES.arpav.url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline">
+                      {isIt ? 'Stato ecologico ufficiale e CSV ARPAV (CC BY 4.0)' : 'Official ecological status and ARPAV CSVs (CC BY 4.0)'}
+                    </a>
+                  </div>
+                );
+              })()}
               <a href="https://www.arpa.veneto.it/dati-ambientali/open-data/file-e-allegati/soaml/laguna-di-venezia/dati-sonda" target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2">
                 {t('ui.feature.lagoonSourceNote')}
               </a>
             </div>
           )}
+
+          {feature.type === 'lagoonCurrent' && (() => {
+            const ch = feature.data;
+            const st = computeLagoonCurrentState(currentTideLevelCm ?? 0, tideExtremes ?? null);
+            const speedKn = (ch.maxSpeedKnots * st.speedFactor).toFixed(1);
+            const dirLabel = st.flowDirection === 'INBOUND'
+              ? (isIt ? `Entrante (verso ${ch.flowBearingDeg} gradi)` : `Inbound (toward ${ch.flowBearingDeg} deg)`)
+              : st.flowDirection === 'OUTBOUND'
+                ? (isIt ? `Uscente (verso ${(ch.flowBearingDeg + 180) % 360} gradi)` : `Outbound (toward ${(ch.flowBearingDeg + 180) % 360} deg)`)
+                : (isIt ? 'Inversione in corso' : 'Reversing');
+            return (
+              <div className="flex flex-col gap-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                    <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{isIt ? 'Picco sizigiale tipico' : 'Typical spring peak'}</span>
+                    <p className="text-base font-bold font-mono text-cyan-400">{ch.maxSpeedKnots} kn <span className="text-xs">({ch.maxSpeedMs} m/s)</span></p>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                    <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{isIt ? 'Profondita' : 'Depth'}</span>
+                    <p className="text-base font-bold font-mono text-blue-400">{ch.depthMeters} m</p>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)] col-span-2">
+                    <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{isIt ? 'Fase stimata ora' : 'Estimated phase now'}</span>
+                    <p className="text-sm font-bold text-[var(--ink)]">{isIt ? st.labelIt : st.labelEn} · {dirLabel} · ~{speedKn} kn</p>
+                  </div>
+                </div>
+                <p className="text-xs text-[var(--ink-2)]">{ch.hydraulicSectionDesc}</p>
+                <span className="text-[10px] text-[var(--ink-3)]">
+                  {isIt
+                    ? `Stima cinematica da marea CPSM e valori tipici di letteratura (${ch.modelSource}). Non e una misura correntometrica: nessun ente pubblica correnti lagunari in tempo reale come open data. Non usare per la navigazione.`
+                    : `Kinematic estimate from CPSM tide and typical literature values (${ch.modelSource}). Not a current-meter measurement: no agency publishes real-time lagoon currents as open data. Not for navigation.`}
+                </span>
+                <div className="flex flex-wrap gap-3 border-t border-[var(--rule)] pt-2">
+                  <a href={OFFICIAL_LAGOON_SOURCES.cnr.url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline">CNR-ISMAR (SHYFEM)</a>
+                  <a href={OFFICIAL_LAGOON_SOURCES.ispra.url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline">ISPRA RMLV</a>
+                  <a href={OFFICIAL_LAGOON_SOURCES.cpsm.url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline">CPSM</a>
+                </div>
+              </div>
+            );
+          })()}
 
           {feature.type === 'accommodation' && (
             <div className="flex flex-col gap-3">
@@ -1341,7 +1415,7 @@ const FEATURE_LAYER: Record<Exclude<VeniceFeatureSelected['type'], 'civicPoi' | 
   lagoonMorphology: 'showMorphology', marineWind: 'showMarineWind', trainLive: 'showTrains',
   wasteBoat: 'showWasteBoats', nizioleto: 'showNizioleti', veniceWell: 'showWells', bellTower: 'showBellTowers',
   fortressIsland: 'showFortresses', emergencyDock: 'showEmergencyDocks', publicDae: 'showDae',
-  pharmacy: 'showPharmacies', heatIsland: 'showHeatIslands', lagoonWater: 'showLagoonWater',
+  pharmacy: 'showPharmacies', heatIsland: 'showHeatIslands', lagoonWater: 'showLagoonWater', lagoonCurrent: 'showLagoonCurrents',
   accommodation: 'showAccommodations', bikeRoute: 'showBikeRoutes', pollenStation: 'showPollenStations',
   tributaryRiver: 'showTributaries', parking: 'showParkings', fountain: 'showCityAssets', fiberCell: 'showFiber',
   airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks', loraGateway: 'showLoraGateways', wifiVenue: 'showWifiVenues', sportPlace: 'showSports', nauticalPlace: 'showNautical', parkPlace: 'showParks',
@@ -1361,7 +1435,7 @@ const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
 ]);
 
 /** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
-const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace', 'parkPlace', 'civicNumber']);
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'lagoonCurrent', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace', 'parkPlace', 'civicNumber']);
 
 /** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
 const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {

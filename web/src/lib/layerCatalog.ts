@@ -319,6 +319,22 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     endpointOrFile: 'passerelleData.ts'
   },
   {
+    id: 'correnti_laguna',
+    nameIt: 'Correnti & Idrodinamica Lagunare',
+    nameEn: 'Lagoon Tidal Currents & Hydrodynamics',
+    group: 'lagoon',
+    regime: 'simulated',
+    acquisition: 'local',
+    institution: 'CNR-ISMAR (modello SHYFEM), ISPRA Servizio Laguna (RMLV) & CPSM',
+    portalUrl: 'https://www.comune.venezia.it/it/content/centro-previsioni-e-segnalazioni-maree-beta',
+    portalName: 'CPSM, ISPRA & CNR-ISMAR',
+    descriptionIt: 'Vettori idrodinamici e circolazione di marea in tempo reale lungo le bocche di porto di Lido, Malamocco e Chioggia e i canali navigabili (fasi di flusso entrante, stanca e riflusso uscente).',
+    descriptionEn: 'Real-time hydrodynamic flow vectors and tidal circulation through Lido, Malamocco and Chioggia sea inlets and navigation canals (flood, slack, and ebb phases).',
+    technicalNotesIt: 'Fase di corrente determinata dalla forzante di marea CPSM/ISPRA (derivata dh/dt e dislivello mare-laguna). Velocità di picco e sezioni idrauliche basate sui parametri del modello idrodinamico a elementi finiti SHYFEM (CNR-ISMAR).',
+    technicalNotesEn: 'Current phase calculated from CPSM/ISPRA tidal forcing (dh/dt rate of change and sea-lagoon hydraulic gradient). Peak velocities and hydraulic cross-sections based on CNR-ISMAR SHYFEM finite-element hydrodynamic model parameters.',
+    endpointOrFile: '/api/tide & src/lib/lagoonCurrents.ts'
+  },
+  {
     id: 'briccole',
     nameIt: 'Briccole & Segnalamenti Canali',
     nameEn: 'Lagoon Channel Markers & Lights',

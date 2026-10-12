@@ -161,6 +161,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
         layers: [
           e('showMose', 'layers.layerMose', 'waves', 'blue'),
           e('showPasserelle', 'layers.layerPasserelle', 'shieldAlert', 'amber'),
+          e('showLagoonCurrents', 'layers.layerLagoonCurrents', 'compass', 'cyan'),
         ],
       },
       {

@@ -34,6 +34,9 @@ import { getFloodedGroundPercentage, meanDirectionDeg, romeLocalNow } from '@/li
 import { PASSERELLE_DATA } from '@/lib/passerelleData';
 import { Modal } from '@/components/ui/Modal';
 import { TideForecastChart } from './TideForecastChart';
+import { LagoonHydroPanel } from './LagoonHydroPanel';
+import type { TideStation } from '@/lib/contracts/tide';
+import type { LagoonWaterQualityItem } from '@/lib/types';
 
 interface TideFloodModalProps {
   isOpen: boolean;
@@ -48,6 +51,12 @@ interface TideFloodModalProps {
   marineWindStations?: MeteoMarineWindItem[];
   isPlayingCycle?: boolean;
   onToggleCycle?: () => void;
+  /** rete mareografica CPSM, per la scheda Laguna */
+  tideStations?: TideStation[];
+  /** sonde ARPAV, per la scheda Laguna */
+  lagoonWater?: LagoonWaterQualityItem[];
+  onActivateCurrents?: () => void;
+  onActivateLagoonWater?: () => void;
 }
 
 function formatExtremeStamp(atStr: string, language: 'it' | 'en'): string {
@@ -75,10 +84,14 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
   forecast,
   marineWindStations = [],
   isPlayingCycle,
-  onToggleCycle
+  onToggleCycle,
+  tideStations,
+  lagoonWater,
+  onActivateCurrents,
+  onActivateLagoonWater
 }) => {
   const { t, language } = useTranslation();
-  type ModalTab = 'simulator' | 'forecast' | 'sirens' | 'meteo' | 'channels';
+  type ModalTab = 'simulator' | 'forecast' | 'lagoon' | 'sirens' | 'meteo' | 'channels';
   const [activeTab, setActiveTab] = useState<ModalTab>('simulator');
   const [draftCm, setDraftCm] = useState<number | null>(null);
   const [localCycling, setLocalCycling] = useState(false);
@@ -269,6 +282,19 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
                 {forecast.extremes.length}
               </span>
             )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('lagoon')}
+            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-mono border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'lagoon'
+                ? 'border-blue-500 text-blue-400 font-bold'
+                : 'border-transparent text-[var(--ink-2)] hover:text-[var(--ink)]'
+            }`}
+          >
+            <Compass className="w-3.5 h-3.5" />
+            <span>{language === 'it' ? 'Laguna & Correnti' : 'Lagoon & Currents'}</span>
           </button>
 
           <button
@@ -1065,6 +1091,17 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
                 </div>
               </div>
             </div>
+          )}
+
+          {activeTab === 'lagoon' && (
+            <LagoonHydroPanel
+              liveTideLevel={liveTideLevel}
+              forecast={forecast}
+              stations={tideStations}
+              lagoonWater={lagoonWater}
+              onActivateCurrents={onActivateCurrents ? () => { onActivateCurrents(); onClose(); } : undefined}
+              onActivateLagoonWater={onActivateLagoonWater ? () => { onActivateLagoonWater(); onClose(); } : undefined}
+            />
           )}
 
           {/* Official Scientific Lineage */}

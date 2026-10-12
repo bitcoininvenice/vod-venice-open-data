@@ -16,7 +16,7 @@ import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
 import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
-import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, drawMarineSignals, drawOceanStations, drawCanalLimits, drawBridges, drawGondolas, drawDocks, drawMarineWind } from './map/lagoonLayers';
+import { drawMose, drawShipRoutes, drawShips, drawAlilaguna, drawPasserelle, drawLagoonCurrents, drawMarineSignals, drawOceanStations, drawCanalLimits, drawBridges, drawGondolas, drawDocks, drawMarineWind } from './map/lagoonLayers';
 import { bdapRadius, drawPin, drawParks, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 import { drawFloodLayer } from './map/floodLayer';
@@ -635,6 +635,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         L.showOceanStations && target({ items: D.oceanStations, radius: 24, select: feature('oceanStation') }),
         L.showMarineSignals && target({ items: D.briccole, radius: 20, select: feature('briccola') }),
         L.showPasserelle && target({ items: D.passerelle, at: noPoint, path, radius: 18, select: feature('passerella') }),
+        L.showLagoonCurrents && target({ items: D.lagoonCurrents, radius: 22, select: feature('lagoonCurrent') }),
+        L.showLagoonCurrents && target({ items: D.lagoonCurrents, at: noPoint, path: (c) => c.coordinates, radius: 16, select: feature('lagoonCurrent') }),
         L.showBathingWaters && target({ items: D.bathingWaters, radius: 22, select: feature('bathingWater') }),
         L.showTrees && target({ items: D.trees, radius: 20, select: feature('urbanTree') }),
         L.showEvCharging && target({ items: D.evCharging, radius: 20, select: feature('evCharging') }),
@@ -753,7 +755,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     const hasAnimatedLayers =
       layers.showVehicles || layers.showFlights || layers.showAlilaguna || layers.showSatellites ||
       (layers.showShips && data.ships.length > 0) ||
-      layers.showCameras || layers.showMarineSignals || layers.showOceanStations || layers.showLagoonWater ||
+      layers.showCameras || layers.showMarineSignals || layers.showOceanStations || layers.showLagoonWater || layers.showLagoonCurrents ||
       (layers.showMarineWind && data.windField !== null);
     let lastDraw = -Infinity;
     // Con layer animati al massimo 30 fotogrammi al secondo: a velocità reale i mezzi si spostano di
@@ -920,6 +922,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         drawCameras(rc);
 
         drawPasserelle(rc);
+
+        drawLagoonCurrents(rc);
 
         drawMarineSignals(rc);
 
