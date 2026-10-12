@@ -380,6 +380,7 @@ export interface Translations {
     vehicleLine: string;
     routeDirection: string;
     estimatedSpeed: string;
+    timetableSpeed: string;
     vehicleStatus: string;
     underway: string;
     airlineAirport: string;

@@ -302,7 +302,7 @@ export function drawAlilaguna(rc: RenderContext): void {
         // Boat label badge
         ctx.save();
         ctx.font = '700 8.5px "DM Mono", monospace';
-        const bTxt = `ALILAGUNA ${b.lineCode} (${b.speedKmh} km/h)`;
+        const bTxt = `ALILAGUNA ${b.lineCode} (~${b.speedKmh} km/h)`;
         const bW = ctx.measureText(bTxt).width;
         ctx.fillStyle = paletteTheme === 'notte' ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.88)';
         ctx.beginPath();

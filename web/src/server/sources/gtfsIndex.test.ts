@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseVehiclePositions } from './gtfsRt';
-import { lookupTrip } from './gtfsIndex';
+import { lineCategory, lookupTrip } from './gtfsIndex';
 
 describe('abbinamento GTFS-RT -> linea', () => {
   it('riconosce le corse anche con prefisso diverso dal GTFS statico', () => {
@@ -19,5 +19,15 @@ describe('abbinamento GTFS-RT -> linea', () => {
   it('restituisce null per corse sconosciute', () => {
     expect(lookupTrip('XYZ_1_2')).toBeNull();
     expect(lookupTrip(null)).toBeNull();
+  });
+});
+
+describe('categoria per linea', () => {
+  it('le linee del tram sono tram anche senza la corsa nell indice', () => {
+    expect(lineCategory('T1')).toBe('tram');
+    expect(lineCategory('T2')).toBe('tram');
+    expect(lineCategory('1')).toBe('vaporetto');
+    expect(lineCategory('linea-inesistente')).toBeNull();
+    expect(lineCategory(null)).toBeNull();
   });
 });

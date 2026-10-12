@@ -408,6 +408,8 @@ test('come arrivare: da Ferrovia a Murano in vaporetto, con l\'itinerario sulla 
   await page.locator('canvas').waitFor();
   await page.getByTestId('open-planner').click();
   const panel = page.locator('[data-info-panel]');
+  // partenza fissa alle 10:00: a tarda sera alcune linee non hanno più corse
+  await panel.locator('input[type="time"]').fill('10:00');
   await panel.getByTestId('planner-from').getByRole('textbox').fill('Ferrovia');
   await panel.getByRole('button', { name: /^Ferrovia$/ }).click();
   await panel.getByTestId('planner-to').getByRole('textbox').fill('Murano Colonna');
@@ -426,6 +428,8 @@ test('come arrivare: modalità solo a piedi e preferisci vaporetto', async ({ pa
   await page.locator('canvas').waitFor();
   await page.getByTestId('open-planner').click();
   const panel = page.locator('[data-info-panel]');
+  // partenza fissa alle 10:00: a tarda sera alcune linee non hanno più corse
+  await panel.locator('input[type="time"]').fill('10:00');
   await panel.getByTestId('planner-from').getByRole('textbox').fill('Ferrovia');
   await panel.getByRole('button', { name: /^Ferrovia$/ }).click();
   await panel.getByTestId('planner-to').getByRole('textbox').fill('Murano Colonna');

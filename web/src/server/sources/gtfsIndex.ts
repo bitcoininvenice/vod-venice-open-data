@@ -28,6 +28,24 @@ export function lookupTrip(tripId: string | null): { line: string; category: Rea
   return { line, category: category as RealtimeCategory };
 }
 
+let categoryByLine: Map<string, RealtimeCategory> | null = null;
+
+/**
+ * Categoria di una linea (es. T1 -> tram), ricavata dalle sue corse nel GTFS statico.
+ * Serve quando la corsa del feed realtime non è nell'indice ma la linea sì.
+ */
+export function lineCategory(line: string | null): RealtimeCategory | null {
+  if (!line) return null;
+  if (!categoryByLine) {
+    categoryByLine = new Map();
+    for (const value of Object.values(IDX.trips)) {
+      const [l, c] = value.split('|');
+      if (!categoryByLine.has(l)) categoryByLine.set(l, c as RealtimeCategory);
+    }
+  }
+  return categoryByLine.get(line) ?? null;
+}
+
 export function lookupRoute(routeId: string | null): { line: string } | null {
   if (!routeId) return null;
   const r = IDX.routes[routeId];

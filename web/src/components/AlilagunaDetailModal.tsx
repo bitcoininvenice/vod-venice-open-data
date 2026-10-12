@@ -179,7 +179,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
                     </div>
                   )}
                   <div className="flex justify-between items-center text-[10px] font-mono pt-1 border-t border-[var(--rule)] text-[var(--ink-3)]">
-                    <span>{b.speedKmh} km/h</span>
+                    <span>~{b.speedKmh} km/h</span>
                     <span>{t('ui.alilaguna.fromTimetable')}</span>
                   </div>
                 </div>

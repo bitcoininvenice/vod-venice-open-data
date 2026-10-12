@@ -379,6 +379,7 @@ export const itTranslations: Translations = {
     vehicleLine: 'Linea',
     routeDirection: 'Percorso & Direzione',
     estimatedSpeed: 'Velocità stimata',
+    timetableSpeed: 'Velocità media da orario',
     vehicleStatus: 'Stato Mezzo',
     underway: 'In Navigazione',
     airlineAirport: 'Compagnia & Aeroporto',

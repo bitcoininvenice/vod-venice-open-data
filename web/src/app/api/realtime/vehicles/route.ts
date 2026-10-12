@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { fetchUpstream } from '@/server/upstream';
 import { ACTV_GTFS_RT_FEEDS, parseVehiclePositions, type RealtimeVehicle } from '@/server/sources/gtfsRt';
-import { lookupRoute, lookupTrip, type RealtimeCategory } from '@/server/sources/gtfsIndex';
+import { lookupRoute, lookupTrip, type RealtimeCategory, lineCategory } from '@/server/sources/gtfsIndex';
 import { actvCurrentDelay, fetchTripDelays, findTrip, vehicleDelay } from '@/server/sources/actvDelays';
 import { isFresh, type VehicleDelay } from '@/lib/realtimeDelay';
 import { matchTrip, parseGtfsTime, positionDelay, trustDelay, type TripIndex } from '@/lib/positionDelay';
@@ -79,7 +79,7 @@ export async function GET() {
           ...v,
           network,
           line,
-          category: trip?.category ?? (network === 'navigazione' ? 'vaporetto' : 'bus'),
+          category: trip?.category ?? lineCategory(line) ?? (network === 'navigazione' ? 'vaporetto' : 'bus'),
           delay: conflict ? null : vehicleDelay(actvTrip, nowSec, checked),
           ...(conflict ? { delayConflict: true } : {}),
         };

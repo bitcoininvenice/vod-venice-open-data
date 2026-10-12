@@ -210,7 +210,7 @@ export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose,
       <KeyValues
         items={[
           [t('map.nextStopLabel'), b.nextStop, 'text-blue-400'],
-          [t('map.speed'), `${b.speedKmh} km/h`, 'text-emerald-400'],
+          [t('map.timetableSpeed'), `~${b.speedKmh} km/h`, 'text-emerald-400'],
           [t('ui.map.partenza'), b.scheduledDeparture, 'text-amber-400'],
           [t('ui.map.arrivoPrevisto'), b.scheduledArrival, 'text-cyan-400'],
         ]}

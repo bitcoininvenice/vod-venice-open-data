@@ -379,6 +379,7 @@ export const enTranslations: Translations = {
     vehicleLine: 'Line',
     routeDirection: 'Route & Direction',
     estimatedSpeed: 'Estimated Speed',
+    timetableSpeed: 'Average speed from timetable',
     vehicleStatus: 'Vehicle Status',
     underway: 'Underway / Sailing',
     airlineAirport: 'Airline & Airport',
