@@ -806,8 +806,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
       const rawTide = tideState.seaTideCm;
       const effectiveTideLevel = tideState.lagoonTideCm;
+      const isTideContextActive = simulatedTideLevel != null || layers.showPasserelle || layers.showMose || layers.showOceanStations;
 
-      if ((zoomed || simulatedTideLevel != null || effectiveTideLevel >= 80) && !isStreetsLoaded()) {
+      if ((zoomed || simulatedTideLevel != null || (isTideContextActive && effectiveTideLevel >= 80) || effectiveTideLevel >= 110) && !isStreetsLoaded()) {
         requestStreets(() => setLandHiReady((prev) => !prev));
       }
       drawBaseMap(ctx, { cw, ch, dpr, camera, pal, is3DView, zoomed: zoomed && isLandHiLoaded(), landLo: LAND_LO, zoomFactor });
@@ -874,8 +875,11 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
         drawSpatialBuffer(rc);
 
-        // Zone allagate (stima indicativa): su marea >= 80 cm (reale o timeline), con simulatore attivo o con passerelle accese
-        if (effectiveTideLevel >= 80 || simulatedTideLevel != null || layers.showPasserelle) {
+        // Zone allagate (stima indicativa):
+        // Disegnate solo se l'utente ha attivato un contesto di marea (simulatore, passerelle, MOSE, stazioni marea)
+        // oppure in caso di allerta alta/eccezionale (>= 110 cm). A mappa pulita senza layer marea attivi, non si allaga.
+        const shouldRenderFlood = simulatedTideLevel != null || isTideContextActive || effectiveTideLevel >= 110;
+        if (shouldRenderFlood && (effectiveTideLevel >= 80 || simulatedTideLevel != null || layers.showPasserelle)) {
           unguarded(() => drawFloodLayer(rc, rc.tideLevel));
         }
 

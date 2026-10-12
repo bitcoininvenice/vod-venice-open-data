@@ -535,7 +535,7 @@ export default function HomePage() {
         }}
         onOpenExportModal={() => setIsExportModalOpen(true)}
         activeCantieriCount={locatedCantieri.length}
-        tideLevel={data.tideLevel}
+        tideLevel={data.tideLevel ?? (data.tideInfo?.forecast ? currentDynamicTide.lagoonTideCm : null)}
         tideObservedAt={data.tideInfo.observedAt}
         tideTrend={data.tideInfo.trend}
       />
