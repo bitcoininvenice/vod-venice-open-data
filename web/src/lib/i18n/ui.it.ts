@@ -365,7 +365,7 @@ export const itUi = {
     albaAlle: "Alba",
     tramontoAlle: "Tramonto",
     notteAlle: "Notte",
-    mareaPuntaSalute: "Marea P.ta Salute",
+    mareaPuntaSalute: "Marea",
     mareaNonDisponibile: "n.d.",
     airTempTitle: "Temperatura dell'aria a {station} (Centro Maree, Comune di Venezia), misurata alle {time}",
     airTempHumidityTitle: "Temperatura e umidità relativa dell'aria a {station} (Centro Maree, Comune di Venezia), misurate alle {time}",
