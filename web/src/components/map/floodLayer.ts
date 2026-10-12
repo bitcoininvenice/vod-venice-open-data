@@ -9,6 +9,7 @@ export interface FloodZone {
   centerLat: number;
   radiusMeters: number;
   criticalSpots?: string;
+  isLagoonZone?: boolean;
 }
 
 /**
@@ -144,6 +145,179 @@ export const VENICE_FLOOD_ZONES: FloodZone[] = [
     centerLat: 45.4448,
     radiusMeters: 160,
     criticalSpots: 'Gesuiti'
+  },
+  // Laguna Nord & Isole
+  {
+    id: 'murano_vetrai',
+    name: 'Murano (Vetrai)',
+    thresholdCm: 105,
+    centerLon: 12.3515,
+    centerLat: 45.4545,
+    radiusMeters: 210,
+    criticalSpots: 'Fondamenta dei Vetrai, Colonna',
+    isLagoonZone: true
+  },
+  {
+    id: 'murano_san_donato',
+    name: 'Murano (San Donato)',
+    thresholdCm: 118,
+    centerLon: 12.3570,
+    centerLat: 45.4575,
+    radiusMeters: 190,
+    criticalSpots: 'Campo San Donato, Canale Ponte Lungo',
+    isLagoonZone: true
+  },
+  {
+    id: 'burano_galuppi',
+    name: 'Burano (Piazza Galuppi)',
+    thresholdCm: 100,
+    centerLon: 12.4175,
+    centerLat: 45.4855,
+    radiusMeters: 190,
+    criticalSpots: 'Piazza Baldassarre Galuppi',
+    isLagoonZone: true
+  },
+  {
+    id: 'mazzorbo',
+    name: 'Mazzorbo',
+    thresholdCm: 112,
+    centerLon: 12.4110,
+    centerLat: 45.4865,
+    radiusMeters: 180,
+    criticalSpots: 'Ponte delle Chioverete',
+    isLagoonZone: true
+  },
+  {
+    id: 'torcello',
+    name: 'Torcello',
+    thresholdCm: 115,
+    centerLon: 12.4180,
+    centerLat: 45.4985,
+    radiusMeters: 200,
+    criticalSpots: 'Ponte del Diavolo',
+    isLagoonZone: true
+  },
+  {
+    id: 'sant_erasmo',
+    name: 'Sant\'Erasmo',
+    thresholdCm: 120,
+    centerLon: 12.4080,
+    centerLat: 45.4550,
+    radiusMeters: 260,
+    criticalSpots: 'Capannone, Riva Sud',
+    isLagoonZone: true
+  },
+  // Barene e Paludi Laguna Nord
+  {
+    id: 'barene_campalto',
+    name: 'Barene di Campalto',
+    thresholdCm: 90,
+    centerLon: 12.2980,
+    centerLat: 45.4670,
+    radiusMeters: 340,
+    criticalSpots: 'Palude di Cona',
+    isLagoonZone: true
+  },
+  {
+    id: 'barene_palude_maggiore',
+    name: 'Palude Maggiore & Torcello',
+    thresholdCm: 92,
+    centerLon: 12.4350,
+    centerLat: 45.5020,
+    radiusMeters: 380,
+    criticalSpots: 'Palude della Centrega',
+    isLagoonZone: true
+  },
+  // Litorali & Laguna Sud
+  {
+    id: 'lido_malamocco',
+    name: 'Lido (Malamocco)',
+    thresholdCm: 100,
+    centerLon: 12.3385,
+    centerLat: 45.3715,
+    radiusMeters: 200,
+    criticalSpots: 'Piazza Maggiore Malamocco',
+    isLagoonZone: true
+  },
+  {
+    id: 'pellestrina_porto',
+    name: 'Pellestrina (San Pietro)',
+    thresholdCm: 105,
+    centerLon: 12.3025,
+    centerLat: 45.2980,
+    radiusMeters: 220,
+    criticalSpots: 'Riva San Pietro in Volta',
+    isLagoonZone: true
+  },
+  {
+    id: 'pellestrina_borgo',
+    name: 'Pellestrina (Portosecco)',
+    thresholdCm: 110,
+    centerLon: 12.3010,
+    centerLat: 45.2680,
+    radiusMeters: 220,
+    criticalSpots: 'Portosecco, Riva Laguna',
+    isLagoonZone: true
+  },
+  {
+    id: 'barene_petroli',
+    name: 'Barene Canale Petroli',
+    thresholdCm: 95,
+    centerLon: 12.2680,
+    centerLat: 45.3450,
+    radiusMeters: 360,
+    criticalSpots: 'Canale dei Petroli, Cassa di Colmata',
+    isLagoonZone: true
+  },
+  {
+    id: 'chioggia_vigo',
+    name: 'Chioggia (Piazzetta Vigo)',
+    thresholdCm: 90,
+    centerLon: 12.2798,
+    centerLat: 45.2215,
+    radiusMeters: 200,
+    criticalSpots: 'Piazzetta Vigo, Canale Vena',
+    isLagoonZone: true
+  },
+  {
+    id: 'chioggia_riva_vena',
+    name: 'Chioggia (Riva Vena)',
+    thresholdCm: 95,
+    centerLon: 12.2785,
+    centerLat: 45.2185,
+    radiusMeters: 220,
+    criticalSpots: 'Riva Vena, Ponte di Vigo',
+    isLagoonZone: true
+  },
+  {
+    id: 'chioggia_corso',
+    name: 'Chioggia (Corso del Popolo)',
+    thresholdCm: 115,
+    centerLon: 12.2778,
+    centerLat: 45.2160,
+    radiusMeters: 220,
+    criticalSpots: 'Corso del Popolo, Piazza Granaio',
+    isLagoonZone: true
+  },
+  {
+    id: 'sottomarina',
+    name: 'Sottomarina',
+    thresholdCm: 125,
+    centerLon: 12.2885,
+    centerLat: 45.2140,
+    radiusMeters: 240,
+    criticalSpots: 'Riva Lusenzo, Murazzi',
+    isLagoonZone: true
+  },
+  {
+    id: 'barene_millecampi',
+    name: 'Barene Millecampi',
+    thresholdCm: 95,
+    centerLon: 12.2150,
+    centerLat: 45.2450,
+    radiusMeters: 400,
+    criticalSpots: 'Valle Millecampi, Foci Brenta',
+    isLagoonZone: true
   }
 ];
 
@@ -303,6 +477,84 @@ const VENICE_FLOODED_SPACES: FloodedOpenSpace[] = [
       [12.3268, 45.4416],
     ],
   },
+  {
+    id: 'chioggia_piazza_vigo',
+    name: 'Chioggia Piazza Vigo & Riva Vena',
+    thresholdCm: 90,
+    centerLon: 12.2795,
+    centerLat: 45.2210,
+    polygon: [
+      [12.2785, 45.2205],
+      [12.2805, 45.2205],
+      [12.2805, 45.2220],
+      [12.2785, 45.2220],
+    ],
+  },
+  {
+    id: 'chioggia_corso_popolo',
+    name: 'Chioggia Corso del Popolo',
+    thresholdCm: 115,
+    centerLon: 12.2780,
+    centerLat: 45.2165,
+    polygon: [
+      [12.2772, 45.2145],
+      [12.2788, 45.2145],
+      [12.2788, 45.2185],
+      [12.2772, 45.2185],
+    ],
+  },
+  {
+    id: 'burano_piazza_galuppi',
+    name: 'Burano Piazza Galuppi',
+    thresholdCm: 100,
+    centerLon: 12.4175,
+    centerLat: 45.4855,
+    polygon: [
+      [12.4168, 45.4850],
+      [12.4182, 45.4850],
+      [12.4182, 45.4860],
+      [12.4168, 45.4860],
+    ],
+  },
+  {
+    id: 'murano_fondamenta_vetrai',
+    name: 'Murano Fondamenta Vetrai',
+    thresholdCm: 105,
+    centerLon: 12.3515,
+    centerLat: 45.4545,
+    polygon: [
+      [12.3505, 45.4535],
+      [12.3525, 45.4535],
+      [12.3525, 45.4555],
+      [12.3505, 45.4555],
+    ],
+  },
+  {
+    id: 'pellestrina_san_pietro',
+    name: 'Pellestrina San Pietro in Volta',
+    thresholdCm: 105,
+    centerLon: 12.3025,
+    centerLat: 45.2980,
+    polygon: [
+      [12.3015, 45.2970],
+      [12.3035, 45.2970],
+      [12.3035, 45.2990],
+      [12.3015, 45.2990],
+    ],
+  },
+  {
+    id: 'lido_malamocco_piazza',
+    name: 'Lido Malamocco Piazza Maggiore',
+    thresholdCm: 100,
+    centerLon: 12.3385,
+    centerLat: 45.3715,
+    polygon: [
+      [12.3375, 45.3705],
+      [12.3395, 45.3705],
+      [12.3395, 45.3725],
+      [12.3375, 45.3725],
+    ],
+  },
 ];
 
 function paintFloodedOpenSpaces(
@@ -387,40 +639,43 @@ export function drawFloodLayer(rc: RenderContext, activeTideCm: number | null): 
     paintFloodedOpenSpaces(ctx, { sx, sy, mx, my, camera, tide, animate, time });
   }
 
-  // 3. Alone di marea regionale macro (solo se le calli dettagliate non sono ancora pronte o con vista lontanissima)
-  if (!streetsReady || camera.s < 0.02) {
-    const haloOpacityFactor = 0.85;
-    for (const zone of VENICE_FLOOD_ZONES) {
-      if (tide < zone.thresholdCm) continue;
+  // 3. Alone di marea regionale:
+  // - A scala panoramica (camera.s < 0.02 o calli non caricate): mostra tutte le zone dell'intera laguna
+  // - A scala ravvicinata (camera.s >= 0.02): per il centro storico di Venezia le calli volumetriche e gli open spaces
+  //   danno una resa nitida senza alone sfocato; per le isole lagunari e le barene (isLagoonZone), l'alone resta visibile
+  const showMacroForVenice = !streetsReady || camera.s < 0.02;
+  const haloOpacityFactor = 0.85;
+  for (const zone of VENICE_FLOOD_ZONES) {
+    if (tide < zone.thresholdCm) continue;
+    if (!zone.isLagoonZone && !showMacroForVenice) continue;
 
-      const waterDepth = tide - zone.thresholdCm;
-      const screenX = sx(mx(zone.centerLon));
-      const screenY = sy(my(zone.centerLat));
+    const waterDepth = tide - zone.thresholdCm;
+    const screenX = sx(mx(zone.centerLon));
+    const screenY = sy(my(zone.centerLat));
 
-      const geoRadiusPx = (zone.radiusMeters / 111139) * (rc.KY || 276000) * camera.s;
-      const baseRadiusPx = Math.max(14, geoRadiusPx);
+    const geoRadiusPx = (zone.radiusMeters / 111139) * (rc.KY || 276000) * camera.s;
+    const baseRadiusPx = Math.max(14, geoRadiusPx);
 
-      ctx.save();
-      const waterGrad = ctx.createRadialGradient(
-        screenX,
-        screenY,
-        baseRadiusPx * 0.05,
-        screenX,
-        screenY,
-        baseRadiusPx
-      );
+    ctx.save();
+    const waterGrad = ctx.createRadialGradient(
+      screenX,
+      screenY,
+      baseRadiusPx * 0.05,
+      screenX,
+      screenY,
+      baseRadiusPx
+    );
 
-      const depthOpacity = Math.min(0.55, 0.20 + (waterDepth / 60) * 0.25) * haloOpacityFactor;
-      waterGrad.addColorStop(0, `rgba(6, 182, 212, ${depthOpacity.toFixed(2)})`);
-      waterGrad.addColorStop(0.65, `rgba(2, 132, 199, ${(depthOpacity * 0.8).toFixed(2)})`);
-      waterGrad.addColorStop(1, 'rgba(2, 132, 199, 0)');
+    const depthOpacity = Math.min(0.55, 0.20 + (waterDepth / 60) * 0.25) * haloOpacityFactor;
+    waterGrad.addColorStop(0, `rgba(6, 182, 212, ${depthOpacity.toFixed(2)})`);
+    waterGrad.addColorStop(0.65, `rgba(2, 132, 199, ${(depthOpacity * 0.8).toFixed(2)})`);
+    waterGrad.addColorStop(1, 'rgba(2, 132, 199, 0)');
 
-      ctx.fillStyle = waterGrad;
-      ctx.beginPath();
-      ctx.arc(screenX, screenY, baseRadiusPx, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
+    ctx.fillStyle = waterGrad;
+    ctx.beginPath();
+    ctx.arc(screenX, screenY, baseRadiusPx, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 
   // 4. Etichette quota d'acqua visibili ESCLUSIVAMENTE con zoom quasi al massimo (camera.s >= FLOOD_LABEL_MIN_SCALE)

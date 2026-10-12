@@ -95,4 +95,25 @@ describe('floodLayer', () => {
     drawFloodLayer(rcDeepZoom, 115);
     expect(rcDeepZoom.ctx.fillText).toHaveBeenCalled();
   });
+
+  it('includes lagoon-wide flood zones for Chioggia, Burano, Murano, Pellestrina and barene', () => {
+    expect(VENICE_FLOOD_ZONES.length).toBeGreaterThanOrEqual(25);
+
+    const chioggiaVigo = VENICE_FLOOD_ZONES.find((z) => z.id === 'chioggia_vigo');
+    expect(chioggiaVigo).toBeDefined();
+    expect(chioggiaVigo?.thresholdCm).toBe(90);
+    expect(chioggiaVigo?.isLagoonZone).toBe(true);
+
+    const burano = VENICE_FLOOD_ZONES.find((z) => z.id === 'burano_galuppi');
+    expect(burano).toBeDefined();
+    expect(burano?.thresholdCm).toBe(100);
+
+    const pellestrina = VENICE_FLOOD_ZONES.find((z) => z.id === 'pellestrina_porto');
+    expect(pellestrina).toBeDefined();
+    expect(pellestrina?.thresholdCm).toBe(105);
+
+    const bareneCampalto = VENICE_FLOOD_ZONES.find((z) => z.id === 'barene_campalto');
+    expect(bareneCampalto).toBeDefined();
+    expect(bareneCampalto?.thresholdCm).toBe(90);
+  });
 });

@@ -339,25 +339,25 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
               <span>{simulator.isPlayingCycle ? 'Pausa' : 'Avvia'}</span>
             </button>
 
-            {/* Toggle Difesa MOSE (soglia allerta >= 110 cm) */}
-            {simulator.level >= 110 && (
-              <button
-                type="button"
-                onClick={simulator.onToggleProtection}
-                className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-mono border transition-colors cursor-pointer shrink-0 ${
-                  simulator.isProtected
-                    ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 border-emerald-500/40 font-semibold'
-                    : 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-800 dark:text-rose-200 border-rose-500/40 font-semibold'
-                }`}
-                title={
-                  simulator.isProtected
-                    ? 'MOSE attivo: paratie alzate, laguna protetta a +85cm. Clicca per disattivare e vedere la citta allagata'
-                    : 'MOSE disattivato: paratie abbassate, marea entra in citta. Clicca per attivare la difesa'
-                }
-              >
-                {simulator.isProtected ? 'MOSE: Difesa Attiva' : 'MOSE: Disattivato'}
-              </button>
-            )}
+            {/* Toggle Difesa MOSE (Sempre visibile a qualsiasi quota di marea) */}
+            <button
+              type="button"
+              onClick={simulator.onToggleProtection}
+              className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-mono border transition-colors cursor-pointer shrink-0 ${
+                simulator.isProtected
+                  ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-800 dark:text-emerald-200 border-emerald-500/40 font-semibold'
+                  : 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-800 dark:text-rose-200 border-rose-500/40 font-semibold'
+              }`}
+              title={
+                simulator.isProtected
+                  ? simulator.level >= 110
+                    ? 'MOSE attivo: barriere alzate, laguna protetta a +85cm. Clicca per disattivare e vedere la laguna allagata'
+                    : 'MOSE armato: difesa attiva, si alzera automaticamente sopra i 110cm. Clicca per disattivare'
+                  : 'MOSE disattivato: paratie a riposo sul fondo, marea libera in laguna. Clicca per attivare'
+              }
+            >
+              {simulator.isProtected ? 'MOSE: Difesa Attiva' : 'MOSE: Disattivato'}
+            </button>
 
             {/* Scenari & Regolazione */}
             <button

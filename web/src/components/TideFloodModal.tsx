@@ -426,18 +426,18 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
                     <span className="text-xs font-mono text-[var(--ink-2)] uppercase font-semibold">
                       {t('ui.floodModal.moseStatus')}
                     </span>
-                    {simulatedCm >= 110 && (
-                      <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
-                        isMoseProtected
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-semibold'
-                          : 'bg-rose-500/10 text-rose-400 border-rose-500/30 font-semibold'
-                      }`}>
-                        {isMoseProtected ? 'DIFESA ATTIVA (CENTRO STORICO ~85 cm)' : 'DISATTIVATO (MAREA INTEGRALE IN CITTA)'}
-                      </span>
-                    )}
+                    <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
+                      isMoseProtected
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-semibold'
+                        : 'bg-rose-500/10 text-rose-400 border-rose-500/30 font-semibold'
+                    }`}>
+                      {isMoseProtected
+                        ? (simulatedCm >= 110 ? 'DIFESA ATTIVA (CENTRO STORICO ~85 cm)' : 'DIFESA ARMATA (SOGLIA 110 cm)')
+                        : 'DISATTIVATO (MAREA INTEGRALE IN CITTA)'}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-xs font-mono">
-                    {simulatedCm >= 110 && onToggleMoseProtection && (
+                    {onToggleMoseProtection && (
                       <button
                         type="button"
                         onClick={onToggleMoseProtection}

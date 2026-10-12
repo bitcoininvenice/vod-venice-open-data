@@ -56,6 +56,21 @@ const FLOOD_ANCHORS = [
   { lon: 12.3525, lat: 45.4325, h: 124, r: 180 }, // Castello Garibaldi / Giardini
   { lon: 12.3500, lat: 45.4370, h: 126, r: 180 }, // Arsenale / Celestia
   { lon: 12.3660, lat: 45.4280, h: 145, r: 250 }, // Sant'Elena
+  // Laguna Nord & Isole
+  { lon: 12.3515, lat: 45.4545, h: 105, r: 220 }, // Murano Vetrai & Colonna
+  { lon: 12.3570, lat: 45.4575, h: 118, r: 200 }, // Murano San Donato
+  { lon: 12.4175, lat: 45.4855, h: 100, r: 220 }, // Burano Piazza Galuppi
+  { lon: 12.4110, lat: 45.4865, h: 112, r: 200 }, // Mazzorbo
+  { lon: 12.4180, lat: 45.4985, h: 115, r: 200 }, // Torcello
+  { lon: 12.4080, lat: 45.4550, h: 120, r: 260 }, // Sant'Erasmo
+  // Laguna Sud & Litorali
+  { lon: 12.3385, lat: 45.3715, h: 100, r: 200 }, // Lido Malamocco Borgo Antico
+  { lon: 12.3025, lat: 45.2980, h: 105, r: 220 }, // Pellestrina San Pietro in Volta
+  { lon: 12.3010, lat: 45.2680, h: 110, r: 220 }, // Pellestrina Borgo & Portosecco
+  { lon: 12.2798, lat: 45.2215, h: 90, r: 200 },  // Chioggia Piazzetta Vigo
+  { lon: 12.2785, lat: 45.2185, h: 95, r: 220 },  // Chioggia Riva Vena
+  { lon: 12.2778, lat: 45.2160, h: 115, r: 220 }, // Chioggia Corso del Popolo
+  { lon: 12.2885, lat: 45.2140, h: 125, r: 240 }, // Sottomarina Murazzi
 ];
 
 const GRID_ANCHORS = FLOOD_ANCHORS.map((a) => ({
