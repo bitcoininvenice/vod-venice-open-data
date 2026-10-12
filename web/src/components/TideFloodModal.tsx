@@ -33,6 +33,7 @@ import type { MeteoMarineWindItem } from '@/lib/types';
 import { getFloodedGroundPercentage, meanDirectionDeg, romeLocalNow } from '@/lib/flood';
 import { PASSERELLE_DATA } from '@/lib/passerelleData';
 import { Modal } from '@/components/ui/Modal';
+import { TideForecastChart } from './TideForecastChart';
 
 interface TideFloodModalProps {
   isOpen: boolean;
@@ -623,6 +624,18 @@ export const TideFloodModal: React.FC<TideFloodModalProps> = ({
                     </p>
                   </div>
                 </div>
+              )}
+
+              {/* Grafico Curva di Marea Ufficiale CPSM */}
+              {forecast?.extremes && forecast.extremes.length > 0 && (
+                <TideForecastChart
+                  extremes={forecast.extremes}
+                  liveTideLevel={liveTideLevel}
+                  onSimulateLevel={(cm) => {
+                    handleLevelChange(cm);
+                    setActiveTab('simulator');
+                  }}
+                />
               )}
 
               {/* Nota metodologica e serie storica */}
