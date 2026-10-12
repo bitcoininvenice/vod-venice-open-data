@@ -4,6 +4,9 @@ import { lineColor, lineTextColor, luminance, needsDarkOutline } from './actvLin
 describe('colori delle linee ACTV', () => {
   it('usa il colore ufficiale del GTFS per le linee di navigazione', () => {
     expect(lineColor('2', 'vaporetto')).toBe('#FF0000');
+    // gli autobus del Lido (N, 11…) non prendono il colore della linea di navigazione omonima
+    expect(lineColor('N', 'island')).toBeNull();
+    expect(lineColor('11', 'island')).toBeNull();
     expect(lineColor('4.1', 'vaporetto')).toBe('#B43B96');
     expect(lineColor('5.2', 'motoscafo')).toBe('#8FD2BF');
     expect(lineColor('12', 'motonave')).toBe('#DAD635');

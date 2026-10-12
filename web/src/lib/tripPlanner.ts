@@ -11,7 +11,6 @@ import { metersBetween, nearestNode, pathCoords, pathEdges, shortestPaths, type 
 import { addSummaries, floodWeights, summarizeEdges, WET_COST, type FloodWeights, type WetSummary } from './dryRouting';
 import { MOSE_THRESHOLD_CM } from './tideCurve';
 import type { DayType, PasserellaItem, StopItem } from './types';
-import { isWaterCategory } from './actvLines';
 
 /** Velocità a piedi (m/s): circa 4,5 km/h, ponti e calli strette compresi. */
 export const WALK_SPEED = 1.25;
@@ -24,6 +23,11 @@ export const TRANSFER_BUFFER_S = 180;
 export const HORIZON_S = 3 * 3600;
 /** Oltre questa distanza dalla rete il punto non è raggiungibile a piedi (m). */
 const MAX_SNAP_M = 250;
+/**
+ * Mezzi usati dal planner: navigazione, ferry e autobus del Lido e di Pellestrina, che collegano i pontili
+ * (le fermate del planner sono quelle della navigazione).
+ */
+const PLANNER_CATEGORIES = new Set(['vaporetto', 'motoscafo', 'motonave', 'ferry', 'island']);
 /** Modalità "preferisci vaporetto": tratti a piedi verso e dai pontili al massimo di (m) */
 export const BOAT_ACCESS_M = 600;
 
@@ -90,7 +94,7 @@ function profileStops(sim: SimModel, stops: StopItem[]): Map<SimProfile, { stop:
   cached = new Map();
   const pt: [number, number] = [0, 0];
   for (const p of sim.profs) {
-    if (!isWaterCategory(p.route.cat)) continue;
+    if (!PLANNER_CATEGORIES.has(p.route.cat)) continue;
     const seq: { stop: number; k: number }[] = [];
     for (let k = 0; k < p.Dd.length; k++) {
       pointAt(p.sh, p.Dd[k], pt);

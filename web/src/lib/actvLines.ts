@@ -7,8 +7,11 @@ import data from '@/data/actv-line-colors.json';
 
 const LINES = data.lines as Record<string, { color: string; text: string | null }>;
 
-/** Categorie di mezzo della rete di navigazione (le uniche con il colore di linea). */
-const WATER = new Set(['vaporetto', 'motoscafo', 'motonave', 'ferry', 'island']);
+/**
+ * Categorie di mezzo della rete di navigazione (le uniche con il colore di linea).
+ * "island" non c'è: sono gli autobus urbani del Lido e di Pellestrina (GTFS route_desc "UL").
+ */
+const WATER = new Set(['vaporetto', 'motoscafo', 'motonave', 'ferry']);
 
 /** true per i mezzi acquei (navigazione), false per bus e tram di terraferma */
 export const isWaterCategory = (category: string | null | undefined): boolean => !!category && WATER.has(category);

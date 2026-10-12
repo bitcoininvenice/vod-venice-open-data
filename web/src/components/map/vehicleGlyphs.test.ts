@@ -16,8 +16,9 @@ function mockCtx() {
 
 describe('icone dei mezzi', () => {
   it('barca per i mezzi acquei, autobus per la terraferma', () => {
-    for (const c of ['vaporetto', 'motoscafo', 'motonave', 'ferry', 'island']) expect(isWaterCategory(c), c).toBe(true);
-    for (const c of ['bus', 'tram', null, undefined]) expect(isWaterCategory(c)).toBe(false);
+    for (const c of ['vaporetto', 'motoscafo', 'motonave', 'ferry']) expect(isWaterCategory(c), c).toBe(true);
+    // "island" sono gli autobus del Lido e di Pellestrina
+    for (const c of ['bus', 'tram', 'island', null, undefined]) expect(isWaterCategory(c)).toBe(false);
     const boat = mockCtx();
     drawVehicleGlyph(boat.ctx, 'vaporetto', 0, 0, 0, { fill: '#000', stroke: '#fff', lineWidth: 1 });
     expect(boat.calls).not.toContain('roundRect');
