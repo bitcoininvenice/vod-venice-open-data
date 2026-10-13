@@ -814,6 +814,19 @@ test.describe('API', () => {
     }
   });
 
+  test('limiti di velocità dagli atti ufficiali sui canali OSM, con atto e link', async ({ request }) => {
+    const body = await (await request.get('/api/waterways')).json();
+    const limits = body.data.speedLimits as { channelName: string; maxSpeedKmh: number; actvSpeedKmh: number | null; legalRef: string; sourceUrl: string }[];
+    expect(limits.length).toBeGreaterThan(150);
+    const cg = limits.find((l) => l.channelName === 'Canal Grande')!;
+    expect([cg.maxSpeedKmh, cg.actvSpeedKmh]).toEqual([7, 11]);
+    for (const l of limits) {
+      expect(l.legalRef).toBeTruthy();
+      expect(l.sourceUrl).toMatch(/^https:/);
+      expect(l).not.toHaveProperty('isBarcavelox');
+    }
+  });
+
   test('passerelle: i 72 percorsi del piano con la quota, senza uno stato di montaggio inventato', async ({ request }) => {
     const body = await (await request.get('/api/passerelle')).json();
     expect(body.success).toBe(true);

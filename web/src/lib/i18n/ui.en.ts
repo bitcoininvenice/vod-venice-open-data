@@ -504,6 +504,20 @@ export const enUi: UiTranslations = {
     contactMissing: "A contact for privacy requests will be published shortly.",
     updated: "Last updated: {date}"
   },
+  speedLimit: {
+    allBoats: "Motor boats",
+    otherBoats: "Motor boats (not ACTV)",
+    actv: "ACTV",
+    ruleSlow5: "With the tide at +110 cm or more (or -50 cm or less): 5 km/h maximum for everyone.",
+    ruleNoMotor: "With the tide at +110 cm or more: motor boats not allowed.",
+    nowSlow5: "Now (tide {cm} cm): 5 km/h maximum.",
+    nowNoMotor: "Now (tide {cm} cm): motor boats not allowed.",
+    source: "Source:",
+    openAct: "Open the official act",
+    authorityComune: "City canal · Water traffic regulation",
+    authorityProvveditorato: "Lagoon channel · Ordinance 93/2007",
+    disclaimer: "Limit taken from the official act, canal line from OpenStreetMap. Not for navigation: signs and acts in force prevail."
+  },
   feature: {
     stelleHotel: "5-star: {five}, 4-star: {four}, 3-star: {three}",
     francoAttualeMarea: "Current clearance (CPSM tide {cm} cm)",

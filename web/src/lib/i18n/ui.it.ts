@@ -502,6 +502,20 @@ export const itUi = {
     contactMissing: "Il contatto per le richieste sulla privacy sarà pubblicato a breve.",
     updated: "Ultimo aggiornamento: {date}"
   },
+  speedLimit: {
+    allBoats: "Unità a motore",
+    otherBoats: "Mezzi a motore (non ACTV)",
+    actv: "ACTV",
+    ruleSlow5: "Con marea da +110 cm o più (o da -50 cm o meno): al massimo 5 km/h per tutti.",
+    ruleNoMotor: "Con marea da +110 cm o più: circolazione a motore vietata.",
+    nowSlow5: "Adesso (marea {cm} cm): al massimo 5 km/h.",
+    nowNoMotor: "Adesso (marea {cm} cm): circolazione a motore vietata.",
+    source: "Fonte:",
+    openAct: "Apri l'atto ufficiale",
+    authorityComune: "Rio comunale · Regolamento circolazione acquea",
+    authorityProvveditorato: "Canale lagunare · Ordinanza 93/2007",
+    disclaimer: "Limite tratto dall'atto ufficiale, tracciato del canale da OpenStreetMap. Non per la navigazione: valgono la segnaletica e gli atti vigenti."
+  },
   feature: {
     stelleHotel: "5 stelle: {five}, 4 stelle: {four}, 3 stelle: {three}",
     francoAttualeMarea: "Franco attuale (marea CPSM {cm} cm)",

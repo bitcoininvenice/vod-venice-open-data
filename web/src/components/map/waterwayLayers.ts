@@ -1,5 +1,6 @@
 // Layer dei canali: segnalamenti, limiti di velocità, ponti, gondole e approdi.
 import type { RenderContext } from './renderContext';
+import { effectiveSpeedLimit, speedColor } from '@/lib/waterSpeedLimits';
 
 export function drawMarineSignals(rc: RenderContext): void {
   const { ctx, isDark, sx, sy, mx, my, camera, currentTimeSeconds, showMarineSignals, briccole } = rc;
@@ -73,59 +74,51 @@ export function drawMarineSignals(rc: RenderContext): void {
 }
 
 export function drawCanalLimits(rc: RenderContext): void {
-  const { ctx, isDark, sx, sy, mx, my, camera, showCanalLimits, canalSpeedLimits } = rc;
-  // 25. Render Limiti di Velocità & Aree Blu (Canali)
-  if (showCanalLimits && canalSpeedLimits && canalSpeedLimits.length > 0) {
-    for (const limit of canalSpeedLimits) {
-      if (!limit.path || limit.path.length < 2) continue;
-      ctx.save();
+  const { ctx, isDark, sx, sy, mx, my, camera, cw, ch, showCanalLimits, canalSpeedLimits, tide } = rc;
+  // Limiti di velocità dagli atti ufficiali sui tracciati OSM; con l'acqua alta valgono le regole dell'art. 3
+  if (!showCanalLimits || !canalSpeedLimits || canalSpeedLimits.length === 0) return;
+  const tideCm = tide.lagoonTideCm;
+  const width = Math.max(2, Math.min(7, 2 + 60 * camera.s));
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  for (const limit of canalSpeedLimits) {
+    if (limit.path.length < 2) continue;
+    const eff = effectiveSpeedLimit(limit, tideCm);
+    const pts = limit.path.map(([lon, lat]) => [sx(mx(lon)), sy(my(lat))] as const);
+    if (pts.every(([x, y]) => x < -40 || y < -40 || x > cw + 40 || y > ch + 40)) continue;
+    ctx.beginPath();
+    pts.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
+    ctx.strokeStyle = speedColor(eff.kmh, isDark);
+    ctx.globalAlpha = 0.85;
+    ctx.lineWidth = width;
+    // circolazione a motore vietata per la marea: tratteggio
+    ctx.setLineDash(eff.noMotor ? [6, 5] : []);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+
+    // valore al centro del tratto, da vicino
+    if (camera.s > 0.06 && pts.length >= 2) {
+      const [lx, ly] = pts[Math.floor(pts.length / 2)];
+      const label = eff.noMotor ? '⛔' : `${eff.kmh}`;
       ctx.beginPath();
-      limit.path.forEach((pt, idx) => {
-        const px = sx(mx(pt[0]));
-        const py = sy(my(pt[1]));
-        if (idx === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-      });
-      // Speed route line
-      ctx.strokeStyle = limit.color;
-      ctx.lineWidth = Math.max(3, 5 * (camera.s / 0.04));
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.globalAlpha = 0.85;
+      ctx.arc(lx, ly, 8.5, 0, Math.PI * 2);
+      ctx.fillStyle = isDark ? '#0f172a' : '#ffffff';
+      ctx.fill();
+      ctx.strokeStyle = speedColor(eff.kmh, isDark);
+      ctx.lineWidth = 2;
       ctx.stroke();
-
-      // Dashed center guideline
-      ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4, 6]);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Speedometer badge at midpoint
-      if (camera.s > 0.03) {
-        const midIdx = Math.floor(limit.path.length / 2);
-        const midPt = limit.path[midIdx];
-        const lx = sx(mx(midPt[0]));
-        const ly = sy(my(midPt[1]));
-        ctx.fillStyle = '#0f172a';
-        ctx.beginPath();
-        ctx.arc(lx, ly, 10, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = limit.color;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.font = 'bold 9px "DM Mono", monospace';
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(`${limit.maxSpeedKmh}`, lx, ly);
-        ctx.textAlign = 'start';
-        ctx.textBaseline = 'alphabetic';
-      }
-      ctx.restore();
+      ctx.font = 'bold 8.5px "DM Mono", monospace';
+      ctx.fillStyle = isDark ? '#ffffff' : '#0f172a';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, lx, ly + 0.5);
+      ctx.textAlign = 'start';
+      ctx.textBaseline = 'alphabetic';
     }
   }
+  ctx.restore();
 }
 
 export function drawBridges(rc: RenderContext): void {

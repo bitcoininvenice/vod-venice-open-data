@@ -81,6 +81,7 @@ import { PlanHereButton } from '@/components/ui/PlanHereButton';
 import { sportColor } from '@/lib/sports';
 import { CAMPO_LICENSE_PAGE } from '@/server/sources/campo';
 import { featureLayer } from '@/lib/featureLayer';
+import { effectiveSpeedLimit } from '@/lib/waterSpeedLimits';
 import type { TideForecast } from '@/lib/contracts/tide';
 
 import {
@@ -353,7 +354,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'civicNumber' && civicLabel(feature.data.query.sestiere, feature.data.query.number, feature.data.query.letter)}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
-                {feature.type === 'speedLimit' && `${feature.data.zoneType} · Max ${feature.data.maxSpeedKmh} km/h`}
+                {feature.type === 'speedLimit' && t(feature.data.authority === 'comune' ? 'ui.speedLimit.authorityComune' : 'ui.speedLimit.authorityProvveditorato')}
                 {feature.type === 'bridgeClearance' && `${t('ui.feature.francoZeroMarea')}: ${feature.data.clearanceCmZeroMarea} cm`}
                 {feature.type === 'subsidence' && `${feature.data.satellite} · Trend: ${feature.data.trend}`}
                 {feature.type === 'trainLive' && `${feature.data.origin} → ${feature.data.destination}`}
@@ -389,28 +390,41 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
         {/* Body */}
         <div className="flex flex-col gap-4 text-xs leading-relaxed">
           {/* SPEED LIMIT */}
-          {feature.type === 'speedLimit' && (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.velocitaMassima')}</span>
-                  <p className="text-xl font-bold font-mono text-amber-400">{feature.data.maxSpeedKmh} km/h</p>
+          {feature.type === 'speedLimit' && (() => {
+            const lim = feature.data;
+            const eff = effectiveSpeedLimit(lim, currentTideLevelCm);
+            return (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
+                    <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">
+                      {t(lim.actvSpeedKmh != null ? 'ui.speedLimit.otherBoats' : 'ui.speedLimit.allBoats')}
+                    </span>
+                    <p className="text-xl font-bold font-mono text-amber-400">{lim.maxSpeedKmh} km/h</p>
+                  </div>
+                  {lim.actvSpeedKmh != null && (
+                    <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
+                      <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.speedLimit.actv')}</span>
+                      <p className="text-xl font-bold font-mono text-cyan-400">{lim.actvSpeedKmh} km/h</p>
+                    </div>
+                  )}
                 </div>
-                <div className="p-3 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.controlloElettronico')}</span>
-                  <p className="text-base font-bold font-mono text-cyan-400 mt-1">
-                    {feature.data.isBarcavelox 
-                      ? (t('ui.feature.barcaveloxAttivo')) 
-                      : (t('ui.feature.pattugliamentoPolizia'))}
+                {lim.highWater && (
+                  <p className="text-[var(--ink-2)]">{t(lim.highWater === 'slow5' ? 'ui.speedLimit.ruleSlow5' : 'ui.speedLimit.ruleNoMotor')}</p>
+                )}
+                {eff.tideRule && currentTideLevelCm != null && (
+                  <p className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-semibold">
+                    {t(eff.noMotor ? 'ui.speedLimit.nowNoMotor' : 'ui.speedLimit.nowSlow5', { cm: currentTideLevelCm })}
                   </p>
+                )}
+                <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] text-[11px] text-[var(--ink-2)] flex flex-col gap-1">
+                  <span><b>{t('ui.speedLimit.source')}</b> {lim.legalRef}</span>
+                  <a href={lim.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">{t('ui.speedLimit.openAct')}</a>
+                  <span className="text-[10px] text-[var(--ink-3)]">{t('ui.speedLimit.disclaimer')}</span>
                 </div>
-              </div>
-              <p className="text-[var(--ink)]">{feature.data.description}</p>
-              <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] text-[11px] text-[var(--ink-2)]">
-                <b>{t('ui.feature.regolamento')}</b> {feature.data.ordinanza}
-              </div>
-            </>
-          )}
+              </>
+            );
+          })()}
 
           {/* BRIDGE CLEARANCE */}
           {feature.type === 'bridgeClearance' && (
@@ -1411,13 +1425,13 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
 /** Layer da cui proviene ogni tipo di scheda (natura del dato e fonte nel piede della scheda). */
 /** Tipi che vengono da elenchi compilati nel progetto, senza un campo `source` per voce. */
 const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
-  'briccola', 'bathingWater', 'speedLimit', 'bridgeClearance', 'gondolaStation', 'publicDock',
+  'briccola', 'bathingWater', 'bridgeClearance', 'gondolaStation', 'publicDock',
   'subsidence', 'lagoonMorphology', 'trainLive', 'wasteBoat', 'nizioleto', 'bellTower', 'fortressIsland',
   'heatIsland', 'accommodation', 'bikeRoute', 'tributaryRiver',
 ]);
 
 /** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
-const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['passerella', 'publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'lagoonCurrent', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace', 'parkPlace', 'civicNumber']);
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['passerella', 'speedLimit', 'publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'lagoonCurrent', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace', 'parkPlace', 'civicNumber']);
 
 /** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
 const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {

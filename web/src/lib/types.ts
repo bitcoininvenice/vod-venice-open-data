@@ -576,16 +576,22 @@ export interface WifiHotspotItem {
 // ==========================================
 // 1. VIABILITÀ ACQUEA & CANALI (Comune di Venezia / Atlante Laguna / GeoSMA)
 // ==========================================
+/** Limite di velocità di un canale, dagli atti ufficiali (lib/waterSpeedLimits.ts) */
 export interface CanalSpeedLimitItem {
   id: string;
   channelName: string;
-  maxSpeedKmh: number; // 5, 7, 11, 20 km/h
-  isBarcavelox: boolean;
-  zoneType: 'CANALE_INTERNO' | 'CANALE_PRINCIPALE' | 'LAGUNA_APERTA' | 'ZTL_ACQUEA';
-  path: [number, number][]; // LineString [lon, lat]
-  ordinanza: string;
-  color: string;
-  description: string;
+  /** limite per tutte le unità a motore (per i rii comunali: mezzi diversi da ACTV) */
+  maxSpeedKmh: number;
+  /** limite diverso per i mezzi ACTV (solo regolamento comunale), null se uguale o non indicato */
+  actvSpeedKmh: number | null;
+  /** regola dell'art. 3 del regolamento comunale con la marea: 5 km/h oppure divieto a motore */
+  highWater: 'slow5' | 'noMotor' | null;
+  authority: 'comune' | 'provveditorato';
+  /** atto e articolo da cui viene il limite */
+  legalRef: string;
+  sourceUrl: string;
+  /** tracciato del canale da OpenStreetMap [lon, lat] */
+  path: [number, number][];
 }
 
 export interface BridgeClearanceItem {
