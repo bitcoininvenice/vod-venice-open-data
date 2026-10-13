@@ -8,7 +8,8 @@ export type TransportModeCategory =
   | 'ferry' 
   | 'tram' 
   | 'bus' 
-  | 'island';
+  | 'island'
+  | 'peoplemover';
 
 export type DayType = 'weekday' | 'saturday' | 'sunday';
 

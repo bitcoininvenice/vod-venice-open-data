@@ -26,6 +26,7 @@ describe('categoria per linea', () => {
   it('le linee del tram sono tram anche senza la corsa nell indice', () => {
     expect(lineCategory('T1')).toBe('tram');
     expect(lineCategory('T2')).toBe('tram');
+    expect(lineCategory('PM')).toBe('peoplemover');
     expect(lineCategory('1')).toBe('vaporetto');
     expect(lineCategory('linea-inesistente')).toBeNull();
     expect(lineCategory(null)).toBeNull();

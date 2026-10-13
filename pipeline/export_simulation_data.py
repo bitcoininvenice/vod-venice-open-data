@@ -155,6 +155,10 @@ def calendar_problems(name: str, calendar: list[dict], calendar_dates: list[dict
     return problems
 
 
+# People Mover Piazzale Roma - Marittima - Tronchetto (linea "PM" del GTFS automobilistico)
+PEOPLE_MOVER_LINE = "PM"
+
+
 def category(feed: str, route: dict, stop_names: list[str]) -> str:
     name = route["route_short_name"]
     if feed == "navigazione":
@@ -163,6 +167,9 @@ def category(feed: str, route: dict, stop_names: list[str]) -> str:
         if name == "11" and any(FERRY_STOP_PATTERN.search(s) for s in stop_names):
             return "ferry"
         return "vaporetto"
+    if name == PEOPLE_MOVER_LINE:
+        # nel GTFS ACTV è codificato come autobus (route_type 3), ma è la funicolare su rotaia
+        return "peoplemover"
     if route["route_type"] == "0":
         return "tram"
     if route.get("route_desc") == "UL":
@@ -398,6 +405,7 @@ def map_stops(feeds: list[Feed]) -> list[dict]:
         route_of_trip = {tid: t["route_id"] for tid, t in feed.trips.items()}
         lines: dict[str, set] = {}
         tram_stops: set = set()
+        people_mover_stops: set = set()
         for st in read_csv(feed.name, "stop_times.txt"):
             rid = route_of_trip.get(st["trip_id"])
             if not rid:
@@ -406,12 +414,16 @@ def map_stops(feeds: list[Feed]) -> list[dict]:
             lines.setdefault(st["stop_id"], set()).add(r.get("route_short_name") or rid)
             if r.get("route_type") == "0":
                 tram_stops.add(st["stop_id"])
+            if r.get("route_short_name") == PEOPLE_MOVER_LINE:
+                people_mover_stops.add(st["stop_id"])
         for sid, s in feed.stops.items():
             served = lines.get(sid)
             if not served:
                 continue
             if nav:
                 mode = "ferry" if served <= {"17"} else "navigazione"
+            elif sid in people_mover_stops:
+                mode = "peoplemover"
             elif sid in tram_stops:
                 mode = "tram"
             elif len(served) >= MIN_BUS_LINES:
@@ -454,12 +466,12 @@ def write_map_stops(feeds: list[Feed]) -> None:
         "generatedAt": datetime.now(ZoneInfo("Europe/Rome")).isoformat(timespec="seconds"),
         "source": "ACTV S.p.A. / AVM S.p.A. – GTFS navigazione e automobilistico",
         "license": "Open Data ACTV (CC BY)",
-        "note": f"Tutti i pontili della navigazione e le fermate del tram; per i bus solo le fermate servite da almeno {MIN_BUS_LINES} linee.",
+        "note": f"Tutti i pontili della navigazione, le fermate del tram e del People Mover; per i bus solo le fermate servite da almeno {MIN_BUS_LINES} linee.",
         "stops": stops,
     }
     with open(STOPS_FILE, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
-    logging.info("Fermate della mappa: %d (%s)", len(stops), {m: sum(1 for s in stops if s["mode"] == m) for m in ("navigazione", "ferry", "tram", "bus")})
+    logging.info("Fermate della mappa: %d (%s)", len(stops), {m: sum(1 for s in stops if s["mode"] == m) for m in ("navigazione", "ferry", "tram", "peoplemover", "bus")})
 
 
 def line_colors(feeds: list[Feed]) -> dict[str, dict]:

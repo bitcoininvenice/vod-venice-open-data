@@ -5,7 +5,7 @@ import { fetchStops } from '@/lib/db';
 export const revalidate = 86400;
 
 const Query = z.object({
-  mode: z.enum(['navigazione', 'bus', 'tram', 'ferry']).optional(),
+  mode: z.enum(['navigazione', 'bus', 'tram', 'peoplemover', 'ferry']).optional(),
 });
 
 export async function GET(request: Request) {

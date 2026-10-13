@@ -35,6 +35,7 @@ export const NOTTE: ColorScheme = {
     tram: '#ff6f5e',
     bus: '#a6e36a',
     island: '#c0a0ff',
+    peoplemover: '#ff9f43',
   }
 };
 
@@ -56,6 +57,7 @@ export const CARTA: ColorScheme = {
     tram: '#b0281b',
     bus: '#4a8018',
     island: '#6b3aa0',
+    peoplemover: '#c2410c',
   }
 };
 
@@ -77,6 +79,7 @@ export const ORA_BLU: ColorScheme = {
     tram: '#ff8070',
     bus: '#b0f075',
     island: '#ccaaff',
+    peoplemover: '#ffb067',
   }
 };
 
@@ -98,6 +101,7 @@ export const ALBA: ColorScheme = {
     tram: '#d1261f',
     bus: '#4f8a14',
     island: '#6d3fc8',
+    peoplemover: '#c2410c',
   }
 };
 
@@ -119,6 +123,7 @@ export const TRAMONTO: ColorScheme = {
     tram: '#c8241c',
     bus: '#4a8212',
     island: '#6a36c0',
+    peoplemover: '#b93d0a',
   }
 };
 
@@ -140,6 +145,7 @@ export const CREPUSCOLO: ColorScheme = {
     tram: '#ff8370',
     bus: '#abe474',
     island: '#c6a6ff',
+    peoplemover: '#ffa555',
   }
 };
 

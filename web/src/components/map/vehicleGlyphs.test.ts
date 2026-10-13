@@ -25,6 +25,10 @@ describe('icone dei mezzi', () => {
     const bus = mockCtx();
     drawVehicleGlyph(bus.ctx, 'bus', 0, 0, 0, { fill: '#000', stroke: '#fff', lineWidth: 1 });
     expect(bus.calls).toContain('roundRect');
+    // People Mover: due vetture su rotaia
+    const pm = mockCtx();
+    drawVehicleGlyph(pm.ctx, 'peoplemover', 0, 0, 0, { fill: '#000', stroke: '#fff', lineWidth: 1 });
+    expect(pm.calls.filter((c) => c === 'roundRect')).toHaveLength(2);
   });
 
   it('l icona punta nel verso di marcia sullo schermo', () => {

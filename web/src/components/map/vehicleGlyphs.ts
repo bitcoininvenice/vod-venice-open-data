@@ -68,9 +68,34 @@ export function drawRoadGlyph(ctx: CanvasRenderingContext2D, x: number, y: numbe
   ctx.restore();
 }
 
+/** Convoglio su rotaia (People Mover): due vetture agganciate, finestrini su entrambi i lati. */
+export function drawRailGlyph(ctx: CanvasRenderingContext2D, x: number, y: number, headingRad: number, s: GlyphStyle): void {
+  const k = s.scale ?? 1;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(headingRad);
+  ctx.scale(k, k);
+  ctx.fillStyle = s.fill;
+  ctx.strokeStyle = s.stroke;
+  ctx.lineWidth = s.lineWidth / k;
+  for (const top of [-11, 0.8]) {
+    ctx.beginPath();
+    ctx.roundRect(-3.6, top, 7.2, 10.2, 3);
+    ctx.fill();
+    ctx.stroke();
+  }
+  ctx.fillStyle = s.roof ?? '#ffffff';
+  for (const wy of [-8.5, -4.5, 3.3, 7.3]) {
+    ctx.fillRect(-2.4, wy, 1.4, 2);
+    ctx.fillRect(1, wy, 1.4, 2);
+  }
+  ctx.restore();
+}
+
 /** Icona giusta per la categoria ACTV (acqua o terra). */
 export function drawVehicleGlyph(ctx: CanvasRenderingContext2D, category: string, x: number, y: number, headingRad: number, s: GlyphStyle): void {
   if (isWaterCategory(category)) drawBoatGlyph(ctx, x, y, headingRad, { ...s, scale: (s.scale ?? 1) * (category === 'ferry' ? 1.25 : 1) });
+  else if (category === 'peoplemover') drawRailGlyph(ctx, x, y, headingRad, s);
   else drawRoadGlyph(ctx, x, y, headingRad, s, category === 'tram');
 }
 

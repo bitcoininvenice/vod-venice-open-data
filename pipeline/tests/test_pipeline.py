@@ -637,3 +637,12 @@ def test_rete_pedonale_incroci_ponti_e_componenti():
     xs = {g["nodes"][2 * i] for i in range(len(g["nodes"]) // 2)}
     assert round((12.3 + 6 * 0.001 - walk.LON0) * walk.SCALE) not in xs
     assert walk.walkable({"highway": "footway", "access": "private", "foot": "yes"})
+
+
+def test_category_people_mover_e_bus_del_lido():
+    # il People Mover è codificato come autobus nel GTFS ACTV
+    pm = {"route_short_name": "PM", "route_type": "3", "route_desc": "UM"}
+    assert sim.category("automobilistico", pm, []) == "peoplemover"
+    assert sim.category("automobilistico", {"route_short_name": "T1", "route_type": "0"}, []) == "tram"
+    assert sim.category("automobilistico", {"route_short_name": "A", "route_type": "3", "route_desc": "UL"}, []) == "island"
+    assert sim.category("automobilistico", {"route_short_name": "2", "route_type": "3", "route_desc": "UM"}, []) == "bus"

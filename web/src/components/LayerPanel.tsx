@@ -128,6 +128,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
     { key: 'motonave', label: t('ui.layerPanel.motonave') },
     { key: 'ferry', label: 'Ferry-boat' },
     { key: 'tram', label: 'Tram T1/T2' },
+    { key: 'peoplemover', label: 'People Mover' },
     { key: 'bus', label: t('ui.layerPanel.busTerraferma') },
     { key: 'island', label: t('ui.layerPanel.busIsole') },
   ];

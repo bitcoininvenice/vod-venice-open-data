@@ -1,6 +1,6 @@
 import type { VehicleDelay } from '@/lib/realtimeDelay';
 
-export type RealtimeCategory = 'vaporetto' | 'ferry' | 'island' | 'bus' | 'tram';
+export type RealtimeCategory = 'vaporetto' | 'ferry' | 'island' | 'bus' | 'tram' | 'peoplemover';
 
 /** Mezzo ACTV con posizione reale dal feed GTFS-Realtime (risposta di /api/realtime/vehicles). */
 export interface RealtimeVehicleDto {
