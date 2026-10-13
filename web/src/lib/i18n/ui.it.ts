@@ -121,6 +121,8 @@ export const itUi = {
     liveWebcams: "{n} live",
     bdapWorks: "Opere in corso (BDAP)",
     loraGateways: "Gateway LoRaWAN",
+    fountains: "Fontanelle",
+    accessibleBridges: "Ponti accessibili (elenco da verificare)",
     wifiVenues: "Wi-Fi in hotel, bar e luoghi (OSM)",
     sports: "Sport e spazi per allenarsi",
     subSport: "Sport e tempo libero",

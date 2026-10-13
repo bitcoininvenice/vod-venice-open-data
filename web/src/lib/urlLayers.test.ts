@@ -33,7 +33,7 @@ describe('urlLayers utilities', () => {
     expect(res.activeLayers.showCityAssets).toBe(true);
   });
 
-  it('parses ?layers=fontanelle_ponti,wifi_hotspots correctly via canonical slugs', () => {
+  it('parses ?layers=fontanelle_ponti,wifi_hotspots (slug precedente, ancora valido)', () => {
     const res = parseLayerParams('?layers=fontanelle_ponti,wifi_hotspots');
     expect(res.hasLayerParams).toBe(true);
     expect(res.activeLayers.showCityAssets).toBe(true);
@@ -58,7 +58,7 @@ describe('urlLayers utilities', () => {
       showWifiHotspots: true,
       showMose: false,
     });
-    expect(param).toContain('fontanelle_ponti');
+    expect(param).toContain('fontanelle');
     expect(param).toContain('wifi_hotspots');
     expect(param).not.toContain('mose');
     expect(param).not.toBe('all');
@@ -77,7 +77,7 @@ describe('urlLayers utilities', () => {
       'https://venice.opendata.it/'
     );
     expect(url).toContain('https://venice.opendata.it/?layers=');
-    expect(url).toContain('fontanelle_ponti');
+    expect(url).toContain('fontanelle');
     expect(url).toContain('wifi_hotspots');
   });
 
@@ -90,5 +90,11 @@ describe('urlLayers utilities', () => {
     for (const [key, slug] of Object.entries(LAYER_SLUG_BY_KEY)) {
       expect(SLUG_TO_LAYER_KEY[slug]).toBe(key);
     }
+  });
+
+  it('i ponti accessibili sono un livello separato dalle fontanelle', () => {
+    const res = parseLayerParams('?layers=ponti_accessibili');
+    expect(res.activeLayers.showAccessibleBridges).toBe(true);
+    expect(res.activeLayers.showCityAssets).toBeFalsy();
   });
 });

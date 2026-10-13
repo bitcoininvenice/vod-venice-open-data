@@ -10,6 +10,7 @@ export type LayerKey =
   | 'showShipRoutes'
   | 'showMose'
   | 'showCityAssets'
+  | 'showAccessibleBridges'
   | 'showParkings'
   | 'showAirQuality'
   | 'showPedestrianFlows'
@@ -71,7 +72,8 @@ export const LAYER_SLUG_BY_KEY: Record<LayerKey, string> = {
   showShips: 'navi_ais',
   showShipRoutes: 'rotte_marittime',
   showMose: 'mose',
-  showCityAssets: 'fontanelle_ponti',
+  showCityAssets: 'fontanelle',
+  showAccessibleBridges: 'ponti_accessibili',
   showParkings: 'parcheggi',
   showAirQuality: 'qualita_aria',
   showPedestrianFlows: 'flussi_pedonali',
@@ -135,7 +137,10 @@ export const SLUG_TO_LAYER_KEY: Record<string, LayerKey> = {
   navi_ais: 'showShips',
   rotte_marittime: 'showShipRoutes',
   mose: 'showMose',
-  fontanelle_ponti: 'showCityAssets',
+  fontanelle_ponti: 'showCityAssets', // slug precedente: i link già condivisi restano validi
+  ponti_accessibili: 'showAccessibleBridges',
+  accessible_bridges: 'showAccessibleBridges',
+  ponti_rampe: 'showAccessibleBridges',
   parcheggi: 'showParkings',
   qualita_aria: 'showAirQuality',
   flussi_pedonali: 'showPedestrianFlows',

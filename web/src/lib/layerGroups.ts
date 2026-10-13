@@ -65,7 +65,8 @@ export const LAYER_GROUPS: LayerGroup[] = [
       {
         id: 'cityServices', label: 'layers.subCityServices', icon: 'droplets', tone: 'cyan',
         layers: [
-          e('showCityAssets', 'layers.layerCityAssets', 'droplets', 'cyan'),
+          e('showCityAssets', 'ui.layerPanel.fountains', 'droplets', 'cyan'),
+          e('showAccessibleBridges', 'ui.layerPanel.accessibleBridges', 'footprints', 'emerald'),
           e('showWifiHotspots', 'layers.layerWifiHotspots', 'wifi', 'indigo'),
           e('showWifiVenues', 'ui.layerPanel.wifiVenues', 'wifi', 'teal'),
           e('showFiber', 'ui.layerPanel.fiber', 'cable', 'green'),

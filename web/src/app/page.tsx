@@ -243,7 +243,7 @@ export default function HomePage() {
       trackLayerOpen('idroambulanze');
       setSelectedFeature({ type: 'emergencyDock', data: item.rawItem });
     } else if (item.type === 'fountain') {
-      trackLayerOpen('fontanelle_ponti');
+      trackLayerOpen('fontanelle');
       setSelectedFeature({ type: 'fountain', data: item.rawItem });
     } else if (item.type === 'parking') {
       trackLayerOpen('parcheggi');

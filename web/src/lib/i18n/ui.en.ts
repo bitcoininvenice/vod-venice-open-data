@@ -123,6 +123,8 @@ export const enUi: UiTranslations = {
     liveWebcams: "{n} live",
     bdapWorks: "Works in progress (BDAP)",
     loraGateways: "LoRaWAN gateways",
+    fountains: "Drinking fountains",
+    accessibleBridges: "Accessible bridges (list to verify)",
     wifiVenues: "Wi-Fi in hotels, bars and places (OSM)",
     sports: "Sport and training spaces",
     subSport: "Sport and leisure",

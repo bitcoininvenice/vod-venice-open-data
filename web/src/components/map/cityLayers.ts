@@ -11,8 +11,35 @@ export function fountainColor(status: 'open' | 'closed' | 'unknown' | undefined,
   return isDark ? '#94a3b8' : '#64748b';
 }
 
+/** Ponti con rampe o servoscala (elenco curato, da verificare): livello separato dalle fontanelle. */
+export function drawAccessibleBridges(rc: RenderContext): void {
+  const { ctx, isDark, sx, sy, mx, my, camera, showAccessibleBridges, accessibleBridges } = rc;
+  if (!showAccessibleBridges) return;
+  // Accessible Bridges (Rampa)
+  if (accessibleBridges && accessibleBridges.length > 0) {
+    for (const b of accessibleBridges) {
+      const bx = sx(mx(b.lon));
+      const by = sy(my(b.lat));
+
+      ctx.beginPath();
+      ctx.arc(bx, by, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#10b981';
+      ctx.fill();
+      ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      if (camera.s > 0.035) {
+        ctx.font = '600 9px "DM Mono", monospace';
+        ctx.fillStyle = isDark ? '#10b981' : '#047857';
+        ctx.fillText(`${b.name} (${rc.t('ui.mapLabels.ramp')})`, bx + 7, by + 3);
+      }
+    }
+  }
+}
+
 export function drawCityAssets(rc: RenderContext): void {
-  const { ctx, isDark, sx, sy, mx, my, camera, showCityAssets, fountains, accessibleBridges, veritasServices } = rc;
+  const { ctx, isDark, sx, sy, mx, my, camera, showCityAssets, fountains, veritasServices } = rc;
   // 13. Render City Assets (Fontanelle & Ponti Accessibili & Veritas)
   if (showCityAssets) {
     // Fontanelle: Venice Tap Water colorate per stato (aperta, chiusa, non indicato); OSM con anello (stato non verificato)
@@ -41,28 +68,6 @@ export function drawCityAssets(rc: RenderContext): void {
           ctx.font = '500 8.5px "DM Mono", monospace';
           ctx.fillStyle = color;
           ctx.fillText(f.name, fx + 6, fy + 3);
-        }
-      }
-    }
-
-    // Accessible Bridges (Rampa)
-    if (accessibleBridges && accessibleBridges.length > 0) {
-      for (const b of accessibleBridges) {
-        const bx = sx(mx(b.lon));
-        const by = sy(my(b.lat));
-
-        ctx.beginPath();
-        ctx.arc(bx, by, 4.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#10b981';
-        ctx.fill();
-        ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
-
-        if (camera.s > 0.035) {
-          ctx.font = '600 9px "DM Mono", monospace';
-          ctx.fillStyle = isDark ? '#10b981' : '#047857';
-          ctx.fillText(`${b.name} (${rc.t('ui.mapLabels.ramp')})`, bx + 7, by + 3);
         }
       }
     }
