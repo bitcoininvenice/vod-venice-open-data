@@ -40,3 +40,32 @@ describe('OpenStreetMap drinking fountains dataset', () => {
     expect(sestieri).toContain('Lido di Venezia');
   });
 });
+
+describe('fontanelle Venice Tap Water + OpenStreetMap', async () => {
+  const { OPEN_FOUNTAINS, VTW_FOUNTAINS, OPEN_CITY_ASSETS } = await import('./osmPoi');
+  const { filterFountains, VENICE_TAP_WATER_URL } = await import('./fountainFilter');
+
+  it('Venice Tap Water è la fonte primaria, con stato e link al sito', () => {
+    expect(VTW_FOUNTAINS.length).toBeGreaterThanOrEqual(200);
+    for (const f of VTW_FOUNTAINS) {
+      expect(f.source).toBe('VENICE_TAP_WATER');
+      expect(f.sourceUrl).toBe(VENICE_TAP_WATER_URL);
+      expect(['open', 'closed', 'unknown']).toContain(f.status);
+    }
+    expect(VTW_FOUNTAINS.filter((f) => f.status === 'open').length).toBeGreaterThan(100);
+    expect(VTW_FOUNTAINS.filter((f) => f.status === 'closed').length).toBeGreaterThan(50);
+  });
+
+  it('con "tutte" i doppioni OSM lasciano il posto a Venice Tap Water', () => {
+    const all = filterFountains(OPEN_FOUNTAINS, 'all');
+    const osm = filterFountains(OPEN_FOUNTAINS, 'osm');
+    const vtw = filterFountains(OPEN_FOUNTAINS, 'vtw');
+    const duplicates = osm.filter((f) => f.duplicateOf);
+    expect(duplicates.length).toBeGreaterThan(50);
+    expect(all.length).toBe(vtw.length + osm.length - duplicates.length);
+    expect(all.some((f) => f.duplicateOf)).toBe(false);
+    for (const d of duplicates) expect(vtw.some((v) => v.id === d.duplicateOf)).toBe(true);
+    // i punti cittadini contano ogni fontana una volta sola
+    expect(OPEN_CITY_ASSETS.filter((a) => a.type === 'FOUNTAIN').length).toBe(all.length);
+  });
+});

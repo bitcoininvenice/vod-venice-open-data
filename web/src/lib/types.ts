@@ -254,6 +254,12 @@ export interface CityAssetItem {
   potable?: boolean;
   source?: PointSource;
   sourceUrl?: string;
+  /** stato indicato da Venice Tap Water (le fontane OSM non hanno stato verificato) */
+  status?: 'open' | 'closed' | 'unknown';
+  /** dettaglio dell'associazione: tipo di erogatore, orari… */
+  statusNote?: string;
+  /** fontana OSM che coincide con una di Venice Tap Water (id di quella) */
+  duplicateOf?: string;
 }
 
 export interface ParkingItem {
@@ -539,7 +545,7 @@ export interface CivicPoiItem {
 }
 
 /** Origine di un punto: OpenStreetMap (ODbL) o elenco compilato nel progetto, da verificare. */
-export type PointSource = 'OPENSTREETMAP' | 'ELENCO_CURATO';
+export type PointSource = 'OPENSTREETMAP' | 'ELENCO_CURATO' | 'VENICE_TAP_WATER';
 
 export interface EvChargingItem {
   id: string;

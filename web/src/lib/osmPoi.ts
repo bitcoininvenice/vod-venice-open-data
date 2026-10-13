@@ -1,6 +1,8 @@
 import type { CityAssetItem, CivicPoiItem, EvChargingItem, ParkingItem, UrbanTreeItem, VeniceWellItem, WifiVenue, SportPlace, NauticalPlace } from './types';
 import osmPoi from '@/data/osm-poi.json';
 import fountainsDataset from '@/data/fountains.json';
+import veniceTapWater from '@/data/venice-tap-water.json';
+import { FOUNTAIN_MATCH_METERS, VENICE_TAP_WATER_URL, filterFountains } from './fountainFilter';
 import { calculateDistanceMeters } from './geo';
 import { EV_CHARGING_DATA, URBAN_TREES_DATA } from './urbanAssetsVeniceData';
 import { OPEN_VENICE_WELLS } from './open-data-catalog';
@@ -96,13 +98,37 @@ export const OPEN_WELLS: VeniceWellItem[] = [
   ...curatedNotInOsm(OSM_WELLS, OPEN_VENICE_WELLS, 25),
 ];
 
-/** Fontanelle (OpenStreetMap) e altri punti cittadini dell'elenco curato. */
-export const OPEN_FOUNTAINS: CityAssetItem[] = (fountainsDataset.data as CityAssetItem[]).map((f) => ({
-  ...f,
-  source: 'OPENSTREETMAP' as const,
-  sourceUrl: 'osmId' in f ? `https://www.openstreetmap.org/node/${(f as { osmId: number }).osmId}` : undefined,
+/** Fontanelle di Venice Tap Water (venicetapwater.org): fonte primaria, con stato aperta/chiusa. */
+export const VTW_FOUNTAINS: CityAssetItem[] = veniceTapWater.data.map((f) => ({
+  id: f.id,
+  name: f.name,
+  type: 'FOUNTAIN' as const,
+  lat: f.lat,
+  lon: f.lon,
+  sestiere: f.area,
+  details: '',
+  status: f.status as CityAssetItem['status'],
+  statusNote: f.statusNote || undefined,
+  potable: true,
+  source: 'VENICE_TAP_WATER' as const,
+  sourceUrl: VENICE_TAP_WATER_URL,
 }));
-export const OPEN_CITY_ASSETS: CityAssetItem[] = [...OPEN_FOUNTAINS, ...CURATED_CITY_ASSETS];
+
+/** Fontanelle OpenStreetMap; quelle che coincidono con una di Venice Tap Water lo indicano (duplicateOf). */
+const OSM_FOUNTAINS: CityAssetItem[] = (fountainsDataset.data as CityAssetItem[]).map((f) => {
+  const twin = VTW_FOUNTAINS.find((v) => calculateDistanceMeters(f.lat, f.lon, v.lat, v.lon) <= FOUNTAIN_MATCH_METERS);
+  return {
+    ...f,
+    source: 'OPENSTREETMAP' as const,
+    sourceUrl: 'osmId' in f ? `https://www.openstreetmap.org/node/${(f as { osmId: number }).osmId}` : undefined,
+    ...(twin ? { duplicateOf: twin.id } : {}),
+  };
+});
+
+/** Tutte le fontanelle delle due fonti: il filtro "tutte" toglie i doppioni OSM (lib/fountainFilter). */
+export const OPEN_FOUNTAINS: CityAssetItem[] = [...VTW_FOUNTAINS, ...OSM_FOUNTAINS];
+export const VENICE_TAP_WATER_META = veniceTapWater.metadata;
+export const OPEN_CITY_ASSETS: CityAssetItem[] = [...filterFountains(OPEN_FOUNTAINS, 'all'), ...CURATED_CITY_ASSETS];
 
 type RawCivic = {
   id: string; sourceUrl: string; lat: number; lon: number; name: string;

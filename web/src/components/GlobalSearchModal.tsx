@@ -19,6 +19,7 @@ import { LayerKey } from '@/lib/urlLayers';
 import { isLocated } from '@/lib/types';
 import type { CityData } from '@/lib/cityData';
 import { Modal } from '@/components/ui/Modal';
+import { filterFountains } from '@/lib/fountainFilter';
 
 export type SearchCategory = 'transit' | 'health' | 'services' | 'heritage' | 'lagoon';
 
@@ -137,7 +138,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
     }
 
     // 5. Fontanelle potabili
-    for (const f of fountains) {
+    for (const f of filterFountains(fountains, 'all')) {
       list.push({
         id: `fountain-${f.id}`,
         title: f.name || t('ui.search.subFountain'),

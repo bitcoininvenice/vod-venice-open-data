@@ -17,6 +17,7 @@ import { MapObjectPanel, type MapObjectSelected } from '@/components/MapObjectPa
 import { TripPlannerPanel, type PickTarget } from '@/components/TripPlannerPanel';
 import type { Itinerary, PlannerPoint } from '@/lib/tripPlanner';
 import type { SportFilter } from '@/lib/sports';
+import type { FountainFilter } from '@/lib/fountainFilter';
 import { ActiveLayersLegend } from '@/components/ActiveLayersLegend';
 import type { VeniceFeatureSelected } from '@/components/VeniceFeatureDetailModal';
 import type { SearchResultItem } from '@/components/GlobalSearchModal';
@@ -105,6 +106,7 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<TransportModeCategory | 'all'>('all');
 
   const [sportFilter, setSportFilter] = useState<SportFilter>('all');
+  const [fountainFilter, setFountainFilter] = useState<FountainFilter>('all');
   // Flotta Alilaguna dall'orario GTFS ufficiale, sincronizzata con l'ora della simulazione
   const alilagunaBoats = useMemo(() => getScheduledAlilagunaBoats(currentTimeSeconds), [currentTimeSeconds]);
 
@@ -645,6 +647,7 @@ export default function HomePage() {
           }}
           focusedCoordinates={focusedCoordinates}
           sportFilter={sportFilter}
+          fountainFilter={fountainFilter}
           simulatedTideLevel={simulatedTideLevel}
           isMoseProtected={isMoseProtected}
           isDesktopLayerPanelOpen={isDesktopLayerPanelOpen}
@@ -675,6 +678,8 @@ export default function HomePage() {
               counts={layerCounts}
               sportFilter={sportFilter}
               onSportFilterChange={setSportFilter}
+              fountainFilter={fountainFilter}
+              onFountainFilterChange={setFountainFilter}
               liveWebcamsCount={liveWebcamsCount}
               bufferRadiusMeters={bufferRadiusMeters}
               onBufferRadiusChange={setBufferRadiusMeters}
@@ -718,6 +723,8 @@ export default function HomePage() {
                 counts={layerCounts}
                 sportFilter={sportFilter}
                 onSportFilterChange={setSportFilter}
+                fountainFilter={fountainFilter}
+                onFountainFilterChange={setFountainFilter}
                 liveWebcamsCount={liveWebcamsCount}
                 bufferRadiusMeters={bufferRadiusMeters}
                 onBufferRadiusChange={setBufferRadiusMeters}

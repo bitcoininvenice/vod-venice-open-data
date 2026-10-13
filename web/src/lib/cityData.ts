@@ -36,6 +36,7 @@ import { OPEN_PUBLIC_DAE } from './dae-data';
 import { OPEN_PHARMACIES } from './pharmacies-data';
 import { VENICE_CAMERAS } from './cameras-data';
 import { LAGOON_CURRENT_CHANNELS, type LagoonCurrentChannel } from './lagoonCurrents';
+import { filterFountains } from './fountainFilter';
 
 export interface TideInfo {
   observedAt: string | null;
@@ -437,7 +438,7 @@ export function layerCounts(d: CityData, extra: { scheduledVehicles: number; ali
     showCanals: d.lagoonNetwork?.canals.length ?? 0,
     showWifiHotspots: d.wifiHotspots.length,
     showEvCharging: d.evCharging.length,
-    showCityAssets: d.fountains.length,
+    showCityAssets: filterFountains(d.fountains, 'all').length,
     showParkings: d.parkings.length,
     showAirQuality: d.airStations.length,
     showPedestrianFlows: d.pedestrianFlows.length,

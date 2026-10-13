@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import fountainsDataset from '@/data/fountains.json';
-import { OPEN_CITY_ASSETS, OPEN_FOUNTAINS, OPEN_LIBRARIES, OPEN_PARKINGS, OPEN_RECYCLING_CENTRES, OPEN_WIFI_VENUES, OSM_POI_META } from '@/lib/osmPoi';
+import { OPEN_CITY_ASSETS, OPEN_FOUNTAINS, OPEN_LIBRARIES, OPEN_PARKINGS, OPEN_RECYCLING_CENTRES, OPEN_WIFI_VENUES, OSM_POI_META, VENICE_TAP_WATER_META } from '@/lib/osmPoi';
 
-// Fontanelle e parcheggi da OpenStreetMap (ODbL); ponti accessibili e punti Veritas da elenco curato
+// Fontanelle da Venice Tap Water (fonte primaria, con stato) e OpenStreetMap (ODbL); parcheggi OSM; ponti accessibili e punti Veritas da elenco curato
 export const revalidate = 86400;
 
 export async function GET() {
@@ -11,6 +11,8 @@ export async function GET() {
     totalAssets: OPEN_CITY_ASSETS.length,
     totalFountains: OPEN_FOUNTAINS.length,
     fountainMetadata: fountainsDataset.metadata,
+    // Fontane di Venice Tap Water: citare sempre la fonte con link a venicetapwater.org
+    veniceTapWaterMetadata: VENICE_TAP_WATER_META,
     totalParkings: OPEN_PARKINGS.length,
     parkingMetadata: {
       source: 'OpenStreetMap (amenity=parking con capienza ≥ 100) + elenco curato del progetto da verificare',

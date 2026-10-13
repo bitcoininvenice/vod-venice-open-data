@@ -827,6 +827,16 @@ test.describe('API', () => {
     }
   });
 
+  test('fontanelle: Venice Tap Water come fonte primaria con stato e link, OSM senza doppioni nella vista unica', async ({ request }) => {
+    const body = await (await request.get('/api/city-assets')).json();
+    expect(body.veniceTapWaterMetadata.sourceUrl).toBe('https://www.venicetapwater.org');
+    const vtw = body.fountains.filter((f: { source: string }) => f.source === 'VENICE_TAP_WATER');
+    expect(vtw.length).toBeGreaterThanOrEqual(200);
+    expect(vtw.every((f: { sourceUrl: string; status: string }) => f.sourceUrl === 'https://www.venicetapwater.org' && ['open', 'closed', 'unknown'].includes(f.status))).toBe(true);
+    const assets = body.data.assets.filter((a: { type: string }) => a.type === 'FOUNTAIN');
+    expect(assets.some((a: { duplicateOf?: string }) => a.duplicateOf)).toBe(false);
+  });
+
   test('passerelle: i 72 percorsi del piano con la quota, senza uno stato di montaggio inventato', async ({ request }) => {
     const body = await (await request.get('/api/passerelle')).json();
     expect(body.success).toBe(true);

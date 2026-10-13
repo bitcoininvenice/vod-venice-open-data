@@ -7,6 +7,7 @@ import { buildCsv, buildGeoJson, copyToClipboard, downloadBlob, sha256Hex } from
 import { isLocated } from '@/lib/types';
 import type { CityData } from '@/lib/cityData';
 import { Modal } from '@/components/ui/Modal';
+import { filterFountains } from '@/lib/fountainFilter';
 
 interface ExportableLayer {
   id: string;
@@ -32,7 +33,7 @@ export const DataExportModal: React.FC<DataExportModalProps> = ({ isOpen, onClos
     { id: 'pharmacies', name: t('ui.exportModal.layer_pharmacies'), count: pharmacies.length, getData: () => pharmacies },
     { id: 'dae', name: t('ui.exportModal.layer_dae'), count: daeList.length, getData: () => daeList },
     { id: 'emergencyDocks', name: t('ui.exportModal.layer_emergencyDocks'), count: emergencyDocks.length, getData: () => emergencyDocks },
-    { id: 'fountains', name: t('ui.exportModal.layer_fountains'), count: fountains.length, getData: () => fountains },
+    { id: 'fountains', name: t('ui.exportModal.layer_fountains'), count: filterFountains(fountains, 'all').length, getData: () => filterFountains(fountains, 'all') },
     { id: 'cantieri', name: t('ui.exportModal.layer_cantieri'), count: cantieri.length, getData: () => cantieri },
     { id: 'cameras', name: t('ui.exportModal.layer_cameras'), count: cameras.length, getData: () => cameras },
     { id: 'parkings', name: t('ui.exportModal.layer_parkings'), count: parkings.length, getData: () => parkings },

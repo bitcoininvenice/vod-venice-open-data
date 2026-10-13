@@ -3,27 +3,43 @@ import type { RenderContext } from './renderContext';
 import { PARK_COLORS } from '@/lib/parks';
 import { matchesSportFilter, sportColor } from '@/lib/sports';
 
+/** Colore di una fontanella: blu aperta, rosso chiusa, grigio non indicato; OSM azzurro (stato non verificato) */
+export function fountainColor(status: 'open' | 'closed' | 'unknown' | undefined, fromVtw: boolean, isDark: boolean): string {
+  if (!fromVtw) return isDark ? '#22d3ee' : '#0891b2';
+  if (status === 'open') return isDark ? '#3b82f6' : '#1d4ed8';
+  if (status === 'closed') return isDark ? '#f87171' : '#dc2626';
+  return isDark ? '#94a3b8' : '#64748b';
+}
+
 export function drawCityAssets(rc: RenderContext): void {
   const { ctx, isDark, sx, sy, mx, my, camera, showCityAssets, fountains, accessibleBridges, veritasServices } = rc;
   // 13. Render City Assets (Fontanelle & Ponti Accessibili & Veritas)
   if (showCityAssets) {
-    // Fountains
+    // Fontanelle: Venice Tap Water colorate per stato (aperta, chiusa, non indicato); OSM con anello (stato non verificato)
     if (fountains && fountains.length > 0) {
       for (const f of fountains) {
         const fx = sx(mx(f.lon));
         const fy = sy(my(f.lat));
+        const color = fountainColor(f.status, f.source === 'VENICE_TAP_WATER', isDark);
 
         ctx.beginPath();
-        ctx.arc(fx, fy, 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#06b6d4';
-        ctx.fill();
-        ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
-        ctx.lineWidth = 1;
+        ctx.arc(fx, fy, 3.8, 0, Math.PI * 2);
+        if (f.source === 'VENICE_TAP_WATER') {
+          ctx.fillStyle = color;
+          ctx.fill();
+          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+          ctx.lineWidth = 1;
+        } else {
+          ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.9)';
+          ctx.fill();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1.6;
+        }
         ctx.stroke();
 
         if (camera.s > 0.05) {
           ctx.font = '500 8.5px "DM Mono", monospace';
-          ctx.fillStyle = isDark ? '#06b6d4' : '#0891b2';
+          ctx.fillStyle = color;
           ctx.fillText(f.name, fx + 6, fy + 3);
         }
       }

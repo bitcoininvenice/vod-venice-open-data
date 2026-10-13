@@ -6,6 +6,7 @@ import { isLocated, type AlilagunaBoat, type CameraViewPreset, type CantiereItem
 import type { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import type { MapObjectSelected } from './MapObjectPanel';
 import { matchesSportFilter, type SportFilter } from '@/lib/sports';
+import { filterFountains, type FountainFilter } from '@/lib/fountainFilter';
 import { GRID, LAND_LO } from '@/lib/simulation-data';
 import { drawBaseMap, isLandHiLoaded, requestLandHi, isStreetsLoaded, requestStreets } from './map/baseMap';
 import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
@@ -73,6 +74,8 @@ export interface MapEngineProps {
   onSelectMose?: () => void;
   focusedCoordinates?: { lat: number; lon: number } | null;
   sportFilter?: SportFilter;
+  /** Fonte delle fontanelle mostrate */
+  fountainFilter?: FountainFilter;
   simulatedTideLevel?: number | null;
   /** Se il MOSE protegge la laguna quando la marea supera 110 cm (default true) */
   isMoseProtected?: boolean;
@@ -115,6 +118,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   onSelectMose,
   focusedCoordinates,
   sportFilter = 'all',
+  fountainFilter = 'all',
   simulatedTideLevel = null,
   isMoseProtected = true,
   isDesktopLayerPanelOpen = true,
@@ -125,6 +129,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   hideFloatingWindLegend = false
 }) => {
   const { t } = useTranslation();
+  // fontanelle della fonte scelta (con "tutte", senza i doppioni OSM di Venice Tap Water)
+  const visibleFountains = useMemo(() => filterFountains(data.fountains, fountainFilter), [data.fountains, fountainFilter]);
   // alias: nel codice di disegno `t` è anche il nome locale dell'ora simulata
   const tr = t;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -695,7 +701,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           }),
         L.showRecyclingCentres && target({ items: D.recyclingCentres, radius: 14, select: feature('civicPoi') }),
         L.showLibraries && target({ items: D.libraries, radius: 14, select: feature('civicPoi') }),
-        L.showCityAssets && target({ items: D.fountains, radius: 16, select: feature('fountain') }),
+        L.showCityAssets && target({ items: filterFountains(D.fountains, fountainFilter), radius: 16, select: feature('fountain') }),
         L.showCantieri && target({ items: cantieri, radius: 18, select: onSelectCantiere }),
         L.showStops && target({ items: D.stops, radius: 15, select: onSelectStop }),
         L.showVehicles && scheduledVehicles,
@@ -856,6 +862,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         selectedDay,
         paletteTheme,
         sportFilter,
+        fountains: visibleFountains,
         tideLevel: effectiveTideLevel,
         tide: tideState,
         pin,
@@ -994,7 +1001,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     return () => cancelAnimationFrame(animId);
   }, [
     camera, KY, H, W, mx, my, tr, layers, data, cantieri, selectedDay, paletteTheme, bufferRadiusMeters, selectedCategory,
-    sportFilter, simulatedTideLevel, isMoseProtected, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
+    sportFilter, visibleFountains, simulatedTideLevel, isMoseProtected, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
     alilagunaBoats, is3DView, landHiReady, selectedTrip, selectedVehicle, pin, itinerary,
 ]);
 

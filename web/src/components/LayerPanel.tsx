@@ -43,6 +43,7 @@ import {
 } from '@/lib/layerGroups';
 import { LayerIcon, RegimeBadge, TONE_CLASSES } from './layerVisuals';
 import { SPORT_FILTERS, type SportFilter } from '@/lib/sports';
+import { FOUNTAIN_FILTERS, type FountainFilter } from '@/lib/fountainFilter';
 
 interface LayerPanelProps {
   layers: LayerVisibility;
@@ -55,6 +56,9 @@ interface LayerPanelProps {
   /** Filtro per sport del livello Sport */
   sportFilter?: SportFilter;
   onSportFilterChange?: (f: SportFilter) => void;
+  /** Fonte delle fontanelle (tutte, Venice Tap Water, OpenStreetMap) */
+  fountainFilter?: FountainFilter;
+  onFountainFilterChange?: (f: FountainFilter) => void;
   bufferRadiusMeters: number;
   onBufferRadiusChange: (radius: number) => void;
   selectedCategory: TransportModeCategory | 'all';
@@ -91,6 +95,8 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   liveWebcamsCount = 0,
   sportFilter = 'all',
   onSportFilterChange,
+  fountainFilter = 'all',
+  onFountainFilterChange,
   bufferRadiusMeters,
   onBufferRadiusChange,
   selectedCategory,
@@ -176,6 +182,22 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                   }`}
               >
                 {t(`ui.sport.filter_${f}`)}
+              </button>
+            ))}
+          </div>
+        )}
+        {entry.key === 'showCityAssets' && on && onFountainFilterChange && (
+          <div className="flex flex-wrap gap-1 px-2 pb-1" role="group" aria-label={t('ui.layerPanel.fountainFilter')}>
+            {FOUNTAIN_FILTERS.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => onFountainFilterChange(f)}
+                aria-pressed={fountainFilter === f}
+                className={`px-2 py-0.5 rounded-full border text-[10px] font-mono cursor-pointer ${fountainFilter === f ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-200' : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)]'
+                  }`}
+              >
+                {t(`ui.layerPanel.fountainFilter_${f}`)}
               </button>
             ))}
           </div>

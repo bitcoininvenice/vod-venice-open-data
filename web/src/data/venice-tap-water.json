@@ -1,0 +1,2201 @@
+{
+ "metadata": {
+  "source": "Venice Tap Water",
+  "sourceUrl": "https://www.venicetapwater.org",
+  "terms": "Dati di Venice Tap Water, usati con il consenso dell'associazione citando la fonte.",
+  "generatedAt": "2026-10-13T16:10:48+00:00",
+  "total": 243,
+  "open": 142,
+  "closed": 95,
+  "unknown": 6
+ },
+ "data": [
+  {
+   "id": "vtw-1",
+   "name": "Campo San Giacomo dell'Orio",
+   "area": "Santa Croce",
+   "lat": 45.440324,
+   "lon": 12.327904,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-2",
+   "name": "Campiello delle Stroppe",
+   "area": "Santa Croce",
+   "lat": 45.439451,
+   "lon": 12.326196,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-3",
+   "name": "Corte dei Bergamaschi",
+   "area": "Santa Croce",
+   "lat": 45.439383,
+   "lon": 12.322619,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-4",
+   "name": "Campiello Mosca",
+   "area": "Santa Croce",
+   "lat": 45.435959,
+   "lon": 12.323936,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-5",
+   "name": "Campazzo Tolentini",
+   "area": "Santa Croce",
+   "lat": 45.437875,
+   "lon": 12.321589,
+   "status": "open",
+   "statusNote": "Con pulsante"
+  },
+  {
+   "id": "vtw-6",
+   "name": "Campazzo dei Tre Ponti",
+   "area": "Santa Croce",
+   "lat": 45.437125,
+   "lon": 12.319231,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-7",
+   "name": "Corte del Cazza",
+   "area": "Santa Croce",
+   "lat": 45.441004,
+   "lon": 12.326742,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-8",
+   "name": "Campiello del Piovan",
+   "area": "Santa Croce",
+   "lat": 45.440378,
+   "lon": 12.327109,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-9",
+   "name": "Ramo Sesto Gallion",
+   "area": "Santa Croce",
+   "lat": 45.440677,
+   "lon": 12.325234,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-10",
+   "name": "Campiello del Spezier",
+   "area": "Santa Croce",
+   "lat": 45.440268,
+   "lon": 12.330191,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-11",
+   "name": "Museo di Storia Naturale",
+   "area": "Santa Croce",
+   "lat": 45.441431,
+   "lon": 12.328648,
+   "status": "open",
+   "statusNote": "Chiuso il lunedì. Orario: dalle 9 alle 17 (1 ottobre - 31 maggio); dalle 10 alle 18 (1 giugno - 30 settembre)"
+  },
+  {
+   "id": "vtw-12",
+   "name": "Campiello del Cristo",
+   "area": "Santa Croce",
+   "lat": 45.439051,
+   "lon": 12.326027,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-13",
+   "name": "Corte Rota",
+   "area": "Santa Croce",
+   "lat": 45.439451,
+   "lon": 12.32994,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-14",
+   "name": "Giardini Papadopoli",
+   "area": "Santa Croce",
+   "lat": 45.438574,
+   "lon": 12.320467,
+   "status": "closed",
+   "statusNote": "Definitivamente"
+  },
+  {
+   "id": "vtw-15",
+   "name": "Rio Terà dei Pensieri",
+   "area": "Santa Croce",
+   "lat": 45.436446,
+   "lon": 12.319563,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-16",
+   "name": "Campo San Polo",
+   "area": "San Polo",
+   "lat": 45.437296,
+   "lon": 12.329965,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-17",
+   "name": "Campo de le Becarie",
+   "area": "San Polo",
+   "lat": 45.439478,
+   "lon": 12.333621,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-18",
+   "name": "Campo San Giacometo",
+   "area": "San Polo",
+   "lat": 45.438694,
+   "lon": 12.335242,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-19",
+   "name": "Campo de la Pescaria",
+   "area": "San Polo",
+   "lat": 45.439644,
+   "lon": 12.33465,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-20",
+   "name": "Campo Sant'Agostin",
+   "area": "San Polo",
+   "lat": 45.438677,
+   "lon": 12.328454,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-21",
+   "name": "Rio Terà dei Nomboli",
+   "area": "San Polo",
+   "lat": 45.436505,
+   "lon": 12.328748,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-22",
+   "name": "Campo Rialto Novo",
+   "area": "San Polo",
+   "lat": 45.4384,
+   "lon": 12.334823,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-23",
+   "name": "Campiello de le Chiovere",
+   "area": "San Polo",
+   "lat": 45.437151,
+   "lon": 12.324452,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-24",
+   "name": "Calle San Rocco",
+   "area": "San Polo",
+   "lat": 45.436413,
+   "lon": 12.325764,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-25",
+   "name": "Campiello Scoassera",
+   "area": "San Polo",
+   "lat": 45.436216,
+   "lon": 12.327686,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-26",
+   "name": "Carampane",
+   "area": "San Polo",
+   "lat": 45.438815,
+   "lon": 12.331842,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-27",
+   "name": "Sotoportego de la Scrimia",
+   "area": "San Polo",
+   "lat": 45.439825,
+   "lon": 12.332518,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-28",
+   "name": "Ex Giardini Reali",
+   "area": "San Marco",
+   "lat": 45.433021,
+   "lon": 12.338964,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-29",
+   "name": "Giardini Reali",
+   "area": "San Marco",
+   "lat": 45.433101,
+   "lon": 12.338544,
+   "status": "open",
+   "statusNote": "Pulsante. Chiuso lunedì e martedì. Orario: dalle ore 8.30 alle 19, sabato e domenica fino alle 19.30 (dal 15 aprile al 15 ottobre); dalle 9 alle 17 (dal 16 ottobre al 14 aprile)"
+  },
+  {
+   "id": "vtw-30",
+   "name": "Piscina San Moisè",
+   "area": "San Marco",
+   "lat": 45.433435,
+   "lon": 12.334995,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-31",
+   "name": "Campo Santa Maria Zobenigo o del Giglio",
+   "area": "San Marco",
+   "lat": 45.432319,
+   "lon": 12.332911,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-32",
+   "name": "Corte de La Vida",
+   "area": "San Marco",
+   "lat": 45.433372,
+   "lon": 12.329059,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-33",
+   "name": "Corte Moretta",
+   "area": "San Marco",
+   "lat": 45.433665,
+   "lon": 12.329122,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-34",
+   "name": "Corte Lezze",
+   "area": "San Marco",
+   "lat": 45.434289,
+   "lon": 12.328572,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-35",
+   "name": "Corte de l'Albero",
+   "area": "San Marco",
+   "lat": 45.435052,
+   "lon": 12.330787,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-36",
+   "name": "Campo San Beneto",
+   "area": "San Marco",
+   "lat": 45.435394,
+   "lon": 12.332361,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-37",
+   "name": "Fondamenta Tonda",
+   "area": "San Marco",
+   "lat": 45.436662,
+   "lon": 12.337537,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-38",
+   "name": "Corte de l'Orso",
+   "area": "San Marco",
+   "lat": 45.438114,
+   "lon": 12.337492,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-39",
+   "name": "Rio terà de le Colonne",
+   "area": "San Marco",
+   "lat": 45.435516,
+   "lon": 12.337632,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-40",
+   "name": "Ramo Secondo Corte Contarina",
+   "area": "San Marco",
+   "lat": 45.433595,
+   "lon": 12.33561,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-41",
+   "name": "Rio Terà dei Saloni angolo Rio Terà dei Catecumeni",
+   "area": "Dorsoduro",
+   "lat": 45.430124,
+   "lon": 12.333496,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-42",
+   "name": "Rio Terà dei Saloni",
+   "area": "Dorsoduro",
+   "lat": 45.428985,
+   "lon": 12.333952,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-43",
+   "name": "Campiello Barbaro",
+   "area": "Dorsoduro",
+   "lat": 45.430409,
+   "lon": 12.332258,
+   "status": "open",
+   "statusNote": "Con pulsante"
+  },
+  {
+   "id": "vtw-44",
+   "name": "Campiello dello Spirito Santo",
+   "area": "Dorsoduro",
+   "lat": 45.428822,
+   "lon": 12.332004,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-45",
+   "name": "Corte del Sabion",
+   "area": "Dorsoduro",
+   "lat": 45.429874,
+   "lon": 12.331136,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-46",
+   "name": "Campiello Drio gli Incurabili",
+   "area": "Dorsoduro",
+   "lat": 45.429317,
+   "lon": 12.330252,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-47",
+   "name": "Piscina Sant'Agnese",
+   "area": "Dorsoduro",
+   "lat": 45.429721,
+   "lon": 12.328726,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-48",
+   "name": "Fondamenta de la Toletta",
+   "area": "Dorsoduro",
+   "lat": 45.432069,
+   "lon": 12.325454,
+   "status": "open",
+   "statusNote": "Con pulsante"
+  },
+  {
+   "id": "vtw-49",
+   "name": "Fondamenta Zattere al Ponte Longo",
+   "area": "Dorsoduro",
+   "lat": 45.43004,
+   "lon": 12.324019,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-50",
+   "name": "Rio Terà Ognissanti",
+   "area": "Dorsoduro",
+   "lat": 45.431091,
+   "lon": 12.323651,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-51",
+   "name": "Ponte Molin",
+   "area": "Dorsoduro",
+   "lat": 45.430755,
+   "lon": 12.320324,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-52",
+   "name": "Corte dell'Avogaria",
+   "area": "Dorsoduro",
+   "lat": 45.432228,
+   "lon": 12.321201,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-53",
+   "name": "Calle Larga Rosa",
+   "area": "Dorsoduro",
+   "lat": 45.432577,
+   "lon": 12.312988,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-54",
+   "name": "Campiello San Lorenzo",
+   "area": "Dorsoduro",
+   "lat": 45.432719,
+   "lon": 12.317093,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-55",
+   "name": "Fondamenta dei Cereri",
+   "area": "Dorsoduro",
+   "lat": 45.434856,
+   "lon": 12.319912,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-56",
+   "name": "Campo Santa Margherita",
+   "area": "Dorsoduro",
+   "lat": 45.434172,
+   "lon": 12.323631,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-57",
+   "name": "Campiello dei Squelini",
+   "area": "Dorsoduro",
+   "lat": 45.434234,
+   "lon": 12.325592,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-58",
+   "name": "Corte del Gallo",
+   "area": "Dorsoduro",
+   "lat": 45.436141,
+   "lon": 12.322397,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-59",
+   "name": "Calle Basegò",
+   "area": "Dorsoduro",
+   "lat": 45.435846,
+   "lon": 12.322578,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-60",
+   "name": "Calla Larga Foscari",
+   "area": "Dorsoduro",
+   "lat": 45.434928,
+   "lon": 12.325909,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-61",
+   "name": "Calle del Stendardo",
+   "area": "Dorsoduro",
+   "lat": 45.432158,
+   "lon": 12.313807,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-62",
+   "name": "Parco Giochi Santa Marta",
+   "area": "Dorsoduro",
+   "lat": 45.433527,
+   "lon": 12.315484,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-63",
+   "name": "Chiesa Santa Marta",
+   "area": "Dorsoduro",
+   "lat": 45.431894,
+   "lon": 12.311649,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-64",
+   "name": "Fondamenta Quintavalle",
+   "area": "Castello",
+   "lat": 45.433761,
+   "lon": 12.358493,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-65",
+   "name": "Corte Bianco",
+   "area": "Castello",
+   "lat": 45.433031,
+   "lon": 12.357548,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-66",
+   "name": "Campiello de la Colomba",
+   "area": "Castello",
+   "lat": 45.433353,
+   "lon": 12.356589,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-67",
+   "name": "Calle Seco Marina",
+   "area": "Castello",
+   "lat": 45.431416,
+   "lon": 12.35777,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-68",
+   "name": "Corte de le Case Nove",
+   "area": "Castello",
+   "lat": 45.430704,
+   "lon": 12.358781,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-69",
+   "name": "Giardini 1 - Viale Trieste",
+   "area": "Castello",
+   "lat": 45.429242,
+   "lon": 12.356468,
+   "status": "closed",
+   "statusNote": "Pulsante (rotto)"
+  },
+  {
+   "id": "vtw-70",
+   "name": "Giardini 2 - Viale Trieste",
+   "area": "Castello",
+   "lat": 45.429298,
+   "lon": 12.356648,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-71",
+   "name": "Calle Seco Marina 2",
+   "area": "Castello",
+   "lat": 45.43129,
+   "lon": 12.355872,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-72",
+   "name": "Riva dei Sette Martiri - Piazzale Decorati al Valor Civile",
+   "area": "Castello",
+   "lat": 45.430163,
+   "lon": 12.354976,
+   "status": "open",
+   "statusNote": "Rubinetto"
+  },
+  {
+   "id": "vtw-73",
+   "name": "Rio Terà Garibaldi",
+   "area": "Castello",
+   "lat": 45.4323,
+   "lon": 12.354525,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-74",
+   "name": "Calle Schiavona",
+   "area": "Castello",
+   "lat": 45.43168,
+   "lon": 12.353939,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-75",
+   "name": "Giardini della Marinaressa",
+   "area": "Castello",
+   "lat": 45.431569,
+   "lon": 12.352774,
+   "status": "open",
+   "statusNote": "Pulsante. Orario estivo: dalle 7 alle 20.30 (01/04 - 30/09). Orario invernale: dalle 8 alle 18.30 (01/10 - 31/03)"
+  },
+  {
+   "id": "vtw-76",
+   "name": "Campiello del Squero",
+   "area": "Castello",
+   "lat": 45.431953,
+   "lon": 12.351596,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-77",
+   "name": "Calle Coltrera",
+   "area": "Castello",
+   "lat": 45.432913,
+   "lon": 12.353575,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-78",
+   "name": "Campo de la Tana",
+   "area": "Castello",
+   "lat": 45.433225,
+   "lon": 12.350793,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-79",
+   "name": "Fondamenta Arsenale",
+   "area": "Castello",
+   "lat": 45.4329,
+   "lon": 12.349826,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-80",
+   "name": "Corte de l'Anzolo",
+   "area": "Castello",
+   "lat": 45.43603,
+   "lon": 12.349241,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-81",
+   "name": "Fondamenta degli Arsenalotti",
+   "area": "Castello",
+   "lat": 45.434062,
+   "lon": 12.349894,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-82",
+   "name": "Campo Do Pozzi",
+   "area": "Castello",
+   "lat": 45.436148,
+   "lon": 12.3486,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-83",
+   "name": "Campo San Francesco",
+   "area": "Castello",
+   "lat": 45.438065,
+   "lon": 12.347579,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-84",
+   "name": "Corte Nova",
+   "area": "Castello",
+   "lat": 45.436993,
+   "lon": 12.346772,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-85",
+   "name": "Corte de la Borsa",
+   "area": "Castello",
+   "lat": 45.437497,
+   "lon": 12.347925,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-86",
+   "name": "Corte de La Vida",
+   "area": "Castello",
+   "lat": 45.437295,
+   "lon": 12.34811,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-87",
+   "name": "Campo Santa Ternita",
+   "area": "Castello",
+   "lat": 45.437359,
+   "lon": 12.348873,
+   "status": "open",
+   "statusNote": "Con pulsante"
+  },
+  {
+   "id": "vtw-88",
+   "name": "Campo de le Gate",
+   "area": "Castello",
+   "lat": 45.43634,
+   "lon": 12.347271,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-89",
+   "name": "Campiello de la Fraterna",
+   "area": "Castello",
+   "lat": 45.43584,
+   "lon": 12.345116,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-90",
+   "name": "Salizada del Pignater",
+   "area": "Castello",
+   "lat": 45.434993,
+   "lon": 12.347352,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-91",
+   "name": "Campiello drio la Pietà",
+   "area": "Castello",
+   "lat": 45.434768,
+   "lon": 12.345552,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-92",
+   "name": "Campo San Zaccaria",
+   "area": "Castello",
+   "lat": 45.434526,
+   "lon": 12.343023,
+   "status": "open",
+   "statusNote": "Con pulsante"
+  },
+  {
+   "id": "vtw-93",
+   "name": "Corte del Pozzo Roverso",
+   "area": "Castello",
+   "lat": 45.436139,
+   "lon": 12.342056,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-94",
+   "name": "Campo Santa Maria Formosa",
+   "area": "Castello",
+   "lat": 45.437256,
+   "lon": 12.341198,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-95",
+   "name": "Calle de la Malvasia",
+   "area": "Castello",
+   "lat": 45.436814,
+   "lon": 12.338821,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-96",
+   "name": "Calle Luigi Torelli detta della Cavallerizza",
+   "area": "Castello",
+   "lat": 45.438886,
+   "lon": 12.342709,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-97",
+   "name": "Campo Santa Giustina",
+   "area": "Castello",
+   "lat": 45.437986,
+   "lon": 12.346251,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-98",
+   "name": "Corte Santa Giustina",
+   "area": "Castello",
+   "lat": 45.43839,
+   "lon": 12.345417,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-99",
+   "name": "Viale XXIV Maggio",
+   "area": "Castello",
+   "lat": 45.430049,
+   "lon": 12.359878,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-100",
+   "name": "Parco delle Rimembranze",
+   "area": "Castello",
+   "lat": 45.426479,
+   "lon": 12.360081,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-101",
+   "name": "Biennale Arsenale",
+   "area": "Castello",
+   "lat": 45.433666,
+   "lon": 12.354973,
+   "status": "open",
+   "statusNote": "Rubinetto (Orario di apertura della sede Arsenale della Biennale di Venezia)"
+  },
+  {
+   "id": "vtw-102",
+   "name": "Calle Priuli dei Cavalletti",
+   "area": "Cannaregio",
+   "lat": 45.442059,
+   "lon": 12.321712,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-103",
+   "name": "Parco Savorgnan 1",
+   "area": "Cannaregio",
+   "lat": 45.44338,
+   "lon": 12.323631,
+   "status": "open",
+   "statusNote": "Pulsante. Orario: dalle 7 alle 20.30 (1 aprile - 30 settembre); dalle 8 alle 18.30 (1 ottobre - 31 marzo)"
+  },
+  {
+   "id": "vtw-104",
+   "name": "Campo San Geremia",
+   "area": "Cannaregio",
+   "lat": 45.443161,
+   "lon": 12.324798,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-105",
+   "name": "Calle Cendon",
+   "area": "Cannaregio",
+   "lat": 45.44443,
+   "lon": 12.322244,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-106",
+   "name": "Campiello de le Becarie",
+   "area": "Cannaregio",
+   "lat": 45.445948,
+   "lon": 12.318724,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-107",
+   "name": "Calle de le Chioverette",
+   "area": "Cannaregio",
+   "lat": 45.44461,
+   "lon": 12.324118,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-108",
+   "name": "Campo San Leonardo",
+   "area": "Cannaregio",
+   "lat": 45.443584,
+   "lon": 12.326825,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-109",
+   "name": "Corte Erizzo",
+   "area": "Cannaregio",
+   "lat": 45.442785,
+   "lon": 12.330569,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-110",
+   "name": "Calle Lezze",
+   "area": "Cannaregio",
+   "lat": 45.445342,
+   "lon": 12.329789,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-111",
+   "name": "Campo del Gheto Novo",
+   "area": "Cannaregio",
+   "lat": 45.445361,
+   "lon": 12.326943,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-112",
+   "name": "Calle San Girolamo",
+   "area": "Cannaregio",
+   "lat": 45.446514,
+   "lon": 12.324768,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-113",
+   "name": "Calle dei Riformati",
+   "area": "Cannaregio",
+   "lat": 45.447083,
+   "lon": 12.326586,
+   "status": "open",
+   "statusNote": "Con pulsante"
+  },
+  {
+   "id": "vtw-114",
+   "name": "Parco Groggia",
+   "area": "Cannaregio",
+   "lat": 45.448303,
+   "lon": 12.327477,
+   "status": "open",
+   "statusNote": "Pulsante. Orario: dalle 7 alle 20.30 (1 aprile - 30 settembre); dalle 8 alle 18.30 (1 ottobre - 31 marzo)"
+  },
+  {
+   "id": "vtw-115",
+   "name": "Campo Sant'Alvise",
+   "area": "Cannaregio",
+   "lat": 45.447277,
+   "lon": 12.328621,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-116",
+   "name": "Calle de le Muneghe",
+   "area": "Cannaregio",
+   "lat": 45.446413,
+   "lon": 12.329019,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-117",
+   "name": "Corte Tintoretto",
+   "area": "Cannaregio",
+   "lat": 45.445345,
+   "lon": 12.332904,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-118",
+   "name": "Corte Cavallo",
+   "area": "Cannaregio",
+   "lat": 45.446616,
+   "lon": 12.330824,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-119",
+   "name": "Campiello dei Trevisani",
+   "area": "Cannaregio",
+   "lat": 45.444248,
+   "lon": 12.33346,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-120",
+   "name": "Corte dei Pali già Testori",
+   "area": "Cannaregio",
+   "lat": 45.441409,
+   "lon": 12.333936,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-121",
+   "name": "Campo de le Erbe",
+   "area": "Cannaregio",
+   "lat": 45.442217,
+   "lon": 12.335253,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-122",
+   "name": "Ruga do pozzi",
+   "area": "Cannaregio",
+   "lat": 45.441714,
+   "lon": 12.336132,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-123",
+   "name": "Rio Terà Barba Frutariol",
+   "area": "Cannaregio",
+   "lat": 45.441747,
+   "lon": 12.337281,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-124",
+   "name": "Campo dei Gesuiti",
+   "area": "Cannaregio",
+   "lat": 45.442746,
+   "lon": 12.338215,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-125",
+   "name": "Corte Contarina",
+   "area": "Cannaregio",
+   "lat": 45.441703,
+   "lon": 12.339481,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-126",
+   "name": "Corte del Paludo",
+   "area": "Cannaregio",
+   "lat": 45.441027,
+   "lon": 12.341241,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-127",
+   "name": "Stazione binario 2/3",
+   "area": "Cannaregio",
+   "lat": 45.442048,
+   "lon": 12.320154,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-128",
+   "name": "Stazione binario 2/3",
+   "area": "Cannaregio",
+   "lat": 45.442477,
+   "lon": 12.319395,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-129",
+   "name": "Stazione binario 4/5",
+   "area": "Cannaregio",
+   "lat": 45.441921,
+   "lon": 12.320039,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-130",
+   "name": "Stazione binario 4/5",
+   "area": "Cannaregio",
+   "lat": 45.442373,
+   "lon": 12.319272,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-131",
+   "name": "Stazione binario 6/7",
+   "area": "Cannaregio",
+   "lat": 45.441794,
+   "lon": 12.319909,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-132",
+   "name": "Stazione binario 6/7",
+   "area": "Cannaregio",
+   "lat": 45.442251,
+   "lon": 12.319144,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-133",
+   "name": "Stazione binario 8/9",
+   "area": "Cannaregio",
+   "lat": 45.441278,
+   "lon": 12.320502,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-134",
+   "name": "Stazione binario 8/9",
+   "area": "Cannaregio",
+   "lat": 45.441701,
+   "lon": 12.319766,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-135",
+   "name": "Stazione binario 8/9",
+   "area": "Cannaregio",
+   "lat": 45.442132,
+   "lon": 12.318991,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-136",
+   "name": "Stazione binario 10/11",
+   "area": "Cannaregio",
+   "lat": 45.44157,
+   "lon": 12.31962,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-137",
+   "name": "Stazione binario 10/11",
+   "area": "Cannaregio",
+   "lat": 45.442005,
+   "lon": 12.318858,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-138",
+   "name": "Stazione binario 12/13",
+   "area": "Cannaregio",
+   "lat": 45.44106,
+   "lon": 12.320248,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-139",
+   "name": "Stazione binario 12/13",
+   "area": "Cannaregio",
+   "lat": 45.441898,
+   "lon": 12.318743,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-140",
+   "name": "Stazione binario 12/13",
+   "area": "Cannaregio",
+   "lat": 45.441459,
+   "lon": 12.319504,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-141",
+   "name": "Stazione binario 14",
+   "area": "Cannaregio",
+   "lat": 45.441329,
+   "lon": 12.319351,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-142",
+   "name": "Stazione binario 14",
+   "area": "Cannaregio",
+   "lat": 45.44177,
+   "lon": 12.318595,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-143",
+   "name": "Parco Savorgnan 2",
+   "area": "Cannaregio",
+   "lat": 45.443168,
+   "lon": 12.323641,
+   "status": "unknown",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-144",
+   "name": "Campiello San Canzian",
+   "area": "Cannaregio",
+   "lat": 45.439924,
+   "lon": 12.338608,
+   "status": "unknown",
+   "statusNote": "Fontana su vera da pozzo"
+  },
+  {
+   "id": "vtw-145",
+   "name": "Campiello Santa Maria Nova",
+   "area": "Cannaregio",
+   "lat": 45.439666,
+   "lon": 12.338613,
+   "status": "unknown",
+   "statusNote": "Fontana su vera da pozzo"
+  },
+  {
+   "id": "vtw-146",
+   "name": "Calle Michelangelo",
+   "area": "Giudecca",
+   "lat": 45.426037,
+   "lon": 12.337544,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-147",
+   "name": "Campiello de la Croce",
+   "area": "Giudecca",
+   "lat": 45.424508,
+   "lon": 12.333452,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-148",
+   "name": "Calle de la Croce",
+   "area": "Giudecca",
+   "lat": 45.424039,
+   "lon": 12.336238,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-149",
+   "name": "Campo del Santissimo Redentore",
+   "area": "Giudecca",
+   "lat": 45.425348,
+   "lon": 12.332272,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-150",
+   "name": "Fondamenta San Giacomo",
+   "area": "Giudecca",
+   "lat": 45.425752,
+   "lon": 12.329398,
+   "status": "open",
+   "statusNote": "Con pulsante"
+  },
+  {
+   "id": "vtw-151",
+   "name": "Campo de la Sponza",
+   "area": "Giudecca",
+   "lat": 45.424504,
+   "lon": 12.327913,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-152",
+   "name": "Campiello Ferrando",
+   "area": "Giudecca",
+   "lat": 45.425112,
+   "lon": 12.326842,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-153",
+   "name": "Campiello del Forno",
+   "area": "Giudecca",
+   "lat": 45.42579,
+   "lon": 12.325662,
+   "status": "closed",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-154",
+   "name": "Campo San Cosmo",
+   "area": "Giudecca",
+   "lat": 45.425916,
+   "lon": 12.323026,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-155",
+   "name": "Calle Orti - Giardino pubblico San Giacomo",
+   "area": "Giudecca",
+   "lat": 45.42333,
+   "lon": 12.331265,
+   "status": "open",
+   "statusNote": "Pulsante. Orari: dalle 7 alle 20.30 (estivo); dalle 8 alle 18.30 (invernale)"
+  },
+  {
+   "id": "vtw-156",
+   "name": "Calle Larga dei Lavraneri",
+   "area": "Giudecca",
+   "lat": 45.427354,
+   "lon": 12.317219,
+   "status": "open",
+   "statusNote": "Rubinetto"
+  },
+  {
+   "id": "vtw-157",
+   "name": "Calle del Teatro in Saca",
+   "area": "Giudecca",
+   "lat": 45.427252,
+   "lon": 12.315022,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-158",
+   "name": "Fondamenta San Gerardo Segredo",
+   "area": "Giudecca",
+   "lat": 45.426714,
+   "lon": 12.313652,
+   "status": "open",
+   "statusNote": "Rubinetto"
+  },
+  {
+   "id": "vtw-159",
+   "name": "Fondamenta Beata Giuliana Collalto",
+   "area": "Giudecca",
+   "lat": 45.428829,
+   "lon": 12.316541,
+   "status": "open",
+   "statusNote": "Rubinetto"
+  },
+  {
+   "id": "vtw-160",
+   "name": "Area Cani 1 - Sacca Fisola",
+   "area": "Giudecca",
+   "lat": 45.428734,
+   "lon": 12.313727,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-161",
+   "name": "Area Cani 2 - Sacca Fisola",
+   "area": "Giudecca",
+   "lat": 45.428729,
+   "lon": 12.31369,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-162",
+   "name": "San Servolo",
+   "area": "Giudecca",
+   "lat": 45.419797,
+   "lon": 12.355564,
+   "status": "unknown",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-163",
+   "name": "Fondamenta dei Vetrai",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.45229,
+   "lon": 12.350465,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-164",
+   "name": "Bressagio",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.453581,
+   "lon": 12.352351,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-165",
+   "name": "Calle Briati",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.453129,
+   "lon": 12.353742,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-166",
+   "name": "Campiello de la Pescheria",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.45386,
+   "lon": 12.351776,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-167",
+   "name": "Campo Santo Stefano",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.455182,
+   "lon": 12.352918,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-168",
+   "name": "Corte Bigaglia",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.45398,
+   "lon": 12.352824,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-169",
+   "name": "Campo San Bernardo",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.457332,
+   "lon": 12.353768,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-170",
+   "name": "Parco Navagero",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.456662,
+   "lon": 12.358409,
+   "status": "closed",
+   "statusNote": "Pulsante. Orari: dalle 7 alle 20.30 (estivo); dalle 8 alle 18.30 (invernale)"
+  },
+  {
+   "id": "vtw-171",
+   "name": "Fondamenta Navagero",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.455694,
+   "lon": 12.356576,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-172",
+   "name": "Calle del Cimitero",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.458307,
+   "lon": 12.351491,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-173",
+   "name": "Fondamenta San Lorenzo 1",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.458753,
+   "lon": 12.355643,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-174",
+   "name": "Fondamenta San Lorenzo 2",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.457718,
+   "lon": 12.357708,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-175",
+   "name": "Fondamenta Santi",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.458447,
+   "lon": 12.357351,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-176",
+   "name": "Riva Longa",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.45626,
+   "lon": 12.354786,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-177",
+   "name": "Sotoportego de la Vida",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.456196,
+   "lon": 12.353168,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-178",
+   "name": "Fondamenta Venier",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.457472,
+   "lon": 12.351327,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-179",
+   "name": "Parco degli Angeli 1",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.459915,
+   "lon": 12.352239,
+   "status": "open",
+   "statusNote": "Rubinetto"
+  },
+  {
+   "id": "vtw-180",
+   "name": "Parco degli Angeli 2",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.460385,
+   "lon": 12.350323,
+   "status": "open",
+   "statusNote": "Rubinetto"
+  },
+  {
+   "id": "vtw-181",
+   "name": "Parco degli Angeli 3",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.460253,
+   "lon": 12.350497,
+   "status": "open",
+   "statusNote": "Rubinetto"
+  },
+  {
+   "id": "vtw-182",
+   "name": "Fondamenta Santa Caterina",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.486746,
+   "lon": 12.405852,
+   "status": "closed",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-183",
+   "name": "Parco Mazzorbo 1",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.489168,
+   "lon": 12.412487,
+   "status": "open",
+   "statusNote": "Pulsante. Orari: dalle 7 alle 20.30 (1 aprile - 30 settembre); dalle 8 alle 18.30 (1 ottobre - 31 marzo)"
+  },
+  {
+   "id": "vtw-184",
+   "name": "Parco Mazzorbo 2",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.489067,
+   "lon": 12.412109,
+   "status": "open",
+   "statusNote": "Pulsante. Orari: dalle 7 alle 20.30 (1 aprile - 30 settembre); dalle 8 alle 18.30 (1 ottobre - 31 marzo)"
+  },
+  {
+   "id": "vtw-185",
+   "name": "Calle Babuini",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.486725,
+   "lon": 12.417417,
+   "status": "open",
+   "statusNote": "Rubinetto"
+  },
+  {
+   "id": "vtw-186",
+   "name": "Campo Vigner",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.485459,
+   "lon": 12.416324,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-187",
+   "name": "Corte Capece",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.486205,
+   "lon": 12.41587,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-188",
+   "name": "Corte Comare",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.485608,
+   "lon": 12.415123,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-189",
+   "name": "Piazza Galuppi",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.484568,
+   "lon": 12.418931,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-190",
+   "name": "Rio Terà Pizzo",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.484166,
+   "lon": 12.417946,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-191",
+   "name": "Viale Marcello",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.487153,
+   "lon": 12.416377,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-192",
+   "name": "Campo Pescheria",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.484693,
+   "lon": 12.416933,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-193",
+   "name": "Piazzale del vaporetto - Fondamenta dei Borgognoni",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.495129,
+   "lon": 12.412558,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-194",
+   "name": "Fondamenta dei Borgognoni",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.497884,
+   "lon": 12.417759,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-195",
+   "name": "San Francesco del Deserto",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.473553,
+   "lon": 12.415905,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-196",
+   "name": "Calle Daffan",
+   "area": "Murano, Burano, Mazzorbo e Torcello",
+   "lat": 45.485892,
+   "lon": 12.418007,
+   "status": "open",
+   "statusNote": "Rubinetto"
+  },
+  {
+   "id": "vtw-197",
+   "name": "Fermata Capannone",
+   "area": "Sant'Erasmo e Vignole",
+   "lat": 45.454515,
+   "lon": 12.38884,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-198",
+   "name": "Via de le Motte",
+   "area": "Sant'Erasmo e Vignole",
+   "lat": 45.45882,
+   "lon": 12.409526,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-199",
+   "name": "Via dei Forti - Darsena Tedeschi",
+   "area": "Sant'Erasmo e Vignole",
+   "lat": 45.445673,
+   "lon": 12.392497,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-200",
+   "name": "Darsena al Bacan",
+   "area": "Sant'Erasmo e Vignole",
+   "lat": 45.444789,
+   "lon": 12.392449,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-201",
+   "name": "Via dei Forti",
+   "area": "Sant'Erasmo e Vignole",
+   "lat": 45.45033,
+   "lon": 12.405481,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-202",
+   "name": "Campo della Chiesa delle Sante Eurosia e Maria Assunta",
+   "area": "Sant'Erasmo e Vignole",
+   "lat": 45.442417,
+   "lon": 12.377212,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-203",
+   "name": "Piazzale Santa Maria Elisabetta",
+   "area": "Lido e Pellestrina",
+   "lat": 45.417688,
+   "lon": 12.369258,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-204",
+   "name": "Via Cipro",
+   "area": "Lido e Pellestrina",
+   "lat": 45.424451,
+   "lon": 12.377769,
+   "status": "open",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-205",
+   "name": "San Nicolò",
+   "area": "Lido e Pellestrina",
+   "lat": 45.428016,
+   "lon": 12.380334,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-206",
+   "name": "San Nicolò 2",
+   "area": "Lido e Pellestrina",
+   "lat": 45.431149,
+   "lon": 12.383102,
+   "status": "open",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-207",
+   "name": "Parco Osservatorio",
+   "area": "Lido e Pellestrina",
+   "lat": 45.416386,
+   "lon": 12.377157,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-208",
+   "name": "Via Ascalona",
+   "area": "Lido e Pellestrina",
+   "lat": 45.415928,
+   "lon": 12.371295,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-209",
+   "name": "Gran Viale",
+   "area": "Lido e Pellestrina",
+   "lat": 45.415292,
+   "lon": 12.373791,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-210",
+   "name": "Via Dandolo Ex perscheria",
+   "area": "Lido e Pellestrina",
+   "lat": 45.415056,
+   "lon": 12.369813,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-211",
+   "name": "Via Marcello",
+   "area": "Lido e Pellestrina",
+   "lat": 45.408306,
+   "lon": 12.370554,
+   "status": "open",
+   "statusNote": "Con pulsante"
+  },
+  {
+   "id": "vtw-212",
+   "name": "Giardini del Casinò",
+   "area": "Lido e Pellestrina",
+   "lat": 45.40747,
+   "lon": 12.3683,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-213",
+   "name": "Parco Quattro Fontane",
+   "area": "Lido e Pellestrina",
+   "lat": 45.405952,
+   "lon": 12.364065,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-214",
+   "name": "Piazza Traù /Via Sanudo",
+   "area": "Lido e Pellestrina",
+   "lat": 45.402701,
+   "lon": 12.360936,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-215",
+   "name": "Parco Ca' Bianca",
+   "area": "Lido e Pellestrina",
+   "lat": 45.384524,
+   "lon": 12.348204,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-216",
+   "name": "Parco Leonardo Angiolin",
+   "area": "Lido e Pellestrina",
+   "lat": 45.374154,
+   "lon": 12.338306,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-217",
+   "name": "Piazzale Malamocco / \"da Scarso\"",
+   "area": "Lido e Pellestrina",
+   "lat": 45.371921,
+   "lon": 12.337465,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-218",
+   "name": "Campiello dei Meloni",
+   "area": "Lido e Pellestrina",
+   "lat": 45.371657,
+   "lon": 12.338358,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-219",
+   "name": "Alberoni",
+   "area": "Lido e Pellestrina",
+   "lat": 45.34958,
+   "lon": 12.318541,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-220",
+   "name": "Lungomare D'Annunzio 1",
+   "area": "Lido e Pellestrina",
+   "lat": 45.415486,
+   "lon": 12.377291,
+   "status": "open",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-221",
+   "name": "Lungomare D'Annunzio 2",
+   "area": "Lido e Pellestrina",
+   "lat": 45.418936,
+   "lon": 12.380198,
+   "status": "open",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-222",
+   "name": "Parchetto via Occhi",
+   "area": "Lido e Pellestrina",
+   "lat": 45.38445,
+   "lon": 12.349594,
+   "status": "closed",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-223",
+   "name": "Parco",
+   "area": "Lido e Pellestrina",
+   "lat": 45.276388,
+   "lon": 12.302346,
+   "status": "open",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-224",
+   "name": "San Pitro in Volta 1",
+   "area": "Lido e Pellestrina",
+   "lat": 45.322049,
+   "lon": 12.318078,
+   "status": "closed",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-225",
+   "name": "San Pietro in Volta 2",
+   "area": "Lido e Pellestrina",
+   "lat": 45.320966,
+   "lon": 12.31752,
+   "status": "closed",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-226",
+   "name": "San Pietro in Volta 3",
+   "area": "Lido e Pellestrina",
+   "lat": 45.319655,
+   "lon": 12.317506,
+   "status": "open",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-227",
+   "name": "San Pietro in Volta 4",
+   "area": "Lido e Pellestrina",
+   "lat": 45.316831,
+   "lon": 12.314789,
+   "status": "closed",
+   "statusNote": "Fuori servizio"
+  },
+  {
+   "id": "vtw-228",
+   "name": "San Pietro in Volta 5",
+   "area": "Lido e Pellestrina",
+   "lat": 45.311967,
+   "lon": 12.312292,
+   "status": "open",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-229",
+   "name": "S. Antonio 1",
+   "area": "Lido e Pellestrina",
+   "lat": 45.280101,
+   "lon": 12.301355,
+   "status": "closed",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-230",
+   "name": "Pellestrina 1",
+   "area": "Lido e Pellestrina",
+   "lat": 45.269826,
+   "lon": 12.29982,
+   "status": "closed",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-231",
+   "name": "Piazzale Zendrini",
+   "area": "Lido e Pellestrina",
+   "lat": 45.275278,
+   "lon": 12.301263,
+   "status": "open",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-232",
+   "name": "Vianelli",
+   "area": "Lido e Pellestrina",
+   "lat": 45.268815,
+   "lon": 12.300059,
+   "status": "closed",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-233",
+   "name": "Ognissanti",
+   "area": "Lido e Pellestrina",
+   "lat": 45.265288,
+   "lon": 12.300397,
+   "status": "closed",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-234",
+   "name": "Oltre Ongnissanti",
+   "area": "Lido e Pellestrina",
+   "lat": 45.264952,
+   "lon": 12.300493,
+   "status": "closed",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-235",
+   "name": "Vianelli 2",
+   "area": "Lido e Pellestrina",
+   "lat": 45.266465,
+   "lon": 12.300024,
+   "status": "closed",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-236",
+   "name": "Via Sandro Gallo angolo via Lotti",
+   "area": "Lido e Pellestrina",
+   "lat": 45.399531,
+   "lon": 12.359359,
+   "status": "open",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-237",
+   "name": "Parco Pividor 1",
+   "area": "Lido e Pellestrina",
+   "lat": 45.387328,
+   "lon": 12.35287,
+   "status": "closed",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-238",
+   "name": "Parco Pividor 2",
+   "area": "Lido e Pellestrina",
+   "lat": 45.387869,
+   "lon": 12.35292,
+   "status": "closed",
+   "statusNote": "Con rubinetto"
+  },
+  {
+   "id": "vtw-239",
+   "name": "Parco ai Pini 1",
+   "area": "Lido e Pellestrina",
+   "lat": 45.347211,
+   "lon": 12.318681,
+   "status": "closed",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-240",
+   "name": "Parco ai Pini 2",
+   "area": "Lido e Pellestrina",
+   "lat": 45.347108,
+   "lon": 12.319033,
+   "status": "closed",
+   "statusNote": "Pulsante"
+  },
+  {
+   "id": "vtw-241",
+   "name": "Ecocetro Veritas Lido",
+   "area": "Lido e Pellestrina",
+   "lat": 45.385866,
+   "lon": 12.346805,
+   "status": "open",
+   "statusNote": "Secondo orari Ecocentro - pulsante"
+  },
+  {
+   "id": "vtw-242",
+   "name": "Parco Ca' Bianca 2",
+   "area": "Lido e Pellestrina",
+   "lat": 45.384961,
+   "lon": 12.348395,
+   "status": "unknown",
+   "statusNote": ""
+  },
+  {
+   "id": "vtw-243",
+   "name": "Parco Ca' Bianca 3",
+   "area": "Lido e Pellestrina",
+   "lat": 45.38489,
+   "lon": 12.348713,
+   "status": "unknown",
+   "statusNote": ""
+  }
+ ]
+}

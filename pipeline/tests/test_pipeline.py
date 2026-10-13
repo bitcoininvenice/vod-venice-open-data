@@ -16,6 +16,7 @@ import import_osm_defibrillators as osm_dae  # noqa: E402
 import import_osm_pharmacies as osm_pharm  # noqa: E402
 import import_osm_poi as osm_poi  # noqa: E402
 import import_alilaguna_gtfs as ali  # noqa: E402
+import import_venice_tap_water as vtw  # noqa: E402
 import import_agcom_fiber as fiber  # noqa: E402
 import import_osm_waterways as waterways  # noqa: E402
 import import_arpav_pollen as arpav_pollen  # noqa: E402
@@ -646,3 +647,27 @@ def test_category_people_mover_e_bus_del_lido():
     assert sim.category("automobilistico", {"route_short_name": "T1", "route_type": "0"}, []) == "tram"
     assert sim.category("automobilistico", {"route_short_name": "A", "route_type": "3", "route_desc": "UL"}, []) == "island"
     assert sim.category("automobilistico", {"route_short_name": "2", "route_type": "3", "route_desc": "UM"}, []) == "bus"
+
+
+def test_venice_tap_water_stato_e_zona():
+    assert vtw.parse_status("Aperta - Pulsante") == ("open", "Pulsante")
+    assert vtw.parse_status("Chiusa, con rubinetto") == ("closed", "Con rubinetto")
+    assert vtw.parse_status("Chiuso") == ("closed", "")
+    assert vtw.parse_status("Fontana su vera da pozzo") == ("unknown", "Fontana su vera da pozzo")
+    assert vtw.clean_area("SESTIERE DI SAN POLO") == "San Polo"
+    assert vtw.clean_area("SANT'ERASMO e VIGNOLE") == "Sant'Erasmo e Vignole"
+    assert vtw.description_text('<img src="x" /><br><br>Aperta  ') == "Aperta"
+
+
+def test_venice_tap_water_kml():
+    kml = """<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2"><Document>
+<Folder><name>SESTIERE DI CASTELLO</name>
+<Placemark><name>Campo Bandiera e Moro</name><description><![CDATA[<img src="a.jpg"/><br><br>Aperta - Pulsante]]></description>
+<Point><coordinates>12.3456,45.4345,0</coordinates></Point></Placemark>
+<Placemark><name>Fuori</name><description>Aperta</description><Point><coordinates>12.19,45.57,0</coordinates></Point></Placemark>
+</Folder></Document></kml>"""
+    out = vtw.parse_kml(kml)
+    assert len(out) == 1
+    assert out[0]["area"] == "Castello" and out[0]["status"] == "open" and out[0]["statusNote"] == "Pulsante"
+    assert "img" not in json.dumps(out)

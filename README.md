@@ -64,6 +64,7 @@ vod-venice-open-data/
 │   ├── import_cciaa_turismo.py     # Arrivi, presenze e residenti dei comuni della laguna (CCIAA, CC BY)
 │   ├── import_agcom_fiber.py       # Copertura rete fissa FTTH/FTTC/ADSL (AGCOM BroadbandMap, CC BY 4.0)
 │   ├── enrich_fountains.py         # Toponimo di prossimità per le fontanelle senza nome
+│   ├── import_venice_tap_water.py  # Fontanelle e stato aperta/chiusa da Venice Tap Water
 │   └── tests/                      # Test pytest
 ├── web/                            # Applicazione Next.js 16 (App Router)
 │   ├── package.json
@@ -145,6 +146,7 @@ python import_osm_surveillance.py           # Telecamere da OpenStreetMap
 python import_osm_defibrillators.py         # Defibrillatori da OpenStreetMap (non esiste un dataset ufficiale aperto)
 python import_osm_pharmacies.py             # Farmacie da OpenStreetMap
 python import_osm_fountains.py && python enrich_fountains.py  # Fontanelle da OpenStreetMap
+python import_venice_tap_water.py                             # Fontanelle Venice Tap Water (venicetapwater.org)
 python import_osm_poi.py                    # Colonnine, parcheggi ≥100 posti, vere da pozzo, alberi monumentali, ecocentri, biblioteche (OSM)
 python import_alilaguna_gtfs.py             # Orario Alilaguna (simulazione delle barche dall'orario)
 python import_agcom_fiber.py                # Copertura fibra AGCOM su celle di ~100 m
@@ -244,7 +246,7 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/health` | Stato ed età di ogni fonte live e dei dataset della pipeline (`ok` / `stale` / `down`). |
 | `GET` | `/api/satellites` | Satelliti con orbite SGP4 da TLE CelesTrak e prossimo passaggio sopra Venezia. |
 | `GET` | `/api/cantieri` | Opere pubbliche dell'Elenco Annuale dei Lavori 2026 (posizioni approssimate); il campo `bdap` aggiunge, per CUP, fase reale, date, costi e finanziamenti dal Monitoraggio Opere Pubbliche. |
-| `GET` | `/api/city-assets` | Fontanelle, parcheggi, ecocentri, biblioteche e luoghi con Wi-Fi (`wifiVenues`: hotel, bar, biblioteche con tipo di accesso) da OpenStreetMap (ODbL). |
+| `GET` | `/api/city-assets` | Fontanelle (Venice Tap Water con stato aperta/chiusa, e OpenStreetMap), parcheggi, ecocentri, biblioteche e luoghi con Wi-Fi (`wifiVenues`: hotel, bar, biblioteche con tipo di accesso) da OpenStreetMap (ODbL). |
 | `GET` | `/api/census` | Residenti, età, stranieri, famiglie e abitazioni (anche vuote o di soli non residenti) per Comune, municipalità, sestiere e isola dal Censimento ISTAT 2021 (CC BY 4.0). |
 | `GET` | `/api/civici?q=Cannaregio 3450` | Numero civico veneziano (anche «CN 3450», «S. Polo 1200/a»): posizione esatta se è su OpenStreetMap, altrimenti il civico noto più vicino dello stesso sestiere (`match=nearest`). |
 | `GET` | `/api/parks` | Parchi, giardini pubblici, aree giochi, aree cani e oasi con perimetro, accesso e superficie da OpenStreetMap (ODbL); il Comune non pubblica un dataset aperto del verde. |

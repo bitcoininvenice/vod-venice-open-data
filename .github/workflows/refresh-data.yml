@@ -39,6 +39,7 @@ jobs:
           python import_osm_defibrillators.py || echo "::warning::defibrillatori OSM non aggiornati"
           python import_osm_pharmacies.py || echo "::warning::farmacie OSM non aggiornate"
           (python import_osm_fountains.py && python enrich_fountains.py) || echo "::warning::fontanelle OSM non aggiornate"
+          python import_venice_tap_water.py || echo "::warning::fontanelle Venice Tap Water non aggiornate"
           python import_osm_poi.py || echo "::warning::POI OSM (colonnine, parcheggi, pozzi, alberi, ecocentri, biblioteche) non aggiornati"
           python import_osm_waterways.py || echo "::warning::briccole e canali OSM non aggiornati"
           python import_osm_parks.py || echo "::warning::parchi e giardini OSM non aggiornati"

@@ -82,6 +82,7 @@ import { sportColor } from '@/lib/sports';
 import { CAMPO_LICENSE_PAGE } from '@/server/sources/campo';
 import { featureLayer } from '@/lib/featureLayer';
 import { effectiveSpeedLimit } from '@/lib/waterSpeedLimits';
+import { VENICE_TAP_WATER_URL } from '@/lib/fountainFilter';
 import type { TideForecast } from '@/lib/contracts/tide';
 
 import {
@@ -372,7 +373,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'canal' && t('ui.feature.canalLength', { km: (canalLengthMeters(feature.data.coords) / 1000).toFixed(2) })}
                 {feature.type === 'tributaryRiver' && `${t('ui.feature.portata')}: ${feature.data.avgFlowM3s} m³/s · ${feature.data.mouthZone}`}
                 {feature.type === 'parking' && `${feature.data.location} · ${feature.data.operator}`}
-                {feature.type === 'fountain' && `${feature.data.sestiere} · ${t('ui.feature.fountainSubtitle')}`}
+                {feature.type === 'fountain' && `${feature.data.sestiere} · ${t(feature.data.source === 'VENICE_TAP_WATER' ? 'ui.feature.fountainSubtitleVtw' : 'ui.feature.fountainSubtitle')}`}
                 {feature.type === 'fiberCell' && t('ui.feature.fiberSubtitle', { date: feature.data.dataDate.split('-').reverse().join('/') })}
                 {feature.type === 'bdapWork' && (feature.data.place ?? t('ui.bdap.publicWork'))}
                 {feature.type === 'loraGateway' && feature.data.network}
@@ -1302,6 +1303,20 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
 
           {feature.type === 'fountain' && (
             <div className="flex flex-col gap-3">
+              {feature.data.source === 'VENICE_TAP_WATER' && (
+                <div className="flex flex-col gap-1">
+                  <span className={`self-start px-2.5 py-1 rounded-lg text-xs font-bold border ${
+                    feature.data.status === 'open'
+                      ? 'bg-blue-500/15 border-blue-500/40 text-blue-300'
+                      : feature.data.status === 'closed'
+                      ? 'bg-rose-500/15 border-rose-500/40 text-rose-300'
+                      : 'bg-[var(--rule)]/40 border-[var(--rule)] text-[var(--ink-2)]'
+                  }`}>
+                    {t(`ui.feature.fountainStatus_${feature.data.status ?? 'unknown'}`)}
+                  </span>
+                  {feature.data.statusNote && <span className="text-xs text-[var(--ink-2)]">{feature.data.statusNote}</span>}
+                </div>
+              )}
               <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex flex-col gap-1.5 text-xs">
                 {feature.data.typology && (
                   <div className="flex items-center justify-between">
@@ -1327,7 +1342,18 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 </div>
               )}
 
-              <p className="text-[11px] text-[var(--ink-3)]">{t('ui.feature.fountainNote')}</p>
+              {feature.data.source === 'VENICE_TAP_WATER' ? (
+                <a
+                  href={VENICE_TAP_WATER_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-xs text-[var(--ink-2)] hover:border-cyan-500/60"
+                >
+                  {t('ui.feature.fountainSourceVtw')} <b className="text-cyan-400">Venice Tap Water · venicetapwater.org</b>
+                </a>
+              ) : (
+                <p className="text-[11px] text-[var(--ink-3)]">{t('ui.feature.fountainNote')}</p>
+              )}
 
               <div className="flex items-center justify-between text-[11px] font-mono text-[var(--ink-3)] bg-black/20 p-2 rounded-lg border border-[var(--rule)]">
                 <span>{t('ui.feature.coordinate')}</span>
