@@ -50,7 +50,7 @@ export const enTranslations: Translations = {
     cantieriCount: 'works',
     metrics: 'Metrics',
     guide: 'Guide',
-    filters: 'Filters',
+    filters: 'Layers',
     paletteDarkTitle: 'Night Palette (High contrast dark)',
     paletteLightTitle: 'Paper Palette (Historic light map)',
     paletteDynamicTitle: 'Dynamic Palette (Synced with Venice sunrise & sunset)',

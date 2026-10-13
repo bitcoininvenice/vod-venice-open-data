@@ -50,7 +50,7 @@ export const itTranslations: Translations = {
     cantieriCount: 'opere',
     metrics: 'Metriche',
     guide: 'Guida',
-    filters: 'Filtri',
+    filters: 'Livelli',
     paletteDarkTitle: 'Palette Notte (Scuro ad alto contrasto)',
     paletteLightTitle: 'Palette Carta (Mappa storica chiara)',
     paletteDynamicTitle: 'Palette Dinamica (Sincronizzata con alba e tramonto di Venezia)',
