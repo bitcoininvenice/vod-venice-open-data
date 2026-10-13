@@ -3,9 +3,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { CameraViewPreset, PaletteTheme } from '@/lib/types';
-import { Compass, Moon, Sun, Sparkles, Layers, BarChart3, HelpCircle, Globe, Waves, MoreHorizontal, Construction, Search, Download, TrendingUp, TrendingDown, Activity, Menu, Bot, Route } from 'lucide-react';
+import { Moon, Sun, Sparkles, Layers, BarChart3, HelpCircle, Globe, Waves, MoreHorizontal, Construction, Search, Download, TrendingUp, TrendingDown, Activity, Menu, Bot, Route } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { formatSignedCm, formatLocalStamp } from '@/lib/time';
+import Image from 'next/image';
 
 interface HeaderProps {
   currentView: CameraViewPreset;
@@ -127,8 +128,8 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Top row: Brand & Mobile Action Buttons */}
       <div className="flex items-center justify-between w-full md:w-auto gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 shrink-0">
-            <Compass className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#0a0f1d] ring-1 ring-white/10 flex items-center justify-center shadow-lg shadow-cyan-500/10 shrink-0 overflow-hidden">
+            <Image src="/logo-mark.png" alt="" aria-hidden width={28} height={28} priority className="w-[85%] h-[85%] object-contain" />
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
             <h1 className="text-base sm:text-lg font-bold tracking-tight text-[var(--ink)] whitespace-nowrap">

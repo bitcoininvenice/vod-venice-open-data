@@ -1,4 +1,9 @@
 import { ImageResponse } from 'next/og';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+// Marchio di VOD (sagoma bianca della laguna), incorporato nell'immagine
+const LOGO = `data:image/png;base64,${readFileSync(join(process.cwd(), 'public', 'logo-mark.png')).toString('base64')}`;
 
 // Anteprima per social e messaggistica (1200×630), generata durante il build
 export const alt = 'VOD – Venice Open Data: mappa di Venezia con vaporetti in tempo reale, marea e open data';
@@ -27,16 +32,13 @@ export default function OpengraphImage() {
               width: 72,
               height: 72,
               borderRadius: 18,
-              background: 'linear-gradient(135deg, #22d3ee, #2563eb)',
+              background: '#0a0f1d',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 40,
-              fontWeight: 700,
-              color: '#ffffff',
             }}
           >
-            V
+            <img src={LOGO} width={62} height={62} alt="" />
           </div>
           <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: -0.5 }}>VOD – Venice Open Data</div>
         </div>

@@ -15,7 +15,11 @@ import { Analytics } from "@vercel/analytics/next";
 export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
-    icon: "/icon.svg",
+    icon: [
+      { url: "/favicon.ico", sizes: "16x16 32x32 48x48 64x64" },
+      { url: "/favicon-96.png", type: "image/png", sizes: "96x96" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" }
+    ],
     apple: "/apple-touch-icon.png"
   },
   title: {

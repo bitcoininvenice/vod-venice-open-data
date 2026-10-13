@@ -2,9 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Activity, ArrowLeft, BarChart3, Bot, Compass, Globe, Layers, Sparkles } from 'lucide-react';
+import { Activity, ArrowLeft, BarChart3, Bot, Globe, Layers, Sparkles } from 'lucide-react';
 import { ALL_LAYER_KEYS } from '@/lib/urlLayers';
 import { useTranslation } from '@/lib/i18n';
+import Image from 'next/image';
 
 /** Numero di layer della mappa: unica fonte per intestazioni, piè di pagina e pagina 404. */
 export const LAYER_COUNT = ALL_LAYER_KEYS.length;
@@ -61,8 +62,8 @@ export function SiteHeader({ page, subtitle, actions }: SiteHeaderProps) {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2.5 group cursor-pointer">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
-              <Compass className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-[#0a0f1d] ring-1 ring-white/10 flex items-center justify-center shadow-lg shadow-cyan-500/10 group-hover:scale-105 transition-transform overflow-hidden">
+              <Image src="/logo-mark.png" alt="" aria-hidden width={32} height={32} priority className="w-[85%] h-[85%] object-contain" />
             </div>
             <div>
               <span className="font-bold text-base tracking-tight block text-[var(--ink)]">VOD – Venice Open Data</span>
