@@ -38,8 +38,35 @@ export function drawAccessibleBridges(rc: RenderContext): void {
   }
 }
 
+/** Punti Veritas dell'elenco curato (battelli di raccolta, isola ecologica): nel livello dei servizi rifiuti Veritas. */
+export function drawVeritasServices(rc: RenderContext): void {
+  const { ctx, isDark, sx, sy, mx, my, camera, showWasteBoats, veritasServices } = rc;
+  if (!showWasteBoats) return;
+  // Veritas Waste Boats
+  if (veritasServices && veritasServices.length > 0) {
+    for (const v of veritasServices) {
+      const vx = sx(mx(v.lon));
+      const vy = sy(my(v.lat));
+
+      ctx.beginPath();
+      ctx.arc(vx, vy, 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#84cc16';
+      ctx.fill();
+      ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      if (camera.s > 0.035) {
+        ctx.font = '500 8.5px "DM Mono", monospace';
+        ctx.fillStyle = isDark ? '#84cc16' : '#4d7c0f';
+        ctx.fillText(v.name, vx + 6, vy + 3);
+      }
+    }
+  }
+}
+
 export function drawCityAssets(rc: RenderContext): void {
-  const { ctx, isDark, sx, sy, mx, my, camera, showCityAssets, fountains, veritasServices } = rc;
+  const { ctx, isDark, sx, sy, mx, my, camera, showCityAssets, fountains } = rc;
   // 13. Render City Assets (Fontanelle & Ponti Accessibili & Veritas)
   if (showCityAssets) {
     // Fontanelle: Venice Tap Water colorate per stato (aperta, chiusa, non indicato); OSM con anello (stato non verificato)
@@ -68,28 +95,6 @@ export function drawCityAssets(rc: RenderContext): void {
           ctx.font = '500 8.5px "DM Mono", monospace';
           ctx.fillStyle = color;
           ctx.fillText(f.name, fx + 6, fy + 3);
-        }
-      }
-    }
-
-    // Veritas Waste Boats
-    if (veritasServices && veritasServices.length > 0) {
-      for (const v of veritasServices) {
-        const vx = sx(mx(v.lon));
-        const vy = sy(my(v.lat));
-
-        ctx.beginPath();
-        ctx.arc(vx, vy, 4, 0, Math.PI * 2);
-        ctx.fillStyle = '#84cc16';
-        ctx.fill();
-        ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        if (camera.s > 0.035) {
-          ctx.font = '500 8.5px "DM Mono", monospace';
-          ctx.fillStyle = isDark ? '#84cc16' : '#4d7c0f';
-          ctx.fillText(v.name, vx + 6, vy + 3);
         }
       }
     }

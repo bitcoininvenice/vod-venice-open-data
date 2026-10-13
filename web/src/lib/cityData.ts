@@ -391,7 +391,7 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
     cantieri: l.showCantieri || l.showSpatialBuffer || ui.lists,
     stops: l.showStops || ui.lists,
     cameras: l.showCameras || ui.lists,
-    cityAssets: l.showCityAssets || l.showAccessibleBridges || l.showParkings || l.showRecyclingCentres || l.showLibraries || l.showWifiVenues || ui.lists,
+    cityAssets: l.showCityAssets || l.showAccessibleBridges || l.showWasteBoats || l.showParkings || l.showRecyclingCentres || l.showLibraries || l.showWifiVenues || ui.lists,
     environment: l.showAirQuality,
     pedestrianFlows: l.showPedestrianFlows,
     alilaguna: l.showAlilaguna || ui.alilagunaModal,

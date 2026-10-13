@@ -22,7 +22,7 @@ import { drawCurrentFlow } from './map/currentFlow';
 import { drawShipRoutes, drawShips, drawAlilaguna } from './map/vesselLayers';
 import { drawMarineSignals, drawCanalLimits, drawBridges, drawGondolas, drawDocks } from './map/waterwayLayers';
 import { drawOceanStations, drawMarineWind } from './map/marineLayers';
-import { bdapRadius, drawPin, drawParks, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawAccessibleBridges, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
+import { bdapRadius, drawPin, drawParks, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawAccessibleBridges, drawVeritasServices, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 import { drawFloodLayer } from './map/floodLayer';
 import { resolveTideState } from '@/lib/tideCurve';
@@ -913,6 +913,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         drawCityAssets(rc);
 
         drawAccessibleBridges(rc);
+
+        drawVeritasServices(rc);
         drawCivicPois(rc);
         drawBdapWorks(rc);
         drawLoraGateways(rc);

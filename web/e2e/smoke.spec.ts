@@ -73,7 +73,7 @@ test('su mobile il menu "Altro" offre metriche, lingua e palette', async ({ page
 
 test('il pannello livelli si apre e mostra i gruppi', async ({ page, isMobile }) => {
   await page.goto('/');
-  if (isMobile) await page.getByRole('button', { name: /filtri/i }).click();
+  if (isMobile) await page.getByRole('button', { name: 'Livelli', exact: true }).click();
   // il pannello esiste in due varianti (desktop e cassetto mobile): conta quella visibile
   await expect(page.getByText('Trasporti', { exact: true }).filter({ visible: true }).first()).toBeVisible();
   await expect(page.getByText('Ambiente', { exact: true }).filter({ visible: true }).first()).toBeVisible();
@@ -161,7 +161,7 @@ test('?layers=all non accende tutto: apre lo scenario predefinito', async ({ pag
 
 /** Pannello dei livelli visibile (desktop o cassetto mobile). */
 async function openLayerPanel(page: import('@playwright/test').Page, isMobile: boolean) {
-  if (isMobile) await page.getByRole('button', { name: /filtri/i }).click();
+  if (isMobile) await page.getByRole('button', { name: 'Livelli', exact: true }).click();
   return page.locator('aside').filter({ visible: true }).first();
 }
 
