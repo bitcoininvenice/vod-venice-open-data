@@ -6,7 +6,7 @@ import { WALK_URL } from './walk-data';
 import { buildSimulation, type RawSimulation } from './simulationCore';
 import { buildWalkGraph, type RawWalk } from './walkGraph';
 import { ACTV_STOPS_REFERENCE } from './stopsReference';
-import { AIRPORT, AEROBUS_LINE, FIRST_SERVICE_FROM_S, isAirport, LONG_WALK_M, matchesAirport, PIAZZALE_ROMA, planAirport, planAirportOrTomorrow } from './airportPlanner';
+import { AIRPORT, AEROBUS_LINE, FIRST_SERVICE_FROM_S, isAirport, lastAerobus, LONG_WALK_M, matchesAirport, PIAZZALE_ROMA, planAirport, planAirportOrTomorrow } from './airportPlanner';
 import { alilagunaTripsOn } from './alilaguna-schedule';
 
 const publicDir = existsSync(path.join(process.cwd(), 'public')) ? path.join(process.cwd(), 'public') : path.join(process.cwd(), 'web', 'public');
@@ -98,5 +98,17 @@ describe('aeroporto Marco Polo', () => {
     expect(Math.max(...walks)).toBeGreaterThan(1500);
     expect(Math.max(...walks)).toBeLessThanOrEqual(LONG_WALK_M + 300);
     expect(actv.arrive).toBeGreaterThan(86400);
+  });
+
+  it('da Murano alle 23:49: c\'è ancora il bus 5 delle 00:40, ma non si arriva in tempo; il messaggio lo nomina', () => {
+    const murano = { lon: 12.35374, lat: 45.45987, label: 'Murano' };
+    const now = 23 * 3600 + 49 * 60;
+    expect(lastAerobus(sim, 'weekday', true, 'weekday')).toBe(86400 + 40 * 60);
+    const r = planAirportOrTomorrow(graph, sim, ACTV_STOPS_REFERENCE, murano, AIRPORT, now, 'weekday', { day: 'weekday', date }, { date, nextDay: 'weekday' });
+    expect(r.tomorrow).toBe(true);
+    expect(r.lastBus).toBe(86400 + 40 * 60);
+    // da Ferrovia alla stessa ora invece il bus delle 00:10 si prende
+    const ferrovia = { lon: 12.3215, lat: 45.4412, label: 'Ferrovia' };
+    expect(planAirportOrTomorrow(graph, sim, ACTV_STOPS_REFERENCE, ferrovia, AIRPORT, now, 'weekday', { day: 'weekday', date }, { date, nextDay: 'weekday' }).tomorrow).toBe(false);
   });
 });

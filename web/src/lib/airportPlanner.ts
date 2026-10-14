@@ -7,7 +7,7 @@
  * Il percorso pedonale tra darsena e terminal non è nella rete pedonale di VOD: si stima dalla distanza in
  * linea d'aria. Non considera ritardi, biglietti né variazioni del servizio.
  */
-import { forEachTrip, pointAt, type SimModel, type SimProfile } from './simulationCore';
+import { forEachTrip, NIGHT_END_S, pointAt, type SimModel, type SimProfile } from './simulationCore';
 import { fromGrid } from './positionDelay';
 import { metersBetween, nearestNode, pathCoords, pathEdges, shortestPaths, type WalkGraph } from './walkGraph';
 import { floodWeights, NO_WATER, summarizeEdges } from './dryRouting';
@@ -254,9 +254,37 @@ export function planAirportOrTomorrow(
   day: DayType,
   next: { day: DayType; date: Date },
   options: PlanOptions & { date?: Date } = {},
-): { options: Itinerary[]; tomorrow: boolean } {
+): { options: Itinerary[]; tomorrow: boolean; lastBus: number | null } {
   const today = planAirport(graph, sim, stops, from, to, now, day, options);
-  if (today.length > 0 || isAirport(from) === isAirport(to)) return { options: today, tomorrow: false };
+  if (today.length > 0 || isAirport(from) === isAirport(to)) return { options: today, tomorrow: false, lastBus: null };
   const morning = planAirport(graph, sim, stops, from, to, FIRST_SERVICE_FROM_S, next.day, { ...options, date: next.date, nextDay: undefined });
-  return { options: morning, tomorrow: morning.length > 0 };
+  // si cita l'ultimo bus solo se deve ancora partire stanotte
+  const last = lastAerobus(sim, day, isAirport(to), options.nextDay);
+  return { options: morning, tomorrow: morning.length > 0, lastBus: last !== null && last >= now && last - now <= 3 * 3600 ? last : null };
+}
+
+/**
+ * Ultima partenza del bus 5 della serata (da Piazzale Roma verso l'aeroporto o al contrario), comprese quelle
+ * dopo mezzanotte: per dire «c'è ancora un bus, ma da qui non si arriva in tempo».
+ */
+export function lastAerobus(sim: SimModel, day: DayType, toAirport: boolean, nextDay?: DayType): number | null {
+  const profiles = aerobusProfiles(sim);
+  let last: number | null = null;
+  forEachTrip(
+    sim,
+    day,
+    nextDay,
+    (pi, departure) => {
+      const p = sim.profs[pi];
+      const ks = profiles.get(p);
+      if (!ks) return;
+      const kFrom = toAirport ? ks.kRoma : ks.kAir;
+      const kTo = toAirport ? ks.kAir : ks.kRoma;
+      if (kFrom >= kTo) return;
+      const t = departure + p.T[kFrom];
+      if (last === null || t > last) last = t;
+    },
+    NIGHT_END_S,
+  );
+  return last;
 }

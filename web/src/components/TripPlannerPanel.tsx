@@ -409,7 +409,11 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
                 {t('ui.planner.airportOptions')}
               </span>
               {airportPlan?.tomorrow && (
-                <p className="text-[11px] text-amber-400" data-testid="planner-airport-tomorrow">{t('ui.planner.airportTomorrow')}</p>
+                <p className="text-[11px] text-amber-400" data-testid="planner-airport-tomorrow">
+                  {airportPlan.lastBus !== null
+                    ? t(isAirport(to ?? AIRPORT) ? 'ui.planner.airportTomorrowLastBus' : 'ui.planner.airportTomorrowLastBusBack', { time: clock(airportPlan.lastBus) })
+                    : t('ui.planner.airportTomorrow')}
+                </p>
               )}
               {airportOptions.map((o) => (
                 <button
