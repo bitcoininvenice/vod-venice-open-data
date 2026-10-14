@@ -88,10 +88,16 @@ export interface PlanResult {
 }
 
 /** Fermate della mappa (navigazione e ferry) servite da ogni profilo, in ordine, con l'indice della fermata nel profilo. */
-const profileStopsCache = new WeakMap<SimModel, Map<SimProfile, { stop: number; k: number }[]>>();
+const profileStopsCache = new WeakMap<SimModel, WeakMap<StopItem[], Map<SimProfile, { stop: number; k: number }[]>>>();
 
+/** Gli indici delle fermate valgono per l'elenco passato: la cache è per orario e per elenco. */
 export function profileStops(sim: SimModel, stops: StopItem[]): Map<SimProfile, { stop: number; k: number }[]> {
-  let cached = profileStopsCache.get(sim);
+  let bySim = profileStopsCache.get(sim);
+  if (!bySim) {
+    bySim = new WeakMap();
+    profileStopsCache.set(sim, bySim);
+  }
+  let cached = bySim.get(stops);
   if (cached) return cached;
   cached = new Map();
   const pt: [number, number] = [0, 0];
@@ -116,7 +122,7 @@ export function profileStops(sim: SimModel, stops: StopItem[]): Map<SimProfile, 
     }
     if (seq.length >= 2) cached.set(p, seq);
   }
-  profileStopsCache.set(sim, cached);
+  bySim.set(stops, cached);
   return cached;
 }
 
@@ -163,6 +169,17 @@ const wetSeconds = (it: Itinerary) => (it.wetMeters * WET_COST) / WALK_SPEED;
  * Itinerario migliore da `origin` a `dest` partendo a `now` (secondi dalla mezzanotte).
  * `stops`: fermate della mappa; si usano quelle di navigazione e ferry.
  */
+const waterStopsCache = new WeakMap<StopItem[], StopItem[]>();
+/** Pontili della navigazione e del ferry (stesso array per lo stesso elenco: serve alla cache delle sequenze). */
+function waterStops(all: StopItem[]): StopItem[] {
+  let w = waterStopsCache.get(all);
+  if (!w) {
+    w = all.filter((s) => s.mode === 'navigazione' || s.mode === 'ferry');
+    waterStopsCache.set(all, w);
+  }
+  return w;
+}
+
 export function planTrip(
   graph: WalkGraph,
   sim: SimModel,
@@ -175,7 +192,7 @@ export function planTrip(
 ): PlanResult {
   const { mode = 'fastest', tideAt, passerelle = [] } = options;
   const none: PlanResult = { best: null, walkOnly: null, floodLevelCm: null, shortestWalkWetMeters: null };
-  const stops = allStops.filter((s) => s.mode === 'navigazione' || s.mode === 'ferry');
+  const stops = waterStops(allStops);
   const o = nearestNode(graph, origin.lon, origin.lat);
   const d = nearestNode(graph, dest.lon, dest.lat);
   if (o.meters > MAX_SNAP_M || d.meters > MAX_SNAP_M) return none;

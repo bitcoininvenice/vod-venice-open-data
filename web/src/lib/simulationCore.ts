@@ -50,7 +50,7 @@ export interface SimModel {
   daysTrips: Record<DayType, SimDay>;
 }
 
-interface RawCategory {
+export interface RawCategory {
   k: string;
   base: string;
   lines?: string[];
@@ -59,16 +59,24 @@ interface RawCategory {
 type RawProfile = [shapeIndex: number, routeIndex: number, times: number[], dists: number[]];
 type RawTrip = [profileIndex: number, departure: number];
 
-function categoryIndex(cats: RawCategory[], route: { n: string; c: string }): number {
-  let fallback = 0;
+/**
+ * Categoria di una linea: quella che la elenca esplicitamente (es. motoscafo per la 5.1), altrimenti la
+ * categoria generica della stessa base, cioè quella senza elenco di linee (es. vaporetto per la 1).
+ */
+export function categoryIndex(cats: RawCategory[], route: { n: string; c: string }): number {
+  let fallback = -1;
   for (let i = 0; i < cats.length; i++) {
     const c = cats[i];
     if (c.base !== route.c) continue;
-    if (c.lines && c.lines.includes(route.n)) return i;
-    fallback = i;
+    if (c.lines) {
+      if (c.lines.includes(route.n)) return i;
+    } else if (fallback === -1) fallback = i;
   }
-  return fallback;
+  return fallback === -1 ? 0 : fallback;
 }
+
+/** Navette che restano ferme al capolinea tra una corsa e la successiva (People Mover: corse ogni 10 min, 4 min di viaggio) */
+export const SHUTTLE_LAYOVER_S: Record<string, number> = { peoplemover: 6 * 60 };
 
 /** Dati grezzi del file JSON della simulazione. */
 export interface RawSimulation {

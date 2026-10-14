@@ -440,6 +440,30 @@ test('come arrivare: da Ferrovia a Murano in vaporetto, con l\'itinerario sulla 
   await expect(result).toContainText(/\d{2}:\d{2} → \d{2}:\d{2}/);
 });
 
+test('come arrivare dopo aver aperto una fermata: nessun errore (cache delle fermate per elenco)', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/');
+  await page.locator('canvas').waitFor();
+  // la scheda della fermata calcola le ultime partenze su tutte le fermate della mappa
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder(/cerca fermate/i).fill('Rialto');
+  await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: /rialto/i }).first().click();
+  await expect(page.locator('[data-info-panel]').getByTestId('last-departures').locator('li').first()).toBeVisible({ timeout: 15000 });
+  await page.keyboard.press('Escape');
+  // poi il planner, che usa solo i pontili
+  await page.getByTestId('open-planner').click();
+  const panel = page.locator('[data-info-panel]');
+  await panel.locator('input[type="time"]').fill('10:00');
+  await panel.getByTestId('planner-from').getByRole('textbox').fill('Ferrovia');
+  await panel.getByRole('button', { name: /^Ferrovia$/ }).click();
+  await panel.getByTestId('planner-to').getByRole('textbox').fill('Murano Colonna');
+  await panel.getByRole('button', { name: /^Murano Colonna$/ }).click();
+  await expect(panel.getByTestId('planner-result')).toBeVisible({ timeout: 15000 });
+  expect(errors).toEqual([]);
+});
+
 test('come arrivare: modalità solo a piedi e preferisci vaporetto', async ({ page, isMobile }) => {
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   await page.goto('/');

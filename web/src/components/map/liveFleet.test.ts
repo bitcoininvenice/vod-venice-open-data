@@ -51,3 +51,12 @@ describe('flotta live', () => {
     expect(step).toBeGreaterThan(-600);
   });
 });
+
+describe('mezzi GPS fuori servizio', () => {
+  it('senza corsa né linea il mezzo non è in servizio', async () => {
+    const { inService } = await import('./liveFleet');
+    expect(inService({ line: null, tripId: null })).toBe(false);
+    expect(inService({ line: '17', tripId: null })).toBe(true);
+    expect(inService({ line: null, tripId: 'NAV_1' })).toBe(true);
+  });
+});

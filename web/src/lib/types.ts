@@ -346,6 +346,9 @@ export interface AlilagunaRoute {
   frequencyMinutes: number;
   stops: string[];
   shape: [number, number][]; // [lon, lat]
+  /** periodo di servizio dal calendario GTFS (YYYY-MM-DD) */
+  serviceFrom: string | null;
+  serviceTo: string | null;
 }
 
 export interface AlilagunaBoat {

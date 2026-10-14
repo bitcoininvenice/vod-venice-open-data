@@ -22,6 +22,11 @@ const SNAP_M = 3000;
 const LIVE_TOLERANCE_S = 120;
 /** Ritardo massimo con cui una corsa già finita secondo l'orario resta in mappa (s) */
 export const MAX_LATE_S = 2 * 60 * 60;
+/** Anticipo massimo con cui una corsa con GPS compare prima della partenza programmata (s) */
+export const MAX_EARLY_S = 30 * 60;
+
+/** Mezzo GPS in servizio: il feed indica la corsa o almeno la linea (gli altri sono in deposito o fuori servizio). */
+export const inService = (v: Pick<RealtimeVehicleDto, 'line' | 'tripId'>): boolean => Boolean(v.line || v.tripId);
 
 export const tripKey = (line: string, departure: number) => `${line}|${departure}`;
 

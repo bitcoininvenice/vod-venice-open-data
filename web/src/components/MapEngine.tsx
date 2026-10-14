@@ -17,7 +17,7 @@ import { useTranslation } from '@/lib/i18n';
 import { simClock } from '@/lib/simClock';
 import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
-import { freshDelay, isLiveView, MAX_LATE_S, mergedThisFrame, realtimeByTrip, shownDistance, tripKey } from './map/liveFleet';
+import { freshDelay, inService, isLiveView, MAX_EARLY_S, MAX_LATE_S, mergedThisFrame, realtimeByTrip, shownDistance, tripKey } from './map/liveFleet';
 import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri, drawScheduleSpeed, drawBusStops, drawActvNotices, SHUTTLE_LAYOVER_S } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawPasserelle } from './map/tideLayers';
@@ -551,11 +551,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         const prof = sim.profs[tP[i]];
         const rCat: string = prof.route.cat || 'vaporetto';
         const layover = SHUTTLE_LAYOVER_S[rCat] ?? 0;
-        if (t0[i] > t || t1[i] + Math.max(layover, live ? MAX_LATE_S : 0) < t) continue;
+        if (t0[i] > t + (live ? MAX_EARLY_S : 0) || t1[i] + Math.max(layover, live ? MAX_LATE_S : 0) < t) continue;
         if (selectedCategory !== 'all' && rCat !== selectedCategory) continue;
         const key = tripKey(prof.route.n, t0[i]);
         const gps = gpsByTrip?.get(key);
         const delay = gps ? freshDelay(gps) : null;
+        if (t0[i] > t && delay === null) continue;
         if (t1[i] < t && delay === null && t - t1[i] >= layover) continue;
         // stessa posizione disegnata: per le corse con GPS quella spostata del ritardo reale
         pointAt(prof.sh, delay !== null ? (shownDistance(key) ?? distAt(prof, t - t0[i] - delay)) : distAt(prof, t - t0[i]), ptNow);
@@ -755,7 +756,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         L.showRealtimeVehicles &&
           target({
             // i mezzi già disegnati come corsa dell'orario si cliccano lì
-            items: L.showVehicles ? D.realtimeVehicles.filter((v) => !mergedThisFrame.has(v.id)) : D.realtimeVehicles,
+            items: D.realtimeVehicles.filter((v) => inService(v) && !(L.showVehicles && mergedThisFrame.has(v.id))),
             radius: 14,
             select: (v) => {
               const cat = v.category || 'vaporetto';

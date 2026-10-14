@@ -164,8 +164,20 @@ export const ALILAGUNA_ROUTES: AlilagunaRoute[] = FEED.routes.map((r) => {
     frequencyMinutes: medianHeadwayMinutes(fromFirstStop),
     stops: stopNames,
     shape: longest ? FEED.shapes[longest.shape] ?? [] : [],
+    ...servicePeriod(routeTrips.map((t) => t.service)),
   };
 });
+
+/** Periodo di servizio di una linea: dal primo inizio all'ultima fine dei calendari delle sue corse. */
+function servicePeriod(serviceIds: string[]): { serviceFrom: string | null; serviceTo: string | null } {
+  const cals = FEED.calendar.filter((c) => serviceIds.includes(c.service_id));
+  if (cals.length === 0) return { serviceFrom: null, serviceTo: null };
+  const iso = (ymd: string) => `${ymd.slice(0, 4)}-${ymd.slice(4, 6)}-${ymd.slice(6, 8)}`;
+  return {
+    serviceFrom: iso(cals.map((c) => c.start_date).sort()[0]),
+    serviceTo: iso(cals.map((c) => c.end_date).sort().reverse()[0]),
+  };
+}
 
 // ----------------------------------------------------------------------------
 // Calendario di servizio

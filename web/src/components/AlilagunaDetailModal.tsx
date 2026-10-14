@@ -1,5 +1,6 @@
 'use client';
 
+import { romeToday } from '@/lib/time';
 import React from 'react';
 import { X, Plane, Waves, ExternalLink, Ship, Clock, Compass, ShieldCheck } from 'lucide-react';
 import { AlilagunaRoute, AlilagunaStop, AlilagunaBoat } from '@/lib/types';
@@ -126,7 +127,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
 
                 <div className="pt-1.5 border-t border-[var(--rule)] flex items-center justify-between text-[10px] font-mono text-[var(--ink-2)]">
                   <span>{r.stops.length} {t('ui.alilaguna.fermatePontili')}</span>
-                  <span className="text-emerald-400 font-semibold">{t('ui.alilaguna.attiva365Gg')}</span>
+                  <ServicePeriod from={r.serviceFrom} to={r.serviceTo} />
                 </div>
               </div>
             ))}
@@ -219,5 +220,19 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
           </button>
         </div>
     </InfoPanel>
+  );
+};
+
+/** Periodo di servizio della linea dal calendario GTFS; in grigio se oggi è fuori periodo. */
+const ServicePeriod: React.FC<{ from: string | null; to: string | null }> = ({ from, to }) => {
+  const { t } = useTranslation();
+  if (!from || !to) return null;
+  const today = romeToday();
+  const dmy = (d: string) => d.split('-').reverse().join('/');
+  const active = today >= from && today <= to;
+  return (
+    <span className={active ? 'text-emerald-400 font-semibold' : 'text-[var(--ink-3)]'} data-testid="alilaguna-service-period">
+      {t(active ? 'ui.alilaguna.servicePeriod' : 'ui.alilaguna.outOfService', { from: dmy(from), to: dmy(to) })}
+    </span>
   );
 };

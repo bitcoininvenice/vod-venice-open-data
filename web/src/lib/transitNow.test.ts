@@ -95,3 +95,15 @@ describe('servizio adesso', () => {
     expect(['10', '2', 'N', '4.1', '1'].sort(compareLines)).toEqual(['1', '2', '4.1', '10', 'N']);
   });
 });
+
+describe('cache delle fermate delle corse', () => {
+  it('elenchi di fermate diversi danno sequenze diverse (il planner usa solo i pontili)', async () => {
+    const { profileStops } = await import('./tripPlanner');
+    const s = sim(300, [36000]);
+    const all = [...STOPS, { id: 'x', name: 'Bus', lat: 45.0, lon: 12.0, mode: 'bus' }];
+    const onlyOne = [STOPS[1]];
+    expect(profileStops(s, all).get(s.profs[0])?.map((x) => x.stop)).toEqual([0, 1]);
+    // con un altro elenco gli indici si riferiscono a quell'elenco, non al precedente
+    expect(profileStops(s, onlyOne).get(s.profs[0])).toBeUndefined();
+  });
+});

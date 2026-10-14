@@ -1,5 +1,6 @@
 import { getSimulation } from '@/lib/simulationModel';
 import type { DayType } from '@/lib/types';
+import { SHUTTLE_LAYOVER_S } from '@/lib/simulationCore';
 
 /**
  * Numero di corse GTFS ACTV in servizio per ogni minuto della giornata, calcolato dagli orari
@@ -71,8 +72,9 @@ export function activeTripsByCategory(day: DayType, secondsOfDay: number): Recor
   if (!sim || !trips) return out;
   const { tP, t0, t1, count } = trips;
   for (let i = 0; i < count; i++) {
-    if (t0[i] > secondsOfDay || t1[i] < secondsOfDay) continue;
     const cat = sim.profs[tP[i]].route.cat || 'vaporetto';
+    // le navette ferme al capolinea sono in mappa: si contano anche loro
+    if (t0[i] > secondsOfDay || t1[i] + (SHUTTLE_LAYOVER_S[cat] ?? 0) < secondsOfDay) continue;
     out[cat] = (out[cat] ?? 0) + 1;
   }
   return out;

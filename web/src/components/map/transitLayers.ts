@@ -4,10 +4,10 @@ import { distAt, getSimulation, pointAt } from '@/lib/simulationModel';
 import { DELAY_COLORS, isFresh } from '@/lib/realtimeDelay';
 import { lineColor, needsDarkOutline } from '@/lib/actvLines';
 import { drawVehicleGlyph, headingFromMotion } from './vehicleGlyphs';
-import type { SimModel, SimProfile } from '@/lib/simulationCore';
+import { SHUTTLE_LAYOVER_S, type SimModel, type SimProfile } from '@/lib/simulationCore';
 import { clock, tripStops, type TripStop } from '@/lib/tripView';
 import { SPEED_VERDICT_COLORS } from '@/lib/scheduleSpeed';
-import { freshDelay, isLiveView, liveDistance, MAX_LATE_S, mergedThisFrame, pruneShown, realtimeByTrip, tripKey } from './liveFleet';
+import { freshDelay, inService, isLiveView, liveDistance, MAX_EARLY_S, MAX_LATE_S, mergedThisFrame, pruneShown, realtimeByTrip, tripKey } from './liveFleet';
 
 /** Linea e categoria di ogni forma (dalla prima corsa che la usa), calcolate una volta per modello. */
 const shapeRoutes = new WeakMap<SimModel, Map<object, { n: string; cat: string }>>();
@@ -23,8 +23,7 @@ function routeOfShape(sim: SimModel) {
 
 /** Mezzi su binario: il tracciato resta visibile anche senza il livello delle rotte */
 const FIXED_GUIDEWAY = new Set(['tram', 'peoplemover']);
-/** People Mover: tra una corsa e la successiva la vettura resta ferma al capolinea (corse ogni 10 min, 4 min di viaggio) */
-export const SHUTTLE_LAYOVER_S: Record<string, number> = { peoplemover: 6 * 60 };
+export { SHUTTLE_LAYOVER_S };
 
 export function drawRoutes(rc: RenderContext): void {
   const { ctx, cw, pal, isDark, sx, sy, camera, W, showRoutes, showVehicles } = rc;
@@ -133,7 +132,7 @@ export function drawVehicles(rc: RenderContext): void {
         const prof = sim.profs[tP[i]];
         const rCat: string = prof.route.cat || 'vaporetto';
         const layover = SHUTTLE_LAYOVER_S[rCat] ?? 0;
-        if (t0[i] > t || t1[i] + Math.max(layover, live ? MAX_LATE_S : 0) < t) continue;
+        if (t0[i] > t + (live ? MAX_EARLY_S : 0) || t1[i] + Math.max(layover, live ? MAX_LATE_S : 0) < t) continue;
 
         if (selectedCategory !== 'all' && rCat !== selectedCategory) continue;
 
@@ -141,6 +140,8 @@ export function drawVehicles(rc: RenderContext): void {
         const key = tripKey(prof.route.n, t0[i]);
         const gps = gpsByTrip?.get(key);
         const delay = gps ? freshDelay(gps) : null;
+        // corsa non ancora partita secondo l'orario: compare solo se il GPS la vede già (mezzo in anticipo o al capolinea)
+        if (t0[i] > t && delay === null) continue;
         // corsa finita secondo l'orario: resta solo se il GPS la dà ancora in ritardo, o se è una navetta in sosta al capolinea
         if (t1[i] < t && delay === null && t - t1[i] >= layover) continue;
         const d = delay !== null ? liveDistance(key, prof, dt, delay, nowMs) : distAt(prof, dt);
@@ -207,6 +208,8 @@ export function drawRealtimeVehicles(rc: RenderContext): void {
     for (const v of realtimeVehicles) {
       // già disegnato come corsa dell'orario spostata del ritardo reale
       if (rc.showVehicles && mergedThisFrame.has(v.id)) continue;
+      // senza corsa né linea: in deposito o fuori servizio
+      if (!inService(v)) continue;
       const cat = v.category || 'vaporetto';
       if (selectedCategory !== 'all' && cat !== selectedCategory) continue;
       const vx = sx(mx(v.lon));
