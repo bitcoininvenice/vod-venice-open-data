@@ -21,10 +21,34 @@ function routeOfShape(sim: SimModel) {
   return m;
 }
 
+/** Mezzi su binario: il tracciato resta visibile anche senza il livello delle rotte */
+const FIXED_GUIDEWAY = new Set(['tram', 'peoplemover']);
+/** People Mover: tra una corsa e la successiva la vettura resta ferma al capolinea (corse ogni 10 min, 4 min di viaggio) */
+export const SHUTTLE_LAYOVER_S: Record<string, number> = { peoplemover: 6 * 60 };
+
 export function drawRoutes(rc: RenderContext): void {
-  const { ctx, cw, pal, isDark, sx, sy, camera, W, showRoutes } = rc;
+  const { ctx, cw, pal, isDark, sx, sy, camera, W, showRoutes, showVehicles } = rc;
   // 3. Tracciati ACTV: vaporetti nel colore ufficiale della linea, bus e tram nel colore del tipo di mezzo
   const sim = getSimulation();
+  // Con i soli mezzi accesi restano visibili i binari (tram e People Mover): sono infrastrutture fisse
+  if (!showRoutes && showVehicles && sim) {
+    const routes = routeOfShape(sim);
+    ctx.save();
+    ctx.lineWidth = Math.min(4, Math.max(1.5, 1.6 * (camera.s / (cw / W))));
+    ctx.globalAlpha = 0.55;
+    ctx.setLineDash([]);
+    for (const shape of sim.shapes) {
+      const r = routes.get(shape);
+      if (!r || !FIXED_GUIDEWAY.has(r.cat)) continue;
+      const xy = shape.xy;
+      ctx.beginPath();
+      ctx.moveTo(sx(xy[0]), sy(xy[1]));
+      for (let i = 1; i < shape.n; i++) ctx.lineTo(sx(xy[2 * i]), sy(xy[2 * i + 1]));
+      ctx.strokeStyle = pal.cats[r.cat] ?? '#ff9f43';
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
   if (showRoutes && sim) {
     const width = Math.max(1, 1.2 * (camera.s / (cw / W)));
     const routes = routeOfShape(sim);
@@ -106,9 +130,10 @@ export function drawVehicles(rc: RenderContext): void {
       if (live) pruneShown(nowMs);
 
       for (let i = 0; i < count; i++) {
-        if (t0[i] > t || t1[i] + (live ? MAX_LATE_S : 0) < t) continue;
         const prof = sim.profs[tP[i]];
         const rCat: string = prof.route.cat || 'vaporetto';
+        const layover = SHUTTLE_LAYOVER_S[rCat] ?? 0;
+        if (t0[i] > t || t1[i] + Math.max(layover, live ? MAX_LATE_S : 0) < t) continue;
 
         if (selectedCategory !== 'all' && rCat !== selectedCategory) continue;
 
@@ -116,8 +141,8 @@ export function drawVehicles(rc: RenderContext): void {
         const key = tripKey(prof.route.n, t0[i]);
         const gps = gpsByTrip?.get(key);
         const delay = gps ? freshDelay(gps) : null;
-        // corsa finita secondo l'orario: resta solo se il GPS la dà ancora in ritardo
-        if (t1[i] < t && delay === null) continue;
+        // corsa finita secondo l'orario: resta solo se il GPS la dà ancora in ritardo, o se è una navetta in sosta al capolinea
+        if (t1[i] < t && delay === null && t - t1[i] >= layover) continue;
         const d = delay !== null ? liveDistance(key, prof, dt, delay, nowMs) : distAt(prof, dt);
         if (gps && delay !== null) mergedThisFrame.add(gps.id);
         pointAt(prof.sh, d, ptNow);
@@ -131,7 +156,8 @@ export function drawVehicles(rc: RenderContext): void {
         // Trail: gli ultimi 45 s di percorso prima della posizione mostrata
         const lag = delay ?? 0;
         const trailM = distAt(prof, dt - lag) - distAt(prof, Math.max(0, dt - lag - trailSec));
-        pointAt(prof.sh, Math.max(0, d - trailM), ptTail);
+        // in sosta al capolinea la scia è nulla: un tratto minimo mantiene il verso dell'ultima corsa
+        pointAt(prof.sh, Math.max(0, d - Math.max(trailM, 20)), ptTail);
         ctx.beginPath();
         ctx.moveTo(vx, vy);
         ctx.lineTo(sx(ptTail[0]), sy(ptTail[1]));
@@ -147,7 +173,8 @@ export function drawVehicles(rc: RenderContext): void {
           fill: col,
           stroke: !isDark && needsDarkOutline(col) ? '#334155' : isDark ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.85)',
           lineWidth: 1,
-          scale: glyphScale,
+          // le vetture del People Mover sono su un tracciato breve e affollato: un po' più grandi
+          scale: rCat === 'peoplemover' ? glyphScale * 1.4 : glyphScale,
           roof: isDark ? '#e2e8f0' : '#ffffff',
         });
         // Corsa con GPS: anello del ritardo (verde in orario, giallo 3-5 min, rosso oltre) e punto «live»

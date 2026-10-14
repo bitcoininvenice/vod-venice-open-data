@@ -18,7 +18,7 @@ import { simClock } from '@/lib/simClock';
 import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
 import { freshDelay, isLiveView, MAX_LATE_S, mergedThisFrame, realtimeByTrip, shownDistance, tripKey } from './map/liveFleet';
-import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri, drawScheduleSpeed, drawBusStops } from './map/transitLayers';
+import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri, drawScheduleSpeed, drawBusStops, SHUTTLE_LAYOVER_S } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawPasserelle } from './map/tideLayers';
 import { drawCurrentFlow } from './map/currentFlow';
@@ -548,14 +548,15 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       const live = isLiveView(t, selectedDay, Date.now());
       const gpsByTrip = live ? realtimeByTrip(D.realtimeVehicles) : null;
       for (let i = 0; i < count; i++) {
-        if (t0[i] > t || t1[i] + (live ? MAX_LATE_S : 0) < t) continue;
         const prof = sim.profs[tP[i]];
         const rCat: string = prof.route.cat || 'vaporetto';
+        const layover = SHUTTLE_LAYOVER_S[rCat] ?? 0;
+        if (t0[i] > t || t1[i] + Math.max(layover, live ? MAX_LATE_S : 0) < t) continue;
         if (selectedCategory !== 'all' && rCat !== selectedCategory) continue;
         const key = tripKey(prof.route.n, t0[i]);
         const gps = gpsByTrip?.get(key);
         const delay = gps ? freshDelay(gps) : null;
-        if (t1[i] < t && delay === null) continue;
+        if (t1[i] < t && delay === null && t - t1[i] >= layover) continue;
         // stessa posizione disegnata: per le corse con GPS quella spostata del ritardo reale
         pointAt(prof.sh, delay !== null ? (shownDistance(key) ?? distAt(prof, t - t0[i] - delay)) : distAt(prof, t - t0[i]), ptNow);
         if (Math.hypot(x - (ptNow[0] - camera.x0) * camera.s, y - (ptNow[1] - camera.y0) * camera.s) > 18) continue;
