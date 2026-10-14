@@ -54,8 +54,8 @@ function checkedDelay(
 
 /**
  * Posizioni reali dei mezzi ACTV dal feed GTFS-Realtime, arricchite con linea e categoria.
- * Nota: l'endpoint è pubblico ma la licenza d'uso del realtime non è documentata come open data:
- * confermarla con AVM/ACTV prima di un utilizzo in produzione (vedi docs/richieste-autorizzazione.md).
+ * Il feed è elencato come «Open Data Real Time» nel catalogo dei dati ACTV (art. 53 CAD):
+ * https://actv.avmspa.it/it/content/catalogo-dei-dati-metadati-e-banche-dati-actv
  */
 export async function GET() {
   const fetchFeed = (url: string) =>
@@ -110,7 +110,7 @@ export async function GET() {
       withDelay: vehicles.filter((v) => v.delay).length,
       delayFromPosition: vehicles.filter((v) => v.delay?.source === 'position').length,
       delayConflicts: vehicles.filter((v) => v.delayConflict).length,
-      note: 'Posizioni GPS reali dei mezzi. Il ritardo (campo delay) è calcolato dalla posizione GPS sulla corsa dell\'orario ufficiale con la stessa linea e partenza e verificato con quello di ACTV (source=position); quando il calcolo non è possibile (mezzo a un pontile o lontano dal percorso) è quello dichiarato da ACTV (source=actv). Se i due differiscono di oltre 15 minuti nessun ritardo viene mostrato (delayConflict). Solo valori aggiornati da meno di 2 minuti. Licenza del feed realtime da confermare con AVM S.p.A.',
+      note: 'Posizioni GPS reali dei mezzi. Il ritardo (campo delay) è calcolato dalla posizione GPS sulla corsa dell\'orario ufficiale con la stessa linea e partenza e verificato con quello di ACTV (source=position); quando il calcolo non è possibile (mezzo a un pontile o lontano dal percorso) è quello dichiarato da ACTV (source=actv). Se i due differiscono di oltre 15 minuti nessun ritardo viene mostrato (delayConflict). Solo valori aggiornati da meno di 2 minuti. Feed elencato come «Open Data Real Time» nel catalogo dei dati ACTV (art. 53 CAD).',
     },
   });
 }

@@ -146,6 +146,7 @@ export const itUi = {
   },
   map: {
     vehicleName: "Mezzo",
+    flightAttribution: "Dati ADS-B di The OpenSky Network, solo per uso non commerciale (M. Schäfer et al., «Bringing Up OpenSky: A Large-scale ADS-B Sensor Network for Research», IPSN 2014).",
     vehicleNumber: "n. {n}",
     orarioUfficialeActv: "orario ufficiale ACTV",
     posizioneGpsRealeGtfsRt: "Posizione GPS reale (GTFS-RT ACTV)",
@@ -516,9 +517,17 @@ export const itUi = {
     sourcesBody: "I dati della mappa (maree, vaporetti, meteo e gli altri) vengono richiesti dai server di VOD alle fonti pubbliche: il tuo browser non contatta direttamente quei servizi. Si collegano a siti esterni solo i link che scegli di aprire, come webcam, bollettini e portali degli enti, che hanno le proprie informative.",
     rightsTitle: "I tuoi diritti",
     rightsBody: "Puoi chiedere informazioni sui dati che ti riguardano, la loro cancellazione o opporti al trattamento, e puoi presentare reclamo al Garante per la protezione dei dati personali (garanteprivacy.it). Dato che VOD non conserva dati che identificano i visitatori, di solito non ha nulla da restituire o cancellare.",
+    nonCommercialTitle: "Progetto senza fini di lucro",
+    nonCommercialBody: "VOD è un progetto civico senza fini di lucro: non vende dati, non ha abbonamenti né pubblicità. Alcune fonti (OpenSky Network per i voli, Open-Meteo per le previsioni) sono usate secondo i loro termini per uso non commerciale.",
+    licensesTitle: "Licenze e citazione delle fonti",
+    licensesBody: "Ogni dato mantiene la licenza della sua fonte, indicata nella scheda, nel catalogo dei livelli e nella pagina Fonti: ad esempio CC BY per il Comune di Venezia e ACTV, CC BY-SA 3.0 per i dati del Centro Maree che VOD redistribuisce, ODbL per OpenStreetMap e FlixBus, CC BY 4.0 per ARPAV, ISTAT e Open-Meteo. Navi (aisstream.io) e voli (OpenSky) sono solo mostrati nella mappa e non vengono ridistribuiti tramite API o MCP. Chi riusa i dati di VOD deve rispettare le licenze delle fonti e citarle.",
+    disclaimerTitle: "Esclusione di responsabilità",
+    disclaimerBody: "Le informazioni di VOD sono rese a scopo informativo e possono essere incomplete, in ritardo o stimate (posizioni da orario, previsioni, elenchi da verificare): ogni scheda indica la natura del dato. Fanno sempre fede le fonti ufficiali e gli atti degli enti. VOD non è una carta nautica né un servizio di emergenza: non usarlo per la navigazione o in situazioni di sicurezza.",
+    takedownTitle: "Richieste dei titolari dei dati",
+    takedownBody: "Se sei titolare di un dato mostrato da VOD e ritieni che il suo uso non rispetti la licenza o i tuoi diritti, invia un messaggio diretto all'account Instagram @veniceopendata (vedi Contatti): il dato viene sospeso subito, in attesa di chiarire. Lo stesso vale per la correzione di informazioni errate.",
     contactTitle: "Contatti",
-    contactBody: "Per domande sulla privacy:",
-    contactMissing: "Il contatto per le richieste sulla privacy sarà pubblicato a breve.",
+    contactBody: "Per domande sulla privacy, richieste di rimozione o correzione dei dati, invia un messaggio diretto su Instagram all'account",
+    contactInstagram: ".",
     updated: "Ultimo aggiornamento: {date}"
   },
   speedLimit: {
@@ -573,7 +582,7 @@ export const itUi = {
     colMax: "Massimo",
     colOnTime: "Puntuali",
     colBunched: "In coda",
-    tableNote: "Aggiornato ogni 30 secondi, nessuno storico. Ritardo dai mezzi con GPS verificato con ACTV; puntuale = tra −1 e +3 minuti. \"Senza GPS\" = corse in servizio secondo l'orario meno i mezzi visibili: un indizio, non la prova di una corsa soppressa. \"In coda\" = due corse consecutive della stessa linea e direzione, programmate ad almeno 6 minuti, che adesso distano meno di 4 minuti. Licenza del feed in tempo reale da confermare con AVM."
+    tableNote: "Aggiornato ogni 30 secondi, nessuno storico. Ritardo dai mezzi con GPS verificato con ACTV; puntuale = tra −1 e +3 minuti. \"Senza GPS\" = corse in servizio secondo l'orario meno i mezzi visibili: un indizio, non la prova di una corsa soppressa. \"In coda\" = due corse consecutive della stessa linea e direzione, programmate ad almeno 6 minuti, che adesso distano meno di 4 minuti. Feed dichiarato «Open Data Real Time» nel catalogo dei dati ACTV (art. 53 CAD)."
   },
   scheduleSpeed: {
     sectionTitle: "Velocità richiesta dall'orario e limiti",
@@ -825,7 +834,7 @@ export const itUi = {
     pollenFamily_mugwort: "Asteraceae (Compositae)",
     pollenFamily_olive: "Oleaceae",
     pollenFamily_ragweed: "Asteraceae (Compositae)",
-    pollenNote: "Previsione del modello europeo Copernicus CAMS (via Open-Meteo, CC BY 4.0) nel punto indicato, non un campionamento. Le soglie basso/medio/alto sono indicative, sul modello delle classi ARPAV. Fuori stagione i valori sono nulli. Parietaria e cipressi non sono previsti dal modello: per il bollettino misurato consultare ARPAV.",
+    pollenNote: "Previsione del modello europeo Copernicus CAMS (via Open-Meteo, CC BY 4.0) nel punto indicato, non un campionamento. Le soglie basso/medio/alto sono indicative, sul modello delle classi ARPAV. Fuori stagione i valori sono nulli. Parietaria e cipressi non sono previsti dal modello: per il bollettino misurato consultare ARPAV. Generato usando informazioni del Copernicus Atmosphere Monitoring Service; né la Commissione europea né l'ECMWF sono responsabili dell'uso delle informazioni.",
     marineForecastTitle: "Previsione del modello marino · {time}",
     wavePeriod: "Periodo",
     waveDirection: "Direzione",
@@ -846,7 +855,7 @@ export const itUi = {
     aqiNext24h: "Indice europeo previsto nelle prossime 24 ore",
     uvIndex: "Indice UV",
     uvMaxToday: "massimo di oggi",
-    camsNote: "Previsione oraria del modello Copernicus CAMS (via Open-Meteo, CC BY 4.0) nel punto della stazione: non è una misura ARPAV.",
+    camsNote: "Previsione oraria del modello Copernicus CAMS (via Open-Meteo, CC BY 4.0) nel punto della stazione: non è una misura ARPAV. Generato usando informazioni del Copernicus Atmosphere Monitoring Service; né la Commissione europea né l'ECMWF sono responsabili dell'uso delle informazioni.",
     recyclingCentre: "Ecocentro",
     library: "Biblioteca",
     recyclingOfficialLink: "Orari, ecocentri mobili e ritiro a domicilio degli ingombranti (Comune di Venezia)",
@@ -1406,8 +1415,8 @@ export const itUi = {
     refresh_weekly: "pipeline settimanale (lunedì)",
     refresh_census: "pipeline manuale a ogni nuova edizione del censimento",
     licenseUnconfirmed: "Licenza da confermare",
-    "meta_gtfs-rt-nav": "Endpoint pubblico non documentato come open data: licenza da confermare con AVM.",
-    "meta_gtfs-rt-aut": "Endpoint pubblico non documentato come open data: licenza da confermare con AVM.",
+    "meta_gtfs-rt-nav": "Elencato come «Open Data Real Time» nel catalogo dei dati ACTV (art. 53 CAD); senza una licenza esplicita valgono i dati aperti per impostazione predefinita (art. 52 CAD). Citare ACTV come fonte.",
+    "meta_gtfs-rt-aut": "Elencato come «Open Data Real Time» nel catalogo dei dati ACTV (art. 53 CAD); senza una licenza esplicita valgono i dati aperti per impostazione predefinita (art. 52 CAD). Citare ACTV come fonte.",
     meta_opensky: "Accesso gratuito con quote giornaliere; uso non commerciale secondo i termini OpenSky.",
     "meta_opere-pubbliche": "Il CSV non ha coordinate: le posizioni sono geocodificate in modo approssimato.",
     meta_arpav: "Medie annue validate, non misure in tempo reale.",
@@ -1443,7 +1452,7 @@ export const itUi = {
     methodCacheTitle: "Cache condivisa",
     methodCacheBody: "Le fonti live sono rilette lato server con una cache breve (da 15 s a 10 min a seconda della fonte), così il traffico verso i fornitori resta basso anche con molti utenti.",
     methodLicensesTitle: "Licenze",
-    methodLicensesBody: "Ogni dato mantiene la licenza della fonte (CC BY per Comune e ACTV, CC BY 4.0 per ARPAV, ODbL per OpenStreetMap). Il feed GTFS-RT ACTV è pubblico ma la licenza è ancora da confermare con AVM.",
+    methodLicensesBody: "Ogni dato mantiene la licenza della fonte (CC BY per Comune e ACTV, CC BY 4.0 per ARPAV, ODbL per OpenStreetMap). Il feed GTFS-RT ACTV è elencato come «Open Data Real Time» nel catalogo dei dati ACTV. Navi (aisstream.io) e voli (OpenSky) sono solo visualizzati, non ridistribuiti.",
     "name_osm-poi": "POI OpenStreetMap: colonnine, parcheggi, pozzi, alberi (pipeline)",
     "name_alilaguna-gtfs": "Orario Alilaguna GTFS (pipeline)",
     "meta_osm-poi": "Sostituisce gli elenchi compilati a mano: le voci curate restano solo se non hanno un riscontro OSM vicino e sono segnate \"da verificare\". Include i luoghi con Wi-Fi (hotel, bar, biblioteche) con il tipo di accesso dichiarato.",
@@ -1511,6 +1520,7 @@ export const itUi = {
     cardSourcesBody: "Disponibilità ed età del dato di ogni fonte live e dataset."
   },
   mapLabels: {
+    allSources: "Fonti dei dati",
     offshorePlatform: "Piattaforma CNR",
     crosswind: "Pista 04R: vento al traverso {kt} kt",
     gondolaInitial: "G",

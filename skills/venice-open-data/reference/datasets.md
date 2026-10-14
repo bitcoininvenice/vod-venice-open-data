@@ -9,7 +9,6 @@ Run `python scripts/vod.py datasets` (or the MCP tool `list_datasets`) for the l
 | Air quality | `air_quality` | annual ARPAV means + hourly CAMS forecast in `forecast` |
 | Pollen | `pollen` | forecast; the Venezia point also has the ARPAV measured calendar |
 | Lagoon water | `lagoon_probes` | last ARPAV sampling per station, with date |
-| Ships in the lagoon (AIS) | `ships` | real AIS positions heard in the last 30 minutes; `lastSeen` per ship |
 | Is my line running late right now? Bunched boats, trips without GPS | `service_now` | snapshot of this moment, no history; `withoutGps` is a hint, not proof of cancellation |
 | Last waterbus from a stop tonight | `last_departures` | today's day type from the official timetable; `afterMidnight`; strikes and same-day changes not included |
 | Does the timetable require speeding? | `schedule_speed` | computed from the timetable, not measured; `tooFast` = timetable incompatible with known limits (60 s rounding tolerance, 10% route margin); Harbour Office channels excluded |
@@ -34,3 +33,5 @@ Run `python scripts/vod.py datasets` (or the MCP tool `list_datasets`) for the l
 | Residents, age, households, empty or non-resident homes by sestiere, island, municipality | `census` | ISTAT 2021 census, sections summed by OSM outline; the City publishes no open data by sestiere |
 | Tourism and municipal statistics | `tourism`, `municipal_profile` | yearly figures by municipality |
 | Is a source up to date? | `sources_status` | |
+
+Ships (AIS) and flights (ADS-B) are shown on the VOD map only and are not available through MCP: their sources do not allow redistribution.

@@ -1160,6 +1160,15 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       </div>
       )}
 
+      {/* Attribuzione della base cartografica (ODbL): sempre visibile, con il rimando a tutte le fonti */}
+      <div {...stopMapGestures} className="absolute bottom-0.5 right-1 z-20 px-1.5 py-0.5 rounded bg-[var(--ground)]/75 text-[9px] font-mono text-[var(--ink-3)]" data-testid="map-attribution">
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400">
+          © OpenStreetMap contributors
+        </a>
+        {' · '}
+        <a href="/sources" className="hover:text-cyan-400">{tr('ui.mapLabels.allSources')}</a>
+      </div>
+
       {/* Floating map hint (desktop only to prevent clutter on mobile) */}
       {/* <div className="hidden md:flex absolute md:top-4 md:left-[21rem] xl:md:left-[22rem] pointer-events-none glass-panel px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-[var(--rule)] text-[11px] sm:text-xs text-[var(--ink-2)] items-center gap-1.5 sm:gap-2 shadow-lg max-w-[calc(100vw-5rem)]">
         <span className="w-2 h-2 rounded-full bg-emerald-400 motion-safe:animate-pulse shrink-0" />

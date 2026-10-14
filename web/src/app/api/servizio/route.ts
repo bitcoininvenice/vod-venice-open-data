@@ -67,7 +67,7 @@ export async function GET() {
       fetchedAt: body.meta.fetchedAt ?? null,
       computedAt: now.toISOString(),
       timetable: sim !== null,
-      note: 'Situazione di adesso, senza storico. Ritardo: solo mezzi GPS con ritardo verificato (puntuale = tra −1 e +3 min). Corse senza GPS: corse in servizio secondo l\'orario meno i mezzi della linea visibili nel feed; è un indizio, non la prova di una soppressione (un mezzo può viaggiare senza trasmettere la posizione). Mezzi in coda: due corse consecutive della stessa linea e direzione, programmate ad almeno 6 minuti, che adesso distano meno di 4 minuti e di un terzo dell\'intervallo. Licenza del feed realtime da confermare con AVM S.p.A.',
+      note: 'Situazione di adesso, senza storico. Ritardo: solo mezzi GPS con ritardo verificato (puntuale = tra −1 e +3 min). Corse senza GPS: corse in servizio secondo l\'orario meno i mezzi della linea visibili nel feed; è un indizio, non la prova di una soppressione (un mezzo può viaggiare senza trasmettere la posizione). Mezzi in coda: due corse consecutive della stessa linea e direzione, programmate ad almeno 6 minuti, che adesso distano meno di 4 minuti e di un terzo dell\'intervallo. Feed elencato come «Open Data Real Time» nel catalogo dei dati ACTV (art. 53 CAD).',
     },
   });
 }

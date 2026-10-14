@@ -4,6 +4,7 @@ import React from 'react';
 import { Megaphone } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { ACTV_INFOMOBILITY_PAGE, type ActvNotice } from '@/lib/contracts/actvNotices';
+import { safeUrl } from '@/lib/safeUrl';
 
 const dateOf = (iso: string, locale: string) =>
   iso ? new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: '2-digit', timeZone: 'Europe/Rome' }) : '';
@@ -17,7 +18,7 @@ const NoticeEntry: React.FC<{ n: ActvNotice; withText?: boolean }> = ({ n, withT
         {t('ui.actvNotice.published', { date: dateOf(n.publishedAt, language === 'it' ? 'it-IT' : 'en-GB') })}
         {n.lines.length > 0 && ` · ${t('ui.actvNotice.lines', { lines: n.lines.join(', ') })}`}
       </span>
-      <a href={n.url} target="_blank" rel="noopener noreferrer" className="text-[var(--ink)] font-semibold hover:underline leading-snug">
+      <a href={safeUrl(n.url) ?? ACTV_INFOMOBILITY_PAGE} target="_blank" rel="noopener noreferrer" className="text-[var(--ink)] font-semibold hover:underline leading-snug">
         {n.title}
       </a>
       {withText && <span className="text-[var(--ink-2)] leading-snug">{n.text}</span>}
@@ -59,7 +60,7 @@ export const ActvNoticeBody: React.FC<{ notice: ActvNotice }> = ({ notice: n }) 
         </span>
       )}
       {n.lines.length > 0 && <span className="text-[11px] text-[var(--ink-2)]">{t('ui.actvNotice.lines', { lines: n.lines.join(', ') })}</span>}
-      <a href={n.url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline self-start">
+      <a href={safeUrl(n.url) ?? ACTV_INFOMOBILITY_PAGE} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline self-start">
         {t('ui.actvNotice.open')}
       </a>
       <p className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">{t('ui.actvNotice.note')}</p>

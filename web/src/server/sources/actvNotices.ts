@@ -118,7 +118,7 @@ export function toNotice(item: RawRssItem, stops: Record<string, [string, number
   return {
     id: /^(\d+)/.exec(item.guid)?.[1] ?? item.link,
     title: plainText(item.title),
-    url: item.link,
+    url: /^https?:\/\/(?:www\.)?(?:actv|avm)\.avmspa\.it\//.test(item.link) ? item.link.replace(/^http:/, 'https:') : 'https://avm.avmspa.it/it/content/infomobilit%C3%A0-avmactv-venezia',
     publishedAt: Number.isNaN(published.getTime()) ? '' : published.toISOString(),
     text: text.length > 900 ? `${text.slice(0, 897)}…` : text,
     lines: mentionedLines(text, knownLines),

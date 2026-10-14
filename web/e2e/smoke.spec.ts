@@ -710,6 +710,19 @@ test('trasporto pubblico: livello "velocità da orario" e sezione in /metrics', 
   await expect(speed).toContainText('non il comportamento di un singolo mezzo');
 });
 
+test('note legali: attribuzione OpenStreetMap sempre visibile e pagina privacy con licenze e richieste dei titolari', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('canvas').waitFor();
+  const attribution = page.getByTestId('map-attribution');
+  await expect(attribution).toContainText('© OpenStreetMap contributors');
+  await expect(attribution.getByRole('link', { name: /fonti dei dati/i })).toHaveAttribute('href', '/sources');
+  await page.goto('/privacy');
+  for (const h of ['Progetto senza fini di lucro', 'Licenze e citazione delle fonti', 'Esclusione di responsabilità', 'Richieste dei titolari dei dati']) {
+    await expect(page.getByRole('heading', { name: h })).toBeVisible();
+  }
+  await expect(page.getByTestId('privacy-contact').getByRole('link', { name: '@veniceopendata' })).toHaveAttribute('href', 'https://www.instagram.com/veniceopendata/');
+});
+
 test('metriche: residenti per sestiere dal censimento ISTAT, non più valori di esempio', async ({ page }) => {
   await page.goto('/metrics');
   const section = page.getByTestId('residents-census');
@@ -883,6 +896,10 @@ test.describe('API', () => {
     expect(tools.tools.map((t: { name: string }) => t.name).sort()).toEqual(['list_datasets', 'query_dataset']);
     const list = await rpc(3, 'tools/call', { name: 'list_datasets', arguments: {} });
     expect(JSON.parse(list.content[0].text).datasets.length).toBeGreaterThan(20);
+    // navi (aisstream) e voli (OpenSky): solo nella mappa, non ridistribuiti
+    const ids = JSON.parse(list.content[0].text).datasets.map((d: { id: string }) => d.id);
+    expect(ids).not.toContain('ships');
+    expect(ids).not.toContain('flights');
     const q = await rpc(4, 'tools/call', { name: 'query_dataset', arguments: { dataset: 'canals', text: 'Canal Grande', limit: 3 } });
     const body = JSON.parse(q.content[0].text);
     expect(body.dataset.license).toMatch(/ODbL/);

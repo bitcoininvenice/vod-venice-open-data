@@ -8,8 +8,6 @@ import { GET as marineGET } from '@/app/api/marine-sensors/route';
 import { GET as stopsGET } from '@/app/api/stops/route';
 import { GET as vehiclesGET } from '@/app/api/realtime/vehicles/route';
 import { GET as alilagunaGET } from '@/app/api/alilaguna/route';
-import { GET as flightsGET } from '@/app/api/flights/route';
-import { GET as shipsGET } from '@/app/api/ships/route';
 import { GET as emergencyGET } from '@/app/api/emergency-health/route';
 import { GET as cityAssetsGET } from '@/app/api/city-assets/route';
 import { GET as veniceAssetsGET } from '@/app/api/venice-assets/route';
@@ -137,14 +135,8 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
     const j = await read(alilagunaGET());
     return { items: asRows(j.boats), meta: { ...(j.metadata as Row), stops: asRows(j.stops).length } };
   },
-  ships: async () => {
-    const j = await read(shipsGET());
-    return { items: asRows(j.data), meta: j.meta as Row };
-  },
-  flights: async () => {
-    const j = await read(flightsGET());
-    return { items: asRows(j.data), meta: j.meta as Row };
-  },
+  // Navi (aisstream.io) e voli (OpenSky) non sono esposti via MCP: i termini delle fonti non prevedono
+  // la ridistribuzione a terzi. Restano visibili solo nella mappa di VOD.
   pharmacies: async () => {
     const j = await read(emergencyGET());
     return { items: asRows(field(j.data, 'pharmacies')), meta: { dutyRota: 'https://www.aulss3.veneto.it/Farmacie-di-turno' } };

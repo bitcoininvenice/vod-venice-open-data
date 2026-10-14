@@ -277,7 +277,10 @@ Le API sono pubbliche e in sola lettura, con cache server per ogni fonte e un li
 * **The Things Network – Packet Broker Mapper**: gateway LoRaWAN con stato e posizione resi pubblici dai proprietari (VOD non mostra identificativi né nomi; il gateway sparisce se il proprietario rende privata la posizione).
 * **MEF – Ragioneria Generale dello Stato (BDAP OpenData)**: Monitoraggio Opere Pubbliche (MOP) Veneto, CC BY.
 * **NOAA Aviation Weather Center**: METAR LIPZ (pubblico dominio).
-* **OpenSky Network**: dati ADS-B, uso non commerciale/ricerca secondo i termini OpenSky.
+* **OpenSky Network**: dati ADS-B, uso non commerciale/ricerca secondo i termini OpenSky; mostrati solo nella mappa, non ridistribuiti via MCP. Citazione: Schäfer et al., «Bringing Up OpenSky», IPSN 2014.
+* **aisstream.io**: messaggi AIS mostrati solo nella mappa, non ridistribuiti via MCP (termini in verifica).
+
+Revisione completa di licenze, privacy e sicurezza: [docs/note-legali-fonti.md](docs/note-legali-fonti.md). VOD è un progetto senza fini di lucro.
 * **SkylineWebcams, CNR-ISMAR**: solo collegamenti alle pagine ufficiali delle dirette; nessuna immagine viene ripubblicata.
 * **Anopticon (tramaci.org)**: mappatura civica delle telecamere. I termini d'uso vietano l'accesso automatico senza autorizzazione: il dataset completo non è incluso (bozza di richiesta in `docs/richieste-autorizzazione.md`).
 * **Comune di Venezia – dati.venezia.it**: Elenco Annuale dei Lavori, hotspot WiFi (CC BY); marea e rete meteo-marina CPSM: la scheda del dataset indica CC BY, la [pagina Open Data del Comune](https://www.comune.venezia.it/it/content/open-data-0) CC BY-SA 3.0. VOD applica la più restrittiva (CC BY-SA 3.0) ai dati CPSM che redistribuisce (API, MCP, esportazioni).

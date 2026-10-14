@@ -51,6 +51,13 @@ export function parseOrdinanceList(raw: unknown): RawOrdinance[] {
 
 export const isCityOrIslands = (o: Pick<RawOrdinance, 'luogo'>) => !MAINLAND.test(o.luogo ?? '');
 
+/**
+ * Titoli che possono contenere dati personali (persone fisiche, provvedimenti individuali): VOD non li
+ * ripubblica, anche se sono sul sito del Comune (minimizzazione, GDPR art. 5).
+ */
+const PERSONAL_DATA = /\b(sig\.?(?:ra)?|sigg\.|signor[ae]?|nat[oa] a|nat[oa] il|residente|a carico d|intestat|codice fiscale|c\.f\.|ditta individuale|trattamento sanitario|t\.s\.o\.|accertamento sanitario|sgombero dell'alloggio|nucleo familiare|minor[ei])\b/i;
+export const mayContainPersonalData = (title: string) => PERSONAL_DATA.test(title);
+
 export interface OrdinanceDetail {
   validFrom: string | null;
   validTo: string | null;

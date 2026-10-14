@@ -4,10 +4,11 @@ import React from 'react';
 import { SiteFooter, SiteHeader } from '@/components/site/SiteChrome';
 import { useTranslation } from '@/lib/i18n';
 
-/** Contatto per le richieste sulla privacy, impostato nelle variabili d'ambiente del progetto. */
-const PRIVACY_CONTACT = process.env.NEXT_PUBLIC_PRIVACY_CONTACT?.trim() || null;
+/** Contatto per le richieste sulla privacy e dei titolari dei dati: messaggio diretto all'account Instagram del progetto. */
+const INSTAGRAM_HANDLE = 'veniceopendata';
+const INSTAGRAM_URL = `https://www.instagram.com/${INSTAGRAM_HANDLE}/`;
 
-const SECTIONS = ['noCookies', 'analytics', 'hosting', 'browser', 'sources', 'rights'] as const;
+const SECTIONS = ['noCookies', 'analytics', 'hosting', 'browser', 'sources', 'rights', 'nonCommercial', 'licenses', 'disclaimer', 'takedown'] as const;
 
 /** Informativa privacy: cosa raccoglie VOD (poco) e chi lo tratta. */
 export default function PrivacyPage() {
@@ -32,19 +33,14 @@ export default function PrivacyPage() {
 
         <section className="flex flex-col gap-2" aria-labelledby="privacy-contact">
           <h2 id="privacy-contact" className="text-base font-bold border-b border-[var(--rule)] pb-2">{p('contactTitle')}</h2>
-          <p className="text-sm text-[var(--ink-2)] leading-relaxed">
-            {PRIVACY_CONTACT ? (
-              <>
-                {p('contactBody')}{' '}
-                <a href={PRIVACY_CONTACT.includes('@') ? `mailto:${PRIVACY_CONTACT}` : PRIVACY_CONTACT} className="text-cyan-400 hover:underline">
-                  {PRIVACY_CONTACT}
-                </a>
-              </>
-            ) : (
-              p('contactMissing')
-            )}
+          <p className="text-sm text-[var(--ink-2)] leading-relaxed" data-testid="privacy-contact">
+            {p('contactBody')}{' '}
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">
+              @{INSTAGRAM_HANDLE}
+            </a>
+            {p('contactInstagram')}
           </p>
-          <p className="text-xs text-[var(--ink-3)] font-mono">{p('updated', { date: '12/10/2026' })}</p>
+          <p className="text-xs text-[var(--ink-3)] font-mono">{p('updated', { date: '14/10/2026' })}</p>
         </section>
       </main>
       <SiteFooter />

@@ -1,5 +1,6 @@
 'use client';
 
+import { safeUrl } from '@/lib/safeUrl';
 import React from 'react';
 import {
   X,
@@ -117,7 +118,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
             <div className="flex items-center gap-2 flex-wrap justify-center">
               {camera.snapshotUrl && (
                 <a
-                  href={camera.snapshotUrl}
+                  href={safeUrl(camera.snapshotUrl) ?? undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-mono font-medium flex items-center gap-1.5 transition-all"
@@ -129,7 +130,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
               )}
               {camera.streamPageUrl && (
                 <a
-                  href={camera.streamPageUrl}
+                  href={safeUrl(camera.streamPageUrl) ?? undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-medium flex items-center gap-1.5 shadow-md shadow-cyan-600/20 transition-all"
@@ -197,7 +198,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                 {t('ui.camera.fonteMappatura')}
               </span>
               <a
-                href={camera.sourceUrl}
+                href={safeUrl(camera.sourceUrl) ?? undefined}
                 target="_blank"
                 rel="noreferrer"
                 className="text-cyan-400 hover:underline font-mono text-[11px] flex items-center gap-1 truncate"

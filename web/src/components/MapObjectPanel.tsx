@@ -146,6 +146,10 @@ export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose,
             [t('map.vceDist'), `${distKm} km`, 'text-amber-400'],
           ]}
         />
+        <p className="text-[11px] text-[var(--ink-3)] leading-relaxed border-t border-[var(--rule)] pt-2" data-testid="flight-attribution">
+          {t('ui.map.flightAttribution')}{' '}
+          <a href="https://opensky-network.org" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">opensky-network.org</a>
+        </p>
         {onOpenAirport && (
           <button
             type="button"

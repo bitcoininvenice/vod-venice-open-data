@@ -11,6 +11,7 @@ import {
   italianDate,
   matchCanal,
   matchPlace,
+  mayContainPersonalData,
   ordinanceKind,
   ordinanceStatus,
   ordinanceUrl,
@@ -78,7 +79,7 @@ export async function GET() {
   const candidates = lists.flatMap(({ cutoff, list }) =>
     list.filter((o) => {
       const date = italianDate(o.dataRepertorio);
-      if (!date || date < cutoff || !isCityOrIslands(o) || seen.has(o.idPratica)) return false;
+      if (!date || date < cutoff || !isCityOrIslands(o) || mayContainPersonalData(o.titolo) || seen.has(o.idPratica)) return false;
       seen.add(o.idPratica);
       return true;
     }),

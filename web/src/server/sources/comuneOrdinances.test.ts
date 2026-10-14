@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   italianDate,
   isCityOrIslands,
+  mayContainPersonalData,
   matchCanal,
   matchPlace,
   ordinanceKind,
@@ -78,5 +79,14 @@ describe('ordinanze del Comune: tipo, stato e luoghi', () => {
     // il ponte omonimo è in città, l'atto riguarda Mazzorbo: nessuna posizione
     expect(matchPlace('Interdizione ponte Santa Caterina Mazzorbo', 'Burano', toponyms)).toBeNull();
     expect(matchPlace('Senso unico in via Alberoni', 'Lido - Pellestrina', toponyms)?.name).toBe('Via Alberoni');
+  });
+});
+
+describe('ordinanze e dati personali', () => {
+  it('esclude i titoli che possono riguardare persone', () => {
+    expect(mayContainPersonalData('Ordinanza di sgombero a carico del sig. Mario Rossi')).toBe(true);
+    expect(mayContainPersonalData('Trattamento sanitario obbligatorio')).toBe(true);
+    expect(mayContainPersonalData('Cantiere per il restauro di Fondamenta del Soccorso')).toBe(false);
+    expect(mayContainPersonalData('Manifestazione "A Spasso in Canalasso"')).toBe(false);
   });
 });

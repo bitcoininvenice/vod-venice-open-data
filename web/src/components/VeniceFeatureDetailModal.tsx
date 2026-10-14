@@ -89,6 +89,7 @@ import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 import { OrdinanceBody, OrdinanceList } from '@/components/OrdinanceList';
 import { ScheduleSpeedBody } from '@/components/ScheduleSpeedBody';
 import { ActvNoticeBody } from '@/components/ActvNoticeList';
+import { safeUrl } from '@/lib/safeUrl';
 import type { ActvNotice } from '@/lib/contracts/actvNotices';
 import { SPEED_VERDICT_COLORS, type ScheduleSpeedSegment } from '@/lib/scheduleSpeed';
 import { VENICE_TAP_WATER_URL } from '@/lib/fountainFilter';
@@ -1449,7 +1450,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               {feature.data.operator && <p className="text-[var(--ink-2)]">{t('ui.feature.gestore')} <b>{feature.data.operator}</b></p>}
               {feature.data.openingHours && <span className="text-[11px] font-mono text-[var(--ink-3)]">{feature.data.openingHours}</span>}
               {feature.data.website && (
-                <a href={feature.data.website} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline break-all">
+                <a href={safeUrl(feature.data.website) ?? undefined} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline break-all">
                   {feature.data.website}
                 </a>
               )}
@@ -1708,7 +1709,7 @@ const WifiVenueBody: React.FC<{ venue: WifiVenue }> = ({ venue: v }) => {
         ]}
       />
       {v.website && (
-        <a href={v.website} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline break-all">
+        <a href={safeUrl(v.website) ?? undefined} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline break-all">
           {v.website}
         </a>
       )}
@@ -1804,7 +1805,7 @@ const NauticalBody: React.FC<{ place: NauticalPlace }> = ({ place: p }) => {
         ]}
       />
       {p.website && (
-        <a href={p.website} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline break-all">
+        <a href={safeUrl(p.website) ?? undefined} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline break-all">
           {p.website}
         </a>
       )}
@@ -1846,7 +1847,7 @@ const ParkBody: React.FC<{ place: ParkPlace }> = ({ place: p }) => {
         ]}
       />
       {p.website && (
-        <a href={p.website} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline break-all">
+        <a href={safeUrl(p.website) ?? undefined} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline break-all">
           {p.website}
         </a>
       )}

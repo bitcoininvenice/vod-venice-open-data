@@ -1,6 +1,6 @@
 ---
 name: venice-open-data
-description: Answers questions about Venice (Venezia) and its lagoon with verified public data from Venice Open Data (VOD) - tide and acqua alta, MOSE, ships (AIS), weather and wind, air quality, pollen, lagoon water, ACTV waterbus stops and live vehicles, Alilaguna, pharmacies, defibrillators, drinking fountains, recycling centres, libraries, car parks, EV charging, fibre coverage, canals and briccole, public works, tourism and municipal statistics. Use it whenever the user asks about Venice, Mestre, Lido, Murano, Burano, Chioggia or the Venetian lagoon, even without naming VOD.
+description: Answers questions about Venice (Venezia) and its lagoon with verified public data from Venice Open Data (VOD) - tide and acqua alta, MOSE, weather and wind, air quality, pollen, lagoon water, ACTV waterbus stops and live vehicles, Alilaguna, pharmacies, defibrillators, drinking fountains, recycling centres, libraries, car parks, EV charging, fibre coverage, canals and briccole, public works, tourism and municipal statistics. Use it whenever the user asks about Venice, Mestre, Lido, Murano, Burano, Chioggia or the Venetian lagoon, even without naming VOD.
 ---
 
 # Venice Open Data (VOD)
@@ -32,7 +32,7 @@ Every dataset declares a `kind`. Say it in the answer:
 
 | kind | meaning | how to phrase it |
 |---|---|---|
-| `live` | measured now (tide, weather, flights, GPS) | "misurato alle 10:30" |
+| `live` | measured now (tide, weather, GPS) | "misurato alle 10:30" |
 | `forecast` | model forecast (wind, pollen, air, sea) | "previsto dal modello, valido alle…" |
 | `simulated` | positions computed from the timetable (Alilaguna) | "posizione stimata dall'orario" |
 | `dataset` | official open dataset (ARPAV, Comune, AGCOM…) | cite the body and the year |

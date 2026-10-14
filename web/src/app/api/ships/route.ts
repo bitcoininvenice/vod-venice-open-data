@@ -17,6 +17,7 @@ export async function GET() {
       source: AIS_SOURCE,
       sourceUrl: 'https://aisstream.io',
       license: 'Messaggi AIS trasmessi pubblicamente dalle navi, ricevuti tramite aisstream.io',
+      usage: 'Dati per la sola visualizzazione nella mappa di VOD (progetto senza fini di lucro): non ridistribuire. Per altri usi vedere i termini di aisstream.io.',
       collectedAt: snap.collectedAt,
       messagesLastCollection: snap.messages,
       error: snap.error,

@@ -37,7 +37,7 @@ export async function GET(request: Request) {
         kind: ok ? 'live' : 'unavailable',
         source: 'ACTV / AVM – GTFS-Realtime TripUpdates',
         sourceUrl: 'https://tpl.actv.it',
-        note: 'Orari previsti e ritardi stimati da ACTV. Il ritardo attuale deriva dalla posizione GPS; gli orari alle fermate successive sono stime (estimate=constant: ACTV ripete il ritardo attuale). Licenza del feed realtime da confermare con AVM S.p.A.',
+        note: 'Orari previsti e ritardi stimati da ACTV. Il ritardo attuale deriva dalla posizione GPS; gli orari alle fermate successive sono stime (estimate=constant: ACTV ripete il ritardo attuale). Feed elencato come «Open Data Real Time» nel catalogo dei dati ACTV (art. 53 CAD).',
       },
     },
     {

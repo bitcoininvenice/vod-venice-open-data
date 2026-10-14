@@ -148,6 +148,7 @@ export const enUi: UiTranslations = {
   },
   map: {
     vehicleName: "Vehicle",
+    flightAttribution: "ADS-B data from The OpenSky Network, for non-commercial use only (M. Schäfer et al., “Bringing Up OpenSky: A Large-scale ADS-B Sensor Network for Research”, IPSN 2014).",
     vehicleNumber: "no. {n}",
     orarioUfficialeActv: "official ACTV timetable",
     posizioneGpsRealeGtfsRt: "Real GPS position (ACTV GTFS-RT)",
@@ -518,9 +519,17 @@ export const enUi: UiTranslations = {
     sourcesBody: "Map data (tides, waterbuses, weather and the rest) is requested by VOD's servers from the public sources: your browser does not contact those services directly. External sites are reached only through links you choose to open, such as webcams, bulletins and agency portals, which have their own policies.",
     rightsTitle: "Your rights",
     rightsBody: "You can ask about data concerning you, ask for it to be deleted or object to its processing, and you can lodge a complaint with the Italian data protection authority (garanteprivacy.it). Since VOD keeps no data that identifies visitors, there is usually nothing to return or delete.",
+    nonCommercialTitle: "Non-profit project",
+    nonCommercialBody: "VOD is a non-profit civic project: it does not sell data and has no subscriptions or advertising. Some sources (OpenSky Network for flights, Open-Meteo for forecasts) are used under their non-commercial terms.",
+    licensesTitle: "Licences and source attribution",
+    licensesBody: "Each dataset keeps its source licence, shown in the card, the layer catalogue and the Sources page: for example CC BY for the City of Venice and ACTV, CC BY-SA 3.0 for Tide Centre data redistributed by VOD, ODbL for OpenStreetMap and FlixBus, CC BY 4.0 for ARPAV, ISTAT and Open-Meteo. Ships (aisstream.io) and flights (OpenSky) are only displayed on the map and are not redistributed through the API or MCP. Anyone reusing VOD data must respect and credit the source licences.",
+    disclaimerTitle: "Disclaimer",
+    disclaimerBody: "VOD information is provided for information purposes and may be incomplete, delayed or estimated (timetable positions, forecasts, lists to be verified): each card states the nature of the data. Official sources and acts always prevail. VOD is neither a nautical chart nor an emergency service: do not use it for navigation or safety-critical situations.",
+    takedownTitle: "Requests from data owners",
+    takedownBody: "If you own data shown by VOD and believe its use does not respect the licence or your rights, send a direct message to the Instagram account @veniceopendata (see Contacts): the data is suspended immediately while the matter is clarified. The same applies to corrections of wrong information.",
     contactTitle: "Contact",
-    contactBody: "For privacy questions:",
-    contactMissing: "A contact for privacy requests will be published shortly.",
+    contactBody: "For privacy questions, removal or correction requests, send a direct message on Instagram to",
+    contactInstagram: ".",
     updated: "Last updated: {date}"
   },
   speedLimit: {
@@ -575,7 +584,7 @@ export const enUi: UiTranslations = {
     colMax: "Maximum",
     colOnTime: "On time",
     colBunched: "Bunched",
-    tableNote: "Updated every 30 seconds, no history. Delay from vehicles with GPS checked against ACTV; on time = between −1 and +3 minutes. \"No GPS\" = trips in service by the timetable minus visible vehicles: a hint, not proof of a cancelled trip. \"Bunched\" = two consecutive trips of the same line and direction, scheduled at least 6 minutes apart, now less than 4 minutes apart. Real-time feed licence to be confirmed with AVM."
+    tableNote: "Updated every 30 seconds, no history. Delay from vehicles with GPS checked against ACTV; on time = between −1 and +3 minutes. \"No GPS\" = trips in service by the timetable minus visible vehicles: a hint, not proof of a cancelled trip. \"Bunched\" = two consecutive trips of the same line and direction, scheduled at least 6 minutes apart, now less than 4 minutes apart. Feed listed as “Open Data Real Time” in the ACTV data catalogue (art. 53 CAD)."
   },
   scheduleSpeed: {
     sectionTitle: "Speed required by the timetable and limits",
@@ -827,7 +836,7 @@ export const enUi: UiTranslations = {
     pollenFamily_mugwort: "Asteraceae (Compositae)",
     pollenFamily_olive: "Oleaceae",
     pollenFamily_ragweed: "Asteraceae (Compositae)",
-    pollenNote: "Forecast from the European Copernicus CAMS model (via Open-Meteo, CC BY 4.0) at this point, not a sample. Low/moderate/high thresholds are indicative, modelled on ARPAV classes. Out of season values are zero. Pellitory and cypress are not in the model: see ARPAV for the measured bulletin.",
+    pollenNote: "Forecast from the European Copernicus CAMS model (via Open-Meteo, CC BY 4.0) at this point, not a sample. Low/moderate/high thresholds are indicative, modelled on ARPAV classes. Out of season values are zero. Pellitory and cypress are not in the model: see ARPAV for the measured bulletin. Generated using Copernicus Atmosphere Monitoring Service information; neither the European Commission nor ECMWF is responsible for any use of the information.",
     marineForecastTitle: "Marine model forecast · {time}",
     wavePeriod: "Period",
     waveDirection: "Direction",
@@ -848,7 +857,7 @@ export const enUi: UiTranslations = {
     aqiNext24h: "European index forecast for the next 24 hours",
     uvIndex: "UV index",
     uvMaxToday: "today's maximum",
-    camsNote: "Hourly forecast from the Copernicus CAMS model (via Open-Meteo, CC BY 4.0) at the station location: not an ARPAV measurement.",
+    camsNote: "Hourly forecast from the Copernicus CAMS model (via Open-Meteo, CC BY 4.0) at the station location: not an ARPAV measurement. Generated using Copernicus Atmosphere Monitoring Service information; neither the European Commission nor ECMWF is responsible for any use of the information.",
     recyclingCentre: "Recycling centre",
     library: "Library",
     recyclingOfficialLink: "Opening hours, mobile centres and home collection of bulky waste (City of Venice)",
@@ -1408,8 +1417,8 @@ export const enUi: UiTranslations = {
     refresh_weekly: "weekly pipeline (Monday)",
     refresh_census: "manual pipeline at each new census release",
     licenseUnconfirmed: "License to be confirmed",
-    "meta_gtfs-rt-nav": "Public endpoint not documented as open data: license to be confirmed with AVM.",
-    "meta_gtfs-rt-aut": "Public endpoint not documented as open data: license to be confirmed with AVM.",
+    "meta_gtfs-rt-nav": "Listed as “Open Data Real Time” in the ACTV data catalogue (art. 53 CAD); without an explicit licence, Italian open-by-default rules apply (art. 52 CAD). Credit ACTV as the source.",
+    "meta_gtfs-rt-aut": "Listed as “Open Data Real Time” in the ACTV data catalogue (art. 53 CAD); without an explicit licence, Italian open-by-default rules apply (art. 52 CAD). Credit ACTV as the source.",
     meta_opensky: "Free access with daily quotas; non-commercial use under the OpenSky terms.",
     "meta_opere-pubbliche": "The CSV has no coordinates: locations are approximately geocoded.",
     meta_arpav: "Validated annual means, not real-time readings.",
@@ -1445,7 +1454,7 @@ export const enUi: UiTranslations = {
     methodCacheTitle: "Shared cache",
     methodCacheBody: "Live sources are refetched server-side with a short cache (15 s to 10 min depending on the source), keeping traffic to providers low even with many users.",
     methodLicensesTitle: "Licenses",
-    methodLicensesBody: "Each dataset keeps its source license (CC BY for the City and ACTV, CC BY 4.0 for ARPAV, ODbL for OpenStreetMap). The ACTV GTFS-RT feed is public but its license still needs confirming with AVM.",
+    methodLicensesBody: "Each dataset keeps its source license (CC BY for the City and ACTV, CC BY 4.0 for ARPAV, ODbL for OpenStreetMap). The ACTV GTFS-RT feed is listed as “Open Data Real Time” in the ACTV data catalogue. Ships (aisstream.io) and flights (OpenSky) are only displayed, not redistributed.",
     "name_osm-poi": "OpenStreetMap POIs: chargers, car parks, wells, trees (pipeline)",
     "name_alilaguna-gtfs": "Alilaguna GTFS timetable (pipeline)",
     "meta_osm-poi": "Replaces hand-compiled lists: curated entries remain only if no nearby OSM match exists and are marked \"to be verified\". Includes places with Wi-Fi (hotels, bars, libraries) with the declared access type.",
@@ -1513,6 +1522,7 @@ export const enUi: UiTranslations = {
     cardSourcesBody: "Availability and data age for every live source and dataset."
   },
   mapLabels: {
+    allSources: "Data sources",
     offshorePlatform: "CNR platform",
     crosswind: "RWY 04R crosswind {kt} kt",
     gondolaInitial: "G",
