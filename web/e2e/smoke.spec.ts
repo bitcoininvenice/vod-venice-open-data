@@ -552,6 +552,26 @@ test('come arrivare «adesso»: l\'itinerario si aggiorna e non propone una cors
   await expect(result).not.toContainText('23:54', { timeout: 15000 });
 });
 
+test('come arrivare di corsa: mostra la corsa che sta per partire con l\'avviso «Sbrigati»', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  // 23:53:30 a Venezia: l'ultima 4.2 da Murano Colonna parte alle 23:54, troppo presto per il margine normale
+  await page.clock.install({ time: new Date('2026-10-14T21:53:30Z') });
+  await page.goto('/');
+  await page.locator('canvas').waitFor();
+  await page.getByTestId('open-planner').click();
+  const panel = page.locator('[data-info-panel]');
+  await panel.getByTestId('planner-from').getByRole('textbox').fill('Murano Colonna');
+  await panel.getByRole('button', { name: /^Murano Colonna$/ }).click();
+  await panel.getByTestId('planner-to').getByRole('textbox').fill('aeroporto');
+  await panel.getByTestId('planner-airport-option').click();
+  const hurry = panel.getByTestId('planner-hurry');
+  await expect(hurry).toBeVisible({ timeout: 15000 });
+  await expect(hurry).toContainText('Sbrigati');
+  await expect(hurry).toContainText('4.2');
+  await expect(hurry).toContainText('23:54');
+  await expect(hurry).toContainText('Se non fai in tempo');
+});
+
 test('come arrivare in barca propria: ZTL solo per residenti, percorso sui canali con le regole del Testo Unico', async ({ page, isMobile }) => {
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   const errors: string[] = [];

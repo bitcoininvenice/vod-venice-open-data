@@ -72,6 +72,19 @@ export interface Itinerary extends WetSummary {
   ridesInHighWater: boolean;
   /** opzioni per l'aeroporto (lib/airportPlanner): Alilaguna via acqua o ACTV con il bus da Piazzale Roma */
   via?: 'alilaguna' | 'actv';
+  /** il primo mezzo parte prima di quanto serve ad arrivare a piedi alla fermata: si fa solo sbrigandosi */
+  hurry?: HurryInfo;
+}
+
+export interface HurryInfo {
+  line: string;
+  category: string;
+  /** fermata da cui parte il mezzo */
+  stop: string;
+  /** partenza (s dalla mezzanotte) */
+  departs: number;
+  /** tempo a piedi fino alla fermata al passo normale (s) */
+  walkSeconds: number;
 }
 
 /** Più veloce (a piedi o in vaporetto), solo a piedi, con meno strada a piedi possibile; `private`: in barca propria (lib/boatRouting) */
@@ -87,6 +100,11 @@ export interface PlanOptions {
   nextDay?: DayType;
   /** tratti a piedi verso e dai pontili al massimo di (m); di norma MAX_ACCESS_M */
   maxAccessM?: number;
+  /**
+   * Partenza «adesso»: se a piedi non si arriva in tempo ma il mezzo non è ancora partito, si propone comunque
+   * (Itinerary.hurry), con il percorso normale in PlanResult.ifLate.
+   */
+  hurry?: boolean;
 }
 
 export interface PlanResult {
@@ -97,6 +115,8 @@ export interface PlanResult {
   floodLevelCm: number | null;
   /** metri allagati del percorso a piedi più breve, per confronto con quello più asciutto */
   shortestWalkWetMeters: number | null;
+  /** se `best` va fatto di corsa: il percorso al passo normale (null se non c'è) */
+  ifLate?: Itinerary | null;
 }
 
 /** Fermate della mappa (navigazione e ferry) servite da ogni profilo, in ordine, con l'indice della fermata nel profilo. */
@@ -203,7 +223,7 @@ export function planTrip(
   day: DayType,
   options: PlanOptions = {},
 ): PlanResult {
-  const { mode = 'fastest', tideAt, passerelle = [], nextDay, maxAccessM = MAX_ACCESS_M } = options;
+  const { mode = 'fastest', tideAt, passerelle = [], nextDay, maxAccessM = MAX_ACCESS_M, hurry = false } = options;
   const none: PlanResult = { best: null, walkOnly: null, floodLevelCm: null, shortestWalkWetMeters: null };
   const stops = waterStops(allStops);
   const o = nearestNode(graph, origin.lon, origin.lat);
@@ -248,26 +268,37 @@ export function planTrip(
     egressM: stopNode.map((sn) => (sn.meters <= MAX_SNAP_M ? toD.meters[sn.node] + d.meters + sn.meters : Infinity)),
   };
 
+  /** Di corsa: lo stesso calcolo senza il tempo a piedi fino alla prima fermata, proposto se arriva prima. */
+  const withHurry = (normal: Itinerary | null, limit: number): PlanResult => {
+    if (!hurry) return { best: normal, ...base };
+    const rushed = raptor(search, limit, true);
+    if (rushed?.hurry && (!normal || rushed.arrive < normal.arrive - 60)) return { best: rushed, ifLate: normal, ...base };
+    return { best: normal, ...base };
+  };
   if (mode === 'boat') {
     // meno strada a piedi possibile: pontili vicini, poi se serve quelli più lontani
-    const viaBoat = raptor(search, BOAT_ACCESS_M) ?? raptor(search, maxAccessM);
-    return { best: viaBoat ?? walkOnly, ...base };
+    const near = raptor(search, BOAT_ACCESS_M);
+    const viaBoat = near ?? raptor(search, maxAccessM);
+    return withHurry(viaBoat ?? walkOnly, near ? BOAT_ACCESS_M : maxAccessM);
   }
   const viaBoat = raptor(search, maxAccessM);
   const bestOverall =
     viaBoat && (!walkOnly || viaBoat.arrive + wetSeconds(viaBoat) < walkOnly.arrive + wetSeconds(walkOnly) - 60) ? viaBoat : walkOnly;
-  return { best: bestOverall, ...base };
+  return withHurry(bestOverall, maxAccessM);
 }
 
-/** Ricerca a giri (al massimo due corse) con tratti a piedi entro `accessLimit` metri. */
-function raptor(q: Search, accessLimit: number): Itinerary | null {
+/**
+ * Ricerca a giri (al massimo due corse) con tratti a piedi entro `accessLimit` metri.
+ * `rushed`: si può salire su ogni mezzo che non è ancora partito, anche se a piedi non si arriverebbe in tempo.
+ */
+function raptor(q: Search, accessLimit: number, rushed = false): Itinerary | null {
   const { sim, stops, accessM, egressM, now, day, nextDay } = q;
   const seqs = profileStops(sim, stops);
-  const rounds: Label[][] = [stops.map((_, s) => ({ time: accessM[s] <= accessLimit ? now + accessM[s] / WALK_SPEED : Infinity }))];
+  const rounds: Label[][] = [stops.map((_, s) => ({ time: accessM[s] <= accessLimit ? (rushed ? now : now + accessM[s] / WALK_SPEED) : Infinity }))];
   for (let round = 1; round <= 2; round++) {
     const prev = rounds[round - 1];
     const cur: Label[] = prev.map((l) => ({ ...l }));
-    const buffer = round === 1 ? BOARD_BUFFER_S : TRANSFER_BUFFER_S;
+    const buffer = round === 1 ? (rushed ? 0 : BOARD_BUFFER_S) : TRANSFER_BUFFER_S;
     // anche le corse dopo mezzanotte, che il simulatore tiene nell'elenco del giorno dopo
     forEachTrip(sim, day, nextDay, (pi, departure, end) => {
       if (departure > now + HORIZON_S || end < now) return;
@@ -349,6 +380,10 @@ function buildItinerary(q: Search, rounds: Label[][], best: { round: number; sto
   const walkOutCoords = [[stops[lastStop].lon, stops[lastStop].lat] as [number, number], ...pathCoords(graph, toD, stopNode[lastStop].node).reverse(), [dest.lon, dest.lat] as [number, number]];
   const wetOut = summarizeEdges(graph, pathEdges(graph, toD, stopNode[lastStop].node), q.floodD);
   legs.push({ kind: 'walk', from: stops[lastStop].name, to: dest.label, meters: walkOut, seconds: walkOut / WALK_SPEED, start: lastEnd, end: lastEnd + walkOut / WALK_SPEED, coords: walkOutCoords, ...wetOut });
+  // si sale solo sbrigandosi: il mezzo parte prima di quanto serve ad arrivare a piedi alla fermata
+  const first = legs[1] as Extract<Leg, { kind: 'ride' }>;
+  const hurry: HurryInfo | undefined =
+    boardTime < now + walkIn / WALK_SPEED + BOARD_BUFFER_S ? { line: first.line, category: first.category, stop: first.from, departs: boardTime, walkSeconds: walkIn / WALK_SPEED } : undefined;
   return {
     depart: Math.max(now, legs[0].start),
     arrive: best.arrive,
@@ -356,6 +391,7 @@ function buildItinerary(q: Search, rounds: Label[][], best: { round: number; sto
     walkMeters: walkIn + walkOut,
     rides: rides.length,
     ridesInHighWater,
+    ...(hurry ? { hurry } : {}),
     ...addSummaries(wetIn, wetOut),
   };
 }

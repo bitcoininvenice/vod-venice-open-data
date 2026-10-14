@@ -11,7 +11,7 @@ import { forEachTrip, NIGHT_END_S, pointAt, type SimModel, type SimProfile } fro
 import { fromGrid } from './positionDelay';
 import { metersBetween, nearestNode, pathCoords, pathEdges, shortestPaths, type WalkGraph } from './walkGraph';
 import { floodWeights, NO_WATER, summarizeEdges } from './dryRouting';
-import { BOARD_BUFFER_S, HORIZON_S, MAX_ACCESS_M, MAX_SNAP_M, planTrip, WALK_SPEED, type Itinerary, type Leg, type PlannerPoint, type PlanOptions } from './tripPlanner';
+import { BOARD_BUFFER_S, HORIZON_S, MAX_ACCESS_M, MAX_SNAP_M, planTrip, WALK_SPEED, type HurryInfo, type Itinerary, type Leg, type PlannerPoint, type PlanOptions } from './tripPlanner';
 import { ALILAGUNA_STOPS, alilagunaShapeBetween, alilagunaTripsOn, type AlilagunaTripTimes } from './alilaguna-schedule';
 import type { DayType, StopItem } from './types';
 
@@ -135,12 +135,16 @@ function viaActv(graph: WalkGraph, sim: SimModel, stops: StopItem[], venice: Pla
     const ride = busLeg(bus, PIAZZALE_ROMA.label, AIRPORT.label);
     return { ...first, arrive: ride.end, legs: [...first.legs, ride], rides: first.rides + 1, via: 'actv' };
   }
-  const bus = nextAerobus(sim, day, now + BOARD_BUFFER_S, false, options.nextDay);
+  // dall'aeroporto il bus parte davanti al terminal: di corsa si prende anche quello che sta per partire
+  const normalBus = nextAerobus(sim, day, now + BOARD_BUFFER_S, false, options.nextDay);
+  const rushedBus = options.hurry ? nextAerobus(sim, day, now, false, options.nextDay) : null;
+  const bus = rushedBus && (!normalBus || rushedBus.departure + rushedBus.profile.T[rushedBus.kTo] < normalBus.departure + normalBus.profile.T[normalBus.kTo] - 60) ? rushedBus : normalBus;
   if (!bus) return null;
-  const ride = busLeg(bus, AIRPORT.label, PIAZZALE_ROMA.label);
-  const rest = toRoma(graph, sim, stops, PIAZZALE_ROMA, venice, ride.end, day, options);
+  const ride = busLeg(bus, AIRPORT.label, PIAZZALE_ROMA.label) as Extract<Leg, { kind: 'ride' }>;
+  const rest = toRoma(graph, sim, stops, PIAZZALE_ROMA, venice, ride.end, day, { ...options, hurry: false });
   if (!rest) return null;
-  return { ...rest, depart: Math.max(now, ride.start - BOARD_BUFFER_S), legs: [ride, ...rest.legs], rides: rest.rides + 1, via: 'actv' };
+  const hurry: HurryInfo | undefined = ride.start < now + BOARD_BUFFER_S ? { line: ride.line, category: 'bus', stop: AIRPORT.label, departs: ride.start, walkSeconds: 0 } : undefined;
+  return { ...rest, depart: Math.max(now, ride.start - BOARD_BUFFER_S), legs: [ride, ...rest.legs], rides: rest.rides + 1, via: 'actv', ...(hurry ? { hurry } : {}) };
 }
 
 /** Alilaguna: a piedi fino a una fermata e barca diretta per l'aeroporto, oppure al contrario. */
@@ -157,22 +161,31 @@ function viaAlilaguna(graph: WalkGraph, trips: AlilagunaTripTimes[], venice: Pla
   });
   const dockWalkS = (dock: number) => (metersBetween(ALILAGUNA_STOPS[dock].lon, ALILAGUNA_STOPS[dock].lat, AIRPORT.lon, AIRPORT.lat) * DOCK_WALK_FACTOR) / WALK_SPEED;
 
-  let best: { trip: AlilagunaTripTimes; i: number; j: number; arrive: number } | null = null;
-  for (const trip of trips) {
-    for (let i = 0; i < trip.stops.length; i++) {
-      for (let j = i + 1; j < trip.stops.length; j++) {
-        const a = trip.stops[i];
-        const b = trip.stops[j];
-        const aDock = AIRPORT_DOCKS.includes(a.stop);
-        const bDock = AIRPORT_DOCKS.includes(b.stop);
-        if (toAirport ? !bDock || aDock || !Number.isFinite(walkM[a.stop]) : !aDock || bDock || !Number.isFinite(walkM[b.stop])) continue;
-        const ready = toAirport ? now + walkM[a.stop] / WALK_SPEED + BOARD_BUFFER_S : now + dockWalkS(a.stop) + BOARD_BUFFER_S;
-        if (a.dep < ready || a.dep > now + HORIZON_S) continue;
-        const arrive = toAirport ? b.arr + dockWalkS(b.stop) : b.arr + walkM[b.stop] / WALK_SPEED;
-        if (!best || arrive < best.arrive) best = { trip, i, j, arrive };
+  /** tempo per arrivare a piedi all'imbarco al passo normale (s) */
+  const walkToBoard = (stop: number) => (toAirport ? walkM[stop] / WALK_SPEED : dockWalkS(stop));
+  /** Barca che arriva prima; `rushed`: anche quelle che partono prima di quanto serve ad arrivare a piedi */
+  const search = (rushed: boolean) => {
+    let found: { trip: AlilagunaTripTimes; i: number; j: number; arrive: number } | null = null;
+    for (const trip of trips) {
+      for (let i = 0; i < trip.stops.length; i++) {
+        for (let j = i + 1; j < trip.stops.length; j++) {
+          const a = trip.stops[i];
+          const b = trip.stops[j];
+          const aDock = AIRPORT_DOCKS.includes(a.stop);
+          const bDock = AIRPORT_DOCKS.includes(b.stop);
+          if (toAirport ? !bDock || aDock || !Number.isFinite(walkM[a.stop]) : !aDock || bDock || !Number.isFinite(walkM[b.stop])) continue;
+          const ready = rushed ? now : now + walkToBoard(a.stop) + BOARD_BUFFER_S;
+          if (a.dep < ready || a.dep > now + HORIZON_S) continue;
+          const arrive = toAirport ? b.arr + dockWalkS(b.stop) : b.arr + walkM[b.stop] / WALK_SPEED;
+          if (!found || arrive < found.arrive) found = { trip, i, j, arrive };
+        }
       }
     }
-  }
+    return found;
+  };
+  const normal = search(false);
+  const rushed = options.hurry ? search(true) : null;
+  const best = rushed && (!normal || rushed.arrive < normal.arrive - 60) ? rushed : normal;
   if (!best) return null;
   const a = best.trip.stops[best.i];
   const b = best.trip.stops[best.j];
@@ -209,7 +222,10 @@ function viaAlilaguna(graph: WalkGraph, trips: AlilagunaTripTimes[], venice: Pla
     legs = [toDock, ride, walkOut];
   }
   const walkMeters = legs.reduce((s, l) => s + (l.kind === 'walk' ? l.meters : 0), 0);
-  return { depart: Math.max(now, legs[0].start), arrive: legs[legs.length - 1].end, legs, walkMeters, rides: 1, ridesInHighWater: false, via: 'alilaguna', ...wet };
+  const boardWalk = walkToBoard(a.stop);
+  const hurry: HurryInfo | undefined =
+    a.dep < now + boardWalk + BOARD_BUFFER_S ? { line: ride.line, category: 'alilaguna', stop: sa.name, departs: a.dep, walkSeconds: boardWalk } : undefined;
+  return { depart: Math.max(now, legs[0].start), arrive: legs[legs.length - 1].end, legs, walkMeters, rides: 1, ridesInHighWater: false, via: 'alilaguna', ...(hurry ? { hurry } : {}), ...wet };
 }
 
 /**
@@ -254,13 +270,20 @@ export function planAirportOrTomorrow(
   day: DayType,
   next: { day: DayType; date: Date },
   options: PlanOptions & { date?: Date } = {},
-): { options: Itinerary[]; tomorrow: boolean; lastBus: number | null } {
+): { options: Itinerary[]; tomorrow: boolean; lastBus: number | null; ifLate: Itinerary | null; ifLateTomorrow: boolean } {
   const today = planAirport(graph, sim, stops, from, to, now, day, options);
-  if (today.length > 0 || isAirport(from) === isAirport(to)) return { options: today, tomorrow: false, lastBus: null };
-  const morning = planAirport(graph, sim, stops, from, to, FIRST_SERVICE_FROM_S, next.day, { ...options, date: next.date, nextDay: undefined });
+  if (today.length > 0 || isAirport(from) === isAirport(to)) {
+    // se la soluzione migliore va fatta di corsa: la prima senza correre (stasera, altrimenti domani mattina)
+    if (!today[0]?.hurry) return { options: today, tomorrow: false, lastBus: null, ifLate: null, ifLateTomorrow: false };
+    const calm = planAirport(graph, sim, stops, from, to, now, day, { ...options, hurry: false });
+    if (calm.length > 0) return { options: today, tomorrow: false, lastBus: null, ifLate: calm[0], ifLateTomorrow: false };
+    const morning = planAirport(graph, sim, stops, from, to, FIRST_SERVICE_FROM_S, next.day, { ...options, date: next.date, nextDay: undefined, hurry: false });
+    return { options: today, tomorrow: false, lastBus: null, ifLate: morning[0] ?? null, ifLateTomorrow: morning.length > 0 };
+  }
+  const morning = planAirport(graph, sim, stops, from, to, FIRST_SERVICE_FROM_S, next.day, { ...options, date: next.date, nextDay: undefined, hurry: false });
   // si cita l'ultimo bus solo se deve ancora partire stanotte
   const last = lastAerobus(sim, day, isAirport(to), options.nextDay);
-  return { options: morning, tomorrow: morning.length > 0, lastBus: last !== null && last >= now && last - now <= 3 * 3600 ? last : null };
+  return { options: morning, tomorrow: morning.length > 0, lastBus: last !== null && last >= now && last - now <= 3 * 3600 ? last : null, ifLate: null, ifLateTomorrow: false };
 }
 
 /**

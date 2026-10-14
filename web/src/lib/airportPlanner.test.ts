@@ -111,4 +111,31 @@ describe('aeroporto Marco Polo', () => {
     const ferrovia = { lon: 12.3215, lat: 45.4412, label: 'Ferrovia' };
     expect(planAirportOrTomorrow(graph, sim, ACTV_STOPS_REFERENCE, ferrovia, AIRPORT, now, 'weekday', { day: 'weekday', date }, { date, nextDay: 'weekday' }).tomorrow).toBe(false);
   });
+
+  it('di corsa: dal punto a 17 minuti da Murano Colonna alle 23:52 propone la 4.2 delle 23:54 con l\'avviso', () => {
+    const point = { lon: 12.35374, lat: 45.45987, label: 'Punto sulla mappa' };
+    const now = 23 * 3600 + 52 * 60;
+    const next = { day: 'weekday' as const, date };
+    // senza fretta: niente stanotte
+    expect(planAirportOrTomorrow(graph, sim, ACTV_STOPS_REFERENCE, point, AIRPORT, now, 'weekday', next, { date, nextDay: 'weekday' }).tomorrow).toBe(true);
+    const r = planAirportOrTomorrow(graph, sim, ACTV_STOPS_REFERENCE, point, AIRPORT, now, 'weekday', next, { date, nextDay: 'weekday', hurry: true });
+    expect(r.tomorrow).toBe(false);
+    const best = r.options[0];
+    expect(best.hurry).toBeDefined();
+    expect(best.hurry!.departs).toBeGreaterThanOrEqual(now);
+    expect(best.hurry!.walkSeconds).toBeGreaterThan(best.hurry!.departs - now);
+    // se non si fa in tempo: domani mattina
+    expect(r.ifLateTomorrow).toBe(true);
+    expect(r.ifLate!.depart).toBeGreaterThanOrEqual(FIRST_SERVICE_FROM_S);
+  });
+
+  it('di corsa: mai un mezzo già partito', () => {
+    const point = { lon: 12.35374, lat: 45.45987, label: 'Punto sulla mappa' };
+    for (const now of [23 * 3600 + 54 * 60 + 30, 10 * 3600 + 7 * 60]) {
+      for (const o of planAirport(graph, sim, ACTV_STOPS_REFERENCE, point, AIRPORT, now, 'weekday', { date, nextDay: 'weekday', hurry: true })) {
+        const firstRide = o.legs.find((l) => l.kind === 'ride')!;
+        expect(firstRide.start).toBeGreaterThanOrEqual(now);
+      }
+    }
+  });
 });

@@ -84,4 +84,19 @@ describe('planner con acqua alta e modalità', () => {
     const r = planTrip(graph, sim, ACTV_STOPS_REFERENCE, PLACES.ferrovia, PLACES.murano, at, 'weekday', { tideAt: tide(125) });
     expect(r.best!.ridesInHighWater).toBe(true);
   });
+
+  it('di corsa: propone il vaporetto che parte prima di quanto serve a piedi, con il percorso normale se non si fa in tempo', () => {
+    const point = { lon: 12.35374, lat: 45.45987, label: 'Murano, punto sulla mappa' };
+    const fn = ACTV_STOPS_REFERENCE.find((s) => s.name === 'F.te Nove')!;
+    const dest = { lon: fn.lon, lat: fn.lat, label: 'F.te Nove' };
+    const now = 23 * 3600 + 52 * 60;
+    const calm = planTrip(graph, sim, ACTV_STOPS_REFERENCE, point, dest, now, 'weekday', { nextDay: 'weekday' });
+    const rushed = planTrip(graph, sim, ACTV_STOPS_REFERENCE, point, dest, now, 'weekday', { nextDay: 'weekday', hurry: true });
+    expect(rushed.best?.hurry).toBeDefined();
+    expect(rushed.best!.hurry!.departs).toBeGreaterThanOrEqual(now);
+    expect(rushed.best!.arrive).toBeLessThan(calm.best!.arrive);
+    expect(rushed.ifLate?.arrive).toBe(calm.best!.arrive);
+    // con calma (o con un orario scelto) nessun avviso
+    expect(calm.best?.hurry).toBeUndefined();
+  });
 });

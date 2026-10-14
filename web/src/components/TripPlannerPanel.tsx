@@ -7,7 +7,7 @@ import { InfoHeader, InfoPanel } from '@/components/ui/InfoPanel';
 import { useSimulation } from '@/lib/simulationModel';
 import { buildWalkGraph, type RawWalk, type WalkGraph } from '@/lib/walkGraph';
 import { WALK_URL } from '@/lib/walk-data';
-import { planTrip, type Itinerary, type PlanMode, type PlannerPoint } from '@/lib/tripPlanner';
+import { planTrip, type HurryInfo, type Itinerary, type PlanMode, type PlannerPoint } from '@/lib/tripPlanner';
 import { DELAY_COLORS, delayStatus } from '@/lib/realtimeDelay';
 import { parseGtfsTime } from '@/lib/positionDelay';
 import { startPolling } from '@/lib/polling';
@@ -75,6 +75,27 @@ function useOrdinances(enabled: boolean): OrdinanceItem[] {
 }
 
 export type PickTarget = 'from' | 'to';
+
+/** Mezzo da prendere di corsa: «Sbrigati, il vaporetto 4.2 parte da … tra 2 min», e cosa succede se non si fa in tempo. */
+const HurryBox: React.FC<{ hurry: HurryInfo; now: number; ifLate: Itinerary | null; ifLateTomorrow: boolean }> = ({ hurry, now, ifLate, ifLateTomorrow }) => {
+  const { t } = useTranslation();
+  const left = hurry.departs - now;
+  const when = left < 60 ? t('ui.planner.hurryNow') : t('ui.planner.hurryIn', { min: Math.floor(left / 60) });
+  const vehicle = t(`ui.planner.vehicle_${['vaporetto', 'motoscafo', 'motonave', 'ferry', 'island', 'bus', 'tram', 'peoplemover', 'alilaguna'].includes(hurry.category) ? hurry.category : 'other'}`);
+  return (
+    <div className="flex flex-col gap-1 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/40 text-[11px]" data-testid="planner-hurry" role="status">
+      <span className="font-semibold text-rose-300">
+        {t('ui.planner.hurry', { vehicle, line: hurry.line, stop: hurry.stop, time: clock(hurry.departs), when })}
+        {hurry.walkSeconds >= 60 && <> {t('ui.planner.hurryWalk', { min: Math.round(hurry.walkSeconds / 60) })}</>}
+      </span>
+      <span className="text-[var(--ink-2)]">
+        {ifLate
+          ? t(ifLateTomorrow ? 'ui.planner.ifLateTomorrow' : 'ui.planner.ifLate', { depart: clock(ifLate.depart), arrive: clock(ifLate.arrive) })
+          : t('ui.planner.ifLateNone')}
+      </span>
+    </div>
+  );
+};
 
 /** Ora di partenza scelta (HH:MM) in secondi dalla mezzanotte, altrimenti adesso a Venezia. */
 const departSeconds = (time: string, now: number): number => (/^\d{2}:\d{2}$/.test(time) ? Number(time.slice(0, 2)) * 3600 + Number(time.slice(3)) * 60 : now);
@@ -290,7 +311,7 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
   const airportPlan = useMemo(() => {
     if (!open || isPrivate || !airportTrip || !sim || !walk || !from || !to) return null;
     // se stasera non ci sono più collegamenti: le prime opzioni di domani mattina
-    return planAirportOrTomorrow(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time, clockS), romeDayType(), { day: romeTomorrowDayType(), date: tomorrowDate() }, { tideAt, passerelle, nextDay: romeTomorrowDayType() });
+    return planAirportOrTomorrow(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time, clockS), romeDayType(), { day: romeTomorrowDayType(), date: tomorrowDate() }, { tideAt, passerelle, nextDay: romeTomorrowDayType(), hurry: !time });
   }, [open, isPrivate, airportTrip, sim, walk, from, to, time, clockS, tideAt, passerelle]);
   const airportOptions = airportPlan?.options ?? null;
   const result = useMemo(() => {
@@ -299,7 +320,7 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
       const best = airportOptions.find((o) => o.via === airportChoice) ?? airportOptions[0] ?? null;
       return { best, walkOnly: null, floodLevelCm: null, shortestWalkWetMeters: null };
     }
-    return planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time, clockS), romeDayType(), { mode, tideAt, passerelle, nextDay: romeTomorrowDayType() });
+    return planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time, clockS), romeDayType(), { mode, tideAt, passerelle, nextDay: romeTomorrowDayType(), hurry: !time });
   }, [open, isPrivate, sim, walk, from, to, time, clockS, mode, tideAt, passerelle, airportOptions, airportChoice]);
 
   // In barca propria: rete dei canali e regole del Testo Unico (lib/boatRouting)
@@ -454,6 +475,14 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
             </span>
             <span className="text-xs font-mono text-emerald-300">{t('ui.planner.duration', { min: minutes(best.arrive - best.depart) })}</span>
           </div>
+          {best.hurry && (
+            <HurryBox
+              hurry={best.hurry}
+              now={clockS}
+              ifLate={airportOptions ? (airportPlan?.ifLate ?? null) : (result?.ifLate ?? null)}
+              ifLateTomorrow={!!airportOptions && !!airportPlan?.ifLateTomorrow}
+            />
+          )}
           <ol className="flex flex-col gap-2">
             {best.legs.map((leg, i) =>
               leg.kind === 'walk' ? (
