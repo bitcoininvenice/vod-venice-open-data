@@ -44,7 +44,8 @@ import {
 import { LayerIcon, RegimeBadge, TONE_CLASSES } from './layerVisuals';
 import { SPORT_FILTERS, type SportFilter } from '@/lib/sports';
 import { FOUNTAIN_FILTERS, type FountainFilter } from '@/lib/fountainFilter';
-import { ORDINANCES_PAGE } from '@/lib/contracts/ordinances';
+import type { OrdinanceItem } from '@/lib/contracts/ordinances';
+import { UnplacedOrdinances } from '@/components/OrdinanceList';
 
 interface LayerPanelProps {
   layers: LayerVisibility;
@@ -55,7 +56,7 @@ interface LayerPanelProps {
   counts: Partial<Record<LayerKey, number>>;
   liveWebcamsCount?: number;
   /** ordinanze in vigore che non hanno una posizione sulla mappa */
-  unplacedOrdinances?: number;
+  unplacedOrdinances?: OrdinanceItem[];
   /** Filtro per sport del livello Sport */
   sportFilter?: SportFilter;
   onSportFilterChange?: (f: SportFilter) => void;
@@ -96,7 +97,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   onApplyPreset,
   counts,
   liveWebcamsCount = 0,
-  unplacedOrdinances = 0,
+  unplacedOrdinances = [],
   sportFilter = 'all',
   onSportFilterChange,
   fountainFilter = 'all',
@@ -190,14 +191,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
             ))}
           </div>
         )}
-        {entry.key === 'showOrdinances' && on && (
-          <p className="flex flex-col gap-0.5 px-2.5 pb-1 text-[10px] text-[var(--ink-2)]">
-            {unplacedOrdinances > 0 && <span>{t('ui.layerPanel.ordinancesUnplaced', { n: unplacedOrdinances })}</span>}
-            <a href={ORDINANCES_PAGE} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">
-              {t('ui.layerPanel.ordinancesAll')}
-            </a>
-          </p>
-        )}
+        {entry.key === 'showOrdinances' && on && <UnplacedOrdinances ordinances={unplacedOrdinances} />}
         {entry.key === 'showCityAssets' && on && onFountainFilterChange && (
           <div className="flex flex-wrap gap-1 px-2 pb-1" role="group" aria-label={t('ui.layerPanel.fountainFilter')}>
             {FOUNTAIN_FILTERS.map((f) => (

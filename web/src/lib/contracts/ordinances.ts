@@ -1,4 +1,4 @@
-/** Ordinanze del Comune di Venezia (traffico acqueo, lavori pubblici, viabilità) per città storica, isole e Lido (/api/ordinanze). */
+/** Ordinanze del Comune di Venezia di ogni ambito per città storica, isole, Lido e tutto il territorio comunale, esclusa la terraferma (/api/ordinanze). */
 /** Elenco ufficiale delle ordinanze del Comune */
 export const ORDINANCES_PAGE = 'https://www.comune.venezia.it/it/ordinanze';
 

@@ -24,8 +24,8 @@ export function drawLagoonNetwork(rc: RenderContext): void {
 
     // Canali con ordinanze temporanee del Comune: in giallo (tratteggio se l'atto entra in vigore nei prossimi giorni)
     if (canalOrdinances.size > 0) {
-      ctx.strokeStyle = isDark ? '#facc15' : '#ca8a04';
-      ctx.lineWidth = camera.s > 0.04 ? 3.5 : 2.4;
+      ctx.strokeStyle = isDark ? '#ffe600' : '#f5c400';
+      ctx.lineWidth = camera.s > 0.04 ? 4 : 2.8;
       for (const c of lagoonNetwork.canals) {
         const list = canalOrdinances.get(c.id);
         if (!list) continue;

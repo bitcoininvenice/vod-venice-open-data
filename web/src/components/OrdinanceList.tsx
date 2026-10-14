@@ -3,7 +3,7 @@
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
-import type { OrdinanceItem } from '@/lib/contracts/ordinances';
+import { ORDINANCES_PAGE, type OrdinanceItem } from '@/lib/contracts/ordinances';
 
 const dmy = (d: string | null) => (d ? d.split('-').reverse().join('/') : '');
 
@@ -83,6 +83,36 @@ export const OrdinanceBody: React.FC<{ ordinance: OrdinanceItem }> = ({ ordinanc
       <p className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
         {t(`ui.ordinance.position_${o.positionSource ?? 'comune'}`, { name: o.placeName ?? o.canalName ?? '' })} {t('ui.ordinance.prevails')}
       </p>
+    </div>
+  );
+};
+
+/** Atti in vigore senza posizione (es. per tutto il territorio comunale), elencati nel pannello del livello. */
+export const UnplacedOrdinances: React.FC<{ ordinances: OrdinanceItem[] }> = ({ ordinances }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex flex-col gap-1 px-2.5 pb-1 text-[10px] text-[var(--ink-2)]" data-testid="unplaced-ordinances">
+      {ordinances.length > 0 && (
+        <details>
+          <summary className="cursor-pointer hover:text-[var(--ink)]">{t('ui.layerPanel.ordinancesUnplaced', { n: ordinances.length })}</summary>
+          <ul className="flex flex-col gap-2 mt-1.5 max-h-72 overflow-y-auto pr-1">
+            {ordinances.map((o) => (
+              <li key={o.id} className="flex flex-col gap-0.5 border-t border-[var(--rule)] pt-1.5 text-[11px]">
+                <span className="font-mono text-[9px] uppercase text-amber-400">
+                  {t(`ui.ordinance.kind_${o.kind}`)} · {o.luogo}
+                  {o.status === 'upcoming' && ` · ${t('ui.ordinance.upcoming')}`}
+                </span>
+                <span className="text-[var(--ink)] leading-snug">{o.title}</span>
+                <OrdinancePeriod o={o} />
+                <OrdinanceLinks o={o} />
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+      <a href={ORDINANCES_PAGE} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">
+        {t('ui.layerPanel.ordinancesAll')}
+      </a>
     </div>
   );
 };

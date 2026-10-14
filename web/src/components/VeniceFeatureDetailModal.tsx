@@ -280,14 +280,6 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             {feature.type === 'canal' && (
               <div className="p-2 rounded-xl bg-sky-500/20 text-sky-400"><Waves className="w-5 h-5" /></div>
             )}
-            {feature.type === 'loraGateway' && <LoraGatewayBody gateway={feature.data} />}
-          {feature.type === 'ordinance' && <OrdinanceBody ordinance={feature.data} />}
-          {feature.type === 'wifiVenue' && <WifiVenueBody venue={feature.data} />}
-          {feature.type === 'sportPlace' && <SportPlaceBody place={feature.data} />}
-          {feature.type === 'nauticalPlace' && <NauticalBody place={feature.data} />}
-          {feature.type === 'parkPlace' && <ParkBody place={feature.data} />}
-          {feature.type === 'civicNumber' && <CivicBody civic={feature.data} onPlanTo={onPlanTo} />}
-
           {feature.type === 'bdapWork' && (
               <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400"><Construction className="w-5 h-5" /></div>
             )}
@@ -403,6 +395,13 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
 
         {/* Body */}
         <div className="flex flex-col gap-4 text-xs leading-relaxed">
+          {feature.type === 'loraGateway' && <LoraGatewayBody gateway={feature.data} />}
+          {feature.type === 'ordinance' && <OrdinanceBody ordinance={feature.data} />}
+          {feature.type === 'wifiVenue' && <WifiVenueBody venue={feature.data} />}
+          {feature.type === 'sportPlace' && <SportPlaceBody place={feature.data} />}
+          {feature.type === 'nauticalPlace' && <NauticalBody place={feature.data} />}
+          {feature.type === 'parkPlace' && <ParkBody place={feature.data} />}
+          {feature.type === 'civicNumber' && <CivicBody civic={feature.data} onPlanTo={onPlanTo} />}
           {/* SPEED LIMIT */}
           {feature.type === 'speedLimit' && (() => {
             const lim = feature.data;

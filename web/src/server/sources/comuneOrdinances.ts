@@ -11,8 +11,20 @@ export const ORDINANCES_API = 'https://gwapi.sad.ve.it/ve/ordinanze/1.0.0';
 export const ordinanceUrl = (id: string) => `https://www.comune.venezia.it/it/content/ordinanza?idPratica=${id}`;
 export const attachmentUrl = (id: string) => `${ORDINANCES_API}/download/${id}`;
 
-/** Ambiti dell'API: traffico acqueo, lavori pubblici di Venezia e isole, viabilità e circolazione (Lido) */
-export const AMBITI = { trafficoAcqueo: '12252', llppVeneziaIsole: '12250', viabilita: '12253', circolazione: '12248' } as const;
+/** Ambiti dell'API (il traffico acqueo è l'unico che colora i canali) */
+export const AMBITI = { trafficoAcqueo: '12252' } as const;
+/**
+ * Luoghi dell'API letti da VOD: tutti tranne la terraferma, con quanti giorni indietro guardare.
+ * Gli atti per tutto il territorio (es. impianti termici, limitazioni del traffico) restano in vigore per mesi.
+ */
+export const LUOGHI: { id: string; name: string; lookbackDays: number }[] = [
+  { id: '12255', name: 'Venezia Città Storica', lookbackDays: 90 },
+  { id: '12260', name: 'Lido - Pellestrina', lookbackDays: 90 },
+  { id: '12261', name: 'Murano', lookbackDays: 180 },
+  { id: '12262', name: 'Burano', lookbackDays: 180 },
+  { id: '12265', name: 'Intero territorio comunale', lookbackDays: 180 },
+  { id: '12263', name: 'Altro', lookbackDays: 180 },
+];
 /** Luoghi esclusi (terraferma): l'API indica il luogo in chiaro */
 const MAINLAND = /mestre|carpenedo|favaro|marghera|chirignago|zelarino|terraferma/i;
 

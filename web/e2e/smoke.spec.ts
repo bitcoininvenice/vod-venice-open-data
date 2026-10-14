@@ -541,7 +541,10 @@ test('ordinanze del Comune: il segnale sulla mappa apre la scheda con l\'atto', 
   await page.locator('canvas').waitFor();
   const panel = page.locator('aside').filter({ visible: true }).first();
   await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('ordinanze');
-  await expect(panel).toContainText('Atti in vigore senza posizione sulla mappa: 1');
+  const unplaced = panel.getByTestId('unplaced-ordinances');
+  await unplaced.getByText('Atti in vigore senza posizione sulla mappa: 1').click();
+  await expect(unplaced).toContainText('Misure per il concerto');
+  await expect(unplaced.getByRole('link', { name: /Ordinanza n\. 701/ })).toHaveAttribute('href', /idPratica=9002/);
   await page.keyboard.press('Control+k');
   await page.getByPlaceholder(/cerca fermate/i).fill('Rialto');
   await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: /rialto/i }).first().click();

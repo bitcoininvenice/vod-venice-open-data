@@ -457,7 +457,7 @@ export default function HomePage() {
     [data, categoryCounts, alilagunaBoats]
   );
   const liveWebcamsCount = useMemo(() => data.cameras.filter((c) => c.hasLiveFeed).length, [data.cameras]);
-  const unplacedOrdinances = useMemo(() => data.ordinances.filter((o) => !isPlacedOrdinance(o)).length, [data.ordinances]);
+  const unplacedOrdinances = useMemo(() => data.ordinances.filter((o) => !isPlacedOrdinance(o)), [data.ordinances]);
 
   // Stato dinamico di marea (reale o simulato) che segue l'ora corrente o il punto della timeline
   const currentDynamicTide = useMemo(() => {
