@@ -633,6 +633,10 @@ export const itUi = {
     note: "Dal feed degli avvisi ACTV. Fermate e linee sono riconosciute automaticamente dal testo: fa fede l'avviso di ACTV."
   },
   flixbus: {
+    departure: "Partenza da {stop}",
+    arrival: "Arrivo a {stop}",
+    stopsTitle: "Fermate nell'area della mappa (arrivo–partenza, ora di Venezia)",
+    venice: "Venezia",
     category: "FlixBus · posizione da orario",
     route: "Percorso",
     atStop: "Fermo a",

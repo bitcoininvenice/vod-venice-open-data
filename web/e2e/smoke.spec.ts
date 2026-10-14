@@ -671,7 +671,7 @@ test('flixbus: il bus simulato dall\'orario si clicca e mostra linea, prossima f
       json: {
         success: true, count: 1, meta: {},
         data: {
-          trips: [{ id: 't1', line: '536', name: 'Roma - Monaco', from: 'Roma', to: 'Monaco', dates: [ymd], shape: 0,
+          trips: [{ id: 't1', line: '536', name: 'Roma - Monaco', from: 'Roma', to: 'Monaco', start: sec - 7200, end: sec + 18000, dates: [ymd], shape: 0,
             stops: [[0, sec - 600, sec + 1800, 'Fermata di prova', true], [5000, sec + 3600, sec + 3700, 'Padua', false]] }],
           shapes: [[[RIALTO.lon, RIALTO.lat, 0], [RIALTO.lon + 0.06, RIALTO.lat, 5000]]],
         },
@@ -693,6 +693,9 @@ test('flixbus: il bus simulato dall\'orario si clicca e mostra linea, prossima f
   await expect(info).toContainText('FlixBus 536');
   await expect(info).toContainText('Roma → Monaco');
   await expect(info).toContainText('Fermata di prova');
+  await expect(info).toContainText('Partenza da Roma');
+  await expect(info).toContainText('Arrivo a Monaco');
+  await expect(info.getByTestId('flixbus-stops').locator('li')).toHaveCount(2);
   await expect(info).toContainText('ODbL');
 });
 

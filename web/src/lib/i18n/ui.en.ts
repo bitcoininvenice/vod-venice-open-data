@@ -635,6 +635,10 @@ export const enUi: UiTranslations = {
     note: "From the ACTV notices feed. Stops and lines are recognised automatically from the text: the ACTV notice prevails."
   },
   flixbus: {
+    departure: "Departure from {stop}",
+    arrival: "Arrival in {stop}",
+    stopsTitle: "Stops around the map area (arrival–departure, Venice time)",
+    venice: "Venice",
     category: "FlixBus · timetable position",
     route: "Route",
     atStop: "Stopped at",

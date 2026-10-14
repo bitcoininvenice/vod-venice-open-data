@@ -12,6 +12,9 @@ export interface FlixTrip {
   name: string;
   from: string;
   to: string;
+  /** partenza dal capolinea e arrivo a destinazione (s UTC dalla mezzanotte della data) */
+  start?: number;
+  end?: number;
   /** date di servizio YYYYMMDD (UTC) */
   dates: string[];
   shape: number;
@@ -37,7 +40,14 @@ export interface FlixBusPosition {
   atStop: string | null;
   /** prossima fermata e orario (epoch ms) */
   next: { name: string; at: number; venice: boolean } | null;
+  /** mezzanotte UTC della data di servizio (epoch ms): gli orari della corsa sono relativi a questa */
+  base: number;
+  /** indice della fermata in sosta o della prossima, nell'elenco trip.stops */
+  stopIndex: number | null;
 }
+
+/** Istante (epoch ms) di un orario della corsa, in secondi dalla mezzanotte UTC della data */
+export const flixTime = (base: number, seconds: number) => base + seconds * 1000;
 
 export const FLIXBUS_COLOR = '#73d700';
 
@@ -94,6 +104,8 @@ export function flixbusPositions(data: FlixbusData, nowMs: number): FlixBusPosit
         ...p,
         atStop: at.atStop !== null ? trip.stops[at.atStop][3] : null,
         next: nx ? { name: nx[3], at: base + nx[1] * 1000, venice: nx[4] } : null,
+        base,
+        stopIndex: at.atStop ?? at.next,
       });
     }
   }

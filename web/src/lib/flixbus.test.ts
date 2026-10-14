@@ -29,6 +29,8 @@ describe('FlixBus da orario', () => {
     const [b] = flixbusPositions(data, now);
     expect(b.next).toEqual({ name: 'Padua', at: Date.UTC(2026, 9, 15, 10, 35), venice: false });
     expect(b.atStop).toBeNull();
+    expect(b.stopIndex).toBe(1);
+    expect(b.base).toBe(Date.UTC(2026, 9, 15));
     expect(flixbusPositions(data, Date.UTC(2026, 9, 16, 10, 20))).toEqual([]); // il giorno dopo non c'è servizio
   });
 });

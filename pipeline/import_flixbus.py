@@ -195,6 +195,9 @@ def build(zf: zipfile.ZipFile, start: date, days: int) -> dict:
             "name": route.get("route_long_name", "").strip(),
             "from": stops[seq[0]["stop_id"]]["stop_name"].strip(),
             "to": stops[seq[-1]["stop_id"]]["stop_name"].strip(),
+            # partenza dal capolinea e arrivo a destinazione (s UTC dalla mezzanotte della data)
+            "start": gtfs_seconds(seq[0]["departure_time"]),
+            "end": gtfs_seconds(seq[-1]["arrival_time"]),
             "dates": dates,
             "shape": shape_index[key],
             # [distanza sul percorso (m), arrivo (s UTC dalla mezzanotte della data), partenza, fermata, fermata veneziana]

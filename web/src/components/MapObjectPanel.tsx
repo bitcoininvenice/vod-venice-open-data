@@ -11,7 +11,7 @@ import { clock, resolveTrip, tripStops, type TripRef } from '@/lib/tripView';
 import { useSimulation } from '@/lib/simulationModel';
 import { romeSecondsOfDay } from '@/lib/time';
 import { useServiceNow } from '@/lib/useServiceNow';
-import { FLIXBUS_COLOR, type FlixBusPosition } from '@/lib/flixbus';
+import { FLIXBUS_COLOR, flixTime, type FlixBusPosition } from '@/lib/flixbus';
 import { noticesForStop, useActvNotices } from '@/lib/useActvNotices';
 import { ActvNoticeBox } from '@/components/ActvNoticeList';
 
@@ -418,10 +418,37 @@ const FlixbusCard: React.FC<{ bus: FlixBusPosition; onClose: () => void }> = ({ 
       <KeyValues
         items={[
           [f('route'), b.trip.name || null],
+          [f('departure', { stop: b.trip.from }), b.trip.start !== undefined ? hhmm(flixTime(b.base, b.trip.start)) : null],
+          [f('arrival', { stop: b.trip.to }), b.trip.end !== undefined ? hhmm(flixTime(b.base, b.trip.end)) : null],
           [f('atStop'), b.atStop],
           [f('next'), b.next ? `${b.next.name} · ${hhmm(b.next.at)}` : null, 'text-lime-400'],
         ]}
       />
+      <div className="flex flex-col gap-1" data-testid="flixbus-stops">
+        <span className="text-[11px] font-mono uppercase text-[var(--ink-3)]">{f('stopsTitle')}</span>
+        <ol className="flex flex-col">
+          {b.trip.stops.map(([, arr, dep, name, venice], i) => {
+            const passed = b.stopIndex !== null && i < b.stopIndex;
+            const current = i === b.stopIndex;
+            return (
+              <li key={`${i}-${name}`} className="flex items-center gap-2 text-xs py-0.5">
+                <span
+                  className="w-2.5 h-2.5 rounded-full shrink-0 border-2"
+                  style={{ borderColor: passed ? '#64748b' : FLIXBUS_COLOR, background: passed ? '#94a3b8' : current ? FLIXBUS_COLOR : 'transparent' }}
+                  aria-hidden
+                />
+                <span className={`flex-1 min-w-0 truncate ${passed ? 'text-[var(--ink-3)]' : current ? 'font-bold text-[var(--ink)]' : 'text-[var(--ink-2)]'}`}>
+                  {name}
+                  {venice && <span className="ml-1 text-[10px] text-lime-400">· {f('venice')}</span>}
+                </span>
+                <span className={`font-mono tabular ${passed ? 'text-[var(--ink-3)]' : 'text-[var(--ink)]'}`}>
+                  {arr === dep ? hhmm(flixTime(b.base, arr)) : `${hhmm(flixTime(b.base, arr))}–${hhmm(flixTime(b.base, dep))}`}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
       <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">{f('note')}</p>
       <a
         href="https://transport.data.gouv.fr/datasets/flixbus-horaires-theoriques-du-reseau-europeen-1"
