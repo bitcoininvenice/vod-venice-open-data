@@ -56,6 +56,7 @@ vod-venice-open-data/
 │   ├── import_osm_waterways.py     # Briccole, segnalamenti e canali della laguna (OSM)
 │   ├── import_istat_census.py      # Residenti, famiglie e abitazioni per sestiere, isola e municipalità (ISTAT 2021)
 │   ├── import_osm_walk.py          # Rete pedonale (calli, fondamenta, ponti) per il planner «Come arrivare» (OSM)
+│   ├── import_osm_boat.py          # Rete dei canali (OSM) + regole del Testo Unico per il planner in barca propria
 │   ├── import_osm_civici.py        # Numeri civici del centro storico per sestiere (OSM), per la ricerca «Cannaregio 3450»
 │   ├── import_osm_parks.py         # Parchi, giardini pubblici, aree giochi, aree cani e oasi con perimetro (OSM)
 │   ├── import_osm_toponyms.py      # Toponimi (calli, fondamenta, ponti, campi) per collocare le ordinanze (OSM)
@@ -155,6 +156,7 @@ python import_agcom_fiber.py                # Copertura fibra AGCOM su celle di 
 python import_osm_waterways.py              # Briccole, segnalamenti e canali della laguna (OSM)
 python import_istat_census.py               # Censimento ISTAT 2021 per sestiere e isola (circa 330 MB da ISTAT, solo a ogni nuova edizione)
 python import_osm_walk.py                   # Rete pedonale per il planner a piedi + vaporetto (OSM -> public/data/walk-<hash>.json)
+python import_osm_boat.py                   # Canali OSM + sensi unici e divieti del Testo Unico per il planner in barca (-> public/data/boat-<hash>.json)
 python import_osm_civici.py                 # Numeri civici del centro storico per sestiere (OSM)
 python import_osm_parks.py                  # Parchi, giardini pubblici, aree giochi, aree cani e oasi (OSM)
 python import_osm_toponyms.py               # Toponimi per collocare le ordinanze del Comune (OSM)

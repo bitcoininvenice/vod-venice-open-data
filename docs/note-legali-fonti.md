@@ -28,6 +28,7 @@ titolare non conferma (bozze in [richieste-autorizzazione.md](richieste-autorizz
 | Packet Broker / TTN (gateway LoRa) | dati resi pubblici dai proprietari (opt-in) | scheda | sì, senza identificativi | ok |
 | CAMPO | CC BY 4.0 (progetto del titolare di VOD) | scheda con formula richiesta | sì | ok |
 | Venice Tap Water | uso con citazione e link | scheda, /sources | sì | **da confermare per iscritto** dal titolare del progetto |
+| Testo Unico della circolazione acquea (Ord. 274/2015, Comune di Venezia) | atto pubblico; regole trascritte da VOD | planner in barca: articolo di ogni regola e link alla normativa del Comune | sì (solo le regole, con il riferimento all'atto) | ok; percorso dichiarato «indicativo, non per la navigazione» |
 | Webcam (SkylineWebcams e altre) | contenuti proprietari | solo link alla pagina ufficiale | no (nessuna immagine) | ok |
 | Elenchi curati del progetto | dati indicativi "da verificare" | schede con la dicitura | sì | ok |
 
@@ -40,6 +41,17 @@ titolare non conferma (bozze in [richieste-autorizzazione.md](richieste-autorizz
 | Rivenditori autorizzati ACTV (mappa Google) | dati vecchi (verifiche 2015–2022) e nomi di titolari di ditte individuali |
 | ViaggiaTreno (treni) | servizio non pubblicato come open data, senza licenza |
 | Anopticon | i termini vietano l'accesso automatico senza autorizzazione |
+
+## Planner in barca (mezzo privato)
+
+- Tracciati dei canali da OpenStreetMap (ODbL); regole dal Testo Unico (Ord. 274/2015): sensi unici (art. 7),
+  divieti alle unità a motore (art. 2 c.3 Rii Blu, art. 8), Canal Grande vietato al diporto feriali 8-12 (art. 20),
+  ZTL vietata al diporto salvo residenti e concessionari (art. 18): per default il percorso **non** entra nella ZTL,
+  l'utente deve dichiararsi residente o concessionario.
+- Con la marea: art. 3 del regolamento comunale (rii del centro vietati a motore da +110 cm, 5 km/h nel Canal Grande).
+- Avviso sempre visibile: percorso indicativo, fanno fede atti, ordinanze temporanee e segnaletica; non considera
+  ponti, larghezza e pescaggio, deroghe per categoria né i canali della Capitaneria. Le ordinanze in vigore sui
+  canali del percorso sono segnalate con il link all'atto.
 
 ## Privacy
 

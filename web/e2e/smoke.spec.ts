@@ -486,6 +486,33 @@ test('come arrivare: modalità solo a piedi e preferisci vaporetto', async ({ pa
   await expect(panel.getByTestId('planner-result')).toContainText(/direzione .* fermate/);
 });
 
+test('come arrivare in barca propria: ZTL solo per residenti, percorso sui canali con le regole del Testo Unico', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/');
+  await page.locator('canvas').waitFor();
+  await page.getByTestId('open-planner').click();
+  const panel = page.locator('[data-info-panel]');
+  await panel.locator('input[type="time"]').fill('14:00');
+  await panel.getByTestId('planner-from').getByRole('textbox').fill('Ferrovia');
+  await panel.getByRole('button', { name: /^Ferrovia$/ }).click();
+  await panel.getByTestId('planner-to').getByRole('textbox').fill('Murano Colonna');
+  await panel.getByRole('button', { name: /^Murano Colonna$/ }).click();
+  await panel.getByRole('radio', { name: 'In barca (mezzo privato)' }).click();
+  // la Ferrovia è sul Canal Grande, nella ZTL: senza residenza o concessione il diporto non può circolarci
+  await expect(panel.getByTestId('planner-boat-options')).toContainText('ZTL');
+  await expect(panel.getByTestId('planner-boat-error')).toContainText('ZTL', { timeout: 15000 });
+  await panel.getByTestId('planner-boat-resident').check();
+  const result = panel.getByTestId('planner-boat-result');
+  await expect(result).toBeVisible();
+  await expect(result).toContainText(/\d{2}:\d{2} → \d{2}:\d{2}/);
+  await expect(result.getByTestId('planner-boat-canals').locator('li').first()).toBeVisible();
+  await expect(result).toContainText('non valido per la navigazione');
+  await expect(result.getByRole('link', { name: 'Normativa del Comune' })).toHaveAttribute('href', /comune\.venezia\.it/);
+  expect(errors).toEqual([]);
+});
+
 test('come arrivare qui dalla scheda della fermata imposta la destinazione', async ({ page }) => {
   await page.goto('/?layers=fermate');
   await page.locator('canvas').waitFor();
