@@ -8,7 +8,7 @@ interface FetchUpstreamOptions {
   /** Secondi di cache condivisa lato server (Next data cache). */
   revalidate?: number;
   timeoutMs?: number;
-  responseType?: 'json' | 'arrayBuffer';
+  responseType?: 'json' | 'arrayBuffer' | 'text';
   headers?: Record<string, string>;
 }
 
@@ -35,12 +35,12 @@ export async function fetchUpstream<T>(
       console.warn(`[upstream] ${url} -> HTTP ${res.status}`);
       return { ok: false, error: `upstream_http_${res.status}` };
     }
-    const raw = responseType === 'arrayBuffer' ? await res.arrayBuffer() : await res.json();
+    const raw = responseType === 'arrayBuffer' ? await res.arrayBuffer() : responseType === 'text' ? await res.text() : await res.json();
     try {
       return { ok: true, data: parse(raw), fetchedAt: new Date().toISOString() };
     } catch (parseErr) {
       // Formato inatteso: registra un estratto per diagnosticare cambi di schema della fonte.
-      const sample = responseType === 'json' ? JSON.stringify(raw).slice(0, 300) : '[binary]';
+      const sample = responseType === 'json' ? JSON.stringify(raw).slice(0, 300) : responseType === 'text' ? String(raw).slice(0, 300) : '[binary]';
       console.warn(`[upstream] ${url} -> formato non valido: ${parseErr instanceof Error ? parseErr.message.slice(0, 200) : parseErr} | ${sample}`);
       return { ok: false, error: 'upstream_invalid_payload' };
     }

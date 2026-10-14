@@ -671,3 +671,31 @@ def test_venice_tap_water_kml():
     assert len(out) == 1
     assert out[0]["area"] == "Castello" and out[0]["status"] == "open" and out[0]["statusNote"] == "Pulsante"
     assert "img" not in json.dumps(out)
+
+
+# --- Toponimi (OSM) per le ordinanze ---
+
+import import_osm_toponyms as toponyms  # noqa: E402
+
+
+def _way(i, name, pts, key="name"):
+    return {"type": "way", "id": i, "tags": {key: name}, "geometry": [{"lon": x, "lat": y} for x, y in pts]}
+
+
+def test_toponimi_tratti_contigui_uniti_e_omonimi_lontani_separati():
+    a = _way(1, "Calle del Forno", [[12.3300, 45.4300], [12.3305, 45.4300]])
+    b = _way(2, "Calle del Forno", [[12.3306, 45.4300], [12.3310, 45.4301]])  # continua il primo
+    c = _way(3, "Calle del Forno", [[12.3500, 45.4400], [12.3504, 45.4400]])  # un'altra calle, a 2 km
+    names = toponyms.build({"elements": [a, b, c]})
+    assert len(names["Calle del Forno"]) == 2
+
+
+def test_toponimi_grafie_unite_ponti_e_terraferma_esclusa():
+    a = _way(1, "Strada Comunale dei Murazzi", [[12.30, 45.27], [12.3001, 45.2701]])
+    b = _way(2, "Strada comunale dei Murazzi", [[12.3002, 45.2702], [12.3003, 45.2703]])
+    bridge = _way(3, "Ponte dei Carmini", [[12.3240, 45.4340], [12.3241, 45.4340]], key="bridge:name")
+    mestre = _way(4, "Via Piave", [[12.23, 45.49], [12.231, 45.49]])
+    names = toponyms.build({"elements": [a, b, bridge, mestre]})
+    assert list(names) == ["Ponte dei Carmini", "Strada Comunale dei Murazzi"]
+    assert len(names["Strada Comunale dei Murazzi"]) == 1
+    assert toponyms.is_mainland(12.30, 45.48) and not toponyms.is_mainland(12.335, 45.437)

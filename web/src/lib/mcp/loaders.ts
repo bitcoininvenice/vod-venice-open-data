@@ -19,6 +19,7 @@ import { GET as fiberGET } from '@/app/api/fiber/route';
 import { GET as cantieriGET } from '@/app/api/cantieri/route';
 import { GET as bdapGET } from '@/app/api/opere-bdap/route';
 import { GET as loraGET } from '@/app/api/lora-gateways/route';
+import { GET as ordinancesGET } from '@/app/api/ordinanze/route';
 import { GET as sportsGET } from '@/app/api/sports/route';
 import { GET as nauticalGET } from '@/app/api/nautical/route';
 import { GET as parksGET } from '@/app/api/parks/route';
@@ -179,6 +180,10 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   },
   sports: async () => {
     const j = await read(sportsGET());
+    return { items: asRows(j.data), meta: j.meta as Row };
+  },
+  city_orders: async () => {
+    const j = await read(ordinancesGET());
     return { items: asRows(j.data), meta: j.meta as Row };
   },
   lora_gateways: async () => {

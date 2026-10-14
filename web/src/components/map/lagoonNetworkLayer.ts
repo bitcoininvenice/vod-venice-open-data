@@ -3,7 +3,7 @@ import type { RenderContext } from './renderContext';
 
 /** Canali e rii (linee) e briccole/segnalamenti (punti) da OpenStreetMap. */
 export function drawLagoonNetwork(rc: RenderContext): void {
-  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showCanals, showMarineSignals, lagoonNetwork } = rc;
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showCanals, showMarineSignals, lagoonNetwork, canalOrdinances } = rc;
   if (!lagoonNetwork) return;
 
   if (showCanals) {
@@ -11,16 +11,31 @@ export function drawLagoonNetwork(rc: RenderContext): void {
     ctx.strokeStyle = isDark ? 'rgba(56, 189, 248, 0.75)' : 'rgba(2, 132, 199, 0.7)';
     ctx.lineWidth = camera.s > 0.04 ? 2 : 1.2;
     ctx.lineJoin = 'round';
-    ctx.beginPath();
-    for (const c of lagoonNetwork.canals) {
-      c.coords.forEach(([lon, lat], i) => {
+    const trace = (coords: [number, number][]) =>
+      coords.forEach(([lon, lat], i) => {
         const x = sx(mx(lon));
         const y = sy(my(lat));
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       });
-    }
+    ctx.beginPath();
+    for (const c of lagoonNetwork.canals) if (!canalOrdinances.has(c.id)) trace(c.coords);
     ctx.stroke();
+
+    // Canali con ordinanze temporanee del Comune: in giallo (tratteggio se l'atto entra in vigore nei prossimi giorni)
+    if (canalOrdinances.size > 0) {
+      ctx.strokeStyle = isDark ? '#facc15' : '#ca8a04';
+      ctx.lineWidth = camera.s > 0.04 ? 3.5 : 2.4;
+      for (const c of lagoonNetwork.canals) {
+        const list = canalOrdinances.get(c.id);
+        if (!list) continue;
+        ctx.setLineDash(list.every((o) => o.status === 'upcoming') ? [6, 4] : []);
+        ctx.beginPath();
+        trace(c.coords);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+    }
 
     // Nomi dei canali da vicino, a metà del tracciato
     if (camera.s > 0.05) {

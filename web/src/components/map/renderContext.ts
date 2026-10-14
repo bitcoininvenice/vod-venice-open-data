@@ -7,6 +7,7 @@ import type { SportFilter } from '@/lib/sports';
 import type { SelectedTrip } from '@/lib/tripView';
 import type { Itinerary } from '@/lib/tripPlanner';
 import type { DynamicTideState } from '@/lib/tideCurve';
+import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 
 export interface HighlightTrip extends SelectedTrip {
   color: string;
@@ -27,6 +28,8 @@ export interface RenderContext
   tideLevel: number;
   /** stato completo della marea e del MOSE (con origine dei dati) */
   tide: DynamicTideState;
+  /** canali (id OSM) con ordinanze temporanee di traffico acqueo in vigore o in arrivo */
+  canalOrdinances: Map<number, OrdinanceItem[]>;
   sportFilter: SportFilter;
   /** itinerario del planner */
   itinerary: Itinerary | null;

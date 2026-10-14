@@ -519,6 +519,44 @@ test('parchi: il clic dentro l\'area di un parco apre la sua scheda', async ({ p
   await expect(info).toContainText('OpenStreetMap');
 });
 
+test('ordinanze del Comune: il segnale sulla mappa apre la scheda con l\'atto', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  const RIALTO = { lat: 45.43727, lon: 12.335071 };
+  await page.route('**/api/ordinanze', (route) =>
+    route.fulfill({
+      json: {
+        success: true, meta: {},
+        data: [
+          { id: '9001', number: '700', date: '2026-10-07', title: 'Cantiere per il restauro di Ponte di prova', ambito: 'LLPP Venezia e Isole', luogo: 'Venezia Città Storica',
+            validFrom: '2026-10-07', validTo: '2099-10-31', status: 'active', kind: 'works', canalName: null, placeName: 'Ponte di prova', ...RIALTO,
+            positionSource: 'place', url: 'https://www.comune.venezia.it/it/content/ordinanza?idPratica=9001', pdfUrl: 'https://gwapi.sad.ve.it/ve/ordinanze/1.0.0/download/1' },
+          { id: '9002', number: '701', date: '2026-10-08', title: 'Misure per il concerto', ambito: 'Viabilità', luogo: 'Venezia Città Storica',
+            validFrom: null, validTo: null, status: 'unverified', kind: 'event', canalName: null, placeName: null, lat: null, lon: null,
+            positionSource: null, url: 'https://www.comune.venezia.it/it/content/ordinanza?idPratica=9002', pdfUrl: null },
+        ],
+      },
+    })
+  );
+  await page.goto('/?layers=ordinanze_comune');
+  await page.locator('canvas').waitFor();
+  const panel = page.locator('aside').filter({ visible: true }).first();
+  await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('ordinanze');
+  await expect(panel).toContainText('Atti in vigore senza posizione sulla mappa: 1');
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder(/cerca fermate/i).fill('Rialto');
+  await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: /rialto/i }).first().click();
+  await page.keyboard.press('Escape');
+  await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('fermate');
+  await panel.locator('[data-layer="showStops"]').click();
+  const box = (await page.locator('canvas').boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  const info = page.locator('[data-info-panel]');
+  await expect(info.getByTestId('ordinance-card')).toContainText('Cantiere per il restauro di Ponte di prova');
+  await expect(info).toContainText('Ponte di prova');
+  await expect(info.getByRole('link', { name: /Ordinanza n\. 700 del 07\/10\/2026/ })).toHaveAttribute('href', /idPratica=9001/);
+  await expect(info).toContainText('Fa fede il testo');
+});
+
 test('la scheda informativa non copre il pannello livelli e non blocca la mappa', async ({ page, isMobile }) => {
   test.skip(isMobile, 'su mobile la scheda è un cassetto dal basso');
   await page.goto('/');
@@ -856,6 +894,20 @@ test.describe('API', () => {
     expect([200, 503]).toContain(res.status());
     expect(body.data.moseGates).toHaveLength(4);
     expect(body.meta.levels.kind).toBe('live');
+  });
+
+  test('ordinanze: atti del Comune in vigore, con link ufficiale e senza terraferma', async ({ request }) => {
+    const res = await request.get('/api/ordinanze');
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    console.log('ordinanze:', JSON.stringify({ ok: body.success, atti: body.data.length, conPosizione: body.data.filter((o: { lat: number | null }) => o.lat !== null).length }));
+    test.skip(!body.success, 'sito del Comune non raggiungibile');
+    for (const o of body.data) {
+      expect(['active', 'upcoming', 'unverified']).toContain(o.status);
+      expect(o.url).toMatch(/^https:\/\/www\.comune\.venezia\.it\/it\/content\/ordinanza\?idPratica=/);
+      expect(o.luogo).not.toMatch(/mestre|marghera|favaro|chirignago/i);
+      if (o.lat !== null) expect(['comune', 'place', 'canal']).toContain(o.positionSource);
+    }
   });
 
   test('parks: parchi e giardini OSM con perimetro, accesso dichiarato e niente luoghi privati', async ({ request }) => {

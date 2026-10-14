@@ -7,6 +7,8 @@ import type { VeniceFeatureSelected } from './VeniceFeatureDetailModal';
 import type { MapObjectSelected } from './MapObjectPanel';
 import { matchesSportFilter, type SportFilter } from '@/lib/sports';
 import { filterFountains, type FountainFilter } from '@/lib/fountainFilter';
+import { isPlacedOrdinance, ordinancesByCanal } from '@/lib/canalOrdinances';
+import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 import { GRID, LAND_LO } from '@/lib/simulation-data';
 import { drawBaseMap, isLandHiLoaded, requestLandHi, isStreetsLoaded, requestStreets } from './map/baseMap';
 import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
@@ -22,7 +24,7 @@ import { drawCurrentFlow } from './map/currentFlow';
 import { drawShipRoutes, drawShips, drawAlilaguna } from './map/vesselLayers';
 import { drawMarineSignals, drawCanalLimits, drawBridges, drawGondolas, drawDocks } from './map/waterwayLayers';
 import { drawOceanStations, drawMarineWind } from './map/marineLayers';
-import { bdapRadius, drawPin, drawParks, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawAccessibleBridges, drawVeritasServices, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies } from './map/cityLayers';
+import { bdapRadius, drawPin, drawParks, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawAccessibleBridges, drawVeritasServices, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies, drawOrdinances } from './map/cityLayers';
 import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
 import { drawFloodLayer } from './map/floodLayer';
 import { resolveTideState } from '@/lib/tideCurve';
@@ -131,6 +133,11 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   const { t } = useTranslation();
   // fontanelle della fonte scelta (con "tutte", senza i doppioni OSM di Venice Tap Water)
   const visibleFountains = useMemo(() => filterFountains(data.fountains, fountainFilter), [data.fountains, fountainFilter]);
+  // canali con ordinanze temporanee del Comune (disegnati in giallo nel livello canali)
+  const canalOrdinances = useMemo(
+    () => (data.lagoonNetwork ? ordinancesByCanal(data.lagoonNetwork.canals, data.ordinances) : new Map<number, OrdinanceItem[]>()),
+    [data.lagoonNetwork, data.ordinances],
+  );
   // alias: nel codice di disegno `t` è anche il nome locale dell'ora simulata
   const tr = t;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -702,6 +709,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         L.showRecyclingCentres && target({ items: D.recyclingCentres, radius: 14, select: feature('civicPoi') }),
         L.showLibraries && target({ items: D.libraries, radius: 14, select: feature('civicPoi') }),
         L.showCityAssets && target({ items: filterFountains(D.fountains, fountainFilter), radius: 16, select: feature('fountain') }),
+        L.showOrdinances && target({ items: D.ordinances.filter(isPlacedOrdinance), radius: 16, select: feature('ordinance') }),
         L.showCantieri && target({ items: cantieri, radius: 18, select: onSelectCantiere }),
         L.showStops && target({ items: D.stops, radius: 15, select: onSelectStop }),
         L.showVehicles && scheduledVehicles,
@@ -863,6 +871,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         paletteTheme,
         sportFilter,
         fountains: visibleFountains,
+        canalOrdinances,
         tideLevel: effectiveTideLevel,
         tide: tideState,
         pin,
@@ -992,6 +1001,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         drawPollenStations(rc);
 
         drawTributaries(rc);
+
+        // Avvisi del Comune sopra gli altri livelli
+        drawOrdinances(rc);
       });
       // Itinerario del planner e segnaposto del luogo cercato, sopra a tutto
       drawItinerary(rc);
@@ -1005,7 +1017,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     return () => cancelAnimationFrame(animId);
   }, [
     camera, KY, H, W, mx, my, tr, layers, data, cantieri, selectedDay, paletteTheme, bufferRadiusMeters, selectedCategory,
-    sportFilter, visibleFountains, simulatedTideLevel, isMoseProtected, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
+    sportFilter, visibleFountains, canalOrdinances, simulatedTideLevel, isMoseProtected, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
     alilagunaBoats, is3DView, landHiReady, selectedTrip, selectedVehicle, pin, itinerary,
 ]);
 

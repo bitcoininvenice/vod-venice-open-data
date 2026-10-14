@@ -13,7 +13,7 @@ export const FEATURE_LAYER: Record<Exclude<VeniceFeatureSelected['type'], 'civic
   pharmacy: 'showPharmacies', heatIsland: 'showHeatIslands', lagoonWater: 'showLagoonWater', lagoonCurrent: 'showLagoonCurrents',
   accommodation: 'showAccommodations', bikeRoute: 'showBikeRoutes', pollenStation: 'showPollenStations',
   tributaryRiver: 'showTributaries', parking: 'showParkings', fountain: 'showCityAssets', fiberCell: 'showFiber',
-  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks', loraGateway: 'showLoraGateways', wifiVenue: 'showWifiVenues', sportPlace: 'showSports', nauticalPlace: 'showNautical', parkPlace: 'showParks',
+  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks', loraGateway: 'showLoraGateways', wifiVenue: 'showWifiVenues', sportPlace: 'showSports', nauticalPlace: 'showNautical', parkPlace: 'showParks', ordinance: 'showOrdinances',
 };
 
 export function featureLayer(feature: VeniceFeatureSelected): LayerKey | undefined {

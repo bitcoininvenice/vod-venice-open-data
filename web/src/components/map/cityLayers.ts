@@ -1,6 +1,7 @@
 // Layer di disegno della mappa estratti da MapEngine (cityLayers). Ogni funzione riceve il contesto del frame.
 import type { RenderContext } from './renderContext';
 import { PARK_COLORS } from '@/lib/parks';
+import { ORDINANCE_COLORS, isPlacedOrdinance } from '@/lib/canalOrdinances';
 import { matchesSportFilter, sportColor } from '@/lib/sports';
 
 /** Colore di una fontanella: blu aperta, rosso chiusa, grigio non indicato; OSM azzurro (stato non verificato) */
@@ -1171,4 +1172,43 @@ export function drawPin(rc: RenderContext): void {
   ctx.fillStyle = '#ffffff';
   ctx.fill();
   ctx.restore();
+}
+
+/** Ordinanze del Comune: triangolo di avviso colorato per tipo; contorno tratteggiato se l'atto entra in vigore nei prossimi giorni. */
+export function drawOrdinances(rc: RenderContext): void {
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showOrdinances, ordinances } = rc;
+  if (!showOrdinances || ordinances.length === 0) return;
+  for (const o of ordinances) {
+    if (!isPlacedOrdinance(o)) continue;
+    const px = sx(mx(o.lon));
+    const py = sy(my(o.lat));
+    if (px < -40 || px > cw + 40 || py < -40 || py > ch + 40) continue;
+    const upcoming = o.status === 'upcoming';
+    ctx.save();
+    ctx.globalAlpha = upcoming ? 0.75 : 1;
+    ctx.beginPath();
+    ctx.moveTo(px, py - 10);
+    ctx.lineTo(px + 9, py + 6);
+    ctx.lineTo(px - 9, py + 6);
+    ctx.closePath();
+    ctx.fillStyle = ORDINANCE_COLORS[o.kind];
+    ctx.fill();
+    ctx.setLineDash(upcoming ? [3, 2] : []);
+    ctx.strokeStyle = isDark ? '#ffffff' : '#1c1917';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 10px "DM Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('!', px, py + 4);
+    if (camera.s > 0.03) {
+      ctx.font = '600 8px "DM Mono", monospace';
+      ctx.fillStyle = isDark ? '#fde68a' : '#78350f';
+      ctx.textAlign = 'start';
+      ctx.fillText(rc.t(`ui.ordinance.kind_${o.kind}`), px + 12, py + 3);
+    }
+    ctx.restore();
+  }
 }

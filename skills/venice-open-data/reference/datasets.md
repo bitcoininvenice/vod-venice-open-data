@@ -16,6 +16,7 @@ Run `python scripts/vod.py datasets` (or the MCP tool `list_datasets`) for the l
 | Recycling, libraries, car parks, EV | `recycling_centres`, `libraries`, `parkings`, `ev_charging` | OpenStreetMap |
 | Fibre at an address | `fiber_coverage` | `near` with radius 100-200 m |
 | Canals and channel markers | `canals`, `channel_markers` | not for navigation |
+| Canal closures, works, events, road changes (City orders) | `city_orders` | orders in force or starting within 7 days; link `url` to the act, which prevails; `positionSource` comune/place/canal, some have no position; `status=unverified` = validity not read |
 | Public works | `public_works` | positions are approximate; field `bdap` adds actual stage, dates, cost and funding when the CUP is in the State monitoring |
 | Works under construction, public spending on works | `public_works_bdap` | State Public Works Monitoring (BDAP); `meta.summary` has all City projects by stage, sector and funding |
 | Venetian house numbers ("Cannaregio 3450") | `house_numbers` | OpenStreetMap, partial coverage (poor in Dorsoduro); numbering is by sestiere, Giudecca has its own |

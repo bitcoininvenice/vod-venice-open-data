@@ -68,7 +68,7 @@ export const PRESET_LAYERS: Record<Exclude<MapPreset, 'clean'>, LayerKey[]> = {
   'acqua-alta': ['showMose', 'showPasserelle', 'showLagoonCurrents', 'showOceanStations', 'showCanals'],
   ambiente: ['showAirQuality', 'showPollenStations', 'showLagoonWater', 'showMarineWind', 'showParks'],
   servizi: ['showPharmacies', 'showDae', 'showCityAssets', 'showRecyclingCentres', 'showWifiHotspots'],
-  citta: ['showLibraries', 'showCameras', 'showCantieri', 'showBdapWorks', 'showTrees', 'showCanals'],
+  citta: ['showLibraries', 'showCameras', 'showCantieri', 'showBdapWorks', 'showCanals', 'showOrdinances'],
 };
 
 export function presetLayers(preset: MapPreset): LayerVisibility {

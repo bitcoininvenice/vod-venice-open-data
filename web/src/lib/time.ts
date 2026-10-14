@@ -74,3 +74,8 @@ export function romeLocalToDate(local: string): Date {
   const offsetMs = romeWallClockAsUtc - asUtc.getTime();
   return new Date(asUtc.getTime() - offsetMs);
 }
+
+/** Data di oggi a Venezia, "YYYY-MM-DD". */
+export function romeToday(date: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+}

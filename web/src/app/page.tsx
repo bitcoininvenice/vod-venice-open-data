@@ -23,6 +23,7 @@ import type { VeniceFeatureSelected } from '@/components/VeniceFeatureDetailModa
 import type { SearchResultItem } from '@/components/GlobalSearchModal';
 import { Layers } from 'lucide-react';
 import { getFloodedGroundPercentage } from '@/lib/flood';
+import { isPlacedOrdinance } from '@/lib/canalOrdinances';
 import { isLocated, type CameraViewPreset, type PaletteTheme, type DayType, type TransportModeCategory, type StopItem, type CantiereItem, type SatelliteItem, type VeniceCameraItem } from '@/lib/types';
 import { NOTTE, CARTA, getDynamicPalette, isDaylightTheme } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
@@ -456,6 +457,7 @@ export default function HomePage() {
     [data, categoryCounts, alilagunaBoats]
   );
   const liveWebcamsCount = useMemo(() => data.cameras.filter((c) => c.hasLiveFeed).length, [data.cameras]);
+  const unplacedOrdinances = useMemo(() => data.ordinances.filter((o) => !isPlacedOrdinance(o)).length, [data.ordinances]);
 
   // Stato dinamico di marea (reale o simulato) che segue l'ora corrente o il punto della timeline
   const currentDynamicTide = useMemo(() => {
@@ -681,6 +683,7 @@ export default function HomePage() {
               fountainFilter={fountainFilter}
               onFountainFilterChange={setFountainFilter}
               liveWebcamsCount={liveWebcamsCount}
+              unplacedOrdinances={unplacedOrdinances}
               bufferRadiusMeters={bufferRadiusMeters}
               onBufferRadiusChange={setBufferRadiusMeters}
               selectedCategory={selectedCategory}
@@ -726,6 +729,7 @@ export default function HomePage() {
                 fountainFilter={fountainFilter}
                 onFountainFilterChange={setFountainFilter}
                 liveWebcamsCount={liveWebcamsCount}
+                unplacedOrdinances={unplacedOrdinances}
                 bufferRadiusMeters={bufferRadiusMeters}
                 onBufferRadiusChange={setBufferRadiusMeters}
                 selectedCategory={selectedCategory}
@@ -881,6 +885,7 @@ export default function HomePage() {
             feature={selectedFeature}
             onClose={() => setSelectedFeature(null)}
             currentTideLevelCm={data.tideLevel ?? undefined}
+            ordinances={data.ordinances}
             tideForecast={data.tideInfo.forecast}
             onPlanTo={openPlanner}
           />

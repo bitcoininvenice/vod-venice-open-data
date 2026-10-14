@@ -182,8 +182,8 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     portalName: 'comune.venezia.it',
     descriptionIt: 'Velocità massime nei rii di Venezia, Murano e Burano (5 o 7 km/h, 11 per ACTV nel Canal Grande) e nei canali lagunari con un limite unico. Con la marea da +110 cm valgono le regole dell\'acqua alta: 5 km/h nel Canal Grande e a Cannaregio, motore vietato negli altri rii del centro storico.',
     descriptionEn: 'Maximum speeds in the canals of Venice, Murano and Burano (5 or 7 km/h, 11 for ACTV on the Grand Canal) and in lagoon channels with a single limit. With the tide at +110 cm the high-water rules apply: 5 km/h on the Grand Canal and Cannaregio, no motor boats in the other canals of the historic centre.',
-    technicalNotesIt: 'Limiti tratti dal testo degli atti (Regolamento per la circolazione acquea, art. 2-3; Ordinanza 93/2007, art. 13-17) e applicati ai canali OpenStreetMap con lo stesso nome. Non ancora inclusi: i tratti che l\'ordinanza limita solo in parte e i canali della Capitaneria di Porto (Giudecca, Bacino San Marco, canali marittimi). Non per la navigazione: valgono la segnaletica e gli atti vigenti.',
-    technicalNotesEn: 'Limits taken from the text of the acts (Water traffic regulation, art. 2-3; Ordinance 93/2007, art. 13-17) and applied to OpenStreetMap canals with the same name. Not yet included: stretches the ordinance limits only in part and the Harbour Office channels (Giudecca, St Mark\'s Basin, shipping channels). Not for navigation: signs and acts in force prevail.',
+    technicalNotesIt: 'Limiti tratti dal testo degli atti (Regolamento per la circolazione acquea, art. 2-3; Ordinanza 93/2007, art. 13-17) e applicati ai canali OpenStreetMap con lo stesso nome. Non ancora inclusi: i tratti che l\'ordinanza limita solo in parte e i canali della Capitaneria di Porto (Giudecca, Bacino San Marco, canali marittimi). La scheda del canale elenca le ordinanze temporanee di traffico acqueo in vigore (lavori, eventi), che possono cambiare limiti e transito. Non per la navigazione: valgono la segnaletica e gli atti vigenti.',
+    technicalNotesEn: 'Limits taken from the text of the acts (Water traffic regulation, art. 2-3; Ordinance 93/2007, art. 13-17) and applied to OpenStreetMap canals with the same name. Not yet included: stretches the ordinance limits only in part and the Harbour Office channels (Giudecca, St Mark\'s Basin, shipping channels). The canal card lists the temporary water-traffic orders in force (works, events), which may change limits and passage. Not for navigation: signs and acts in force prevail.',
     endpointOrFile: '/api/waterways & src/lib/waterSpeedLimits.ts'
   },
   {
@@ -956,10 +956,26 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     institution: 'OpenStreetMap contributors (ODbL)',
     portalUrl: 'https://www.openstreetmap.org',
     portalName: 'openstreetmap.org (waterway=canal)',
-    descriptionIt: 'Il tracciato dei canali lagunari e dei rii del centro storico e delle isole, con il nome quando è mappato: oltre 900 tratti, circa due terzi con nome.',
-    descriptionEn: 'The course of lagoon canals and of the rii in the historic centre and islands, with the name when mapped: over 900 sections, about two thirds named.',
-    technicalNotesIt: 'Import con pipeline/import_osm_waterways.py (waterway=canal, ODbL), tracciati semplificati a 4 m. Cliccando un canale si vedono nome e lunghezza del tratto mappato. Non è una carta nautica: profondità e navigabilità non sono indicate.',
-    technicalNotesEn: 'Imported with pipeline/import_osm_waterways.py (waterway=canal, ODbL), courses simplified to 4 m. Clicking a canal shows its name and the length of the mapped section. It is not a nautical chart: depth and navigability are not shown.',
+    descriptionIt: 'Il tracciato dei canali lagunari e dei rii del centro storico e delle isole, con il nome quando è mappato: oltre 900 tratti, circa due terzi con nome. I canali con un\'ordinanza temporanea di traffico acqueo del Comune sono in giallo (tratteggiati se l\'atto entra in vigore nei prossimi giorni).',
+    descriptionEn: 'The course of lagoon canals and of the rii in the historic centre and islands, with the name when mapped: over 900 sections, about two thirds named. Canals with a temporary City water-traffic order are yellow (dashed if the order starts in the next few days).',
+    technicalNotesIt: 'Import con pipeline/import_osm_waterways.py (waterway=canal, ODbL), tracciati semplificati a 4 m. Cliccando un canale si vedono nome, lunghezza del tratto mappato e le ordinanze che lo riguardano: il canale è interessato se il punto della mappa del Comune cade entro 30 m dal tracciato oppure, se il punto manca, se il titolo dell\'atto lo nomina (/api/ordinanze). Non è una carta nautica: profondità e navigabilità non sono indicate.',
+    technicalNotesEn: 'Imported with pipeline/import_osm_waterways.py (waterway=canal, ODbL), courses simplified to 4 m. Clicking a canal shows its name, the length of the mapped section and the orders affecting it: a canal is affected if the City map point lies within 30 m of its course or, without a point, if the order title names it (/api/ordinanze). It is not a nautical chart: depth and navigability are not shown.',
     endpointOrFile: '/api/lagoon-network (src/data/osm-waterways.json)'
+  },
+  {
+    id: 'ordinanze_comune',
+    nameIt: 'Ordinanze temporanee del Comune',
+    nameEn: 'Temporary City orders',
+    group: 'city',
+    regime: 'realtime',
+    acquisition: 'api',
+    institution: 'Comune di Venezia – Ordinanze',
+    portalUrl: 'https://www.comune.venezia.it/it/ordinanze',
+    portalName: 'comune.venezia.it/it/ordinanze',
+    descriptionIt: 'Ordinanze in vigore o in arrivo nei prossimi 7 giorni per città storica, isole e Lido: traffico acqueo, lavori pubblici, viabilità e circolazione. Ogni segnale apre l\'atto ufficiale e il PDF; il colore indica il tipo (chiusura, lavori, evento), il contorno tratteggiato un atto non ancora in vigore.',
+    descriptionEn: 'Orders in force or starting within 7 days for the historic city, islands and Lido: water traffic, public works, roads and traffic. Each marker opens the official order and its PDF; colour shows the type (closure, works, event), a dashed outline an order not yet in force.',
+    technicalNotesIt: 'Elenco dall\'API usata dalla pagina Ordinanze del sito del Comune (atti degli ultimi 60 giorni, riletto ogni ora); validità e allegato dalla pagina di ogni atto. Posizione: il punto della mappa del Comune (solo traffico acqueo), altrimenti il luogo (calle, fondamenta, ponte, campo) o il canale citati nel titolo e trovati su OpenStreetMap (pipeline/import_osm_toponyms.py; i nomi ripetuti in più punti non sono usati). Gli atti senza posizione sono contati nel pannello dei livelli. Tipo ricavato dal titolo, indicativo. Fa fede il testo dell\'atto.',
+    technicalNotesEn: 'List from the API behind the Orders page of the City website (orders of the last 60 days, read hourly); validity and attachment from each order\'s page. Position: the point on the City map (water traffic only), otherwise the place (calle, fondamenta, bridge, campo) or canal named in the title and found on OpenStreetMap (pipeline/import_osm_toponyms.py; names repeated in several places are not used). Orders without a position are counted in the layer panel. Type inferred from the title, indicative. The text of the order prevails.',
+    endpointOrFile: '/api/ordinanze'
   }
 ];

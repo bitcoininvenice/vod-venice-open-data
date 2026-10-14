@@ -43,6 +43,7 @@ jobs:
           python import_osm_poi.py || echo "::warning::POI OSM (colonnine, parcheggi, pozzi, alberi, ecocentri, biblioteche) non aggiornati"
           python import_osm_waterways.py || echo "::warning::briccole e canali OSM non aggiornati"
           python import_osm_parks.py || echo "::warning::parchi e giardini OSM non aggiornati"
+          python import_osm_toponyms.py || echo "::warning::toponimi OSM non aggiornati"
           python import_osm_civici.py || echo "::warning::numeri civici OSM non aggiornati"
           python import_osm_walk.py || echo "::warning::rete pedonale OSM non aggiornata"
           python import_arpav_pollen.py || echo "::warning::pollini misurati ARPAV non aggiornati"

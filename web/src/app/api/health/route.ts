@@ -9,6 +9,8 @@ import { OPENSKY_STATES_URL, parseOpenSkyStates } from '@/server/sources/opensky
 import { getShipsSnapshot } from '@/server/sources/aisstream';
 import { PACKET_BROKER_URL, parseGateways } from '@/server/sources/packetBroker';
 import { CAMPO_API_URL, parseCampo } from '@/server/sources/campo';
+import { AMBITI, ORDINANCES_API, parseOrdinanceList } from '@/server/sources/comuneOrdinances';
+import osmToponyms from '@/data/osm-toponyms.json';
 import { openMeteoWindUrl, parseOpenMeteoWind } from '@/server/sources/openMeteoWind';
 import { airQualityUrl, parseAirQuality } from '@/server/sources/openMeteoAir';
 import { marineUrl, parseMarine } from '@/server/sources/openMeteoMarine';
@@ -47,7 +49,7 @@ const ACQUA_ALTA = OCEAN_STATIONS_DATA.find((s) => s.id === 'CNR-PLAT-01') ?? { 
  */
 export async function GET() {
   const now = new Date();
-  const [levels, forecast, metar, rtNav, rtAut, wind, flights, windField, cams, marine, ais, lora, campo] = await Promise.all([
+  const [levels, forecast, metar, rtNav, rtAut, wind, flights, windField, cams, marine, ais, lora, campo, ordinances] = await Promise.all([
     fetchUpstream(TIDE_LEVELS_URL, parseTideLevels, { revalidate: 60 }),
     fetchUpstream(TIDE_FORECAST_URL, (raw) => parseTideForecast(raw, now), { revalidate: 600 }),
     fetchUpstream(LIPZ_METAR_URL, parseLipzMetar, { revalidate: 300 }),
@@ -61,6 +63,7 @@ export async function GET() {
     getShipsSnapshot(5_000),
     fetchUpstream(PACKET_BROKER_URL, parseGateways, { revalidate: 600, timeoutMs: 8000 }),
     fetchUpstream(CAMPO_API_URL, parseCampo, { revalidate: 3600, timeoutMs: 8000 }),
+    fetchUpstream(`${ORDINANCES_API}/filtra?numeroPagina=0&elementiPerPagina=20&idAmbito=${AMBITI.trafficoAcqueo}`, parseOrdinanceList, { revalidate: 3600, timeoutMs: 8000 }),
   ]);
 
   const newestVehicle = (r: typeof rtNav) =>
@@ -84,6 +87,8 @@ export async function GET() {
       campo.ok ? undefined : 'API CAMPO non raggiungibile'),
     assess('packet-broker', 'Gateway LoRaWAN (Packet Broker)', 'live', lora.ok ? new Date(lora.fetchedAt) : null, 30, now,
       lora.ok ? undefined : 'Packet Broker Mapper non raggiungibile'),
+    assess('comune-ordinanze', 'Ordinanze del Comune di Venezia', 'live', ordinances.ok ? new Date(ordinances.fetchedAt) : null, 120, now,
+      ordinances.ok ? undefined : 'elenco delle ordinanze non raggiungibile'),
     assess('opensky', 'OpenSky Network', 'live', flights.ok ? now : null, 5, now, flights.ok ? undefined : 'quota esaurita o servizio non raggiungibile'),
     assess('open-meteo', 'Previsione vento Open-Meteo', 'live', windField.ok ? fromRomeLocal(windField.data.validTime.replace('T', ' ')) : null, 90, now),
     assess('cams-air', 'Previsione aria, pollini e UV Copernicus CAMS', 'live', cams.ok && cams.data[0] ? fromRomeLocal(cams.data[0].air.validTime.replace('T', ' ')) : null, 120, now),
@@ -96,6 +101,7 @@ export async function GET() {
     assess('osm-dae', 'Defibrillatori OpenStreetMap (pipeline)', 'dataset', new Date(OSM_DAE_META.generatedAt), 31 * DAY, now),
     assess('osm-pharmacies', 'Farmacie OpenStreetMap (pipeline)', 'dataset', new Date(OSM_PHARMACIES_META.generatedAt), 31 * DAY, now),
     assess('osm-fountains', 'Fontanelle OpenStreetMap (pipeline)', 'dataset', new Date(fountainsDataset.metadata.extractedAt), 31 * DAY, now),
+    assess('osm-toponyms', 'Toponimi OpenStreetMap per le ordinanze (pipeline)', 'dataset', new Date(osmToponyms.generatedAt), 31 * DAY, now),
     assess('venice-tap-water', 'Fontanelle Venice Tap Water (pipeline)', 'dataset', new Date(veniceTapWater.metadata.generatedAt), 31 * DAY, now),
     assess('osm-poi', 'POI OpenStreetMap: colonnine, parcheggi, pozzi, alberi (pipeline)', 'dataset', new Date(OSM_POI_META.generatedAt), 31 * DAY, now),
     assess('osm-waterways', 'Briccole e canali OpenStreetMap (pipeline)', 'dataset', new Date(lagoonDataset.generatedAt), 31 * DAY, now),

@@ -44,6 +44,7 @@ import {
 import { LayerIcon, RegimeBadge, TONE_CLASSES } from './layerVisuals';
 import { SPORT_FILTERS, type SportFilter } from '@/lib/sports';
 import { FOUNTAIN_FILTERS, type FountainFilter } from '@/lib/fountainFilter';
+import { ORDINANCES_PAGE } from '@/lib/contracts/ordinances';
 
 interface LayerPanelProps {
   layers: LayerVisibility;
@@ -53,6 +54,8 @@ interface LayerPanelProps {
   /** Numero di elementi caricati per layer (mostrato quando il layer è acceso) */
   counts: Partial<Record<LayerKey, number>>;
   liveWebcamsCount?: number;
+  /** ordinanze in vigore che non hanno una posizione sulla mappa */
+  unplacedOrdinances?: number;
   /** Filtro per sport del livello Sport */
   sportFilter?: SportFilter;
   onSportFilterChange?: (f: SportFilter) => void;
@@ -93,6 +96,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   onApplyPreset,
   counts,
   liveWebcamsCount = 0,
+  unplacedOrdinances = 0,
   sportFilter = 'all',
   onSportFilterChange,
   fountainFilter = 'all',
@@ -185,6 +189,14 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               </button>
             ))}
           </div>
+        )}
+        {entry.key === 'showOrdinances' && on && (
+          <p className="flex flex-col gap-0.5 px-2.5 pb-1 text-[10px] text-[var(--ink-2)]">
+            {unplacedOrdinances > 0 && <span>{t('ui.layerPanel.ordinancesUnplaced', { n: unplacedOrdinances })}</span>}
+            <a href={ORDINANCES_PAGE} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">
+              {t('ui.layerPanel.ordinancesAll')}
+            </a>
+          </p>
         )}
         {entry.key === 'showCityAssets' && on && onFountainFilterChange && (
           <div className="flex flex-wrap gap-1 px-2 pb-1" role="group" aria-label={t('ui.layerPanel.fountainFilter')}>
