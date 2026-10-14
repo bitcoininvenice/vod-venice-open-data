@@ -7,7 +7,7 @@ import { drawVehicleGlyph, headingFromMotion } from './vehicleGlyphs';
 import { SHUTTLE_LAYOVER_S, type SimModel, type SimProfile } from '@/lib/simulationCore';
 import { clock, tripStops, type TripStop } from '@/lib/tripView';
 import { SPEED_VERDICT_COLORS } from '@/lib/scheduleSpeed';
-import { freshDelay, inService, isLiveView, liveDistance, MAX_EARLY_S, MAX_LATE_S, mergedThisFrame, pruneShown, realtimeByTrip, tripKey } from './liveFleet';
+import { freshDelay, inService, isLiveView, networkOfSimCategory, liveDistance, MAX_EARLY_S, MAX_LATE_S, mergedThisFrame, pruneShown, realtimeByTrip, tripKey } from './liveFleet';
 
 /** Linea e categoria di ogni forma (dalla prima corsa che la usa), calcolate una volta per modello. */
 const shapeRoutes = new WeakMap<SimModel, Map<object, { n: string; cat: string }>>();
@@ -137,7 +137,7 @@ export function drawVehicles(rc: RenderContext): void {
         if (selectedCategory !== 'all' && rCat !== selectedCategory) continue;
 
         const dt = t - t0[i];
-        const key = tripKey(prof.route.n, t0[i]);
+        const key = tripKey(prof.route.n, t0[i], networkOfSimCategory(rCat));
         const gps = gpsByTrip?.get(key);
         const delay = gps ? freshDelay(gps) : null;
         // corsa non ancora partita secondo l'orario: compare solo se il GPS la vede già (mezzo in anticipo o al capolinea)
@@ -208,14 +208,14 @@ export function drawRealtimeVehicles(rc: RenderContext): void {
     for (const v of realtimeVehicles) {
       // già disegnato come corsa dell'orario spostata del ritardo reale
       if (rc.showVehicles && mergedThisFrame.has(v.id)) continue;
-      // senza corsa né linea: in deposito o fuori servizio
-      if (!inService(v)) continue;
+      // senza corsa né linea (fermo, in deposito o fuori servizio): in grigio, senza anello
+      const assigned = inService(v);
       const cat = v.category || 'vaporetto';
       if (selectedCategory !== 'all' && cat !== selectedCategory) continue;
       const vx = sx(mx(v.lon));
       const vy = sy(my(v.lat));
       if (vx < -20 || vx > cw + 20 || vy < -20 || vy > ch + 20) continue;
-      const col = lineColor(v.line, cat) ?? pal.cats[cat] ?? '#34d399';
+      const col = assigned ? (lineColor(v.line, cat) ?? pal.cats[cat] ?? '#34d399') : isDark ? '#64748b' : '#94a3b8';
       // direzione dal GPS (gradi da nord, in senso orario); senza direzione l'icona punta a nord
       const heading = ((v.bearing ?? 0) * Math.PI) / 180;
       drawVehicleGlyph(ctx, cat, vx, vy, heading, {
@@ -225,6 +225,7 @@ export function drawRealtimeVehicles(rc: RenderContext): void {
         scale: Math.max(0.4, Math.min(1.0, 0.45 + 12 * camera.s)),
         roof: isDark ? '#e2e8f0' : '#ffffff',
       });
+      if (!assigned) continue;
       // punto «live»: distingue la posizione reale da quella calcolata dall'orario
       ctx.beginPath();
       ctx.arc(vx + 6, vy - 6, 2.2, 0, Math.PI * 2);

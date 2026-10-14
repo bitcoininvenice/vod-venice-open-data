@@ -723,3 +723,15 @@ def test_fermate_bus_corsie_unite_tram_esclusi_e_fuori_area():
     assert len(out) == 1
     assert out[0]["name"] == "Gran Viale" and out[0]["lines"] == ["A", "B"] and out[0]["gtfsIds"] == ["10", "11"]
     assert out[0]["mode"] == "bus" and out[0]["id"] == "busstop:10"
+
+
+# --- Alilaguna: linee stagionali dalla pagina ufficiale ---
+
+import import_alilaguna_gtfs as alilaguna  # noqa: E402
+
+
+def test_alilaguna_linea_stagionale_dalla_pagina():
+    rossa = "<h1>Linea Rossa (stagionale estiva)</h1><p>Linea stagionale estiva, attiva da Aprile a Novembre La Linea Rossa collega…</p>"
+    blu = "<h1>Linea Blu</h1><p>La Linea Blu collega l'Aeroporto Marco Polo con Murano…</p>"
+    assert alilaguna.seasonal_note(rossa) == "Linea stagionale estiva, attiva da Aprile a Novembre"
+    assert alilaguna.seasonal_note(blu) is None

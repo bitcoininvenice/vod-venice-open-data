@@ -30,20 +30,27 @@ export function lookupTrip(tripId: string | null): { line: string; category: Rea
 
 let categoryByLine: Map<string, RealtimeCategory> | null = null;
 
+const WATER_CATEGORIES = new Set<RealtimeCategory>(['vaporetto', 'ferry']);
+const networkOf = (c: RealtimeCategory) => (WATER_CATEGORIES.has(c) ? 'navigazione' : 'automobilistico');
+
 /**
  * Categoria di una linea (es. T1 -> tram), ricavata dalle sue corse nel GTFS statico.
- * Serve quando la corsa del feed realtime non è nell'indice ma la linea sì.
+ * Serve quando la corsa del feed realtime non è nell'indice ma la linea sì. Lo stesso numero può
+ * indicare un vaporetto e un bus (es. 15): con la rete del mezzo si sceglie la linea giusta.
  */
-export function lineCategory(line: string | null): RealtimeCategory | null {
+export function lineCategory(line: string | null, network?: 'navigazione' | 'automobilistico'): RealtimeCategory | null {
   if (!line) return null;
   if (!categoryByLine) {
     categoryByLine = new Map();
     for (const value of Object.values(IDX.trips)) {
       const [l, c] = value.split('|');
-      if (!categoryByLine.has(l)) categoryByLine.set(l, c as RealtimeCategory);
+      const cat = c as RealtimeCategory;
+      const key = `${l}|${networkOf(cat)}`;
+      if (!categoryByLine.has(key)) categoryByLine.set(key, cat);
+      if (!categoryByLine.has(l)) categoryByLine.set(l, cat);
     }
   }
-  return categoryByLine.get(line) ?? null;
+  return (network ? categoryByLine.get(`${line}|${network}`) : categoryByLine.get(line)) ?? null;
 }
 
 export function lookupRoute(routeId: string | null): { line: string } | null {

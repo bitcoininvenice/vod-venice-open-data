@@ -17,7 +17,7 @@ import { useTranslation } from '@/lib/i18n';
 import { simClock } from '@/lib/simClock';
 import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
-import { freshDelay, inService, isLiveView, MAX_EARLY_S, MAX_LATE_S, mergedThisFrame, realtimeByTrip, shownDistance, tripKey } from './map/liveFleet';
+import { freshDelay, inService, isLiveView, networkOfSimCategory, MAX_EARLY_S, MAX_LATE_S, mergedThisFrame, realtimeByTrip, shownDistance, tripKey } from './map/liveFleet';
 import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri, drawScheduleSpeed, drawBusStops, drawActvNotices, SHUTTLE_LAYOVER_S } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawPasserelle } from './map/tideLayers';
@@ -553,7 +553,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         const layover = SHUTTLE_LAYOVER_S[rCat] ?? 0;
         if (t0[i] > t + (live ? MAX_EARLY_S : 0) || t1[i] + Math.max(layover, live ? MAX_LATE_S : 0) < t) continue;
         if (selectedCategory !== 'all' && rCat !== selectedCategory) continue;
-        const key = tripKey(prof.route.n, t0[i]);
+        const key = tripKey(prof.route.n, t0[i], networkOfSimCategory(rCat));
         const gps = gpsByTrip?.get(key);
         const delay = gps ? freshDelay(gps) : null;
         if (t0[i] > t && delay === null) continue;
@@ -578,6 +578,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
                 delayConflict: gps.delayConflict ?? false,
                 trip: { line, profileIndex: tP[i], departure: t0[i], day: selectedDay },
                 vehicleId: gps.id,
+                vehicleName: gps.label,
+                network: gps.network,
               },
             });
         }
@@ -597,6 +599,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               headsign: `${tr('ui.mapLabels.line', { line: lineName })} · ${tr('ui.map.orarioUfficialeActv')}`,
               source: 'schedule',
               trip: { line: lineName, profileIndex: tP[i], departure: t0[i], day: selectedDay },
+              network: networkOfSimCategory(rCat),
             },
           });
       }
@@ -756,17 +759,17 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         L.showRealtimeVehicles &&
           target({
             // i mezzi già disegnati come corsa dell'orario si cliccano lì
-            items: D.realtimeVehicles.filter((v) => inService(v) && !(L.showVehicles && mergedThisFrame.has(v.id))),
+            items: D.realtimeVehicles.filter((v) => !(L.showVehicles && mergedThisFrame.has(v.id))),
             radius: 14,
             select: (v) => {
               const cat = v.category || 'vaporetto';
               onSelectObject?.({
                 type: 'vehicle',
                 data: {
-                  line: v.line || '?',
-                  category: `${cat.toUpperCase()} · GPS`,
+                  line: v.line || '–',
+                  category: inService(v) ? `${cat.toUpperCase()} · GPS` : tr('ui.mapLabels.noTripCategory'),
                   speedKmh: null,
-                  color: lineColor(v.line, cat) ?? paletteAt(currentTimeSeconds).cats[cat] ?? '#34d399',
+                  color: inService(v) ? (lineColor(v.line, cat) ?? paletteAt(currentTimeSeconds).cats[cat] ?? '#34d399') : '#94a3b8',
                   headsign: v.line
                     ? `${tr('ui.mapLabels.line', { line: v.line })} · ${tr(v.network === 'navigazione' ? 'ui.mapLabels.networkNav' : 'ui.mapLabels.networkBus')}`
                     : tr('ui.mapLabels.unknownLine', { id: v.label || v.id }),
@@ -774,8 +777,10 @@ export const MapEngine: React.FC<MapEngineProps> = ({
                   updatedAt: v.timestamp,
                   delay: v.delay ?? null,
                   delayConflict: v.delayConflict ?? false,
-                  trip: v.line ? { line: v.line, startTime: v.startTime, startDate: v.startDate } : undefined,
+                  trip: v.line ? { line: v.line, startTime: v.startTime, startDate: v.startDate, network: v.network } : undefined,
                   vehicleId: v.id,
+                  vehicleName: v.label,
+                  network: v.network,
                 },
               });
             },

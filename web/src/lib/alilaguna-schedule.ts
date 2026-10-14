@@ -165,6 +165,8 @@ export const ALILAGUNA_ROUTES: AlilagunaRoute[] = FEED.routes.map((r) => {
     stops: stopNames,
     shape: longest ? FEED.shapes[longest.shape] ?? [] : [],
     ...servicePeriod(routeTrips.map((t) => t.service)),
+    seasonal: (r as { seasonal?: boolean | null }).seasonal ?? null,
+    seasonNote: (r as { seasonNote?: string | null }).seasonNote ?? null,
   };
 });
 

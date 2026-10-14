@@ -127,7 +127,7 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
 
                 <div className="pt-1.5 border-t border-[var(--rule)] flex items-center justify-between text-[10px] font-mono text-[var(--ink-2)]">
                   <span>{r.stops.length} {t('ui.alilaguna.fermatePontili')}</span>
-                  <ServicePeriod from={r.serviceFrom} to={r.serviceTo} />
+                  <ServicePeriod route={r} />
                 </div>
               </div>
             ))}
@@ -223,16 +223,21 @@ export const AlilagunaDetailModal: React.FC<AlilagunaDetailModalProps> = ({
   );
 };
 
-/** Periodo di servizio della linea dal calendario GTFS; in grigio se oggi è fuori periodo. */
-const ServicePeriod: React.FC<{ from: string | null; to: string | null }> = ({ from, to }) => {
+/**
+ * Solo per le linee stagionali (indicate così nella pagina ufficiale della linea): il periodo di servizio,
+ * e "non in servizio oggi" fuori dall'orario in uso. Le linee annuali non mostrano nulla.
+ */
+const ServicePeriod: React.FC<{ route: AlilagunaRoute }> = ({ route: r }) => {
   const { t } = useTranslation();
-  if (!from || !to) return null;
+  if (!r.seasonal) return null;
   const today = romeToday();
   const dmy = (d: string) => d.split('-').reverse().join('/');
-  const active = today >= from && today <= to;
+  const active = !r.serviceFrom || !r.serviceTo || (today >= r.serviceFrom && today <= r.serviceTo);
   return (
-    <span className={active ? 'text-emerald-400 font-semibold' : 'text-[var(--ink-3)]'} data-testid="alilaguna-service-period">
-      {t(active ? 'ui.alilaguna.servicePeriod' : 'ui.alilaguna.outOfService', { from: dmy(from), to: dmy(to) })}
+    <span className={active ? 'text-amber-400 font-semibold' : 'text-[var(--ink-3)]'} data-testid="alilaguna-service-period">
+      {active
+        ? (r.seasonNote ?? t('ui.alilaguna.seasonal'))
+        : t('ui.alilaguna.outOfService', { from: dmy(r.serviceFrom as string), to: dmy(r.serviceTo as string) })}
     </span>
   );
 };

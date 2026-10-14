@@ -17,10 +17,12 @@ describe('categorie della flotta', () => {
 });
 
 describe('Alilaguna: periodo di servizio dal calendario GTFS', () => {
-  it('ogni linea ha inizio e fine del servizio, non "365 giorni"', () => {
+  it('periodo dell\'orario per ogni linea; stagionale solo la Rossa, come sul sito Alilaguna', () => {
     for (const r of ALILAGUNA_ROUTES) {
       expect(r.serviceFrom).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(r.serviceTo! >= r.serviceFrom!).toBe(true);
     }
+    const seasonal = ALILAGUNA_ROUTES.filter((r) => r.seasonal).map((r) => r.lineCode);
+    expect(seasonal).toEqual(['ROSSA']);
   });
 });

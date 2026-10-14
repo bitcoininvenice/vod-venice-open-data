@@ -46,7 +46,7 @@ export async function GET() {
       const d = v.startDate && /^\d{8}$/.test(v.startDate)
         ? romeDayType(romeLocalToDate(`${v.startDate.slice(0, 4)}-${v.startDate.slice(4, 6)}-${v.startDate.slice(6, 8)} 12:00:00`))
         : day;
-      const trip = matchTrip(sim.index, v.line, departure, d);
+      const trip = matchTrip(sim.index, v.line, departure, d, v.network);
       if (trip) terminus = terminusOf(trip.profile);
     }
     return { id: v.id, line: v.line, network: v.network, departure, terminus, delaySeconds: v.delay?.seconds ?? null };

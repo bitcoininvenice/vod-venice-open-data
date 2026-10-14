@@ -32,6 +32,8 @@ export interface TripRef {
   startTime?: string | null;
   startDate?: string | null;
   day?: DayType;
+  /** rete del mezzo GPS: distingue linee omonime (es. bus 15 e vaporetto 15) */
+  network?: 'navigazione' | 'automobilistico';
 }
 
 const indexCache = new WeakMap<SimModel, TripIndex>();
@@ -54,7 +56,7 @@ export function resolveTrip(sim: SimModel | null, ref: TripRef | null | undefine
     const d = ref.startDate;
     day = romeDayType(romeLocalToDate(`${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)} 12:00:00`));
   }
-  return matchTrip(index, ref.line, departure, day);
+  return matchTrip(index, ref.line, departure, day, ref.network);
 }
 
 /** Fermata della mappa più vicina a un punto, entro `maxM` metri (solo navigazione e ferry). */

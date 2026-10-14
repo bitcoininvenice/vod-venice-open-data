@@ -26,7 +26,7 @@ export const enUi: UiTranslations = {
     testo: "From",
     testo2: "To",
     fermatePontili: "stops / piers",
-    servicePeriod: "In service from {from} to {to}",
+    seasonal: "Seasonal line",
     outOfService: "Not in service today (timetable from {from} to {to})",
     flottaAlilagunaNavigazione: "Alilaguna Fleet in Navigation",
     battelliAttivi: "Active Vessels",
@@ -146,6 +146,8 @@ export const enUi: UiTranslations = {
     parks: "Parks, gardens and playgrounds (OSM)"
   },
   map: {
+    vehicleName: "Vehicle",
+    vehicleNumber: "no. {n}",
     orarioUfficialeActv: "official ACTV timetable",
     posizioneGpsRealeGtfsRt: "Real GPS position (ACTV GTFS-RT)",
     aggiornataAlle: "Updated at",
@@ -1505,7 +1507,8 @@ export const enUi: UiTranslations = {
     line: "Line {line}",
     networkNav: "waterbus",
     networkBus: "bus and tram",
-    unknownLine: "Vehicle {id} · line not recognised",
+    unknownLine: "Vehicle {id} · no trip in the ACTV feed: stopped, in the depot or out of service",
+    noTripCategory: "No trip assigned",
     airport: "Marco Polo Airport (VCE / LIPZ)",
     airportSub: "Runway 04R/22L · Alilaguna dock",
     kmToVce: "{km} km from VCE",

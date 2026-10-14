@@ -80,12 +80,12 @@ describe('servizio adesso', () => {
 
   it('corse in servizio dall\'orario, anche quelle iniziate il giorno prima', () => {
     const s = sim(3600, [36000, 85000]);
-    expect(scheduledRunning(s, 'weekday', 36500).get('1')?.count).toBe(1);
-    expect(scheduledRunning(s, 'weekday', 1000).get('1')?.count).toBe(1); // 85000 + 3600 > 86400 + 1000
+    expect(scheduledRunning(s, 'weekday', 36500).get('1|navigazione')?.count).toBe(1);
+    expect(scheduledRunning(s, 'weekday', 1000).get('1|navigazione')?.count).toBe(1); // 85000 + 3600 > 86400 + 1000
   });
 
   it('riepilogo per linea: corse senza GPS, ritardi, puntualità; feed spento = nessun dato', () => {
-    const running = new Map([['1', { count: 3, category: 'vaporetto' }]]);
+    const running = new Map([['1|navigazione', { count: 3, category: 'vaporetto' }]]);
     const [line] = serviceNow([v('x', 36000, 60), v('y', 36600, 400)], running, { navigazione: true, automobilistico: true });
     expect(line).toMatchObject({ line: '1', gps: 2, scheduled: 3, withoutGps: 1, withDelay: 2, avgDelayS: 230, maxDelayS: 400, onTimeShare: 0.5 });
     expect(serviceNow([v('x', 36000, 60)], running, { navigazione: false, automobilistico: true })).toEqual([]);
@@ -105,5 +105,25 @@ describe('cache delle fermate delle corse', () => {
     expect(profileStops(s, all).get(s.profs[0])?.map((x) => x.stop)).toEqual([0, 1]);
     // con un altro elenco gli indici si riferiscono a quell'elenco, non al precedente
     expect(profileStops(s, onlyOne).get(s.profs[0])).toBeUndefined();
+  });
+});
+
+describe('linee omonime nelle due reti', () => {
+  it('bus 15 e vaporetto 15 restano separati', () => {
+    const running = new Map([
+      ['15|navigazione', { count: 2, category: 'vaporetto' }],
+      ['15|automobilistico', { count: 3, category: 'bus' }],
+    ]);
+    const vs: ServiceVehicle[] = [
+      { id: 'a', line: '15', network: 'navigazione', departure: 36000, terminus: 'X', delaySeconds: 60 },
+      { id: 'b', line: '15', network: 'automobilistico', departure: 36000, terminus: 'X', delaySeconds: 600 },
+    ];
+    const out = serviceNow(vs, running, { navigazione: true, automobilistico: true });
+    expect(out.map((l) => [l.line, l.network, l.gps, l.scheduled, l.avgDelayS])).toEqual([
+      ['15', 'automobilistico', 1, 3, 600],
+      ['15', 'navigazione', 1, 2, 60],
+    ]);
+    // stessa linea e partenza ma reti diverse: non sono "in coda"
+    expect(bunchedPairs(vs)).toEqual([]);
   });
 });

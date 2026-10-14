@@ -444,7 +444,7 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
 export function layerCounts(d: CityData, extra: { scheduledVehicles: number; alilagunaBoats: number }): Partial<Record<LayerKey, number>> {
   return {
     showVehicles: extra.scheduledVehicles,
-    showRealtimeVehicles: d.realtimeVehicles.filter((v) => v.line || v.tripId).length,
+    showRealtimeVehicles: d.realtimeVehicles.length,
     showStops: d.stops.length,
     showBusStops: d.busStops.length,
     showActvNotices: d.actvNotices.length,

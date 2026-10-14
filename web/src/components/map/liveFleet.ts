@@ -28,7 +28,10 @@ export const MAX_EARLY_S = 30 * 60;
 /** Mezzo GPS in servizio: il feed indica la corsa o almeno la linea (gli altri sono in deposito o fuori servizio). */
 export const inService = (v: Pick<RealtimeVehicleDto, 'line' | 'tripId'>): boolean => Boolean(v.line || v.tripId);
 
-export const tripKey = (line: string, departure: number) => `${line}|${departure}`;
+/** Corsa: linea, rete (lo stesso numero può essere vaporetto e bus) e partenza */
+export const tripKey = (line: string, departure: number, network: 'navigazione' | 'automobilistico') => `${line}|${network}|${departure}`;
+const WATER_CATS = new Set(['vaporetto', 'motoscafo', 'motonave', 'ferry']);
+export const networkOfSimCategory = (cat: string): 'navigazione' | 'automobilistico' => (WATER_CATS.has(cat) ? 'navigazione' : 'automobilistico');
 
 /** Mezzi GPS con ritardo recente, per linea e partenza della corsa. */
 const indexCache = new WeakMap<RealtimeVehicleDto[], Map<string, RealtimeVehicleDto>>();
@@ -39,7 +42,7 @@ export function realtimeByTrip(vehicles: RealtimeVehicleDto[]): Map<string, Real
     for (const v of vehicles) {
       const dep = parseGtfsTime(v.startTime);
       if (!v.line || dep === null || !v.delay) continue;
-      m.set(tripKey(v.line, dep), v);
+      m.set(tripKey(v.line, dep, v.network), v);
     }
     indexCache.set(vehicles, m);
   }

@@ -28,7 +28,14 @@ export interface RealtimeVehicleOut extends RealtimeVehicle {
  * Ritardo verificato di un mezzo: calcolato dalla posizione sulla corsa dell'orario con la stessa
  * linea e partenza, confrontato con quello di ACTV. undefined se non calcolabile (resta quello di ACTV).
  */
-function checkedDelay(v: RealtimeVehicle, line: string | null, trip: TripDelay | undefined, index: TripIndex | null, nowSec: number) {
+function checkedDelay(
+  v: RealtimeVehicle,
+  line: string | null,
+  trip: TripDelay | undefined,
+  index: TripIndex | null,
+  nowSec: number,
+  network: 'navigazione' | 'automobilistico',
+) {
   const actv = actvCurrentDelay(trip, nowSec);
   const startTime = v.startTime ?? trip?.startTime ?? null;
   const startDate = v.startDate ?? trip?.startDate ?? null;
@@ -36,7 +43,7 @@ function checkedDelay(v: RealtimeVehicle, line: string | null, trip: TripDelay |
   let position: number | null = null;
   if (index && line && departure !== null && startDate && v.timestamp !== null && isFresh(v.timestamp, nowSec)) {
     const midnight = romeLocalToDate(`${startDate.slice(0, 4)}-${startDate.slice(4, 6)}-${startDate.slice(6, 8)} 00:00:00`).getTime() / 1000;
-    const scheduled = matchTrip(index, line, departure, romeDayType(new Date((midnight + 12 * 3600) * 1000)));
+    const scheduled = matchTrip(index, line, departure, romeDayType(new Date((midnight + 12 * 3600) * 1000)), network);
     if (scheduled) position = positionDelay(scheduled.profile, v.lon, v.lat, v.timestamp - midnight - departure, actv ?? 0);
   }
   const trusted = trustDelay(position, actv);
@@ -73,13 +80,13 @@ export async function GET() {
         const route = lookupRoute(v.routeId);
         const line = trip?.line ?? route?.line ?? null;
         const actvTrip = findTrip(delays.trips, v.tripId);
-        const checked = checkedDelay(v, line, actvTrip, sim?.index ?? null, nowSec);
+        const checked = checkedDelay(v, line, actvTrip, sim?.index ?? null, nowSec, network);
         const conflict = checked !== null && 'conflict' in checked;
         return {
           ...v,
           network,
           line,
-          category: trip?.category ?? lineCategory(line) ?? (network === 'navigazione' ? 'vaporetto' : 'bus'),
+          category: trip?.category ?? lineCategory(line, network) ?? (network === 'navigazione' ? 'vaporetto' : 'bus'),
           delay: conflict ? null : vehicleDelay(actvTrip, nowSec, checked),
           ...(conflict ? { delayConflict: true } : {}),
         };

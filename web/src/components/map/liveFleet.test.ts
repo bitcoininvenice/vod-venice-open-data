@@ -21,7 +21,8 @@ const vehicle = (over: Partial<RealtimeVehicleDto>): RealtimeVehicleDto => ({
 describe('flotta live', () => {
   it('abbina il mezzo GPS alla corsa per linea e partenza, solo se ha un ritardo', () => {
     const m = realtimeByTrip([vehicle({}), vehicle({ id: 'v2', startTime: '10:10:00', delay: null }), vehicle({ id: 'v3', line: null })]);
-    expect(m.get(tripKey('1', 36000))?.id).toBe('v1');
+    expect(m.get(tripKey('1', 36000, 'navigazione'))?.id).toBe('v1');
+    expect(m.get(tripKey('1', 36000, 'automobilistico'))).toBeUndefined();
     expect(m.size).toBe(1);
   });
 

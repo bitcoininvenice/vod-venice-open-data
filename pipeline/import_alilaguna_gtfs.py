@@ -21,7 +21,8 @@ import os
 import sys
 import zipfile
 from datetime import datetime, timezone
-from vod_http import fetch_bytes
+import re
+from vod_http import fetch_bytes, fetch_text
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -68,6 +69,29 @@ def project_on_shape(shape, cum, lon, lat, min_dist):
         if d < best_d:
             best, best_d = cum[i], d
     return best if best is not None else min_dist
+
+
+def seasonal_note(page_html: str) -> str | None:
+    """Avviso di linea stagionale nella pagina ufficiale della linea (es. "Linea stagionale estiva, attiva da Aprile a Novembre")."""
+    text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", re.sub(r"<(script|style)[\s\S]*?</\1>", " ", page_html)))
+    m = re.search(r"((?:Linea stagionale|(?:Summer )?seasonal line)[^.<]{0,60}?(?:da|from) [A-Za-zÀ-ÿ]+ (?:a|to) [A-Za-zÀ-ÿ]+)", text, re.I)
+    if m:
+        return m.group(1).strip()
+    m = re.search(r"(Linea stagionale[^.<]{0,40}|(?:Summer )?seasonal line[^.<]{0,40})", text, re.I)
+    return m.group(1).strip() if m else None
+
+
+def route_season(url: str) -> dict:
+    """Stagionalità dalla pagina della linea; se la pagina non risponde il dato resta sconosciuto (None)."""
+    if not url:
+        return {"seasonal": None, "seasonNote": None}
+    try:
+        page = fetch_text(url.replace("http://", "https://"))
+    except Exception as e:  # noqa: BLE001
+        logging.warning("Pagina della linea non raggiungibile (%s): %s", url, e)
+        return {"seasonal": None, "seasonNote": None}
+    note = seasonal_note(page)
+    return {"seasonal": note is not None, "seasonNote": note}
 
 
 def load_zip(path):
@@ -145,6 +169,7 @@ def main() -> int:
                 "color": f"#{r.get('route_color') or '0055a5'}",
                 "description": r.get("route_desc", ""),
                 "url": r.get("route_url", ""),
+                **route_season(r.get("route_url", "")),
             }
             for r in routes
         ],

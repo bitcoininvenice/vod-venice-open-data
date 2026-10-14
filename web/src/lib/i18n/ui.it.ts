@@ -24,7 +24,7 @@ export const itUi = {
     testo: "Da",
     testo2: "A",
     fermatePontili: "fermate / pontili",
-    servicePeriod: "In servizio dal {from} al {to}",
+    seasonal: "Linea stagionale",
     outOfService: "Non in servizio oggi (orario dal {from} al {to})",
     flottaAlilagunaNavigazione: "Flotta Alilaguna in Navigazione",
     battelliAttivi: "Battelli Attivi",
@@ -144,6 +144,8 @@ export const itUi = {
     parks: "Parchi, giardini e aree giochi (OSM)"
   },
   map: {
+    vehicleName: "Mezzo",
+    vehicleNumber: "n. {n}",
     orarioUfficialeActv: "orario ufficiale ACTV",
     posizioneGpsRealeGtfsRt: "Posizione GPS reale (GTFS-RT ACTV)",
     aggiornataAlle: "Aggiornata alle",
@@ -1503,7 +1505,8 @@ export const itUi = {
     line: "Linea {line}",
     networkNav: "navigazione",
     networkBus: "autobus e tram",
-    unknownLine: "Mezzo {id} · linea non riconosciuta",
+    unknownLine: "Mezzo {id} · nessuna corsa nel feed ACTV: fermo, in deposito o fuori servizio",
+    noTripCategory: "Senza corsa assegnata",
     airport: "Aeroporto Marco Polo (VCE / LIPZ)",
     airportSub: "Pista 04R/22L · Darsena Alilaguna",
     kmToVce: "{km} km da VCE",

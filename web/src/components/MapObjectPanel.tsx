@@ -32,6 +32,10 @@ export interface VehicleSelection {
   trip?: TripRef;
   /** id del mezzo nel feed GTFS-RT (per i mezzi in coda) */
   vehicleId?: string;
+  /** nome o numero del mezzo nel feed (es. il nome del ferry o della motonave) */
+  vehicleName?: string | null;
+  /** rete del mezzo: distingue linee omonime (es. bus 15 e vaporetto 15) */
+  network?: 'navigazione' | 'automobilistico';
 }
 
 /** Oggetti in movimento cliccati sulla mappa (le schede dei punti fissi sono in VeniceFeatureDetailModal). */
@@ -192,12 +196,13 @@ export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose,
         <KeyValues
           items={[
             [t('map.estimatedSpeed'), !gps && v.speedKmh !== null ? `${v.speedKmh} km/h` : null, 'text-emerald-400'],
+            [t('ui.map.vehicleName'), v.vehicleName ? (/^\d+$/.test(v.vehicleName) ? t('ui.map.vehicleNumber', { n: v.vehicleName }) : v.vehicleName) : null],
             [t('ui.map.fonte'), gps ? t('ui.map.posizioneGpsRealeGtfsRt') : t('ui.map.simulatoOrario'), gps ? 'text-emerald-400' : 'text-sky-400'],
           ]}
         />
         {gps && !v.delay && <p className="text-[11px] text-[var(--ink-3)]">{t(v.delayConflict ? 'ui.delay.conflict' : 'ui.delay.noDelay')}</p>}
-        <LineNowBox line={v.line} vehicleId={v.vehicleId} />
-        <LineNotices line={v.line} />
+        {v.line !== '–' && <LineNowBox line={v.line} vehicleId={v.vehicleId} network={v.network} />}
+        {v.line !== '–' && <LineNotices line={v.line} />}
         {v.trip && <TripStopsList vehicle={v} timeSeconds={timeSeconds} />}
       </InfoPanel>
     );
@@ -348,10 +353,10 @@ const signedMin = (s: number) => {
 };
 
 /** La linea del mezzo in questo momento (nessuno storico): mezzi GPS, corse in servizio, ritardi, mezzi in coda. */
-const LineNowBox: React.FC<{ line: string; vehicleId?: string }> = ({ line, vehicleId }) => {
+const LineNowBox: React.FC<{ line: string; vehicleId?: string; network?: 'navigazione' | 'automobilistico' }> = ({ line, vehicleId, network }) => {
   const { t } = useTranslation();
   const service = useServiceNow(true);
-  const l = service?.find((x) => x.line === line);
+  const l = service?.find((x) => x.line === line && (!network || x.network === network));
   if (!l) return null;
   const pair = vehicleId ? l.bunched.find((p) => p.a === vehicleId || p.b === vehicleId) : undefined;
   return (

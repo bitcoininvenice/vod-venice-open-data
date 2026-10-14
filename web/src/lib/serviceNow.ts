@@ -63,16 +63,20 @@ const PREV_DAY: Record<DayType, DayType> = { weekday: 'weekday', saturday: 'week
  * ancora in corsa dopo mezzanotte). `prevDay` va passato quando il giorno prima era di tipo diverso
  * (es. lunedì dopo la domenica).
  */
-export function scheduledRunning(sim: SimModel, day: DayType, secondsOfDay: number, prevDay: DayType = PREV_DAY[day]): Map<string, { count: number; category: string }> {
-  const out = new Map<string, { count: number; category: string }>();
+/** Chiave di una linea: lo stesso numero può essere un vaporetto e un bus (es. 15) */
+export const lineKey = (line: string, network: 'navigazione' | 'automobilistico') => `${line}|${network}`;
+
+export function scheduledRunning(sim: SimModel, day: DayType, secondsOfDay: number, prevDay: DayType = PREV_DAY[day]): Map<string, { count: number; category: string; line: string }> {
+  const out = new Map<string, { count: number; category: string; line: string }>();
   const add = (d: DayType, t: number) => {
     const trips = sim.daysTrips[d];
     for (let i = 0; i < trips.count; i++) {
       if (trips.t0[i] > t || trips.t1[i] < t) continue;
       const route = sim.profs[trips.tP[i]].route;
-      const e = out.get(route.n) ?? { count: 0, category: route.cat };
+      const key = lineKey(route.n, networkOfCategory(route.cat));
+      const e = out.get(key) ?? { count: 0, category: route.cat, line: route.n };
       e.count++;
-      out.set(route.n, e);
+      out.set(key, e);
     }
   };
   add(day, secondsOfDay);
@@ -85,7 +89,7 @@ export function bunchedPairs(vehicles: ServiceVehicle[]): BunchedPair[] {
   const groups = new Map<string, (ServiceVehicle & { departure: number; delaySeconds: number })[]>();
   for (const v of vehicles) {
     if (v.line === null || v.departure === null || v.delaySeconds === null || v.terminus === null) continue;
-    const key = `${v.line}|${v.terminus}`;
+    const key = `${v.line}|${v.network}|${v.terminus}`;
     const list = groups.get(key) ?? [];
     list.push(v as ServiceVehicle & { departure: number; delaySeconds: number });
     groups.set(key, list);
@@ -117,23 +121,25 @@ export function compareLines(a: string, b: string): number {
  */
 export function serviceNow(
   vehicles: ServiceVehicle[],
-  running: Map<string, { count: number; category: string }>,
+  running: Map<string, { count: number; category: string; line?: string }>,
   feedOk: Record<'navigazione' | 'automobilistico', boolean>,
 ): LineNow[] {
   const byLine = new Map<string, ServiceVehicle[]>();
   for (const v of vehicles) {
     if (!v.line) continue;
-    const list = byLine.get(v.line) ?? [];
+    const k = lineKey(v.line, v.network);
+    const list = byLine.get(k) ?? [];
     list.push(v);
-    byLine.set(v.line, list);
+    byLine.set(k, list);
   }
   const bunched = bunchedPairs(vehicles);
-  const lines = new Set([...byLine.keys(), ...running.keys()]);
+  const keys = new Set([...byLine.keys(), ...running.keys()]);
   const out: LineNow[] = [];
-  for (const line of lines) {
-    const list = byLine.get(line) ?? [];
-    const sched = running.get(line) ?? null;
-    const network = sched ? networkOfCategory(sched.category) : (list[0]?.network ?? 'navigazione');
+  for (const key of keys) {
+    const list = byLine.get(key) ?? [];
+    const sched = running.get(key) ?? null;
+    const [line, net] = key.split('|') as [string, 'navigazione' | 'automobilistico' | undefined];
+    const network = net ?? (sched ? networkOfCategory(sched.category) : (list[0]?.network ?? 'navigazione'));
     if (!feedOk[network]) continue;
     const delays = list.map((v) => v.delaySeconds).filter((d): d is number => d !== null);
     out.push({
@@ -151,5 +157,5 @@ export function serviceNow(
     });
   }
   // solo le linee con qualcosa da dire adesso: mezzi visibili o corse in servizio
-  return out.filter((l) => l.gps > 0 || (l.scheduled ?? 0) > 0).sort((a, b) => compareLines(a.line, b.line));
+  return out.filter((l) => l.gps > 0 || (l.scheduled ?? 0) > 0).sort((a, b) => compareLines(a.line, b.line) || a.network.localeCompare(b.network));
 }

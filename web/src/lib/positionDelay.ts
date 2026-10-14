@@ -147,19 +147,24 @@ export interface ScheduledTrip {
   departure: number;
 }
 
-/** Indice delle corse dell'orario per linea e partenza, per tipo di giorno. */
-export type TripIndex = Record<DayType, Map<string, ScheduledTrip>>;
+/** Indice delle corse dell'orario per linea e partenza (più corse se lo stesso numero è vaporetto e bus), per tipo di giorno. */
+export type TripIndex = Record<DayType, Map<string, ScheduledTrip[]>>;
+
+const WATER = new Set(['vaporetto', 'motoscafo', 'motonave', 'ferry']);
+/** Rete di una corsa dell'orario: navigazione o automobilistico (bus, tram, bus delle isole, People Mover) */
+export const tripNetwork = (p: SimProfile): 'navigazione' | 'automobilistico' => (WATER.has(p.route.cat) ? 'navigazione' : 'automobilistico');
 
 export function indexTrips(model: SimModel): TripIndex {
   const out = {} as TripIndex;
   for (const day of ['weekday', 'saturday', 'sunday'] as DayType[]) {
-    const m = new Map<string, ScheduledTrip>();
+    const m = new Map<string, ScheduledTrip[]>();
     const trips = model.daysTrips[day];
     for (let i = 0; i < trips.count; i++) {
       const profile = model.profs[trips.tP[i]];
       const departure = trips.t0[i];
       if (departure < 0) continue; // corsa del giorno prima, già indicizzata nel suo giorno
-      m.set(`${profile.route.n}|${departure}`, { profile, departure });
+      const key = `${profile.route.n}|${departure}`;
+      m.set(key, [...(m.get(key) ?? []), { profile, departure }]);
     }
     out[day] = m;
   }
@@ -170,10 +175,18 @@ export function indexTrips(model: SimModel): TripIndex {
  * Corsa dell'orario con la stessa linea e partenza. Prima il tipo di giorno atteso, poi gli altri
  * (nei festivi infrasettimanali ACTV usa l'orario festivo).
  */
-export function matchTrip(index: TripIndex, line: string, departure: number, day: DayType): ScheduledTrip | null {
+export function matchTrip(
+  index: TripIndex,
+  line: string,
+  departure: number,
+  day: DayType,
+  network?: 'navigazione' | 'automobilistico',
+): ScheduledTrip | null {
   const order: DayType[] = [day, ...(['weekday', 'saturday', 'sunday'] as DayType[]).filter((d) => d !== day)];
   for (const d of order) {
-    const hit = index[d].get(`${line}|${departure}`);
+    const hits = index[d].get(`${line}|${departure}`);
+    // con la rete del mezzo si esclude la linea omonima dell'altra rete (es. bus 15 e vaporetto 15)
+    const hit = hits?.find((h) => !network || tripNetwork(h.profile) === network);
     if (hit) return hit;
   }
   return null;
