@@ -112,7 +112,7 @@ export function drawVehicles(rc: RenderContext): void {
     if (sim && tripsData) {
       const { tP, t0, t1, count } = tripsData;
       const t = currentTimeSeconds;
-      const trailSec = 45; // Ghosting trail duration
+      const trailSec = 21; // Ghosting trail duration
       // icone più piccole a scala urbana intera, piene da vicino
       const glyphScale = Math.max(0.4, Math.min(1.0, 0.45 + 12 * rc.camera.s));
 
