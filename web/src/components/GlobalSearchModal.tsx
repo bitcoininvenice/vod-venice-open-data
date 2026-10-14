@@ -20,6 +20,8 @@ import { isLocated } from '@/lib/types';
 import type { CityData } from '@/lib/cityData';
 import { Modal } from '@/components/ui/Modal';
 import { filterFountains } from '@/lib/fountainFilter';
+import { ALILAGUNA_STOPS, ALILAGUNA_ROUTES } from '@/lib/alilaguna-schedule';
+import { addressLabel, type AddressHit } from '@/lib/addresses';
 
 export type SearchCategory = 'transit' | 'health' | 'services' | 'heritage' | 'lagoon';
 
@@ -92,6 +94,22 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
       });
     }
 
+    // 1b. Fermate Alilaguna (orario ufficiale Alilaguna)
+    const lineNames = new Map<string, string>(ALILAGUNA_ROUTES.map((r) => [r.lineCode, r.name]));
+    for (const s of ALILAGUNA_STOPS) {
+      list.push({
+        id: `alilaguna-${s.id}`,
+        title: s.name,
+        subtitle: t('ui.search.subAlilagunaStop', { lines: s.lines.map((l) => lineNames.get(l) ?? l).join(', ') }),
+        category: 'transit',
+        lat: s.lat,
+        lon: s.lon,
+        layerKey: 'showAlilaguna',
+        type: 'alilaguna_stop',
+        rawItem: s,
+      });
+    }
+
     // 2. Farmacie (i turni non sono open data: la scheda rimanda alla pagina dell'AULSS 3)
     for (const p of pharmacies) {
       list.push({
@@ -141,7 +159,8 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
     for (const f of filterFountains(fountains, 'all')) {
       list.push({
         id: `fountain-${f.id}`,
-        title: f.name || t('ui.search.subFountain'),
+        // il nome OSM della fontanella è spesso la calle o il campo: «Fontana in Calle Minestra»
+        title: !f.name ? t('ui.search.subFountain') : /fonta/i.test(f.name) ? f.name : t('ui.search.fountainIn', { place: f.name }),
         subtitle: `${f.sestiere || 'Venezia'} · ${t('ui.search.subFountain')} (OSM)`,
         category: 'services',
         lat: f.lat,
@@ -316,10 +335,44 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
   }, [civicKey, t]);
   const civicItem = civic && civic.key === civicKey ? civic.item : null;
 
+  // Indirizzi (calli, campi, fondamenta…) dal gazzettiere OpenStreetMap di VOD (/api/indirizzi)
+  const addressQuery = query.trim().length >= 3 && !civicKey ? query.trim() : null;
+  const [addresses, setAddresses] = useState<{ q: string; items: SearchResultItem[] } | null>(null);
+  useEffect(() => {
+    if (!addressQuery) return;
+    const ctrl = new AbortController();
+    const id = setTimeout(() => {
+      fetch(`/api/indirizzi?q=${encodeURIComponent(addressQuery)}`, { signal: ctrl.signal })
+        .then((r) => r.json())
+        .then((j) => {
+          const hits: AddressHit[] = j.success ? j.data : [];
+          setAddresses({
+            q: addressQuery,
+            items: hits.slice(0, 5).map((h) => ({
+              id: `address-${h.name}-${h.lon}-${h.lat}`,
+              title: h.name,
+              subtitle: h.area ? `${h.area} · ${t('ui.search.subAddress')}` : t('ui.search.subAddress'),
+              category: 'heritage' as const,
+              lat: h.lat,
+              lon: h.lon,
+              type: 'address',
+              rawItem: { ...h, label: addressLabel(h) },
+            })),
+          });
+        })
+        .catch(() => {});
+    }, 200);
+    return () => {
+      clearTimeout(id);
+      ctrl.abort();
+    };
+  }, [addressQuery, t]);
+  const addressItems = useMemo(() => (addresses && addresses.q === addressQuery ? addresses.items : []), [addresses, addressQuery]);
+
   const filteredResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q || q.length < 2) return [];
-    const head = civicItem ? [civicItem] : [];
+    const head = [...(civicItem ? [civicItem] : []), ...addressItems.filter((a) => selectedCategory === 'all' || a.category === selectedCategory)];
 
     return [
       ...head,
@@ -333,7 +386,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
         );
       }),
     ].slice(0, 35);
-  }, [indexedItems, query, selectedCategory, civicItem]);
+  }, [indexedItems, query, selectedCategory, civicItem, addressItems]);
 
   // Keyboard navigation
   useEffect(() => {

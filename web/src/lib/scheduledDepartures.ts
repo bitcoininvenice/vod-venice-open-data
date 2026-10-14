@@ -93,3 +93,21 @@ export function scheduledDepartures(
   }
   return out.sort((a, b) => a.time - b.time);
 }
+
+/**
+ * Prima partenza dopo `from` quando non ce ne sono nella finestra delle prossime partenze (es. People Mover
+ * di notte): il resto della giornata di servizio (anche dopo mezzanotte), altrimenti l'orario del giorno dopo.
+ * `tomorrow`: la partenza è dopo la mezzanotte di oggi.
+ */
+export function nextScheduledDeparture(
+  sim: SimModel,
+  stop: Pick<StopItem, 'lat' | 'lon'>,
+  day: DayType,
+  nextDay: DayType,
+  from: number,
+): (ScheduledDeparture & { tomorrow: boolean }) | null {
+  const later = scheduledDepartures(sim, stop, day, from, 30 * 3600 - from)[0];
+  if (later) return { ...later, tomorrow: later.time >= 86400 };
+  const next = scheduledDepartures(sim, stop, nextDay, 0, 30 * 3600)[0];
+  return next ? { ...next, tomorrow: true } : null;
+}

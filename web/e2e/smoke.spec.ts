@@ -486,6 +486,31 @@ test('come arrivare: modalità solo a piedi e preferisci vaporetto', async ({ pa
   await expect(panel.getByTestId('planner-result')).toContainText(/direzione .* fermate/);
 });
 
+test('come arrivare da un indirizzo: suggerimenti dal gazzettiere OSM', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  await page.goto('/');
+  await page.locator('canvas').waitFor();
+  await page.getByTestId('open-planner').click();
+  const panel = page.locator('[data-info-panel]');
+  await panel.getByTestId('planner-from').getByRole('textbox').fill('cannaregio calle minestra');
+  await panel.getByTestId('planner-address-option').first().click();
+  await expect(panel.getByTestId('planner-from')).toContainText('Calle Minestra');
+});
+
+test('ricerca: indirizzi e fermate Alilaguna tra i risultati', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('canvas').waitFor();
+  await page.keyboard.press('Control+k');
+  const dialog = page.getByRole('dialog', { name: /ricerca/i });
+  await page.getByPlaceholder(/cerca fermate/i).fill('calle minestra');
+  await expect(dialog.getByRole('button').filter({ hasText: 'Indirizzo (OpenStreetMap)' }).first()).toBeVisible();
+  await page.getByPlaceholder(/cerca fermate/i).fill('Tronchetto');
+  const alilaguna = dialog.getByRole('button').filter({ hasText: 'Fermata Alilaguna' }).first();
+  await expect(alilaguna).toBeVisible();
+  await alilaguna.click();
+  await expect(dialog).toBeHidden();
+});
+
 test('come arrivare all\'aeroporto: opzioni Alilaguna e ACTV con il bus 5', async ({ page, isMobile }) => {
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   await page.goto('/');
@@ -1244,6 +1269,15 @@ test.describe('API', () => {
     const far = await (await request.get('/api/civici?q=Castello%2099999')).json();
     expect(far.result.match).toBe('nearest');
     expect((await request.get('/api/civici?q=Rialto')).status()).toBe(400);
+  });
+
+  test('indirizzi: calli e campi dal gazzettiere OSM, con la zona, senza servizi esterni', async ({ request }) => {
+    const body = await (await request.get('/api/indirizzi?q=' + encodeURIComponent('cannaregio calle minestra'))).json();
+    expect(body.success).toBe(true);
+    expect(body.data[0].name).toBe('Calle Minestra');
+    expect(typeof body.data[0].lon).toBe('number');
+    expect(body.meta.license).toMatch(/ODbL/);
+    expect((await request.get('/api/indirizzi?q=ca')).status()).toBe(400);
   });
 
   test('nautical: marine, carburante e ormeggi da OpenStreetMap', async ({ request }) => {

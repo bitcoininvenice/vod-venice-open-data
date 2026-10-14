@@ -166,6 +166,8 @@ export default function HomePage() {
   }, []);
 
   // Scheda informativa unica: aprirne una chiude le altre
+  // Punto scelto nella ricerca globale, segnato sulla mappa
+  const [searchPin, setSearchPin] = useState<{ lat: number; lon: number; approximate: boolean } | null>(null);
   const clearDetails = useCallback(() => {
     setSelectedStop(null);
     setSelectedCantiere(null);
@@ -200,6 +202,8 @@ export default function HomePage() {
   const handleSelectSearchResult = useCallback((item: SearchResultItem) => {
     setFocusedCoordinates({ lat: item.lat, lon: item.lon });
     clearDetails();
+    // Segnaposto sul punto scelto, qualunque sia il risultato (resta fino alla ricerca successiva)
+    setSearchPin({ lat: item.lat, lon: item.lon, approximate: item.type === 'civico' && item.rawItem?.match !== 'exact' });
 
     // Accende il layer del risultato (senza toccare gli altri)
     const key = item.layerKey;
@@ -252,6 +256,9 @@ export default function HomePage() {
     } else if (item.type === 'civico') {
       trackLayerOpen('civici');
       setSelectedFeature({ type: 'civicNumber', data: item.rawItem });
+    } else if (item.type === 'alilaguna_stop') {
+      trackLayerOpen('alilaguna');
+      setIsAlilagunaModalOpen(true);
     }
   }, [clearDetails]);
 
@@ -665,7 +672,7 @@ export default function HomePage() {
           pin={
             selectedFeature?.type === 'civicNumber'
               ? { lat: selectedFeature.data.lat, lon: selectedFeature.data.lon, approximate: selectedFeature.data.match !== 'exact' }
-              : null
+              : searchPin
           }
         />
 

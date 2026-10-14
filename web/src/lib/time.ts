@@ -43,6 +43,11 @@ export function romeDayType(date: Date = new Date()): DayType {
   return 'weekday';
 }
 
+/** Tipo di giorno di domani a Venezia (per l'orario dopo la fine del servizio di oggi). */
+export function romeTomorrowDayType(now: Date = new Date()): DayType {
+  return romeDayType(new Date(now.getTime() + 86400_000));
+}
+
 /** "+17 cm" / "-5 cm"; "n.d." se il valore non è disponibile. */
 export function formatSignedCm(value: number | null | undefined, unit = ' cm'): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return 'n.d.';

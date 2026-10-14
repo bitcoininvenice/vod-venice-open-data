@@ -12,8 +12,8 @@ import { PlanHereButton } from '@/components/ui/PlanHereButton';
 import { useSimulation } from '@/lib/simulationModel';
 import { lastDeparturesForStop } from '@/lib/lastDepartures';
 import { clock } from '@/lib/tripView';
-import { romeDayType, romeSecondsOfDay } from '@/lib/time';
-import { scheduledDepartures } from '@/lib/scheduledDepartures';
+import { romeDayType, romeSecondsOfDay, romeTomorrowDayType } from '@/lib/time';
+import { nextScheduledDeparture, scheduledDepartures } from '@/lib/scheduledDepartures';
 import { noticesForStop, useActvNotices } from '@/lib/useActvNotices';
 import { ActvNoticeBox } from '@/components/ActvNoticeList';
 
@@ -108,7 +108,7 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
         </div>
         )}
 
-        <RealtimeArrivals lat={stop.lat} lon={stop.lon} gtfsIds={stop.gtfsIds} />
+        <RealtimeArrivals lat={stop.lat} lon={stop.lon} gtfsIds={stop.gtfsIds} nextRunFor={stop.mode === 'navigazione' || stop.mode === 'ferry' ? stop : undefined} />
 
         <StopNotices stop={stop} />
 
@@ -144,7 +144,7 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
 };
 
 /** Prossimi arrivi con il ritardo stimato da ACTV (GTFS-Realtime), aggiornati ogni 30 s. */
-const RealtimeArrivals: React.FC<{ lat: number; lon: number; gtfsIds?: string[] }> = ({ lat, lon, gtfsIds }) => {
+const RealtimeArrivals: React.FC<{ lat: number; lon: number; gtfsIds?: string[]; nextRunFor?: StopItem }> = ({ lat, lon, gtfsIds, nextRunFor }) => {
   const { t, language } = useTranslation();
   const [state, setState] = useState<{ key: string; arrivals: StopArrival[] | null; failed: boolean }>({ key: '', arrivals: null, failed: false });
   const ids = gtfsIds?.join(',') ?? '';
@@ -178,6 +178,7 @@ const RealtimeArrivals: React.FC<{ lat: number; lon: number; gtfsIds?: string[] 
       {arrivals !== null && arrivals.length === 0 && (
         <p className="text-[11px] text-[var(--ink-3)]">{state.failed ? t('ui.delay.unavailable') : t('ui.delay.noArrivals')}</p>
       )}
+      {arrivals !== null && arrivals.length === 0 && nextRunFor && <NextRun stop={nextRunFor} />}
       {arrivals !== null && arrivals.length > 0 && (
         <ul className="flex flex-col divide-y divide-[var(--rule)] text-xs" data-testid="realtime-arrivals">
           {arrivals.map((a, i) => {
@@ -243,6 +244,36 @@ const LastDeparturesList: React.FC<{ stop: StopItem }> = ({ stop }) => {
   );
 };
 
+/** Prossima corsa dall'orario quando non ce ne sono a breve: si vede quando riprende il servizio. */
+const NextRun: React.FC<{ stop: StopItem }> = ({ stop }) => {
+  const { t } = useTranslation();
+  const sim = useSimulation(true);
+  const now = romeSecondsOfDay();
+  const minute = Math.floor(now / 60);
+  const day = romeDayType();
+  const nextDay = romeTomorrowDayType();
+  const next = React.useMemo(() => (sim ? nextScheduledDeparture(sim, stop, day, nextDay, minute * 60) : undefined), [sim, stop, day, nextDay, minute]);
+  if (next === undefined) return null;
+  if (next === null) return <p className="text-[11px] text-[var(--ink-3)]" data-testid="next-run">{t('ui.scheduled.nextNone')}</p>;
+  const bg = lineColor(next.line, next.category);
+  const waitMin = Math.max(0, Math.round(((next.tomorrow && next.time < 86400 ? next.time + 86400 : next.time) - minute * 60) / 60));
+  const wait = waitMin >= 60 ? t('ui.scheduled.inHours', { h: Math.floor(waitMin / 60), min: waitMin % 60 }) : t('ui.scheduled.inMin', { min: waitMin });
+  return (
+    <div className="flex items-center gap-2 p-2 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] text-xs" data-testid="next-run">
+      <span className="text-[11px] text-[var(--ink-3)] shrink-0">{t('ui.scheduled.nextRun')}</span>
+      <span
+        className="px-1.5 py-0.5 rounded-md font-mono font-bold text-[11px] min-w-[2.2rem] text-center border border-black/15"
+        style={bg ? { background: bg, color: lineTextColor(next.line, bg) } : undefined}
+      >
+        {next.line}
+      </span>
+      <span className="flex-1 min-w-0 truncate text-[var(--ink-2)]">→ {next.headsign}</span>
+      <span className="font-mono font-bold text-[var(--ink)]">{clock(next.time)}</span>
+      <span className="font-mono text-[10px] text-right text-[var(--ink-3)]">{next.tomorrow ? t('ui.scheduled.tomorrow') : wait}</span>
+    </div>
+  );
+};
+
 /** Avvisi ACTV su questa fermata o sulle sue linee. */
 const StopNotices: React.FC<{ stop: StopItem }> = ({ stop }) => {
   const notices = useActvNotices();
@@ -267,6 +298,7 @@ const ScheduledDeparturesList: React.FC<{ stop: StopItem }> = ({ stop }) => {
       <span className="text-[11px] font-mono uppercase text-[var(--ink-3)]">{t('ui.scheduled.title')}</span>
       {list === null && <div className="h-10 rounded-xl bg-[var(--rule)]/30 animate-pulse" aria-busy="true" />}
       {list !== null && list.length === 0 && <p className="text-[11px] text-[var(--ink-3)]">{t('ui.scheduled.none')}</p>}
+      {list !== null && list.length === 0 && <NextRun stop={stop} />}
       {list !== null && list.length > 0 && (
         <ul className="flex flex-col divide-y divide-[var(--rule)] text-xs">
           {list.map((d) => {

@@ -23,6 +23,7 @@ import { BOAT_URL } from '@/lib/boat-data';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 import { BoatPlanResult } from '@/components/BoatPlanResult';
 import { AIRPORT, isAirport, matchesAirport, planAirport } from '@/lib/airportPlanner';
+import { addressLabel, type AddressHit } from '@/lib/addresses';
 
 let walkPromise: Promise<WalkGraph> | null = null;
 /** Rete pedonale: scaricata una sola volta, alla prima apertura del planner. */
@@ -130,6 +131,24 @@ const PlaceInput: React.FC<{
   const stopHits = q.length >= 2 && !civicKey ? WATER_STOPS.filter((s) => s.name.toLowerCase().includes(q.toLowerCase())).slice(0, 6) : [];
   const civicPoint = civic && civic.key === civicKey ? civic.point : null;
   const airportHit = q.length >= 2 && !civicKey && matchesAirport(q);
+  // Indirizzi (calli, campi, fondamenta…) dal gazzettiere OpenStreetMap di VOD
+  const addressQuery = q.length >= 3 && !civicKey ? q : null;
+  const [addresses, setAddresses] = useState<{ q: string; hits: AddressHit[] } | null>(null);
+  useEffect(() => {
+    if (!addressQuery) return;
+    const ctrl = new AbortController();
+    const id = setTimeout(() => {
+      fetch(`/api/indirizzi?q=${encodeURIComponent(addressQuery)}`, { signal: ctrl.signal })
+        .then((r) => r.json())
+        .then((j) => setAddresses({ q: addressQuery, hits: j.success ? (j.data as AddressHit[]).slice(0, 5) : [] }))
+        .catch(() => {});
+    }, 200);
+    return () => {
+      clearTimeout(id);
+      ctrl.abort();
+    };
+  }, [addressQuery]);
+  const addressHits = addresses && addresses.q === addressQuery ? addresses.hits : [];
 
   if (value) {
     return (
@@ -157,7 +176,7 @@ const PlaceInput: React.FC<{
           className="mt-1 w-full px-3 py-2 rounded-xl bg-[var(--ground)] border border-[var(--rule)] text-xs text-[var(--ink)] normal-case font-sans focus:outline-none focus:border-cyan-500/60"
         />
       </label>
-      {(civicPoint || airportHit || stopHits.length > 0) && (
+      {(civicPoint || airportHit || stopHits.length > 0 || addressHits.length > 0) && (
         <ul className="flex flex-col rounded-xl border border-[var(--rule)] overflow-hidden">
           {airportHit && (
             <li>
@@ -180,6 +199,15 @@ const PlaceInput: React.FC<{
               <button type="button" onClick={() => onChange({ lon: s.lon, lat: s.lat, label: s.name })} className="w-full text-left px-3 py-2 text-xs hover:bg-[var(--rule)]/50 cursor-pointer">
                 <Ship className="inline w-3.5 h-3.5 mr-1 text-cyan-400" aria-hidden />
                 {s.name}
+              </button>
+            </li>
+          ))}
+          {addressHits.map((h) => (
+            <li key={`${h.name}-${h.lon}-${h.lat}`}>
+              <button type="button" onClick={() => onChange({ lon: h.lon, lat: h.lat, label: addressLabel(h) })} className="w-full text-left px-3 py-2 text-xs hover:bg-[var(--rule)]/50 cursor-pointer" data-testid="planner-address-option">
+                <MapPin className="inline w-3.5 h-3.5 mr-1 text-emerald-400" aria-hidden />
+                {h.name}
+                {h.area && <span className="text-[var(--ink-3)]"> · {h.area}</span>}
               </button>
             </li>
           ))}

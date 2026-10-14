@@ -242,20 +242,24 @@ export function drawAlilaguna(rc: RenderContext): void {
           ctx.fillText(hubTxt, stx - hubW / 2, sty - 10);
           ctx.restore();
         } else {
-          // Regular Alilaguna Darsena
+          // Darsena Alilaguna: quadrato blu con bordo bianco (le fermate ACTV sono tonde), nome da zoom medio
           ctx.save();
+          const half = camera.s > 0.03 ? 5 : 4;
           ctx.beginPath();
-          ctx.arc(stx, sty, 3.5, 0, Math.PI * 2);
+          ctx.roundRect(stx - half, sty - half, half * 2, half * 2, 2);
           ctx.fillStyle = '#0055a5';
           ctx.fill();
-          ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
-          ctx.lineWidth = 1;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.8;
           ctx.stroke();
 
-          if (camera.s > 0.04) {
-            ctx.font = '600 8px "DM Mono", monospace';
-            ctx.fillStyle = isDark ? '#60a5fa' : '#1e40af';
-            ctx.fillText(st.name, stx + 6, sty + 3);
+          if (camera.s > 0.025) {
+            ctx.font = '600 9px "DM Mono", monospace';
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = isDark ? 'rgba(2,6,23,0.85)' : 'rgba(255,255,255,0.9)';
+            ctx.strokeText(st.name, stx + half + 3, sty + 3);
+            ctx.fillStyle = isDark ? '#93c5fd' : '#1e40af';
+            ctx.fillText(st.name, stx + half + 3, sty + 3);
           }
           ctx.restore();
         }

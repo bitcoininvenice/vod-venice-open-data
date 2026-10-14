@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SimModel, SimProfile, SimShape } from './simulationCore';
 import { fromGrid, toGrid } from './positionDelay';
-import { scheduledDepartures } from './scheduledDepartures';
+import { nextScheduledDeparture, scheduledDepartures } from './scheduledDepartures';
 
 // Navetta sintetica: 3 fermate a 400 m, 2 minuti tra una e l'altra, corse ogni 10 minuti
 const [x0, y0] = toGrid(12.31, 45.44);
@@ -23,5 +23,18 @@ describe('partenze da orario', () => {
     expect(deps[0].line).toBe('PM');
     const [elon, elat] = fromGrid(x0 + 800, y0);
     expect(scheduledDepartures(s, { lon: elon, lat: elat }, 'weekday', 36000)).toEqual([]);
+  });
+
+  it('senza corse nei prossimi 90 minuti: la prossima di oggi, altrimenti quella di domani', () => {
+    const s = sim();
+    const [lon, lat] = fromGrid(x0, y0);
+    // alle 8: nessuna corsa entro le 9:30, la prima è alle 10
+    expect(scheduledDepartures(s, { lon, lat }, 'weekday', 8 * 3600)).toEqual([]);
+    expect(nextScheduledDeparture(s, { lon, lat }, 'weekday', 'weekday', 8 * 3600)).toMatchObject({ time: 36000, tomorrow: false, line: 'PM' });
+    // alle 22: servizio finito, riprende domani alle 10
+    expect(nextScheduledDeparture(s, { lon, lat }, 'weekday', 'saturday', 22 * 3600)).toMatchObject({ time: 36000, tomorrow: true });
+    // il capolinea d'arrivo non ha partenze
+    const [elon, elat] = fromGrid(x0 + 800, y0);
+    expect(nextScheduledDeparture(s, { lon: elon, lat: elat }, 'weekday', 'weekday', 8 * 3600)).toBeNull();
   });
 });
