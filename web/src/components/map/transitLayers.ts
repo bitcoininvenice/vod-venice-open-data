@@ -23,6 +23,9 @@ function routeOfShape(sim: SimModel) {
   return m;
 }
 
+/** Lunghezza massima della scia (m) per i mezzi su strada e binario: come quella di un vaporetto in 21 s */
+const ROAD_TRAIL_MAX_M: Record<string, number> = { bus: 60, island: 60, tram: 60, peoplemover: 40 };
+
 /** Mezzi su binario: il tracciato resta visibile anche senza il livello delle rotte */
 const FIXED_GUIDEWAY = new Set(['tram', 'peoplemover']);
 export { SHUTTLE_LAYOVER_S };
@@ -156,9 +159,13 @@ export function drawVehicles(rc: RenderContext): void {
 
         const col = lineColor(prof.route.n, rCat) ?? pal.cats[rCat] ?? '#5cc8ff';
 
-        // Trail: gli ultimi 45 s di percorso prima della posizione mostrata
+        // Scia: gli ultimi secondi di percorso prima della posizione mostrata; per bus, tram e People Mover,
+        // molto più veloci dei natanti, la stessa lunghezza visiva (al massimo ~60 m)
         const lag = delay ?? 0;
-        const trailM = distAt(prof, dt - lag) - distAt(prof, Math.max(0, dt - lag - trailSec));
+        const trailM = Math.min(
+          ROAD_TRAIL_MAX_M[rCat] ?? Infinity,
+          distAt(prof, dt - lag) - distAt(prof, Math.max(0, dt - lag - trailSec)),
+        );
         // in sosta al capolinea la scia è nulla: un tratto minimo mantiene il verso dell'ultima corsa
         pointAt(prof.sh, Math.max(0, d - Math.max(trailM, 20)), ptTail);
         ctx.beginPath();
