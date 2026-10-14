@@ -77,7 +77,7 @@ function useOrdinances(enabled: boolean): OrdinanceItem[] {
 export type PickTarget = 'from' | 'to';
 
 /** Ora di partenza scelta (HH:MM) in secondi dalla mezzanotte, altrimenti adesso a Venezia. */
-const departSeconds = (time: string): number => (/^\d{2}:\d{2}$/.test(time) ? Number(time.slice(0, 2)) * 3600 + Number(time.slice(3)) * 60 : romeSecondsOfDay());
+const departSeconds = (time: string, now: number): number => (/^\d{2}:\d{2}$/.test(time) ? Number(time.slice(0, 2)) * 3600 + Number(time.slice(3)) * 60 : now);
 
 interface TripPlannerPanelProps {
   open: boolean;
@@ -271,14 +271,27 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
   }, [open, isPrivate, boat]);
   const ordinances = useOrdinances(open && isPrivate);
 
+  // Partenza «adesso»: l'ora si aggiorna ogni 30 s, così un itinerario non propone una corsa già partita
+  const [clockS, setClockS] = useState(() => romeSecondsOfDay());
+  useEffect(() => {
+    if (!open || time) return;
+    const tick = () => setClockS(romeSecondsOfDay());
+    const first = setTimeout(tick, 0);
+    const id = setInterval(tick, 30_000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(id);
+    };
+  }, [open, time]);
+
   // Da o per l'aeroporto: opzioni Alilaguna (via acqua) e ACTV (bus 5 da Piazzale Roma), dalla più veloce
   const airportTrip = !!from && !!to && isAirport(from) !== isAirport(to);
   const [airportChoice, setAirportChoice] = useState<'alilaguna' | 'actv' | null>(null);
   const airportPlan = useMemo(() => {
     if (!open || isPrivate || !airportTrip || !sim || !walk || !from || !to) return null;
     // se stasera non ci sono più collegamenti: le prime opzioni di domani mattina
-    return planAirportOrTomorrow(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time), romeDayType(), { day: romeTomorrowDayType(), date: tomorrowDate() }, { tideAt, passerelle, nextDay: romeTomorrowDayType() });
-  }, [open, isPrivate, airportTrip, sim, walk, from, to, time, tideAt, passerelle]);
+    return planAirportOrTomorrow(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time, clockS), romeDayType(), { day: romeTomorrowDayType(), date: tomorrowDate() }, { tideAt, passerelle, nextDay: romeTomorrowDayType() });
+  }, [open, isPrivate, airportTrip, sim, walk, from, to, time, clockS, tideAt, passerelle]);
   const airportOptions = airportPlan?.options ?? null;
   const result = useMemo(() => {
     if (!open || isPrivate || !sim || !walk || !from || !to) return null;
@@ -286,15 +299,15 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
       const best = airportOptions.find((o) => o.via === airportChoice) ?? airportOptions[0] ?? null;
       return { best, walkOnly: null, floodLevelCm: null, shortestWalkWetMeters: null };
     }
-    return planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time), romeDayType(), { mode, tideAt, passerelle, nextDay: romeTomorrowDayType() });
-  }, [open, isPrivate, sim, walk, from, to, time, mode, tideAt, passerelle, airportOptions, airportChoice]);
+    return planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time, clockS), romeDayType(), { mode, tideAt, passerelle, nextDay: romeTomorrowDayType() });
+  }, [open, isPrivate, sim, walk, from, to, time, clockS, mode, tideAt, passerelle, airportOptions, airportChoice]);
 
   // In barca propria: rete dei canali e regole del Testo Unico (lib/boatRouting)
   const boatResult = useMemo(() => {
     if (!open || !isPrivate || !boat || !from || !to) return null;
-    const now = departSeconds(time);
+    const now = departSeconds(time, clockS);
     return planBoat(boat, from, to, now, romeDayType(), { resident, tideCm: tideAt?.(now) ?? null });
-  }, [open, isPrivate, boat, from, to, time, resident, tideAt]);
+  }, [open, isPrivate, boat, from, to, time, clockS, resident, tideAt]);
   const boatOrdinances = useMemo(() => (boatResult?.ok ? ordinancesOnRoute(boatResult.plan, ordinances) : []), [boatResult, ordinances]);
   const boatItinerary = useMemo<Itinerary | null>(() => {
     if (!boatResult?.ok || !from || !to) return null;

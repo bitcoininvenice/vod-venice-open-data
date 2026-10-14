@@ -533,6 +533,25 @@ test('come arrivare all\'aeroporto: opzioni Alilaguna e ACTV con il bus 5', asyn
   await expect(panel.getByTestId('planner-airport-note')).toContainText('Alilaguna');
 });
 
+test('come arrivare «adesso»: l\'itinerario si aggiorna e non propone una corsa già partita', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  // mercoledì 14/10/2026 alle 23:52 a Venezia: l'ultima 4.2 da Murano Colonna parte alle 23:54
+  await page.clock.install({ time: new Date('2026-10-14T21:52:00Z') });
+  await page.goto('/');
+  await page.locator('canvas').waitFor();
+  await page.getByTestId('open-planner').click();
+  const panel = page.locator('[data-info-panel]');
+  await panel.getByTestId('planner-from').getByRole('textbox').fill('Murano Colonna');
+  await panel.getByRole('button', { name: /^Murano Colonna$/ }).click();
+  await panel.getByTestId('planner-to').getByRole('textbox').fill('aeroporto');
+  await panel.getByTestId('planner-airport-option').click();
+  const result = panel.getByTestId('planner-result');
+  await expect(result).toContainText('23:54', { timeout: 15000 });
+  // tre minuti dopo la 4.2 delle 23:54 è partita: l'itinerario cambia senza toccare nulla
+  await page.clock.fastForward('03:00');
+  await expect(result).not.toContainText('23:54', { timeout: 15000 });
+});
+
 test('come arrivare in barca propria: ZTL solo per residenti, percorso sui canali con le regole del Testo Unico', async ({ page, isMobile }) => {
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   const errors: string[] = [];
