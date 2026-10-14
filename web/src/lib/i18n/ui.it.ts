@@ -124,6 +124,7 @@ export const itUi = {
     loraGateways: "Gateway LoRaWAN",
     ordinances: "Ordinanze temporanee del Comune",
     busStops: "Fermate bus ACTV",
+    flixbus: "FlixBus (da orario)",
     actvNotices: "Avvisi ACTV (infomobilità)",
     actvNoticesUnplaced: "Avvisi senza una fermata precisa: {n}",
     actvNoticesAll: "Tutti gli avvisi sul sito ACTV",
@@ -621,6 +622,13 @@ export const itUi = {
     open: "Leggi l'avviso sul sito ACTV",
     subtitle: "Avviso ACTV · {date}",
     note: "Dal feed degli avvisi ACTV. Fermate e linee sono riconosciute automaticamente dal testo: fa fede l'avviso di ACTV."
+  },
+  flixbus: {
+    category: "FlixBus · posizione da orario",
+    route: "Percorso",
+    atStop: "Fermo a",
+    next: "Prossima fermata",
+    note: "Posizione stimata dall'orario ufficiale FlixBus lungo il percorso, non GPS: il bus può essere in anticipo o in ritardo. Orari teorici; verifica sul sito FlixBus."
   },
   feature: {
     stelleHotel: "5 stelle: {five}, 4 stelle: {four}, 3 stelle: {three}",
@@ -1474,6 +1482,8 @@ export const itUi = {
     detailAisNotConfigured: "chiave AISSTREAM_API_KEY non configurata",
     "name_bdap-mop": "Opere pubbliche del Comune dal monitoraggio BDAP (pipeline)",
     "meta_bdap-mop": "CSV «Progetti Opere Pubbliche MOP – Veneto» della Ragioneria Generale dello Stato, filtrato sul Comune di Venezia una volta a settimana; la fonte si aggiorna ogni trimestre.",
+    name_flixbus: "Corse FlixBus per Venezia (pipeline)",
+    meta_flixbus: "GTFS europeo di FlixMobility: solo le corse che passano per Venezia, posizione simulata dall'orario lungo il percorso. Nessun dato in tempo reale.",
     "name_actv-avvisi": "Avvisi di servizio ACTV (feed RSS)",
     "meta_actv-avvisi": "Ultimi avvisi di infomobilità ACTV, riletti ogni 15 minuti; fermate e linee riconosciute dal testo, avvisi conclusi esclusi. Fa fede l'avviso ACTV.",
     "name_comune-ordinanze": "Ordinanze del Comune di Venezia (città storica, isole, Lido, tutto il territorio)",

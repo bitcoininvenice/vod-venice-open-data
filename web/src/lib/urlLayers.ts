@@ -60,7 +60,8 @@ export type LayerKey =
   | 'showOrdinances'
   | 'showScheduleSpeed'
   | 'showBusStops'
-  | 'showActvNotices';
+  | 'showActvNotices'
+  | 'showFlixbus';
 
 /**
  * Mapping from LayerKey to canonical Open Data catalog slug (matching /layers page IDs)
@@ -128,6 +129,7 @@ export const LAYER_SLUG_BY_KEY: Record<LayerKey, string> = {
   showScheduleSpeed: 'velocita_orario',
   showBusStops: 'fermate_bus',
   showActvNotices: 'avvisi_actv',
+  showFlixbus: 'flixbus',
 };
 
 /**
@@ -201,12 +203,14 @@ export const SLUG_TO_LAYER_KEY: Record<string, LayerKey> = {
   velocita_orario: 'showScheduleSpeed',
   fermate_bus: 'showBusStops',
   avvisi_actv: 'showActvNotices',
+  flixbus: 'showFlixbus',
 
   // Convenient aliases
   ordinanze: 'showOrdinances',
   velocita_linee: 'showScheduleSpeed',
   bus_stops: 'showBusStops',
   infomobilita: 'showActvNotices',
+  bus_lunga_percorrenza: 'showFlixbus',
   fermate_autobus: 'showBusStops',
   ordinances: 'showOrdinances',
   avvisi: 'showOrdinances',

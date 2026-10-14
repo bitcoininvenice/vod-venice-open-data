@@ -7,6 +7,8 @@ import { drawVehicleGlyph, headingFromMotion } from './vehicleGlyphs';
 import { SHUTTLE_LAYOVER_S, type SimModel, type SimProfile } from '@/lib/simulationCore';
 import { clock, tripStops, type TripStop } from '@/lib/tripView';
 import { SPEED_VERDICT_COLORS } from '@/lib/scheduleSpeed';
+import { FLIXBUS_COLOR, flixbusPositions, type FlixBusPosition } from '@/lib/flixbus';
+import { dateAtRomeSeconds } from '@/lib/time';
 import { freshDelay, inService, isLiveView, networkOfSimCategory, liveDistance, MAX_EARLY_S, MAX_LATE_S, mergedThisFrame, pruneShown, realtimeByTrip, tripKey } from './liveFleet';
 
 /** Linea e categoria di ogni forma (dalla prima corsa che la usa), calcolate una volta per modello. */
@@ -339,6 +341,32 @@ export function drawActvNotices(rc: RenderContext): void {
     }
   }
   ctx.restore();
+}
+
+/** Bus FlixBus nell'ultimo frame (per il clic): posizioni simulate dall'orario */
+export let flixbusThisFrame: FlixBusPosition[] = [];
+
+/** FlixBus: bus simulati dall'orario lungo il percorso stradale del feed, solo dentro l'area della mappa. */
+export function drawFlixbus(rc: RenderContext): void {
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showFlixbus, flixbus, currentTimeSeconds } = rc;
+  if (!showFlixbus || !flixbus) {
+    flixbusThisFrame = [];
+    return;
+  }
+  flixbusThisFrame = flixbusPositions(flixbus, dateAtRomeSeconds(currentTimeSeconds).getTime());
+  const scale = Math.max(0.8, Math.min(1.3, 0.6 + 12 * camera.s));
+  for (const b of flixbusThisFrame) {
+    const px = sx(mx(b.lon));
+    const py = sy(my(b.lat));
+    if (px < -30 || px > cw + 30 || py < -30 || py > ch + 30) continue;
+    drawVehicleGlyph(ctx, 'bus', px, py, b.heading, { fill: FLIXBUS_COLOR, stroke: isDark ? '#ffffff' : '#14532d', lineWidth: 1.4, scale, roof: '#ffffff' });
+    if (camera.s > 0.02) {
+      ctx.font = '700 9px "DM Mono", monospace';
+      ctx.fillStyle = isDark ? '#d9f99d' : '#365314';
+      ctx.textAlign = 'start';
+      ctx.fillText(`FlixBus ${b.trip.line}`, px + 10, py + 3);
+    }
+  }
 }
 
 export function drawCantieri(rc: RenderContext): void {

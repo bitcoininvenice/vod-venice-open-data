@@ -659,6 +659,43 @@ test('fermate bus: il clic apre la scheda con linee e orari ufficiali della ferm
   await expect(notices).toContainText('Deviazione linea B');
 });
 
+test('flixbus: il bus simulato dall\'orario si clicca e mostra linea, prossima fermata e licenza', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  const RIALTO = { lat: 45.43727, lon: 12.335071 };
+  const now = new Date();
+  const ymd = `${now.getUTCFullYear()}${String(now.getUTCMonth() + 1).padStart(2, '0')}${String(now.getUTCDate()).padStart(2, '0')}`;
+  const sec = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60;
+  // corsa di prova ferma a "Rialto" per tutta la durata del test
+  await page.route('**/api/flixbus', (route) =>
+    route.fulfill({
+      json: {
+        success: true, count: 1, meta: {},
+        data: {
+          trips: [{ id: 't1', line: '536', name: 'Roma - Monaco', from: 'Roma', to: 'Monaco', dates: [ymd], shape: 0,
+            stops: [[0, sec - 600, sec + 1800, 'Fermata di prova', true], [5000, sec + 3600, sec + 3700, 'Padua', false]] }],
+          shapes: [[[RIALTO.lon, RIALTO.lat, 0], [RIALTO.lon + 0.06, RIALTO.lat, 5000]]],
+        },
+      },
+    }),
+  );
+  await page.goto('/?layers=flixbus');
+  await page.locator('canvas').waitFor();
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder(/cerca fermate/i).fill('Rialto');
+  await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: /rialto/i }).first().click();
+  await page.keyboard.press('Escape');
+  const panel = page.locator('aside').filter({ visible: true }).first();
+  await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('fermate');
+  await panel.locator('[data-layer="showStops"]').click();
+  const box = (await page.locator('canvas').boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  const info = page.locator('[data-info-panel]');
+  await expect(info).toContainText('FlixBus 536');
+  await expect(info).toContainText('Roma → Monaco');
+  await expect(info).toContainText('Fermata di prova');
+  await expect(info).toContainText('ODbL');
+});
+
 test('trasporto pubblico: livello "velocità da orario" e sezione in /metrics', async ({ page, isMobile }) => {
   test.skip(isMobile, 'pannello dei livelli controllato su desktop');
   await page.goto('/?layers=velocita_orario');
@@ -999,6 +1036,17 @@ test.describe('API', () => {
     expect(tide.meta.levels.licenseSources).toContain('https://www.comune.venezia.it/it/content/open-data-0');
     const weather = await (await request.get('/api/weather')).json();
     expect(weather.meta.windStations.license).toBe('CC BY-SA 3.0');
+  });
+
+  test('flixbus: corse che toccano Venezia, con fermate veneziane e licenza ODbL', async ({ request }) => {
+    const body = await (await request.get('/api/flixbus')).json();
+    expect(body.success).toBe(true);
+    expect(body.count).toBeGreaterThan(20);
+    expect(body.meta.license).toMatch(/ODbL/);
+    for (const t of body.data.trips) {
+      expect(t.stops.some((s: unknown[]) => s[4] === true)).toBe(true);
+      expect(body.data.shapes[t.shape].length).toBeGreaterThan(1);
+    }
   });
 
   test('avvisi ACTV: feed ufficiale, solo avvisi in corso, link ad ACTV', async ({ request }) => {

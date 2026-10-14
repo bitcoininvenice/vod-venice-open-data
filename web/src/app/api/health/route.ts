@@ -13,6 +13,7 @@ import { AMBITI, ORDINANCES_API, parseOrdinanceList } from '@/server/sources/com
 import { parseRss } from '@/server/sources/actvNotices';
 import { ACTV_RSS_URL } from '@/lib/contracts/actvNotices';
 import osmToponyms from '@/data/osm-toponyms.json';
+import flixbusData from '@/data/flixbus-venezia.json';
 import { openMeteoWindUrl, parseOpenMeteoWind } from '@/server/sources/openMeteoWind';
 import { airQualityUrl, parseAirQuality } from '@/server/sources/openMeteoAir';
 import { marineUrl, parseMarine } from '@/server/sources/openMeteoMarine';
@@ -106,6 +107,7 @@ export async function GET() {
     assess('osm-dae', 'Defibrillatori OpenStreetMap (pipeline)', 'dataset', new Date(OSM_DAE_META.generatedAt), 31 * DAY, now),
     assess('osm-pharmacies', 'Farmacie OpenStreetMap (pipeline)', 'dataset', new Date(OSM_PHARMACIES_META.generatedAt), 31 * DAY, now),
     assess('osm-fountains', 'Fontanelle OpenStreetMap (pipeline)', 'dataset', new Date(fountainsDataset.metadata.extractedAt), 31 * DAY, now),
+    assess('flixbus', 'Corse FlixBus per Venezia (pipeline)', 'dataset', new Date(flixbusData.generatedAt), 14 * DAY, now),
     assess('osm-toponyms', 'Toponimi OpenStreetMap per le ordinanze (pipeline)', 'dataset', new Date(osmToponyms.generatedAt), 31 * DAY, now),
     assess('venice-tap-water', 'Fontanelle Venice Tap Water (pipeline)', 'dataset', new Date(veniceTapWater.metadata.generatedAt), 31 * DAY, now),
     assess('osm-poi', 'POI OpenStreetMap: colonnine, parcheggi, pozzi, alberi (pipeline)', 'dataset', new Date(OSM_POI_META.generatedAt), 31 * DAY, now),

@@ -34,6 +34,9 @@ import { GET as parksGET } from '@/app/api/parks/route';
 import { GET as censusGET } from '@/app/api/census/route';
 import civiciData from '@/data/osm-civici.json';
 import busStopsData from '@/data/actv-bus-stops.json';
+import flixbusData from '@/data/flixbus-venezia.json';
+import type { FlixTrip } from '@/lib/flixbus';
+import { romeToday } from '@/lib/time';
 import { GET as healthGET } from '@/app/api/health/route';
 import tourism from '@/data/turismo-comuni.json';
 import cruscotto from '@/data/cruscotto-comuni.json';
@@ -111,6 +114,19 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   public_transport_stops: async () => {
     const j = await read(stopsGET(new Request('http://vod.local/api/stops')));
     return { items: asRows(j.data) };
+  },
+  flixbus: async () => {
+    const today = romeToday().replace(/-/g, '');
+    const hhmm = (ymd: string, s: number) =>
+      new Date(Date.UTC(Number(ymd.slice(0, 4)), Number(ymd.slice(4, 6)) - 1, Number(ymd.slice(6, 8))) + s * 1000).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
+    const items: Row[] = [];
+    for (const t of flixbusData.trips as unknown as FlixTrip[]) {
+      // la data UTC di servizio può essere il giorno prima per le corse notturne: basta che una data sia oggi o ieri
+      const ymd = t.dates.find((d) => d === today);
+      if (!ymd) continue;
+      items.push({ line: t.line, route: t.name, from: t.from, to: t.to, veniceStops: t.stops.filter((s) => s[4]).map((s) => ({ stop: s[3], arrival: hhmm(ymd, s[1]), departure: hhmm(ymd, s[2]) })) });
+    }
+    return { items, meta: { source: flixbusData.source, license: flixbusData.license, attribution: flixbusData.attribution, generatedAt: flixbusData.generatedAt } };
   },
   bus_stops: async () => ({ items: asRows(busStopsData.stops), meta: { source: busStopsData.source, license: busStopsData.license, generatedAt: busStopsData.generatedAt } }),
   realtime_vehicles: async () => {

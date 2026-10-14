@@ -11,6 +11,7 @@ import { clock, resolveTrip, tripStops, type TripRef } from '@/lib/tripView';
 import { useSimulation } from '@/lib/simulationModel';
 import { romeSecondsOfDay } from '@/lib/time';
 import { useServiceNow } from '@/lib/useServiceNow';
+import { FLIXBUS_COLOR, type FlixBusPosition } from '@/lib/flixbus';
 import { noticesForStop, useActvNotices } from '@/lib/useActvNotices';
 import { ActvNoticeBox } from '@/components/ActvNoticeList';
 
@@ -43,7 +44,8 @@ export type MapObjectSelected =
   | { type: 'ship'; data: ShipItem }
   | { type: 'flight'; data: FlightItem }
   | { type: 'vehicle'; data: VehicleSelection }
-  | { type: 'alilagunaBoat'; data: AlilagunaBoat };
+  | { type: 'alilagunaBoat'; data: AlilagunaBoat }
+  | { type: 'flixbus'; data: FlixBusPosition };
 
 interface MapObjectPanelProps {
   object: MapObjectSelected | null;
@@ -207,6 +209,8 @@ export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose,
       </InfoPanel>
     );
   }
+
+  if (object.type === 'flixbus') return <FlixbusCard bus={object.data} onClose={onClose} />;
 
   const b = object.data;
   return (
@@ -385,4 +389,44 @@ const LineNotices: React.FC<{ line: string }> = ({ line }) => {
   const notices = useActvNotices();
   const { onLines } = noticesForStop(notices, [], [line]);
   return <ActvNoticeBox here={[]} onLines={onLines} />;
+};
+
+/** Scheda di un bus FlixBus: posizione simulata dall'orario, prossima fermata, attribuzione ODbL. */
+const FlixbusCard: React.FC<{ bus: FlixBusPosition; onClose: () => void }> = ({ bus: b, onClose }) => {
+  const { t, language } = useTranslation();
+  const f = (key: string, params?: Record<string, string | number>) => t(`ui.flixbus.${key}`, params);
+  const locale = language === 'it' ? 'it-IT' : 'en-GB';
+  const hhmm = (ms: number) => new Date(ms).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
+  return (
+    <InfoPanel open onClose={onClose} labelledBy="map-object-title" layer="showFlixbus" accent="border-lime-500/40">
+      <InfoHeader
+        id="map-object-title"
+        icon={<Navigation className="w-5 h-5" style={{ color: FLIXBUS_COLOR }} />}
+        category={f('category')}
+        title={
+          <span className="px-2 py-0.5 rounded-lg text-sm font-mono font-bold text-white" style={{ backgroundColor: FLIXBUS_COLOR }}>
+            FlixBus {b.trip.line}
+          </span>
+        }
+        subtitle={`${b.trip.from} → ${b.trip.to}`}
+        onClose={onClose}
+      />
+      <KeyValues
+        items={[
+          [f('route'), b.trip.name || null],
+          [f('atStop'), b.atStop],
+          [f('next'), b.next ? `${b.next.name} · ${hhmm(b.next.at)}` : null, 'text-lime-400'],
+        ]}
+      />
+      <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">{f('note')}</p>
+      <a
+        href="https://transport.data.gouv.fr/datasets/flixbus-horaires-theoriques-du-reseau-europeen-1"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2"
+      >
+        © FlixMobility (FlixBus) · ODbL
+      </a>
+    </InfoPanel>
+  );
 };

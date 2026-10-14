@@ -735,3 +735,25 @@ def test_alilaguna_linea_stagionale_dalla_pagina():
     blu = "<h1>Linea Blu</h1><p>La Linea Blu collega l'Aeroporto Marco Polo con Murano…</p>"
     assert alilaguna.seasonal_note(rossa) == "Linea stagionale estiva, attiva da Aprile a Novembre"
     assert alilaguna.seasonal_note(blu) is None
+
+
+# --- FlixBus (GTFS europeo) ---
+
+from datetime import date as _date  # noqa: E402
+
+import import_flixbus as flix  # noqa: E402
+
+
+def test_flixbus_date_di_servizio_con_eccezioni():
+    cal = {"S": {"monday": "1", "tuesday": "0", "wednesday": "1", "thursday": "0", "friday": "0", "saturday": "0", "sunday": "0", "start_date": "20261001", "end_date": "20261031"}}
+    exc = {"S": {"20261014": "2", "20261015": "1"}}  # mercoledì soppresso, giovedì aggiunto
+    assert flix.service_dates("S", cal, exc, _date(2026, 10, 12), 4) == ["20261012", "20261015"]
+
+
+def test_flixbus_proiezione_e_ritaglio_sull_area():
+    points = [(12.0, 45.40), (12.20, 45.45), (12.30, 45.48)]  # da fuori area verso Mestre
+    cum = flix.cumulative(points)
+    d_mestre = flix.project(points, cum, (12.30, 45.48))
+    assert abs(d_mestre - cum[-1]) < 1
+    clipped = flix.clip_window(points, cum, 0, cum[-1])
+    assert [p for p, _ in clipped][0] == (12.20, 45.45)  # (12.0, 45.40) è oltre il margine dell'area

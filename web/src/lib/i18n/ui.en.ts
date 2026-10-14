@@ -126,6 +126,7 @@ export const enUi: UiTranslations = {
     loraGateways: "LoRaWAN gateways",
     ordinances: "Temporary City orders",
     busStops: "ACTV Bus stops",
+    flixbus: "FlixBus (timetable)",
     actvNotices: "ACTV notices (service updates)",
     actvNoticesUnplaced: "Notices without a specific stop: {n}",
     actvNoticesAll: "All notices on the ACTV website",
@@ -623,6 +624,13 @@ export const enUi: UiTranslations = {
     open: "Read the notice on the ACTV website",
     subtitle: "ACTV notice · {date}",
     note: "From the ACTV notices feed. Stops and lines are recognised automatically from the text: the ACTV notice prevails."
+  },
+  flixbus: {
+    category: "FlixBus · timetable position",
+    route: "Route",
+    atStop: "Stopped at",
+    next: "Next stop",
+    note: "Position estimated from the official FlixBus timetable along the route, not GPS: the bus may be early or late. Theoretical times; check on the FlixBus website."
   },
   feature: {
     stelleHotel: "5-star: {five}, 4-star: {four}, 3-star: {three}",
@@ -1476,6 +1484,8 @@ export const enUi: UiTranslations = {
     detailAisNotConfigured: "AISSTREAM_API_KEY key not configured",
     "name_bdap-mop": "City public works from the BDAP monitoring (pipeline)",
     "meta_bdap-mop": "State General Accounting Office CSV “Public Works Projects MOP – Veneto”, filtered on the City of Venice once a week; the source updates quarterly.",
+    name_flixbus: "FlixBus trips serving Venice (pipeline)",
+    meta_flixbus: "FlixMobility European GTFS: only trips serving Venice, position simulated from the timetable along the route. No real-time data.",
     "name_actv-avvisi": "ACTV service notices (RSS feed)",
     "meta_actv-avvisi": "Latest ACTV service notices, read every 15 minutes; stops and lines recognised from the text, finished notices excluded. The ACTV notice prevails.",
     "name_comune-ordinanze": "City of Venice orders (historic city, islands, Lido, whole municipality)",

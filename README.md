@@ -59,6 +59,7 @@ vod-venice-open-data/
 │   ├── import_osm_civici.py        # Numeri civici del centro storico per sestiere (OSM), per la ricerca «Cannaregio 3450»
 │   ├── import_osm_parks.py         # Parchi, giardini pubblici, aree giochi, aree cani e oasi con perimetro (OSM)
 │   ├── import_osm_toponyms.py      # Toponimi (calli, fondamenta, ponti, campi) per collocare le ordinanze (OSM)
+│   ├── import_flixbus.py           # Corse FlixBus che passano per Venezia, dal GTFS europeo (ODbL)
 │   ├── import_arpav_pollen.py      # Pollini misurati da ARPAV a Venezia (calendario mensile)
 │   ├── import_cruscotto_italia.py  # Profilo socio-economico dei comuni della laguna (Cruscotto Italia, AgID)
 │   ├── import_arpav_lagoon.py      # Sonde ARPAV della laguna (ultimo campionamento) e riepilogo balneazione
@@ -157,6 +158,7 @@ python import_osm_walk.py                   # Rete pedonale per il planner a pie
 python import_osm_civici.py                 # Numeri civici del centro storico per sestiere (OSM)
 python import_osm_parks.py                  # Parchi, giardini pubblici, aree giochi, aree cani e oasi (OSM)
 python import_osm_toponyms.py               # Toponimi per collocare le ordinanze del Comune (OSM)
+python import_flixbus.py                    # Corse FlixBus per Venezia (GTFS FlixMobility, ODbL)
 python import_arpav_pollen.py               # Pollini misurati ARPAV a Venezia
 python import_cruscotto_italia.py           # Profilo dei comuni da Cruscotto Italia (MCP AgID, CC BY 4.0)
 python import_arpav_lagoon.py               # Sonde ARPAV della laguna e balneazione (anche --probe-file/--year/--bathing-file per file locali)
@@ -255,6 +257,7 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/ordinanze` | Ordinanze del Comune in vigore o in arrivo nei prossimi 7 giorni (ogni ambito; città storica, isole, Lido e tutto il territorio comunale, esclusa la terraferma) con validità, tipo, canale o luogo citato, posizione e link all'atto e al PDF. Riletto ogni ora; fa fede il testo dell'atto. |
 | `GET` | `/api/fermate-bus` | Tutte le fermate bus ACTV nell'area della mappa (GTFS automobilistico), con linee e codici GTFS; corsie con lo stesso nome unite. |
 | `GET` | `/api/avvisi-actv` | Avvisi di servizio ACTV in corso dal feed RSS ufficiale (fermate spostate, deviazioni, modifiche per eventi), con fermate e linee citate; riletto ogni 15 minuti, fa fede l'avviso ACTV. |
+| `GET` | `/api/flixbus` | Corse FlixBus che passano per Venezia nei prossimi giorni (GTFS FlixMobility, ODbL): orari e percorso ritagliato sull'area della mappa, per simulare la posizione dei bus. Nessun dato in tempo reale. |
 | `GET` | `/api/servizio` | Servizio ACTV adesso per linea (nessuno storico): mezzi con GPS, corse in servizio secondo l'orario e senza posizione nel feed (indizio), ritardo medio e massimo, puntualità, mezzi in coda. Ricalcolato ogni 30 s. |
 | `GET` | `/api/velocita-orario` | Tratti delle linee di navigazione: tempo da orario contro tempo minimo rispettando i limiti di velocità noti (stima per difetto, 60 s di tolleranza per gli arrotondamenti e 10% per l'incertezza del percorso). Calcolo dall'orario, non misura dei mezzi. |
 | `GET` | `/api/nautical` | Marine, carburante per barche, scivoli, cantieri, noleggi e ormeggi da OpenStreetMap (ODbL); non le concessioni comunali, non pubblicate come open data. |

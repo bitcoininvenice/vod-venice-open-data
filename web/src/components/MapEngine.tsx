@@ -18,7 +18,7 @@ import { simClock } from '@/lib/simClock';
 import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
 import { freshDelay, inService, isLiveView, networkOfSimCategory, MAX_EARLY_S, MAX_LATE_S, mergedThisFrame, realtimeByTrip, shownDistance, tripKey } from './map/liveFleet';
-import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri, drawScheduleSpeed, drawBusStops, drawActvNotices, SHUTTLE_LAYOVER_S } from './map/transitLayers';
+import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri, drawScheduleSpeed, drawBusStops, drawActvNotices, drawFlixbus, flixbusThisFrame, SHUTTLE_LAYOVER_S } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawPasserelle } from './map/tideLayers';
 import { drawCurrentFlow } from './map/currentFlow';
@@ -753,6 +753,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           }),
         L.showOrdinances && target({ items: D.ordinances.filter(isPlacedOrdinance), radius: 16, select: feature('ordinance') }),
         L.showCantieri && target({ items: cantieri, radius: 18, select: onSelectCantiere }),
+        L.showFlixbus && target({ items: flixbusThisFrame, radius: 14, select: (b) => onSelectObject?.({ type: 'flixbus', data: b }) }),
         L.showStops && target({ items: D.stops, radius: 15, select: onSelectStop }),
         L.showBusStops && target({ items: D.busStops, radius: 10, select: onSelectStop }),
         L.showVehicles && scheduledVehicles,
@@ -953,6 +954,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         drawVehicles(rc);
 
         drawRealtimeVehicles(rc);
+
+        drawFlixbus(rc);
 
         drawScheduleSpeed(rc);
 

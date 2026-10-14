@@ -28,6 +28,8 @@ export function mapObjectToLayerSlug(object: MapObjectSelected): string {
       return object.data.source === 'gps' ? 'vaporetti_realtime' : 'vaporetti_live';
     case 'alilagunaBoat':
       return 'alilaguna';
+    case 'flixbus':
+      return 'flixbus';
   }
 }
 

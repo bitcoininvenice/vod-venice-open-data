@@ -1025,5 +1025,21 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     technicalNotesIt: 'Feed RSS ufficiale di ACTV (ultimi 10 avvisi, riletto ogni 15 minuti). Fermate dal codice "ID" citato (codice GTFS) o dal nome completo, linee riconosciute nell\'orario; esclusi gli avvisi la cui ultima data citata è passata (salvo "fino al termine dei lavori"). Riconoscimento automatico: fa fede l\'avviso di ACTV.',
     technicalNotesEn: 'Official ACTV RSS feed (latest 10 notices, read every 15 minutes). Stops from the "ID" code cited (GTFS code) or the full name, lines recognised in the timetable; notices whose last cited date has passed are excluded (unless "until the end of works"). Automatic recognition: the ACTV notice prevails.',
     endpointOrFile: '/api/avvisi-actv'
+  },
+  {
+    id: 'flixbus',
+    nameIt: 'FlixBus (posizione da orario)',
+    nameEn: 'FlixBus (timetable position)',
+    group: 'mobility',
+    regime: 'simulated',
+    acquisition: 'local',
+    institution: 'FlixMobility (FlixBus)',
+    portalUrl: 'https://transport.data.gouv.fr/datasets/flixbus-horaires-theoriques-du-reseau-europeen-1',
+    portalName: 'transport.data.gouv.fr (GTFS FlixBus)',
+    descriptionIt: 'I bus FlixBus che passano per Venezia (Tronchetto, Mestre stazione, Aeroporto Marco Polo) mentre sono dentro l\'area della mappa, con linea, provenienza, destinazione e prossima fermata. Posizione stimata dall\'orario, non GPS.',
+    descriptionEn: 'FlixBus coaches serving Venice (Tronchetto, Mestre station, Marco Polo Airport) while they are within the map area, with line, origin, destination and next stop. Position estimated from the timetable, not GPS.',
+    technicalNotesIt: 'GTFS europeo ufficiale di FlixMobility (licenza ODbL 1.0), importato ogni settimana con pipeline/import_flixbus.py: solo le corse che toccano l\'area della mappa nei 10 giorni successivi, con il percorso stradale del feed ritagliato tra la fermata precedente e quella successiva. Orari del feed in UTC, convertiti in istanti assoluti per data. Il feed non ha dati in tempo reale: ritardi e soppressioni non sono visibili.',
+    technicalNotesEn: 'Official FlixMobility European GTFS (ODbL 1.0 licence), imported weekly with pipeline/import_flixbus.py: only trips touching the map area in the next 10 days, with the feed road shape clipped between the previous and next stop. Feed times in UTC, converted to absolute instants per date. The feed has no real-time data: delays and cancellations are not visible.',
+    endpointOrFile: '/api/flixbus (src/data/flixbus-venezia.json)'
   }
 ];
