@@ -663,8 +663,9 @@ test('vicino all\'aeroporto le icone si cliccano prima dell\'area dell\'aeroport
   await expect(page.locator('#alilaguna-modal-title')).toBeHidden();
   const box = (await page.locator('canvas').boundingBox())!;
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  // la darsena apre la scheda Alilaguna, non quella dell'aeroporto
-  await expect(page.locator('#alilaguna-modal-title')).toBeVisible();
+  // si apre la scheda della darsena o della barca Alilaguna ormeggiata lì (secondo l'ora), non quella dell'aeroporto
+  const alilagunaCard = page.locator('#alilaguna-modal-title').or(page.getByRole('dialog', { name: /^Linea (Blu|Arancio|Rossa)/ }));
+  await expect(alilagunaCard.first()).toBeVisible();
   await expect(page.locator('#airport-modal-title')).toHaveCount(0);
 });
 
