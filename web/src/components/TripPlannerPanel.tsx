@@ -277,7 +277,7 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
   const airportPlan = useMemo(() => {
     if (!open || isPrivate || !airportTrip || !sim || !walk || !from || !to) return null;
     // se stasera non ci sono più collegamenti: le prime opzioni di domani mattina
-    return planAirportOrTomorrow(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time), romeDayType(), { day: romeTomorrowDayType(), date: tomorrowDate() }, { tideAt, passerelle });
+    return planAirportOrTomorrow(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time), romeDayType(), { day: romeTomorrowDayType(), date: tomorrowDate() }, { tideAt, passerelle, nextDay: romeTomorrowDayType() });
   }, [open, isPrivate, airportTrip, sim, walk, from, to, time, tideAt, passerelle]);
   const airportOptions = airportPlan?.options ?? null;
   const result = useMemo(() => {
@@ -286,7 +286,7 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
       const best = airportOptions.find((o) => o.via === airportChoice) ?? airportOptions[0] ?? null;
       return { best, walkOnly: null, floodLevelCm: null, shortestWalkWetMeters: null };
     }
-    return planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time), romeDayType(), { mode, tideAt, passerelle });
+    return planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time), romeDayType(), { mode, tideAt, passerelle, nextDay: romeTomorrowDayType() });
   }, [open, isPrivate, sim, walk, from, to, time, mode, tideAt, passerelle, airportOptions, airportChoice]);
 
   // In barca propria: rete dei canali e regole del Testo Unico (lib/boatRouting)

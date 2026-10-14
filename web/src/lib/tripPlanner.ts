@@ -5,7 +5,7 @@
  * percorso solo a piedi. Con l'acqua alta i tratti a piedi preferiscono le calli più probabilmente
  * asciutte (lib/dryRouting). Non considera ritardi, affollamento né variazioni del servizio ACTV.
  */
-import { pointAt, type SimModel, type SimProfile } from './simulationCore';
+import { forEachTrip, pointAt, type SimModel, type SimProfile } from './simulationCore';
 import { fromGrid } from './positionDelay';
 import { metersBetween, nearestNode, pathCoords, pathEdges, shortestPaths, type ShortestPaths, type WalkGraph } from './walkGraph';
 import { addSummaries, floodWeights, summarizeEdges, WET_COST, type FloodWeights, type WetSummary } from './dryRouting';
@@ -83,6 +83,10 @@ export interface PlanOptions {
   tideAt?: (seconds: number) => number | null;
   /** percorsi su passerelle del piano del Comune */
   passerelle?: PasserellaItem[];
+  /** tipo di giorno di domani: per vedere le corse dopo mezzanotte (es. bus 5 alle 00:10) */
+  nextDay?: DayType;
+  /** tratti a piedi verso e dai pontili al massimo di (m); di norma MAX_ACCESS_M */
+  maxAccessM?: number;
 }
 
 export interface PlanResult {
@@ -167,6 +171,7 @@ interface Search {
   dest: PlannerPoint;
   now: number;
   day: DayType;
+  nextDay?: DayType;
   tideAt?: (seconds: number) => number | null;
 }
 
@@ -198,7 +203,7 @@ export function planTrip(
   day: DayType,
   options: PlanOptions = {},
 ): PlanResult {
-  const { mode = 'fastest', tideAt, passerelle = [] } = options;
+  const { mode = 'fastest', tideAt, passerelle = [], nextDay, maxAccessM = MAX_ACCESS_M } = options;
   const none: PlanResult = { best: null, walkOnly: null, floodLevelCm: null, shortestWalkWetMeters: null };
   const stops = waterStops(allStops);
   const o = nearestNode(graph, origin.lon, origin.lat);
@@ -238,17 +243,17 @@ export function planTrip(
 
   const stopNode = stops.map((s) => nearestNode(graph, s.lon, s.lat));
   const search: Search = {
-    graph, sim, stops, fromO, toD, floodO, floodD, stopNode, origin, dest, now, day, tideAt,
+    graph, sim, stops, fromO, toD, floodO, floodD, stopNode, origin, dest, now, day, nextDay, tideAt,
     accessM: stopNode.map((sn) => (sn.meters <= MAX_SNAP_M ? fromO.meters[sn.node] + o.meters + sn.meters : Infinity)),
     egressM: stopNode.map((sn) => (sn.meters <= MAX_SNAP_M ? toD.meters[sn.node] + d.meters + sn.meters : Infinity)),
   };
 
   if (mode === 'boat') {
     // meno strada a piedi possibile: pontili vicini, poi se serve quelli più lontani
-    const viaBoat = raptor(search, BOAT_ACCESS_M) ?? raptor(search, MAX_ACCESS_M);
+    const viaBoat = raptor(search, BOAT_ACCESS_M) ?? raptor(search, maxAccessM);
     return { best: viaBoat ?? walkOnly, ...base };
   }
-  const viaBoat = raptor(search, MAX_ACCESS_M);
+  const viaBoat = raptor(search, maxAccessM);
   const bestOverall =
     viaBoat && (!walkOnly || viaBoat.arrive + wetSeconds(viaBoat) < walkOnly.arrive + wetSeconds(walkOnly) - 60) ? viaBoat : walkOnly;
   return { best: bestOverall, ...base };
@@ -256,20 +261,19 @@ export function planTrip(
 
 /** Ricerca a giri (al massimo due corse) con tratti a piedi entro `accessLimit` metri. */
 function raptor(q: Search, accessLimit: number): Itinerary | null {
-  const { sim, stops, accessM, egressM, now, day } = q;
+  const { sim, stops, accessM, egressM, now, day, nextDay } = q;
   const seqs = profileStops(sim, stops);
-  const trips = sim.daysTrips[day];
   const rounds: Label[][] = [stops.map((_, s) => ({ time: accessM[s] <= accessLimit ? now + accessM[s] / WALK_SPEED : Infinity }))];
   for (let round = 1; round <= 2; round++) {
     const prev = rounds[round - 1];
     const cur: Label[] = prev.map((l) => ({ ...l }));
     const buffer = round === 1 ? BOARD_BUFFER_S : TRANSFER_BUFFER_S;
-    for (let i = 0; i < trips.count; i++) {
-      const departure = trips.t0[i];
-      if (departure > now + HORIZON_S || trips.t1[i] < now) continue;
-      const p = sim.profs[trips.tP[i]];
+    // anche le corse dopo mezzanotte, che il simulatore tiene nell'elenco del giorno dopo
+    forEachTrip(sim, day, nextDay, (pi, departure, end) => {
+      if (departure > now + HORIZON_S || end < now) return;
+      const p = sim.profs[pi];
       const seq = seqs.get(p);
-      if (!seq) continue;
+      if (!seq) return;
       let board = -1;
       for (let j = 0; j < seq.length; j++) {
         const t = departure + p.T[seq[j].k];
@@ -279,7 +283,7 @@ function raptor(q: Search, accessLimit: number): Itinerary | null {
         // si sale alla prima fermata raggiungibile in tempo (arrivati al giro precedente, senza essere scesi da questa stessa corsa)
         if (board === -1 && prev[seq[j].stop].time + buffer <= t && (round === 1 || prev[seq[j].stop].ride)) board = j;
       }
-    }
+    });
     rounds.push(cur);
   }
 

@@ -600,6 +600,17 @@ test('nautica: il clic su una marina apre la sua scheda', async ({ page, isMobil
   await expect(info).toContainText('OpenStreetMap');
 });
 
+test('scheda dell\'aeroporto: collegamenti dei prossimi 90 minuti, partenze e arrivi', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  await page.goto('/?open=aeroporto');
+  const board = page.getByTestId('airport-board');
+  await expect(board).toBeVisible({ timeout: 15000 });
+  await expect(board.getByRole('tab', { name: /Partenze/ })).toHaveAttribute('aria-selected', 'true');
+  await board.getByRole('tab', { name: /Arrivi/ }).click();
+  await expect(board.getByRole('tab', { name: /Arrivi/ })).toHaveAttribute('aria-selected', 'true');
+  await expect(board).toContainText('veneziaairport.it');
+});
+
 test('vicino all\'aeroporto le icone si cliccano prima dell\'area dell\'aeroporto', async ({ page, isMobile }) => {
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   await page.goto('/?layers=alilaguna');
@@ -1287,6 +1298,22 @@ test.describe('API', () => {
     const far = await (await request.get('/api/civici?q=Castello%2099999')).json();
     expect(far.result.match).toBe('nearest');
     expect((await request.get('/api/civici?q=Rialto')).status()).toBe(400);
+  });
+
+  test('aeroporto: partenze e arrivi dei prossimi 90 minuti, con le fonti', async ({ request }) => {
+    const body = await (await request.get('/api/aeroporto')).json();
+    expect(body.success).toBe(true);
+    expect(body.windowMinutes).toBe(90);
+    expect(Array.isArray(body.departures)).toBe(true);
+    expect(Array.isArray(body.arrivals)).toBe(true);
+    const now = Date.now();
+    for (const r of [...body.departures, ...body.arrivals]) {
+      expect(['bus', 'alilaguna', 'flixbus']).toContain(r.kind);
+      expect(r.at).toBeGreaterThan(now - 5 * 60_000);
+      expect(r.at).toBeLessThan(now + 100 * 60_000);
+    }
+    expect(body.meta.note).toMatch(/voli/);
+    expect(body.meta.sources.length).toBe(3);
   });
 
   test('indirizzi: calli e campi dal gazzettiere OSM, con la zona, senza servizi esterni', async ({ request }) => {

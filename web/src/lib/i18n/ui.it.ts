@@ -1972,6 +1972,18 @@ export const itUi = {
     position: "Posizione",
     note: "A Venezia i numeri civici sono per sestiere, non per via; la Giudecca ha una numerazione propria. Il Comune non pubblica i civici come open data: OpenStreetMap ne copre una parte, con buona copertura a Cannaregio, San Polo e Santa Croce e scarsa a Dorsoduro."
   },
+  airportBoard: {
+    title: "Collegamenti nei prossimi 90 minuti",
+    departures: "Partenze",
+    arrivals: "Arrivi",
+    unavailable: "Orari non disponibili in questo momento.",
+    none_departures: "Nessuna partenza di bus, Alilaguna o FlixBus nei prossimi 90 minuti.",
+    none_arrivals: "Nessun arrivo di bus, Alilaguna o FlixBus nei prossimi 90 minuti.",
+    kind_bus: "Bus ACTV",
+    kind_alilaguna: "Alilaguna",
+    kind_flixbus: "FlixBus",
+    note: "Orari ufficiali di ACTV, Alilaguna e FlixBus, senza ritardi. Gli orari dei voli non sono pubblicati come dati aperti: si trovano sul sito dell'aeroporto,"
+  },
   planner: {
     liveOnTime: "Adesso in orario (GPS)",
     liveLate: "Adesso in ritardo di {min} min (GPS)",

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { SimModel, SimProfile, SimShape } from './simulationCore';
 import { fromGrid, toGrid } from './positionDelay';
-import { nextScheduledDeparture, scheduledDepartures } from './scheduledDepartures';
+import { nextScheduledDeparture, scheduledArrivals, scheduledDepartures } from './scheduledDepartures';
+import { forEachTrip } from './simulationCore';
 
 // Navetta sintetica: 3 fermate a 400 m, 2 minuti tra una e l'altra, corse ogni 10 minuti
 const [x0, y0] = toGrid(12.31, 45.44);
@@ -36,5 +37,27 @@ describe('partenze da orario', () => {
     // il capolinea d'arrivo non ha partenze
     const [elon, elat] = fromGrid(x0 + 800, y0);
     expect(nextScheduledDeparture(s, { lon: elon, lat: elat }, 'weekday', 'weekday', 8 * 3600)).toBeNull();
+  });
+
+  it('le corse dopo mezzanotte del giorno dopo si vedono da oggi, spostate di 24 ore', () => {
+    const s = sim();
+    // corse di "domani": una alle 00:10 (corsa notturna di stasera) e una alle 10:00
+    const next = { tP: new Int32Array(2), t0: Int32Array.from([600, 36000]), t1: Int32Array.from([840, 36240]), count: 2 };
+    s.daysTrips.saturday = next;
+    const seen: number[] = [];
+    forEachTrip(s, 'weekday', 'saturday', (_p, t0) => t0 >= 86400 && seen.push(t0));
+    expect(seen).toEqual([87000]); // 00:10 domani; le 10:00 sono oltre la finestra della notte
+    const [lon, lat] = fromGrid(x0, y0);
+    expect(scheduledDepartures(s, { lon, lat }, 'weekday', 23 * 3600 + 50 * 60, 90 * 60, 'saturday').map((d) => d.time)).toEqual([87000]);
+    // senza il giorno dopo non si vede
+    expect(scheduledDepartures(s, { lon, lat }, 'weekday', 23 * 3600 + 50 * 60)).toEqual([]);
+  });
+
+  it('arrivi: dalla fermata intermedia e al capolinea, non al capolinea di partenza', () => {
+    const s = sim();
+    const [lon, lat] = fromGrid(x0 + 800, y0);
+    expect(scheduledArrivals(s, { lon, lat }, 'weekday', 36000, 30 * 60).map((a) => a.time)).toEqual([36240, 36840, 37440]);
+    const [slon, slat] = fromGrid(x0, y0);
+    expect(scheduledArrivals(s, { lon: slon, lat: slat }, 'weekday', 36000)).toEqual([]);
   });
 });

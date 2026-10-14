@@ -1,11 +1,95 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Plane, Navigation, Compass, Waves, Bus, Wind, Thermometer, Cloud, Check, Copy } from 'lucide-react';
 import { FlightItem, AirportMetarData } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge';
 import { InfoPanel } from '@/components/ui/InfoPanel';
+import { startPolling } from '@/lib/polling';
+import type { AirportBoard, BoardRow } from '@/lib/airportBoard';
+
+/** Sito ufficiale dell'aeroporto (orari dei voli: non sono dati aperti, solo il link) */
+const AIRPORT_SITE = 'https://www.veneziaairport.it';
+
+/** Partenze e arrivi di bus, Alilaguna e FlixBus nei prossimi 90 minuti (/api/aeroporto), ogni minuto. */
+const AirportConnections: React.FC = () => {
+  const { t, language } = useTranslation();
+  const [board, setBoard] = useState<AirportBoard | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [tab, setTab] = useState<'departures' | 'arrivals'>('departures');
+  useEffect(() => {
+    let cancelled = false;
+    const load = () =>
+      fetch('/api/aeroporto')
+        .then((r) => r.json())
+        .then((j) => {
+          if (cancelled) return;
+          setBoard(j.success ? { departures: j.departures, arrivals: j.arrivals } : null);
+          setFailed(!j.success);
+        })
+        .catch(() => !cancelled && setFailed(true));
+    const stop = startPolling(load, 60_000);
+    return () => {
+      cancelled = true;
+      stop();
+    };
+  }, []);
+  const locale = language === 'it' ? 'it-IT' : 'en-GB';
+  const hhmm = (ms: number) => new Date(ms).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
+  const rows: BoardRow[] = board ? board[tab] : [];
+  return (
+    <section className="flex flex-col gap-2" data-testid="airport-board" aria-label={t('ui.airportBoard.title')}>
+      <span className="text-xs font-semibold text-[var(--ink)] flex items-center gap-1.5">
+        <Bus className="w-4 h-4 text-emerald-400" /> {t('ui.airportBoard.title')}
+        <ProvenanceBadge kind="schedule-simulation" detail="GTFS" />
+      </span>
+      <div className="flex gap-1.5" role="tablist">
+        {(['departures', 'arrivals'] as const).map((k) => (
+          <button
+            key={k}
+            type="button"
+            role="tab"
+            aria-selected={tab === k}
+            onClick={() => setTab(k)}
+            className={`px-2.5 py-1 rounded-lg text-[11px] border cursor-pointer ${tab === k ? 'bg-sky-500/20 border-sky-500/50 text-sky-200 font-semibold' : 'border-[var(--rule)] text-[var(--ink-2)]'}`}
+          >
+            {t(`ui.airportBoard.${k}`)}
+            {board && <span className="ml-1 font-mono">{board[k].length}</span>}
+          </button>
+        ))}
+      </div>
+      {!board && !failed && <div className="h-10 rounded-xl bg-[var(--rule)]/30 animate-pulse" aria-busy="true" />}
+      {failed && <p className="text-[11px] text-[var(--ink-3)]">{t('ui.airportBoard.unavailable')}</p>}
+      {board && rows.length === 0 && <p className="text-[11px] text-[var(--ink-3)]">{t(`ui.airportBoard.none_${tab}`)}</p>}
+      {rows.length > 0 && (
+        <ul className="flex flex-col divide-y divide-[var(--rule)] text-xs max-h-56 overflow-y-auto pr-1" data-testid={`airport-board-${tab}`}>
+          {rows.map((r, i) => (
+            <li key={`${r.kind}-${r.line}-${r.at}-${i}`} className="py-1.5 flex items-center gap-2">
+              <span className="font-mono font-bold text-[var(--ink)] w-11 shrink-0">{hhmm(r.at)}</span>
+              <span
+                className="px-1.5 py-0.5 rounded-md font-mono font-bold text-[11px] min-w-[2.2rem] text-center border border-black/15 shrink-0"
+                style={r.color ? { background: r.color, color: '#fff' } : undefined}
+              >
+                {r.line}
+              </span>
+              <span className="flex-1 min-w-0 truncate text-[var(--ink-2)]">
+                {tab === 'departures' ? '→' : '←'} {r.place}
+              </span>
+              <span className="text-[10px] text-[var(--ink-3)] shrink-0">{t(`ui.airportBoard.kind_${r.kind}`)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="text-[10px] text-[var(--ink-3)] leading-relaxed">
+        {t('ui.airportBoard.note')}{' '}
+        <a href={AIRPORT_SITE} target="_blank" rel="noopener noreferrer" className="underline">
+          veneziaairport.it
+        </a>
+      </p>
+    </section>
+  );
+};
 
 interface AirportDetailModalProps {
   isOpen: boolean;
@@ -217,6 +301,8 @@ export const AirportDetailModal: React.FC<AirportDetailModalProps> = ({
             </div>
           </div>
         </div>
+
+        <AirportConnections />
 
         {/* Intermodal Connections */}
         <div className="flex flex-col gap-2">

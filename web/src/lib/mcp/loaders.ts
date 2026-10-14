@@ -24,7 +24,7 @@ import { serverSimulation } from '@/server/sources/simulationServer';
 import { lastDeparturesByStop } from '@/lib/lastDepartures';
 import { ACTV_STOPS_REFERENCE } from '@/lib/stopsReference';
 import { clock } from '@/lib/tripView';
-import { romeDayType } from '@/lib/time';
+import { romeDayType, romeTomorrowDayType } from '@/lib/time';
 import { GET as ordinancesGET } from '@/app/api/ordinanze/route';
 import { GET as sportsGET } from '@/app/api/sports/route';
 import { GET as nauticalGET } from '@/app/api/nautical/route';
@@ -213,7 +213,7 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
     if (!sim) return { items: [], meta: { error: 'orario non disponibile' } };
     const day = romeDayType();
     const items: Row[] = [];
-    for (const [i, list] of lastDeparturesByStop(sim.model, ACTV_STOPS_REFERENCE, day)) {
+    for (const [i, list] of lastDeparturesByStop(sim.model, ACTV_STOPS_REFERENCE, day, romeTomorrowDayType())) {
       const s = ACTV_STOPS_REFERENCE[i];
       for (const d of list) items.push({ stop: s.name, lat: s.lat, lon: s.lon, line: d.line, headsign: d.headsign, seconds: d.time, time: clock(d.time), afterMidnight: d.time >= 86400 });
     }

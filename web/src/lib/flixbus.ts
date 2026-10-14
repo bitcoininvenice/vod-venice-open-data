@@ -51,7 +51,7 @@ export const flixTime = (base: number, seconds: number) => base + seconds * 1000
 
 export const FLIXBUS_COLOR = '#73d700';
 
-const dayStart = (ymd: string) => Date.UTC(Number(ymd.slice(0, 4)), Number(ymd.slice(4, 6)) - 1, Number(ymd.slice(6, 8)));
+export const dayStart = (ymd: string) => Date.UTC(Number(ymd.slice(0, 4)), Number(ymd.slice(4, 6)) - 1, Number(ymd.slice(6, 8)));
 
 /** Distanza percorsa all'istante `t` (s dall'inizio della data) e prossima fermata; null fuori dalla corsa. */
 export function distanceAt(stops: FlixStop[], t: number): { d: number; atStop: number | null; next: number | null } | null {

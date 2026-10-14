@@ -323,6 +323,10 @@ export default function HomePage() {
         trackLayerOpen('marea');
         setIsTideModalOpen(true);
       }
+      else if (tool === 'aeroporto' || tool === 'airport') {
+        trackLayerOpen('voli_vce');
+        setIsAirportModalOpen(true);
+      }
       else if (tool === 'export') setIsExportModalOpen(true);
       else if (tool === 'spatial') setIsSpatialModalOpen(true);
       else if (tool === 'tutorial') setIsTutorialOpen(true);

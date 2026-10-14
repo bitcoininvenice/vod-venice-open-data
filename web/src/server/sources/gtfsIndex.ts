@@ -80,3 +80,9 @@ export function stopsNear(lat: number, lon: number, radius = 150): string[] {
   }
   return out;
 }
+
+/** Nome lungo di una linea automobilistica (es. «45»: capolinea fuori dalla mappa), null se non nota. */
+export function busLineName(line: string): string | null {
+  for (const [id, r] of Object.entries(IDX.routes)) if (r.n === line && !id.endsWith('_UN')) return r.long;
+  return null;
+}

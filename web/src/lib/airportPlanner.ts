@@ -7,7 +7,7 @@
  * Il percorso pedonale tra darsena e terminal non è nella rete pedonale di VOD: si stima dalla distanza in
  * linea d'aria. Non considera ritardi, biglietti né variazioni del servizio.
  */
-import { pointAt, type SimModel, type SimProfile } from './simulationCore';
+import { forEachTrip, pointAt, type SimModel, type SimProfile } from './simulationCore';
 import { fromGrid } from './positionDelay';
 import { metersBetween, nearestNode, pathCoords, pathEdges, shortestPaths, type WalkGraph } from './walkGraph';
 import { floodWeights, NO_WATER, summarizeEdges } from './dryRouting';
@@ -35,7 +35,7 @@ export const isAirport = (p: { lon: number; lat: number }): boolean => metersBet
 /** Ricerca "aeroporto": il campo del planner propone l'aeroporto. */
 export const matchesAirport = (q: string): boolean => /aero|airport|vce|marco\s*polo|tessera/i.test(q.trim());
 
-const AIRPORT_DOCKS = ALILAGUNA_STOPS.map((s, i) => (s.isAirportHub ? i : -1)).filter((i) => i >= 0);
+export const AIRPORT_DOCKS = ALILAGUNA_STOPS.map((s, i) => (s.isAirportHub ? i : -1)).filter((i) => i >= 0);
 
 const straightWalk = (from: PlannerPoint, to: PlannerPoint, start: number, factor = 1): Leg & { kind: 'walk' } => {
   const meters = metersBetween(from.lon, from.lat, to.lon, to.lat) * factor;
@@ -70,24 +70,22 @@ function aerobusProfiles(sim: SimModel): Map<SimProfile, { kRoma: number; kAir: 
   return m;
 }
 
-/** Primo bus 5 da `fromK` a `toK` (verso indicato) che parte non prima di `ready`. */
-function nextAerobus(sim: SimModel, day: DayType, ready: number, toAirport: boolean): { profile: SimProfile; departure: number; kFrom: number; kTo: number } | null {
+/** Primo bus 5 nel verso indicato che parte non prima di `ready` (anche dopo mezzanotte, con `nextDay`). */
+function nextAerobus(sim: SimModel, day: DayType, ready: number, toAirport: boolean, nextDay?: DayType): { profile: SimProfile; departure: number; kFrom: number; kTo: number } | null {
   const profiles = aerobusProfiles(sim);
-  const trips = sim.daysTrips[day];
   let best: { profile: SimProfile; departure: number; kFrom: number; kTo: number; arrive: number } | null = null;
-  for (let i = 0; i < trips.count; i++) {
-    const p = sim.profs[trips.tP[i]];
+  forEachTrip(sim, day, nextDay, (pi, departure) => {
+    const p = sim.profs[pi];
     const ks = profiles.get(p);
-    if (!ks) continue;
+    if (!ks) return;
     const kFrom = toAirport ? ks.kRoma : ks.kAir;
     const kTo = toAirport ? ks.kAir : ks.kRoma;
-    if (kFrom >= kTo) continue;
-    const departure = trips.t0[i];
+    if (kFrom >= kTo) return;
     const board = departure + p.T[kFrom];
-    if (board < ready || board > ready + HORIZON_S) continue;
+    if (board < ready || board > ready + HORIZON_S) return;
     const arrive = departure + p.T[kTo];
     if (!best || arrive < best.arrive) best = { profile: p, departure, kFrom, kTo, arrive };
-  }
+  });
   return best;
 }
 
@@ -118,20 +116,29 @@ function busLeg(bus: { profile: SimProfile; departure: number; kFrom: number; kT
   };
 }
 
+/** A piedi oltre questa distanza (m) solo se altrimenti non si arriva al bus (es. di notte da Fondamente Nove) */
+export const LONG_WALK_M = 3000;
+
+/** Tratto in città da o per Piazzale Roma: il più veloce, poi ammettendo un tratto a piedi più lungo. */
+function toRoma(graph: WalkGraph, sim: SimModel, stops: StopItem[], a: PlannerPoint, b: PlannerPoint, now: number, day: DayType, options: PlanOptions): Itinerary | null {
+  const base = { ...options, mode: 'fastest' as const };
+  return planTrip(graph, sim, stops, a, b, now, day, base).best ?? planTrip(graph, sim, stops, a, b, now, day, { ...base, maxAccessM: LONG_WALK_M }).best;
+}
+
 /** ACTV: vaporetto/piedi fino a Piazzale Roma e bus 5, oppure al contrario. */
 function viaActv(graph: WalkGraph, sim: SimModel, stops: StopItem[], venice: PlannerPoint, toAirport: boolean, now: number, day: DayType, options: PlanOptions): Itinerary | null {
   if (toAirport) {
-    const first = planTrip(graph, sim, stops, venice, PIAZZALE_ROMA, now, day, { ...options, mode: 'fastest' }).best;
+    const first = toRoma(graph, sim, stops, venice, PIAZZALE_ROMA, now, day, options);
     if (!first) return null;
-    const bus = nextAerobus(sim, day, first.arrive + BOARD_BUFFER_S, true);
+    const bus = nextAerobus(sim, day, first.arrive + BOARD_BUFFER_S, true, options.nextDay);
     if (!bus) return null;
     const ride = busLeg(bus, PIAZZALE_ROMA.label, AIRPORT.label);
     return { ...first, arrive: ride.end, legs: [...first.legs, ride], rides: first.rides + 1, via: 'actv' };
   }
-  const bus = nextAerobus(sim, day, now + BOARD_BUFFER_S, false);
+  const bus = nextAerobus(sim, day, now + BOARD_BUFFER_S, false, options.nextDay);
   if (!bus) return null;
   const ride = busLeg(bus, AIRPORT.label, PIAZZALE_ROMA.label);
-  const rest = planTrip(graph, sim, stops, PIAZZALE_ROMA, venice, ride.end, day, { ...options, mode: 'fastest' }).best;
+  const rest = toRoma(graph, sim, stops, PIAZZALE_ROMA, venice, ride.end, day, options);
   if (!rest) return null;
   return { ...rest, depart: Math.max(now, ride.start - BOARD_BUFFER_S), legs: [ride, ...rest.legs], rides: rest.rides + 1, via: 'actv' };
 }
@@ -250,6 +257,6 @@ export function planAirportOrTomorrow(
 ): { options: Itinerary[]; tomorrow: boolean } {
   const today = planAirport(graph, sim, stops, from, to, now, day, options);
   if (today.length > 0 || isAirport(from) === isAirport(to)) return { options: today, tomorrow: false };
-  const morning = planAirport(graph, sim, stops, from, to, Math.max(FIRST_SERVICE_FROM_S, 0), next.day, { ...options, date: next.date });
+  const morning = planAirport(graph, sim, stops, from, to, FIRST_SERVICE_FROM_S, next.day, { ...options, date: next.date, nextDay: undefined });
   return { options: morning, tomorrow: morning.length > 0 };
 }

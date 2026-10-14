@@ -1974,6 +1974,18 @@ export const enUi: UiTranslations = {
     position: "Position",
     note: "In Venice house numbers run by sestiere, not by street; Giudecca has its own numbering. The City does not publish house numbers as open data: OpenStreetMap covers part of them, well in Cannaregio, San Polo and Santa Croce and poorly in Dorsoduro."
   },
+  airportBoard: {
+    title: "Connections in the next 90 minutes",
+    departures: "Departures",
+    arrivals: "Arrivals",
+    unavailable: "Timetables not available right now.",
+    none_departures: "No bus, Alilaguna or FlixBus departures in the next 90 minutes.",
+    none_arrivals: "No bus, Alilaguna or FlixBus arrivals in the next 90 minutes.",
+    kind_bus: "ACTV bus",
+    kind_alilaguna: "Alilaguna",
+    kind_flixbus: "FlixBus",
+    note: "Official ACTV, Alilaguna and FlixBus timetables, without delays. Flight times are not published as open data: see the airport website,"
+  },
   planner: {
     liveOnTime: "On time now (GPS)",
     liveLate: "Running {min} min late now (GPS)",

@@ -2,7 +2,7 @@
  * Prossime partenze da una fermata secondo l'orario ufficiale ACTV (la stessa base della simulazione dei mezzi).
  * Serve dove non ci sono dati in tempo reale (People Mover, tram) e come riferimento per i bus.
  */
-import { pointAt, type SimModel, type SimProfile } from './simulationCore';
+import { forEachTrip, pointAt, type SimModel, type SimProfile } from './simulationCore';
 import { fromGrid } from './positionDelay';
 import { ACTV_STOPS_REFERENCE } from './stopsReference';
 import type { DayType, StopItem } from './types';
@@ -24,6 +24,8 @@ interface ProfilePoints {
   /** [lon, lat] di ogni fermata della corsa */
   pts: [number, number][];
   headsign: string;
+  /** fermata di partenza della corsa */
+  origin: string;
 }
 
 const cache = new WeakMap<SimModel, ProfilePoints[]>();
@@ -50,7 +52,7 @@ function profilePoints(sim: SimModel): ProfilePoints[] {
       return fromGrid(pt[0], pt[1]) as [number, number];
     });
     const last = pts[pts.length - 1];
-    return { p, pts, headsign: nearestName(last[0], last[1]) };
+    return { p, pts, headsign: nearestName(last[0], last[1]), origin: nearestName(pts[0][0], pts[0][1]) };
   });
   cache.set(sim, out);
   return out;
@@ -66,6 +68,8 @@ export function scheduledDepartures(
   day: DayType,
   from: number,
   windowS = 90 * 60,
+  /** tipo di giorno di domani: per le corse dopo mezzanotte (il simulatore le tiene nel giorno dopo) */
+  nextDay?: DayType,
 ): ScheduledDeparture[] {
   const profIndex = new Map<SimProfile, number[]>();
   for (const { p, pts } of profilePoints(sim)) {
@@ -75,22 +79,21 @@ export function scheduledDepartures(
   }
   if (profIndex.size === 0) return [];
   const heads = new Map(profilePoints(sim).map((x) => [x.p, x.headsign]));
-  const trips = sim.daysTrips[day];
   const out: ScheduledDeparture[] = [];
   const seen = new Set<string>();
-  for (let i = 0; i < trips.count; i++) {
-    const p = sim.profs[trips.tP[i]];
+  forEachTrip(sim, day, nextDay, (pi, t0) => {
+    const p = sim.profs[pi];
     const ks = profIndex.get(p);
-    if (!ks) continue;
+    if (!ks) return;
     for (const k of ks) {
-      const time = trips.t0[i] + p.T[k];
+      const time = t0 + p.T[k];
       if (time < from || time > from + windowS) continue;
       const key = `${p.route.n}|${time}|${heads.get(p)}`;
       if (seen.has(key)) continue; // pontili o corsie della stessa fermata
       seen.add(key);
       out.push({ line: p.route.n, category: p.route.cat, headsign: heads.get(p) ?? '', time });
     }
-  }
+  });
   return out.sort((a, b) => a.time - b.time);
 }
 
@@ -106,8 +109,50 @@ export function nextScheduledDeparture(
   nextDay: DayType,
   from: number,
 ): (ScheduledDeparture & { tomorrow: boolean }) | null {
-  const later = scheduledDepartures(sim, stop, day, from, 30 * 3600 - from)[0];
+  const later = scheduledDepartures(sim, stop, day, from, 30 * 3600 - from, nextDay)[0];
   if (later) return { ...later, tomorrow: later.time >= 86400 };
   const next = scheduledDepartures(sim, stop, nextDay, 0, 30 * 3600)[0];
   return next ? { ...next, tomorrow: true } : null;
+}
+
+export interface ScheduledArrival {
+  line: string;
+  category: string;
+  /** fermata di partenza della corsa */
+  origin: string;
+  /** arrivo alla fermata (s dalla mezzanotte, oltre 86400 = dopo mezzanotte) */
+  time: number;
+}
+
+/** Arrivi alla fermata tra `from` e `from + windowS`, ordinati per orario (il capolinea di partenza non è un arrivo). */
+export function scheduledArrivals(
+  sim: SimModel,
+  stop: Pick<StopItem, 'lat' | 'lon'>,
+  day: DayType,
+  from: number,
+  windowS = 90 * 60,
+  nextDay?: DayType,
+): ScheduledArrival[] {
+  const profIndex = new Map<SimProfile, { ks: number[]; origin: string }>();
+  for (const { p, pts, origin } of profilePoints(sim)) {
+    const ks: number[] = [];
+    for (let k = 1; k < pts.length; k++) if (meters(pts[k], stop.lon, stop.lat) <= STOP_MATCH_M) ks.push(k);
+    if (ks.length) profIndex.set(p, { ks, origin });
+  }
+  const out: ScheduledArrival[] = [];
+  const seen = new Set<string>();
+  forEachTrip(sim, day, nextDay, (pi, t0) => {
+    const p = sim.profs[pi];
+    const e = profIndex.get(p);
+    if (!e) return;
+    for (const k of e.ks) {
+      const time = t0 + p.T[k];
+      if (time < from || time > from + windowS) continue;
+      const key = `${p.route.n}|${time}|${e.origin}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ line: p.route.n, category: p.route.cat, origin: e.origin, time });
+    }
+  });
+  return out.sort((a, b) => a.time - b.time);
 }

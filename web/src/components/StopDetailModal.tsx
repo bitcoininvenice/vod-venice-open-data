@@ -213,7 +213,8 @@ const LastDeparturesList: React.FC<{ stop: StopItem }> = ({ stop }) => {
   const { t } = useTranslation();
   const sim = useSimulation(true);
   const day = romeDayType();
-  const list = React.useMemo(() => (sim ? lastDeparturesForStop(sim, day, stop).slice(0, 8) : null), [sim, day, stop]);
+  const nextDay = romeTomorrowDayType();
+  const list = React.useMemo(() => (sim ? lastDeparturesForStop(sim, day, stop, nextDay).slice(0, 8) : null), [sim, day, stop, nextDay]);
   return (
     <section className="flex flex-col gap-1.5" aria-label={t('ui.lastService.title')} data-testid="last-departures">
       <span className="text-[11px] font-mono uppercase text-[var(--ink-3)]">{t('ui.lastService.title')}</span>
@@ -269,7 +270,7 @@ const NextRun: React.FC<{ stop: StopItem }> = ({ stop }) => {
       </span>
       <span className="flex-1 min-w-0 truncate text-[var(--ink-2)]">→ {next.headsign}</span>
       <span className="font-mono font-bold text-[var(--ink)]">{clock(next.time)}</span>
-      <span className="font-mono text-[10px] text-right text-[var(--ink-3)]">{next.tomorrow ? t('ui.scheduled.tomorrow') : wait}</span>
+      <span className="font-mono text-[10px] text-right text-[var(--ink-3)]">{next.tomorrow && waitMin >= 6 * 60 ? t('ui.scheduled.tomorrow') : wait}</span>
     </div>
   );
 };
@@ -292,7 +293,9 @@ const ScheduledDeparturesList: React.FC<{ stop: StopItem }> = ({ stop }) => {
   }, []);
   const day = romeDayType();
   const minute = Math.floor(now / 60);
-  const list = React.useMemo(() => (sim ? scheduledDepartures(sim, stop, day, minute * 60).slice(0, 14) : null), [sim, stop, day, minute]);
+  const nextDay = romeTomorrowDayType();
+  // anche le corse dopo mezzanotte (es. bus 5 alle 00:10), che l'orario tiene nel giorno dopo
+  const list = React.useMemo(() => (sim ? scheduledDepartures(sim, stop, day, minute * 60, 90 * 60, nextDay).slice(0, 14) : null), [sim, stop, day, minute, nextDay]);
   return (
     <section className="flex flex-col gap-1.5" aria-label={t('ui.scheduled.title')} data-testid="scheduled-departures">
       <span className="text-[11px] font-mono uppercase text-[var(--ink-3)]">{t('ui.scheduled.title')}</span>

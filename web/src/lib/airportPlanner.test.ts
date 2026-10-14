@@ -6,7 +6,7 @@ import { WALK_URL } from './walk-data';
 import { buildSimulation, type RawSimulation } from './simulationCore';
 import { buildWalkGraph, type RawWalk } from './walkGraph';
 import { ACTV_STOPS_REFERENCE } from './stopsReference';
-import { AIRPORT, AEROBUS_LINE, FIRST_SERVICE_FROM_S, isAirport, matchesAirport, PIAZZALE_ROMA, planAirport, planAirportOrTomorrow } from './airportPlanner';
+import { AIRPORT, AEROBUS_LINE, FIRST_SERVICE_FROM_S, isAirport, LONG_WALK_M, matchesAirport, PIAZZALE_ROMA, planAirport, planAirportOrTomorrow } from './airportPlanner';
 import { alilagunaTripsOn } from './alilaguna-schedule';
 
 const publicDir = existsSync(path.join(process.cwd(), 'public')) ? path.join(process.cwd(), 'public') : path.join(process.cwd(), 'web', 'public');
@@ -76,5 +76,27 @@ describe('aeroporto Marco Polo', () => {
     for (const o of r.options) expect(o.depart).toBeGreaterThanOrEqual(FIRST_SERVICE_FROM_S);
     // di giorno nessun ripiego
     expect(planAirportOrTomorrow(graph, sim, ACTV_STOPS_REFERENCE, murano, AIRPORT, 10 * 3600, 'weekday', { day: 'weekday', date }, { date }).tomorrow).toBe(false);
+  });
+
+  it('dopo mezzanotte: il bus 5 delle 00:10 e delle 00:40 (orari GTFS 24:10, 24:40) è tra le soluzioni', () => {
+    const ferrovia = { lon: 12.3215, lat: 45.4412, label: 'Ferrovia' };
+    const its = planAirport(graph, sim, ACTV_STOPS_REFERENCE, ferrovia, AIRPORT, 23 * 3600 + 50 * 60, 'weekday', { date, nextDay: 'weekday' });
+    const actv = its.find((i) => i.via === 'actv')!;
+    const bus = actv.legs[actv.legs.length - 1];
+    expect(bus.kind === 'ride' && bus.line).toBe(AEROBUS_LINE);
+    expect(bus.start).toBeGreaterThanOrEqual(86400);
+    // senza il giorno dopo la stessa ricerca non vede le corse dopo mezzanotte
+    expect(planAirport(graph, sim, ACTV_STOPS_REFERENCE, ferrovia, AIRPORT, 23 * 3600 + 50 * 60, 'weekday', { date }).some((i) => i.via === 'actv')).toBe(false);
+  });
+
+  it('da Murano alle 23:30: vaporetto fino alle Fondamente Nove, a piedi a Piazzale Roma e bus 5 dopo mezzanotte', () => {
+    const murano = { lon: 12.35374, lat: 45.45987, label: 'Murano' };
+    const its = planAirport(graph, sim, ACTV_STOPS_REFERENCE, murano, AIRPORT, 23 * 3600 + 18 * 60, 'weekday', { date, nextDay: 'weekday' });
+    const actv = its.find((i) => i.via === 'actv')!;
+    expect(actv).toBeDefined();
+    const walks = actv.legs.filter((l) => l.kind === 'walk').map((l) => l.meters);
+    expect(Math.max(...walks)).toBeGreaterThan(1500);
+    expect(Math.max(...walks)).toBeLessThanOrEqual(LONG_WALK_M + 300);
+    expect(actv.arrive).toBeGreaterThan(86400);
   });
 });

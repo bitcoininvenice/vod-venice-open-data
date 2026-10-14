@@ -173,3 +173,30 @@ export function pointAt(sh: SimShape, d: number, out: [number, number]): void {
   out[0] = xy[2 * l] + (xy[2 * r] - xy[2 * l]) * f;
   out[1] = xy[2 * l + 1] + (xy[2 * r + 1] - xy[2 * l + 1]) * f;
 }
+
+/** Le corse del giorno dopo che partono prima di quest'ora (s) appartengono ancora alla sera prima */
+export const NIGHT_END_S = 4 * 3600;
+
+/**
+ * Corse visibili da un giorno: quelle di `day` e, con `nextDay`, quelle del giorno dopo che partono dopo
+ * mezzanotte entro `untilS`, con l'orario spostato di +24 h (secondi dalla mezzanotte di oggi).
+ * Il simulatore tiene ogni giorno su 24 ore: le corse ACTV dopo mezzanotte (orari GTFS 24:10, 24:40…) sono
+ * nell'elenco del giorno dopo, e senza questo una ricerca alle 23 non le vedrebbe.
+ */
+export function forEachTrip(
+  sim: SimModel,
+  day: DayType,
+  nextDay: DayType | undefined,
+  fn: (profileIndex: number, t0: number, t1: number) => void,
+  untilS = 6 * 3600,
+): void {
+  const today = sim.daysTrips[day];
+  for (let i = 0; i < today.count; i++) fn(today.tP[i], today.t0[i], today.t1[i]);
+  if (!nextDay) return;
+  const next = sim.daysTrips[nextDay];
+  for (let i = 0; i < next.count; i++) {
+    // partenze negative: corse iniziate prima di mezzanotte, già nell'elenco di oggi
+    if (next.t0[i] < 0 || next.t0[i] > untilS) continue;
+    fn(next.tP[i], next.t0[i] + 86400, next.t1[i] + 86400);
+  }
+}
