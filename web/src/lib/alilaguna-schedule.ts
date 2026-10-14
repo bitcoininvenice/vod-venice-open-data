@@ -263,3 +263,50 @@ export function getScheduledAlilagunaBoats(currentTimeSeconds: number, date: Dat
 
   return boats;
 }
+
+// ----------------------------------------------------------------------------
+// Corse con orari per il planner (aeroporto)
+// ----------------------------------------------------------------------------
+
+export interface AlilagunaTripTimes {
+  id: string;
+  /** nome della linea (es. «Linea Arancio») e colore ufficiale */
+  line: string;
+  color: string;
+  headsign: string;
+  /** fermate in ordine: indice in ALILAGUNA_STOPS, arrivo e partenza (s dalla mezzanotte), distanza sul percorso (m) */
+  stops: { stop: number; arr: number; dep: number; dist: number }[];
+  shape: string;
+}
+
+/** Corse Alilaguna in servizio nel giorno della data (vuoto fuori dalla validità dell'orario). */
+export function alilagunaTripsOn(date: Date = new Date()): AlilagunaTripTimes[] {
+  if (!isAlilagunaTimetableValid(date)) return [];
+  const out: AlilagunaTripTimes[] = [];
+  for (const trip of FEED.trips) {
+    const route = ROUTE_BY_ID.get(trip.route);
+    if (!route || !serviceActive(trip.service, date)) continue;
+    out.push({
+      id: trip.id,
+      line: route.name,
+      color: route.color,
+      headsign: trip.headsign,
+      stops: trip.stops.map(([stop, arr, dep, dist]) => ({ stop, arr, dep, dist })),
+      shape: trip.shape,
+    });
+  }
+  return out;
+}
+
+/** Tracciato di una corsa tra due distanze lungo il percorso [lon, lat]. */
+export function alilagunaShapeBetween(shapeId: string, d0: number, d1: number): [number, number][] {
+  const shape = SHAPES.get(shapeId);
+  if (!shape) return [];
+  const out: [number, number][] = [];
+  const steps = Math.max(2, Math.ceil((d1 - d0) / 80));
+  for (let i = 0; i <= steps; i++) {
+    const p = interpolateAtDistance(shape, d0 + ((d1 - d0) * i) / steps);
+    out.push([p.lon, p.lat]);
+  }
+  return out;
+}

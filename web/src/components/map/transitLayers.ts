@@ -488,7 +488,7 @@ export function drawItinerary(rc: RenderContext): void {
       ctx.stroke();
       ctx.setLineDash([]);
     } else {
-      const col = leg.kind === 'boat' ? BOAT_ROUTE_COLOR : (lineColor(leg.line, leg.category) ?? '#0ea5e9');
+      const col = leg.kind === 'boat' ? BOAT_ROUTE_COLOR : (leg.color ?? lineColor(leg.line, leg.category) ?? '#0ea5e9');
       ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.6)' : 'rgba(15,23,42,0.5)';
       ctx.lineWidth = 8;
       ctx.stroke();

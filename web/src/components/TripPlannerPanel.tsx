@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Footprints, MapPin, Route, Ship, ArrowDownUp, Crosshair, Droplets } from 'lucide-react';
+import { Footprints, MapPin, Route, Ship, ArrowDownUp, Crosshair, Droplets, Plane } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { InfoHeader, InfoPanel } from '@/components/ui/InfoPanel';
 import { useSimulation } from '@/lib/simulationModel';
@@ -22,6 +22,7 @@ import { buildBoatGraph, ordinancesOnRoute, planBoat, type BoatGraph, type RawBo
 import { BOAT_URL } from '@/lib/boat-data';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 import { BoatPlanResult } from '@/components/BoatPlanResult';
+import { AIRPORT, isAirport, matchesAirport, planAirport } from '@/lib/airportPlanner';
 
 let walkPromise: Promise<WalkGraph> | null = null;
 /** Rete pedonale: scaricata una sola volta, alla prima apertura del planner. */
@@ -128,6 +129,7 @@ const PlaceInput: React.FC<{
   }, [civicKey]);
   const stopHits = q.length >= 2 && !civicKey ? WATER_STOPS.filter((s) => s.name.toLowerCase().includes(q.toLowerCase())).slice(0, 6) : [];
   const civicPoint = civic && civic.key === civicKey ? civic.point : null;
+  const airportHit = q.length >= 2 && !civicKey && matchesAirport(q);
 
   if (value) {
     return (
@@ -155,8 +157,16 @@ const PlaceInput: React.FC<{
           className="mt-1 w-full px-3 py-2 rounded-xl bg-[var(--ground)] border border-[var(--rule)] text-xs text-[var(--ink)] normal-case font-sans focus:outline-none focus:border-cyan-500/60"
         />
       </label>
-      {(civicPoint || stopHits.length > 0) && (
+      {(civicPoint || airportHit || stopHits.length > 0) && (
         <ul className="flex flex-col rounded-xl border border-[var(--rule)] overflow-hidden">
+          {airportHit && (
+            <li>
+              <button type="button" onClick={() => onChange(AIRPORT)} className="w-full text-left px-3 py-2 text-xs hover:bg-[var(--rule)]/50 cursor-pointer" data-testid="planner-airport-option">
+                <Plane className="inline w-3.5 h-3.5 mr-1 text-sky-400" aria-hidden />
+                {AIRPORT.label}
+              </button>
+            </li>
+          )}
           {civicPoint && (
             <li>
               <button type="button" onClick={() => onChange(civicPoint)} className="w-full text-left px-3 py-2 text-xs hover:bg-[var(--rule)]/50 cursor-pointer">
@@ -233,10 +243,21 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
   }, [open, isPrivate, boat]);
   const ordinances = useOrdinances(open && isPrivate);
 
+  // Da o per l'aeroporto: opzioni Alilaguna (via acqua) e ACTV (bus 5 da Piazzale Roma), dalla più veloce
+  const airportTrip = !!from && !!to && isAirport(from) !== isAirport(to);
+  const [airportChoice, setAirportChoice] = useState<'alilaguna' | 'actv' | null>(null);
+  const airportOptions = useMemo(() => {
+    if (!open || isPrivate || !airportTrip || !sim || !walk || !from || !to) return null;
+    return planAirport(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time), romeDayType(), { tideAt, passerelle });
+  }, [open, isPrivate, airportTrip, sim, walk, from, to, time, tideAt, passerelle]);
   const result = useMemo(() => {
     if (!open || isPrivate || !sim || !walk || !from || !to) return null;
+    if (airportOptions) {
+      const best = airportOptions.find((o) => o.via === airportChoice) ?? airportOptions[0] ?? null;
+      return { best, walkOnly: null, floodLevelCm: null, shortestWalkWetMeters: null };
+    }
     return planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time), romeDayType(), { mode, tideAt, passerelle });
-  }, [open, isPrivate, sim, walk, from, to, time, mode, tideAt, passerelle]);
+  }, [open, isPrivate, sim, walk, from, to, time, mode, tideAt, passerelle, airportOptions, airportChoice]);
 
   // In barca propria: rete dei canali e regole del Testo Unico (lib/boatRouting)
   const boatResult = useMemo(() => {
@@ -346,11 +367,37 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
       {loading && from && to && <p className="text-xs text-[var(--ink-3)]">{isPrivate ? t('ui.planner.boat_loading') : t('ui.planner.loading')}</p>}
       {!isPrivate && walkError && <p className="text-xs text-rose-400">{t('ui.planner.loadError')}</p>}
       {isPrivate && boatError && <p className="text-xs text-rose-400">{t('ui.planner.boat_loadError')}</p>}
-      {result && !best && <p className="text-xs text-amber-400">{t('ui.planner.noRoute')}</p>}
+      {result && !best && <p className="text-xs text-amber-400">{airportOptions ? t('ui.planner.airportNoRoute') : t('ui.planner.noRoute')}</p>}
       {boatResult && <BoatPlanResult result={boatResult} resident={resident} ordinances={boatOrdinances} />}
 
       {best && (
         <div className="flex flex-col gap-3" data-testid="planner-result">
+          {airportOptions && airportOptions.length > 0 && (
+            <div className="flex flex-col gap-1.5" role="radiogroup" aria-label={t('ui.planner.airportOptions')} data-testid="planner-airport-options">
+              <span className="flex items-center gap-1.5 text-[11px] font-semibold text-[var(--ink-2)]">
+                <Plane className="w-3.5 h-3.5 text-sky-400" aria-hidden />
+                {t('ui.planner.airportOptions')}
+              </span>
+              {airportOptions.map((o) => (
+                <button
+                  key={o.via}
+                  type="button"
+                  role="radio"
+                  aria-checked={best === o}
+                  onClick={() => setAirportChoice(o.via ?? null)}
+                  data-testid={`planner-airport-${o.via}`}
+                  className={`flex items-baseline justify-between gap-2 px-2.5 py-1.5 rounded-lg border text-left text-[11px] cursor-pointer ${
+                    best === o ? 'bg-sky-500/15 border-sky-500/50 text-[var(--ink)]' : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)]'
+                  }`}
+                >
+                  <span className="font-semibold">{t(`ui.planner.airport_${o.via}`)}</span>
+                  <span className="font-mono shrink-0">
+                    {clock(o.depart)} → {clock(o.arrive)} · {t('ui.planner.duration', { min: minutes(o.arrive - o.depart) })}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
           <div className="flex items-baseline justify-between gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
             <span className="text-sm font-bold text-[var(--ink)]">
               {clock(best.depart)} → {clock(best.arrive)}
@@ -374,15 +421,18 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
                   <span
                     className="px-1.5 py-0.5 rounded-md font-mono font-bold text-[11px] shrink-0 border border-black/15"
                     style={{
-                      background: lineColor(leg.line, leg.category) ?? '#0ea5e9',
-                      color: lineTextColor(leg.line, lineColor(leg.line, leg.category) ?? '#0ea5e9'),
+                      background: leg.color ?? lineColor(leg.line, leg.category) ?? '#0ea5e9',
+                      color: lineTextColor(leg.operator ? null : leg.line, leg.color ?? lineColor(leg.line, leg.category) ?? '#0ea5e9'),
                     }}
                   >
                     {leg.line}
                   </span>
                   <span className="text-[var(--ink)]">
                     <strong>{clock(leg.start)}</strong> {leg.from} → <strong>{clock(leg.end)}</strong> {leg.to}
-                    <span className="block text-[11px] text-[var(--ink-3)]">{t('ui.planner.rideLeg', { headsign: leg.headsign, n: leg.stops })}</span>
+                    <span className="block text-[11px] text-[var(--ink-3)]">
+                      {leg.operator === 'alilaguna' ? `${t('ui.planner.operatorAlilaguna')} · ` : leg.category === 'bus' ? `${t('ui.planner.operatorBus')} · ` : ''}
+                      {t('ui.planner.rideLeg', { headsign: leg.headsign, n: leg.stops })}
+                    </span>
                     {liveDelays && liveDelays.get(i) !== undefined && (
                       <span className="block text-[11px] font-semibold" style={{ color: DELAY_COLORS[delayStatus(liveDelays.get(i) as number)] }} data-testid="planner-live-delay">
                         {liveLabel(liveDelays.get(i) as number)}
@@ -427,6 +477,7 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
             </p>
           )}
           {best.rides === 0 && <p className="text-[11px] text-[var(--ink-3)]">{t('ui.planner.walkBest')}</p>}
+          {airportOptions && <p className="text-[11px] text-[var(--ink-3)]" data-testid="planner-airport-note">{t('ui.planner.airportNote')}</p>}
         </div>
       )}
       <p className="text-[10px] text-[var(--ink-3)] leading-relaxed">{isPrivate ? t('ui.planner.boat_note') : t('ui.planner.note')}</p>

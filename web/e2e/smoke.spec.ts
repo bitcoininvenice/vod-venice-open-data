@@ -486,6 +486,28 @@ test('come arrivare: modalità solo a piedi e preferisci vaporetto', async ({ pa
   await expect(panel.getByTestId('planner-result')).toContainText(/direzione .* fermate/);
 });
 
+test('come arrivare all\'aeroporto: opzioni Alilaguna e ACTV con il bus 5', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  await page.goto('/');
+  await page.locator('canvas').waitFor();
+  await page.getByTestId('open-planner').click();
+  const panel = page.locator('[data-info-panel]');
+  await panel.locator('input[type="time"]').fill('10:00');
+  await panel.getByTestId('planner-from').getByRole('textbox').fill('Ferrovia');
+  await panel.getByRole('button', { name: /^Ferrovia$/ }).click();
+  await panel.getByTestId('planner-to').getByRole('textbox').fill('aeroporto');
+  await panel.getByTestId('planner-airport-option').click();
+  await expect(panel.getByTestId('planner-to')).toContainText('Aeroporto Marco Polo (VCE)');
+  const options = panel.getByTestId('planner-airport-options');
+  await expect(options).toBeVisible({ timeout: 15000 });
+  // ACTV c'è sempre; Alilaguna solo nella validità stagionale dell'orario importato
+  await options.getByTestId('planner-airport-actv').click();
+  await expect(options.getByTestId('planner-airport-actv')).toHaveAttribute('aria-checked', 'true');
+  await expect(panel.getByTestId('planner-result')).toContainText('Bus ACTV');
+  await expect(panel.getByTestId('planner-result')).toContainText('Piazzale Roma');
+  await expect(panel.getByTestId('planner-airport-note')).toContainText('Alilaguna');
+});
+
 test('come arrivare in barca propria: ZTL solo per residenti, percorso sui canali con le regole del Testo Unico', async ({ page, isMobile }) => {
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   const errors: string[] = [];

@@ -22,7 +22,7 @@ export const TRANSFER_BUFFER_S = 180;
 /** Orizzonte della ricerca dopo l'ora di partenza (s). */
 export const HORIZON_S = 3 * 3600;
 /** Oltre questa distanza dalla rete il punto non è raggiungibile a piedi (m). */
-const MAX_SNAP_M = 250;
+export const MAX_SNAP_M = 250;
 /**
  * Mezzi usati dal planner: navigazione, ferry e autobus del Lido e di Pellestrina, che collegano i pontili
  * (le fermate del planner sono quelle della navigazione).
@@ -53,6 +53,10 @@ export type Leg =
       coords: [number, number][];
       /** partenza della corsa dal capolinea (s dalla mezzanotte): per ritrovare il mezzo nel feed GPS */
       tripDeparture: number;
+      /** colore della linea quando non è una linea ACTV di navigazione (Alilaguna, bus) */
+      color?: string;
+      /** operatore, se non ACTV */
+      operator?: 'alilaguna';
     }
   /** in barca con un mezzo privato (planner «In barca», lib/boatRouting) */
   | { kind: 'boat'; from: string; to: string; meters: number; seconds: number; start: number; end: number; coords: [number, number][] };
@@ -66,6 +70,8 @@ export interface Itinerary extends WetSummary {
   rides: number;
   /** almeno una corsa con marea da MOSE (≥ +110 cm): ACTV può deviare o ridurre il servizio */
   ridesInHighWater: boolean;
+  /** opzioni per l'aeroporto (lib/airportPlanner): Alilaguna via acqua o ACTV con il bus da Piazzale Roma */
+  via?: 'alilaguna' | 'actv';
 }
 
 /** Più veloce (a piedi o in vaporetto), solo a piedi, con meno strada a piedi possibile; `private`: in barca propria (lib/boatRouting) */

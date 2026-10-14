@@ -29,6 +29,10 @@ describe('layerState', () => {
     }
   });
 
+  it('lo scenario Trasporti accende anche le rotte ACTV', () => {
+    expect(presetLayers('muoversi').showRoutes).toBe(true);
+  });
+
   it('isMapPreset rifiuta valori sconosciuti', () => {
     expect(isMapPreset('muoversi')).toBe(true);
     expect(isMapPreset('all')).toBe(false);

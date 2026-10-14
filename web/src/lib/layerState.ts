@@ -64,7 +64,7 @@ export function countActiveLayers(v: LayerVisibility): number {
  * Solo dati verificati: i layer "da verificare" (regime curated) non entrano nei preset.
  */
 export const PRESET_LAYERS: Record<Exclude<MapPreset, 'clean'>, LayerKey[]> = {
-  muoversi: ['showVehicles', 'showRealtimeVehicles', 'showStops', 'showAlilaguna', 'showShips'],
+  muoversi: ['showVehicles', 'showRealtimeVehicles', 'showRoutes', 'showStops', 'showAlilaguna', 'showShips'],
   'acqua-alta': ['showMose', 'showPasserelle', 'showLagoonCurrents', 'showOceanStations', 'showCanals'],
   ambiente: ['showAirQuality', 'showPollenStations', 'showLagoonWater', 'showMarineWind', 'showParks'],
   servizi: ['showPharmacies', 'showDae', 'showCityAssets', 'showRecyclingCentres', 'showWifiHotspots'],
