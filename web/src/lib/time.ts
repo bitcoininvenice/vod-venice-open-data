@@ -43,6 +43,11 @@ export function romeDayType(date: Date = new Date()): DayType {
   return 'weekday';
 }
 
+/** Stesso istante di domani (per l'orario del giorno dopo). */
+export function tomorrowDate(now: Date = new Date()): Date {
+  return new Date(now.getTime() + 86400_000);
+}
+
 /** Tipo di giorno di domani a Venezia (per l'orario dopo la fine del servizio di oggi). */
 export function romeTomorrowDayType(now: Date = new Date()): DayType {
   return romeDayType(new Date(now.getTime() + 86400_000));

@@ -6,7 +6,7 @@ import { WALK_URL } from './walk-data';
 import { buildSimulation, type RawSimulation } from './simulationCore';
 import { buildWalkGraph, type RawWalk } from './walkGraph';
 import { ACTV_STOPS_REFERENCE } from './stopsReference';
-import { AIRPORT, AEROBUS_LINE, isAirport, matchesAirport, PIAZZALE_ROMA, planAirport } from './airportPlanner';
+import { AIRPORT, AEROBUS_LINE, FIRST_SERVICE_FROM_S, isAirport, matchesAirport, PIAZZALE_ROMA, planAirport, planAirportOrTomorrow } from './airportPlanner';
 import { alilagunaTripsOn } from './alilaguna-schedule';
 
 const publicDir = existsSync(path.join(process.cwd(), 'public')) ? path.join(process.cwd(), 'public') : path.join(process.cwd(), 'web', 'public');
@@ -64,5 +64,17 @@ describe('aeroporto Marco Polo', () => {
     expect(alilagunaTripsOn(new Date('2027-02-01T10:00:00+01:00'))).toEqual([]);
     const its = planAirport(graph, sim, ACTV_STOPS_REFERENCE, rialto, AIRPORT, 10 * 3600, 'weekday', { date: new Date('2027-02-01T10:00:00+01:00') });
     expect(its.map((i) => i.via)).toEqual(['actv']);
+  });
+
+  it('da Murano a tarda sera: niente stasera, le prime soluzioni di domani mattina', () => {
+    const murano = { lon: 12.35374, lat: 45.45987, label: 'Murano' };
+    const late = 23 * 3600 + 30 * 60;
+    expect(planAirport(graph, sim, ACTV_STOPS_REFERENCE, murano, AIRPORT, late, 'weekday', { date })).toEqual([]);
+    const r = planAirportOrTomorrow(graph, sim, ACTV_STOPS_REFERENCE, murano, AIRPORT, late, 'weekday', { day: 'weekday', date: new Date('2026-10-15T10:00:00+02:00') }, { date });
+    expect(r.tomorrow).toBe(true);
+    expect(r.options.length).toBeGreaterThan(0);
+    for (const o of r.options) expect(o.depart).toBeGreaterThanOrEqual(FIRST_SERVICE_FROM_S);
+    // di giorno nessun ripiego
+    expect(planAirportOrTomorrow(graph, sim, ACTV_STOPS_REFERENCE, murano, AIRPORT, 10 * 3600, 'weekday', { day: 'weekday', date }, { date }).tomorrow).toBe(false);
   });
 });

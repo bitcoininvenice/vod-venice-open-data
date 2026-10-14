@@ -15,14 +15,14 @@ import type { RealtimeVehicleDto } from '@/lib/contracts/realtime';
 import type { PasserellaItem } from '@/lib/types';
 import { ACTV_STOPS_REFERENCE } from '@/lib/stopsReference';
 import { clock } from '@/lib/tripView';
-import { romeDayType, romeSecondsOfDay } from '@/lib/time';
+import { romeDayType, romeSecondsOfDay, romeTomorrowDayType, tomorrowDate } from '@/lib/time';
 import { civicLabel, parseCivicQuery, type CivicMatch } from '@/lib/civici';
 import { lineColor, lineTextColor } from '@/lib/actvLines';
 import { buildBoatGraph, ordinancesOnRoute, planBoat, type BoatGraph, type RawBoat } from '@/lib/boatRouting';
 import { BOAT_URL } from '@/lib/boat-data';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 import { BoatPlanResult } from '@/components/BoatPlanResult';
-import { AIRPORT, isAirport, matchesAirport, planAirport } from '@/lib/airportPlanner';
+import { AIRPORT, isAirport, matchesAirport, planAirportOrTomorrow } from '@/lib/airportPlanner';
 import { addressLabel, type AddressHit } from '@/lib/addresses';
 
 let walkPromise: Promise<WalkGraph> | null = null;
@@ -274,10 +274,12 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
   // Da o per l'aeroporto: opzioni Alilaguna (via acqua) e ACTV (bus 5 da Piazzale Roma), dalla più veloce
   const airportTrip = !!from && !!to && isAirport(from) !== isAirport(to);
   const [airportChoice, setAirportChoice] = useState<'alilaguna' | 'actv' | null>(null);
-  const airportOptions = useMemo(() => {
+  const airportPlan = useMemo(() => {
     if (!open || isPrivate || !airportTrip || !sim || !walk || !from || !to) return null;
-    return planAirport(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time), romeDayType(), { tideAt, passerelle });
+    // se stasera non ci sono più collegamenti: le prime opzioni di domani mattina
+    return planAirportOrTomorrow(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time), romeDayType(), { day: romeTomorrowDayType(), date: tomorrowDate() }, { tideAt, passerelle });
   }, [open, isPrivate, airportTrip, sim, walk, from, to, time, tideAt, passerelle]);
+  const airportOptions = airportPlan?.options ?? null;
   const result = useMemo(() => {
     if (!open || isPrivate || !sim || !walk || !from || !to) return null;
     if (airportOptions) {
@@ -406,6 +408,9 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
                 <Plane className="w-3.5 h-3.5 text-sky-400" aria-hidden />
                 {t('ui.planner.airportOptions')}
               </span>
+              {airportPlan?.tomorrow && (
+                <p className="text-[11px] text-amber-400" data-testid="planner-airport-tomorrow">{t('ui.planner.airportTomorrow')}</p>
+              )}
               {airportOptions.map((o) => (
                 <button
                   key={o.via}

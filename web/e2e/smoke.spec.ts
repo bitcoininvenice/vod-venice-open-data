@@ -600,6 +600,24 @@ test('nautica: il clic su una marina apre la sua scheda', async ({ page, isMobil
   await expect(info).toContainText('OpenStreetMap');
 });
 
+test('vicino all\'aeroporto le icone si cliccano prima dell\'area dell\'aeroporto', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  await page.goto('/?layers=alilaguna');
+  await page.locator('canvas').waitFor();
+  // la ricerca centra la mappa sulla darsena Alilaguna dell'aeroporto
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder(/cerca fermate/i).fill('Aeroporto (A)');
+  await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: 'Fermata Alilaguna' }).first().click();
+  await expect(page.locator('#alilaguna-modal-title')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#alilaguna-modal-title')).toBeHidden();
+  const box = (await page.locator('canvas').boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  // la darsena apre la scheda Alilaguna, non quella dell'aeroporto
+  await expect(page.locator('#alilaguna-modal-title')).toBeVisible();
+  await expect(page.locator('#airport-modal-title')).toHaveCount(0);
+});
+
 test('parchi: il clic dentro l\'area di un parco apre la sua scheda', async ({ page, isMobile }) => {
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   const RIALTO = { lat: 45.43727, lon: 12.335071 };

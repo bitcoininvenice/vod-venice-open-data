@@ -229,3 +229,27 @@ export function planAirport(
   if (land) out.push(land);
   return out.sort((a, b) => a.arrive - b.arrive);
 }
+
+/** Ora da cui cercare le prime corse del giorno dopo (s dalla mezzanotte) */
+export const FIRST_SERVICE_FROM_S = 4 * 3600;
+
+/**
+ * Come planAirport; se stasera non ci sono più collegamenti, le prime opzioni di domani mattina
+ * (dalle 4, con l'orario del giorno dopo). `tomorrow` indica che gli orari sono di domani.
+ */
+export function planAirportOrTomorrow(
+  graph: WalkGraph,
+  sim: SimModel,
+  stops: StopItem[],
+  from: PlannerPoint,
+  to: PlannerPoint,
+  now: number,
+  day: DayType,
+  next: { day: DayType; date: Date },
+  options: PlanOptions & { date?: Date } = {},
+): { options: Itinerary[]; tomorrow: boolean } {
+  const today = planAirport(graph, sim, stops, from, to, now, day, options);
+  if (today.length > 0 || isAirport(from) === isAirport(to)) return { options: today, tomorrow: false };
+  const morning = planAirport(graph, sim, stops, from, to, Math.max(FIRST_SERVICE_FROM_S, 0), next.day, { ...options, date: next.date });
+  return { options: morning, tomorrow: morning.length > 0 };
+}

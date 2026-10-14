@@ -531,7 +531,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     const path = (p: { path: readonly (readonly number[])[] }) => p.path;
     const noPoint = () => null;
 
-    // Aeroporto di Venezia Marco Polo (VCE / LIPZ): sempre cliccabile, area più ampia da vicino
+    // Aeroporto di Venezia Marco Polo (VCE / LIPZ): cliccabile ovunque non ci sia un'icona, area più ampia da vicino
     const airport: Hit = (x, y) => {
       const [ax, ay] = screen(12.3519, 45.5053);
       return onSelectAirport && Math.hypot(x - ax, y - ay) <= Math.max(34, 45 * (camera.s / 0.02)) ? onSelectAirport : null;
@@ -663,7 +663,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     // Ordine = priorità: oggetti in movimento, poi punti, poi tracciati e aree
     const action = firstHit(
       [
-        airport,
         L.showFlights &&
           target({
             items: D.flights.map((f) => ({ f, live: getLiveFlight(f, currentTimeSeconds) })),
@@ -786,6 +785,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
               });
             },
           }),
+        // Aeroporto: area ampia, dopo tutte le icone (bus, barche Alilaguna, voli, fermate vicine si cliccano prima)
+        airport,
         L.showMarineSignals && lagoonMarkers,
         L.showCanals && canals,
         // Aree verdi: dopo punti e linee, perché coprono superfici ampie
