@@ -37,8 +37,11 @@ PUBLIC_DATA_DIR = os.path.join(BASE_DIR, "..", "web", "public", "data")
 INDEX_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "actv-gtfs-index.json")
 LINE_COLORS_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "actv-line-colors.json")
 STOPS_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "actv-stops.json")
+BUS_STOPS_FILE = os.path.join(BASE_DIR, "..", "web", "src", "data", "actv-bus-stops.json")
 # Fermate bus mostrate in mappa: solo i nodi principali (troppe fermate renderebbero la mappa illeggibile)
 MIN_BUS_LINES = 15
+# Corsie della stessa fermata bus (stesso nome) entro questa distanza diventano una sola fermata (m)
+BUS_GROUP_M = 150
 
 # Griglia virtuale condivisa con le geometrie LAND: non modificare senza rigenerare anche LAND.
 FRAME = (12.135, 12.47, 45.205, 45.555)  # lon0, lon1, lat0, lat1
@@ -460,6 +463,70 @@ def map_stops(feeds: list[Feed]) -> list[dict]:
     return out
 
 
+def bus_stops(feed: "Feed", rows=None) -> list[dict]:
+    """Tutte le fermate bus del feed automobilistico nell'area della mappa (esclusi tram e People Mover).
+    Le corsie con lo stesso nome entro BUS_GROUP_M diventano una sola fermata, con linee e codici GTFS."""
+    route_of_trip = {tid: t["route_id"] for tid, t in feed.trips.items()}
+    lines: dict[str, set] = {}
+    rail: set = set()
+    for st in rows if rows is not None else read_csv(feed.name, "stop_times.txt"):
+        rid = route_of_trip.get(st["trip_id"])
+        if not rid:
+            continue
+        r = feed.routes.get(rid, {})
+        lines.setdefault(st["stop_id"], set()).add(r.get("route_short_name") or rid)
+        if r.get("route_type") == "0" or r.get("route_short_name") == PEOPLE_MOVER_LINE:
+            rail.add(st["stop_id"])
+    groups: list[dict] = []
+    for sid, s in feed.stops.items():
+        served = lines.get(sid)
+        if not served or sid in rail:
+            continue
+        try:
+            lat, lon = float(s["stop_lat"]), float(s["stop_lon"])
+        except (KeyError, ValueError):
+            continue
+        if not (FRAME[0] <= lon <= FRAME[1] and FRAME[2] <= lat <= FRAME[3]):
+            continue
+        name = stop_base_name(s["stop_name"])
+        g = next((g for g in groups if g["name"] == name
+                  and abs(g["lat"] - lat) * 111000 < BUS_GROUP_M and abs(g["lon"] - lon) * 78000 < BUS_GROUP_M), None)
+        if g is None:
+            g = {"name": name, "lat": lat, "lon": lon, "pts": [], "lines": set(), "gtfsIds": []}
+            groups.append(g)
+        g["pts"].append((lat, lon))
+        g["lines"] |= served
+        g["gtfsIds"].append(sid)
+    out = []
+    for g in groups:
+        out.append({
+            "id": f"busstop:{min(g['gtfsIds'], key=lambda x: (len(x), x))}",
+            "name": g["name"],
+            "lat": round(sum(p[0] for p in g["pts"]) / len(g["pts"]), 6),
+            "lon": round(sum(p[1] for p in g["pts"]) / len(g["pts"]), 6),
+            "mode": "bus",
+            "lines": sorted(g["lines"], key=natural_key),
+            "gtfsIds": sorted(g["gtfsIds"]),
+        })
+    out.sort(key=lambda s: (s["name"], s["id"]))
+    return out
+
+
+def write_bus_stops(feeds: list[Feed]) -> None:
+    feed = next(f for f in feeds if f.name == "automobilistico")
+    stops = bus_stops(feed)
+    doc = {
+        "generatedAt": datetime.now(ZoneInfo("Europe/Rome")).isoformat(timespec="seconds"),
+        "source": "ACTV S.p.A. / AVM S.p.A. – GTFS automobilistico",
+        "license": "Open Data ACTV (CC BY)",
+        "note": f"Tutte le fermate bus nell'area della mappa; corsie con lo stesso nome entro {BUS_GROUP_M} m unite. Tram e People Mover sono nelle fermate della mappa.",
+        "stops": stops,
+    }
+    with open(BUS_STOPS_FILE, "w", encoding="utf-8") as f:
+        json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
+    logging.info("Fermate bus: %d", len(stops))
+
+
 def write_map_stops(feeds: list[Feed]) -> None:
     stops = map_stops(feeds)
     doc = {
@@ -509,6 +576,7 @@ def write_stops_only(feeds: list[Feed]) -> None:
         json.dump(idx, f, ensure_ascii=False, separators=(",", ":"))
     logging.info("Fermate GTFS nell'indice: %d", len(idx["stops"]))
     write_map_stops(feeds)
+    write_bus_stops(feeds)
     write_line_colors(feeds)
 
 
@@ -566,6 +634,7 @@ def main() -> int:
     write_simulation(data, days)
     write_index(feeds, trip_route, days)
     write_map_stops(feeds)
+    write_bus_stops(feeds)
     return 0
 
 

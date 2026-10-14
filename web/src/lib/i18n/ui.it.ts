@@ -122,6 +122,7 @@ export const itUi = {
     bdapWorks: "Opere in corso (BDAP)",
     loraGateways: "Gateway LoRaWAN",
     ordinances: "Ordinanze temporanee del Comune",
+    busStops: "Fermate bus (tutte)",
     scheduleSpeed: "Velocità richiesta dall'orario e limiti",
     ordinancesUnplaced: "Atti in vigore senza posizione sulla mappa: {n}",
     ordinancesAll: "Elenco completo sul sito del Comune",
@@ -348,6 +349,7 @@ export const itUi = {
     datoIstituzionaleGtfsActv: "Dato Istituzionale GTFS ACTV",
     approdoCensitoNelCatalogoOpen: "Approdo censito nel catalogo open data ufficiale GTFS di ACTV / AVM S.p.A. e Comune di Venezia. Per gli orari ufficiali di passaggio in tempo reale e gli avvisi di linea consulta il portale ufficiale di ACTV o i display di pontile.",
     orariUfficialiNavigazioneActv: "Orari Ufficiali di Navigazione ACTV",
+    orariUfficialiFermata: "Orari ufficiali di questa fermata (ACTV)",
     accessNotStated: "Non indicata nel GTFS ACTV",
     accessNo: "Non accessibile"
   },

@@ -993,5 +993,21 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     technicalNotesIt: 'Minimo legale: somma di lunghezza/limite sui pezzi del tratto entro 25 m da un canale con limite (limite ACTV se diverso); gli altri pezzi contano zero, quindi è una stima per difetto. Il tempo da orario include attracco e partenza. Segnalato "più veloce dei limiti" solo se l\'orario resta sotto il minimo anche con 60 s di tolleranza per gli arrotondamenti e il 10% per l\'incertezza del percorso. Giorno feriale. Esclusi i canali della Capitaneria di Porto: molti tratti in laguna non sono valutabili.',
     technicalNotesEn: 'Legal minimum: sum of length/limit over the pieces of the stretch within 25 m of a canal with a limit (ACTV limit if different); other pieces count zero, so it is a lower bound. Timetable time includes docking and departure. Flagged "faster than limits" only if the timetable stays below the minimum even with 60 s of tolerance for rounding and 10% for route uncertainty. Weekday. Harbour Office channels excluded: many lagoon stretches are not assessable.',
     endpointOrFile: '/api/velocita-orario'
+  },
+  {
+    id: 'fermate_bus',
+    nameIt: 'Fermate bus ACTV (tutte)',
+    nameEn: 'ACTV bus stops (all)',
+    group: 'mobility',
+    regime: 'static',
+    acquisition: 'local',
+    institution: 'ACTV / AVM S.p.A. (GTFS automobilistico)',
+    portalUrl: 'https://actv.avmspa.it/it/content/linee-urbane-0',
+    portalName: 'actv.avmspa.it',
+    descriptionIt: 'Tutte le fermate bus ACTV nell\'area della mappa (Mestre, Lido, Pellestrina, terraferma vicina), con le linee che le servono. Cliccando una fermata si vedono i prossimi arrivi con il ritardo stimato da ACTV.',
+    descriptionEn: 'All ACTV bus stops within the map area (Mestre, Lido, Pellestrina, nearby mainland), with the lines serving them. Clicking a stop shows the next arrivals with the delay estimated by ACTV.',
+    technicalNotesIt: 'Dal GTFS automobilistico ACTV (pipeline/export_simulation_data.py, aggiornamento settimanale): corsie con lo stesso nome entro 150 m unite in una fermata, tram e People Mover esclusi (sono nelle fermate principali). Confrontate con la mappa Google delle fermate ACTV: nell\'area della mappa mancano solo poche fermate non presenti nel GTFS open data.',
+    technicalNotesEn: 'From the ACTV bus GTFS (pipeline/export_simulation_data.py, weekly refresh): lanes with the same name within 150 m merged into one stop, tram and People Mover excluded (they are in the main stops). Checked against ACTV\'s Google map of stops: within the map area only a few stops missing from the open-data GTFS are absent.',
+    endpointOrFile: '/api/fermate-bus (src/data/actv-bus-stops.json)'
   }
 ];

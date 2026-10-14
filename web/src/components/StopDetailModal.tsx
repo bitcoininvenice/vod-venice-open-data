@@ -119,13 +119,17 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
             {t('ui.stop.approdoCensitoNelCatalogoOpen')}
           </p>
           <a
-            href="https://actv.avmspa.it/it/content/orari-servizio-di-navigazione-0"
+            href={
+              stop.mode !== 'navigazione' && stop.mode !== 'ferry' && stop.gtfsIds?.length
+                ? `https://orari.actv.it/stop.html?stopid=${stop.gtfsIds[0]}&service=AUT`
+                : 'https://actv.avmspa.it/it/content/orari-servizio-di-navigazione-0'
+            }
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 text-xs font-semibold border border-cyan-500/30 transition-colors"
           >
             <ExternalLink className="w-3.5 h-3.5" />
-            {t('ui.stop.orariUfficialiNavigazioneActv')}
+            {t(stop.mode !== 'navigazione' && stop.mode !== 'ferry' && stop.gtfsIds?.length ? 'ui.stop.orariUfficialiFermata' : 'ui.stop.orariUfficialiNavigazioneActv')}
           </a>
         </div>
     </InfoPanel>

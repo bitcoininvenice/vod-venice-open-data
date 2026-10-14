@@ -32,6 +32,7 @@ import { GET as nauticalGET } from '@/app/api/nautical/route';
 import { GET as parksGET } from '@/app/api/parks/route';
 import { GET as censusGET } from '@/app/api/census/route';
 import civiciData from '@/data/osm-civici.json';
+import busStopsData from '@/data/actv-bus-stops.json';
 import { GET as healthGET } from '@/app/api/health/route';
 import tourism from '@/data/turismo-comuni.json';
 import cruscotto from '@/data/cruscotto-comuni.json';
@@ -110,6 +111,7 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
     const j = await read(stopsGET(new Request('http://vod.local/api/stops')));
     return { items: asRows(j.data) };
   },
+  bus_stops: async () => ({ items: asRows(busStopsData.stops), meta: { source: busStopsData.source, license: busStopsData.license, generatedAt: busStopsData.generatedAt } }),
   realtime_vehicles: async () => {
     const j = await read(vehiclesGET());
     return { items: asRows(j.data), meta: j.meta as Row };

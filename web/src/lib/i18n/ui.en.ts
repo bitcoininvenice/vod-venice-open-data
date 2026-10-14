@@ -124,6 +124,7 @@ export const enUi: UiTranslations = {
     bdapWorks: "Works in progress (BDAP)",
     loraGateways: "LoRaWAN gateways",
     ordinances: "Temporary City orders",
+    busStops: "Bus stops (all)",
     scheduleSpeed: "Speed required by the timetable vs limits",
     ordinancesUnplaced: "Orders in force without a position on the map: {n}",
     ordinancesAll: "Full list on the City website",
@@ -350,6 +351,7 @@ export const enUi: UiTranslations = {
     datoIstituzionaleGtfsActv: "ACTV Institutional GTFS Data",
     approdoCensitoNelCatalogoOpen: "Official dock catalogued in the ACTV / AVM S.p.A. and Municipality of Venice GTFS open data registry. For official live timetables and service alerts, consult the official ACTV portal or electronic dock displays.",
     orariUfficialiNavigazioneActv: "Official ACTV Navigation Timetables",
+    orariUfficialiFermata: "Official timetable for this stop (ACTV)",
     accessNotStated: "Not stated in the ACTV GTFS",
     accessNo: "Not accessible"
   },

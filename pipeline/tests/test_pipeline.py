@@ -699,3 +699,27 @@ def test_toponimi_grafie_unite_ponti_e_terraferma_esclusa():
     assert list(names) == ["Ponte dei Carmini", "Strada Comunale dei Murazzi"]
     assert len(names["Strada Comunale dei Murazzi"]) == 1
     assert toponyms.is_mainland(12.30, 45.48) and not toponyms.is_mainland(12.335, 45.437)
+
+
+# --- Fermate bus (GTFS automobilistico) ---
+
+import export_simulation_data as sim_export  # noqa: E402
+
+
+def test_fermate_bus_corsie_unite_tram_esclusi_e_fuori_area():
+    class FakeFeed:
+        name = "automobilistico"
+        trips = {"t1": {"route_id": "r1"}, "t2": {"route_id": "r2"}, "t3": {"route_id": "rt"}}
+        routes = {"r1": {"route_short_name": "A", "route_type": "3"}, "r2": {"route_short_name": "B", "route_type": "3"},
+                  "rt": {"route_short_name": "T1", "route_type": "0"}}
+        stops = {
+            "10": {"stop_name": "Gran Viale", "stop_lat": "45.4160", "stop_lon": "12.3710"},
+            "11": {"stop_name": "Gran Viale", "stop_lat": "45.4161", "stop_lon": "12.3712"},  # altra corsia, 15 m
+            "20": {"stop_name": "Piazzale Cialdini", "stop_lat": "45.4900", "stop_lon": "12.2400"},  # tram
+            "30": {"stop_name": "Padova", "stop_lat": "45.4064", "stop_lon": "11.8767"},  # fuori area
+        }
+    rows = [{"trip_id": "t1", "stop_id": "10"}, {"trip_id": "t2", "stop_id": "11"}, {"trip_id": "t3", "stop_id": "20"}, {"trip_id": "t1", "stop_id": "30"}]
+    out = sim_export.bus_stops(FakeFeed(), rows)
+    assert len(out) == 1
+    assert out[0]["name"] == "Gran Viale" and out[0]["lines"] == ["A", "B"] and out[0]["gtfsIds"] == ["10", "11"]
+    assert out[0]["mode"] == "bus" and out[0]["id"] == "busstop:10"

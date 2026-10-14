@@ -597,6 +597,29 @@ test('la scheda informativa non copre il pannello livelli e non blocca la mappa'
   await expect(info).toBeHidden();
 });
 
+test('fermate bus: il clic apre la scheda con linee e orari ufficiali della fermata', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  const STOP = { lat: 45.43727, lon: 12.335071 };
+  await page.route('**/api/fermate-bus', (route) =>
+    route.fulfill({ json: { success: true, count: 1, meta: {}, data: [{ id: 'busstop:4567', name: 'Fermata di prova', ...STOP, mode: 'bus', lines: ['A', 'B'], gtfsIds: ['4567', '4568'] }] } }),
+  );
+  await page.goto('/?layers=fermate_bus');
+  await page.locator('canvas').waitFor();
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder(/cerca fermate/i).fill('Rialto');
+  await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: /rialto/i }).first().click();
+  await page.keyboard.press('Escape');
+  const panel = page.locator('aside').filter({ visible: true }).first();
+  await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('fermate');
+  await panel.locator('[data-layer="showStops"]').click();
+  const box = (await page.locator('canvas').boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  const info = page.locator('[data-info-panel]');
+  await expect(info).toContainText('Fermata di prova');
+  await expect(info).toContainText('Linea B');
+  await expect(info.getByRole('link', { name: /orari ufficiali di questa fermata/i })).toHaveAttribute('href', /stopid=4567&service=AUT/);
+});
+
 test('trasporto pubblico: livello "velocità da orario" e sezione in /metrics', async ({ page, isMobile }) => {
   test.skip(isMobile, 'pannello dei livelli controllato su desktop');
   await page.goto('/?layers=velocita_orario');
@@ -929,6 +952,19 @@ test.describe('API', () => {
     expect([200, 503]).toContain(res.status());
     expect(body.data.moseGates).toHaveLength(4);
     expect(body.meta.levels.kind).toBe('live');
+  });
+
+  test('fermate bus: tutte quelle del GTFS nell\'area della mappa, con linee e codici', async ({ request }) => {
+    const body = await (await request.get('/api/fermate-bus')).json();
+    expect(body.success).toBe(true);
+    expect(body.count).toBeGreaterThan(500);
+    for (const s of body.data) {
+      expect(s.mode).toBe('bus');
+      expect(s.gtfsIds.length).toBeGreaterThan(0);
+      expect(s.lines.length).toBeGreaterThan(0);
+    }
+    const lido = body.data.filter((s: { name: string }) => /^Malamocco|^Alberoni|^Gran Viale/.test(s.name));
+    expect(lido.length).toBeGreaterThan(3);
   });
 
   test('servizio adesso e velocità da orario: dati coerenti, nessuno storico', async ({ request }) => {

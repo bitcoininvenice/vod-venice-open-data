@@ -57,6 +57,8 @@ export interface CityData {
   moseGates: MoseGateItem[];
   // Mobilità
   stops: StopItem[];
+  /** tutte le fermate bus ACTV (/api/fermate-bus) */
+  busStops: StopItem[];
   realtimeVehicles: RealtimeVehicleDto[];
   flights: FlightItem[];
   ships: ShipItem[];
@@ -130,6 +132,7 @@ export const INITIAL_CITY_DATA: CityData = {
   cpsmStations: [],
   moseGates: [],
   stops: ACTV_STOPS_REFERENCE,
+  busStops: [],
   realtimeVehicles: [],
   flights: [],
   ships: [],
@@ -249,6 +252,7 @@ export const RESOURCES = {
   parks: { url: '/api/parks', pick: (j) => (j.success ? { parkPlaces: list(j.data) } : undefined) },
   loraGateways: { url: '/api/lora-gateways', pick: (j) => ({ loraGateways: list(j.data) }) },
   cantieri: { url: '/api/cantieri', pick: (j) => (j.success ? { cantieri: nonEmpty(j.data) } : undefined) },
+  busStops: { url: '/api/fermate-bus', pick: (j) => (j.success ? { busStops: list(j.data) } : undefined) },
   stops: { url: '/api/stops', pick: (j) => (j.success ? { stops: nonEmpty(j.data) } : undefined) },
   cameras: { url: '/api/cameras', pick: (j) => (j.success ? { cameras: nonEmpty(j.data) } : undefined) },
   cityAssets: {
@@ -407,6 +411,7 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
     loraGateways: l.showLoraGateways,
     cantieri: l.showCantieri || l.showSpatialBuffer || ui.lists,
     stops: l.showStops || ui.lists,
+    busStops: l.showBusStops,
     cameras: l.showCameras || ui.lists,
     cityAssets: l.showCityAssets || l.showAccessibleBridges || l.showWasteBoats || l.showParkings || l.showRecyclingCentres || l.showLibraries || l.showWifiVenues || ui.lists,
     environment: l.showAirQuality,
@@ -435,6 +440,7 @@ export function layerCounts(d: CityData, extra: { scheduledVehicles: number; ali
     showVehicles: extra.scheduledVehicles,
     showRealtimeVehicles: d.realtimeVehicles.length,
     showStops: d.stops.length,
+    showBusStops: d.busStops.length,
     showAlilaguna: extra.alilagunaBoats,
     showCantieri: d.cantieri.length,
     showCameras: d.cameras.length,

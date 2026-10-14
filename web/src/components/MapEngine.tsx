@@ -18,7 +18,7 @@ import { simClock } from '@/lib/simClock';
 import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
 import { freshDelay, isLiveView, MAX_LATE_S, mergedThisFrame, realtimeByTrip, shownDistance, tripKey } from './map/liveFleet';
-import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri, drawScheduleSpeed } from './map/transitLayers';
+import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri, drawScheduleSpeed, drawBusStops } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawPasserelle } from './map/tideLayers';
 import { drawCurrentFlow } from './map/currentFlow';
@@ -741,6 +741,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         L.showOrdinances && target({ items: D.ordinances.filter(isPlacedOrdinance), radius: 16, select: feature('ordinance') }),
         L.showCantieri && target({ items: cantieri, radius: 18, select: onSelectCantiere }),
         L.showStops && target({ items: D.stops, radius: 15, select: onSelectStop }),
+        L.showBusStops && target({ items: D.busStops, radius: 10, select: onSelectStop }),
         L.showVehicles && scheduledVehicles,
         L.showRealtimeVehicles &&
           target({
@@ -939,6 +940,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         drawRealtimeVehicles(rc);
 
         drawScheduleSpeed(rc);
+
+        drawBusStops(rc);
 
         drawStops(rc);
 

@@ -8,6 +8,7 @@ Bozze pronte da inviare dal titolare del progetto. Nessuna è stata inviata.
 | ACTV / AVM – GTFS-Realtime | L'endpoint `tpl.actv.it/.../GTFSRT` è pubblico ma non è documentato come open data né accompagnato da una licenza (a differenza dei GTFS statici, CC BY). | Canale open data / contatti istituzionali AVM S.p.A. |
 | SkylineWebcams | Le immagini sono contenuti proprietari: oggi il progetto mostra solo un link alla pagina ufficiale. Per mostrare un'anteprima o un player serve l'embed ufficiale o un accordo. | Modulo contatti / programma partner di SkylineWebcams |
 | Regione del Veneto / Azienda Zero – Pronto Soccorso | Il servizio regionale pubblica attese e pazienti in trattamento per codice colore ogni 15 minuti, ma senza API né licenza esplicita; le note legali coprono solo i dati a pubblicazione obbligatoria. | Area Sanità e Sociale della Regione / Azienda Zero |
+| Capitaneria di Porto di Venezia – canali marittimi | Per il livello "Competenze sui canali" serve sapere con certezza quali canali sono di competenza della Capitaneria: il *Regolamento per il servizio marittimo e la sicurezza della navigazione nel porto di Venezia* (Ord. 175/2009 e modifiche) non è pubblicato in un formato consultabile, e la planimetria del Comune è un'immagine con avvertenze d'uso. | Capitaneria di Porto di Venezia – Ufficio relazioni con il pubblico (indirizzo nella pagina contatti di guardiacostiera.gov.it) |
 
 ---
 
@@ -86,3 +87,24 @@ Il dato verrebbe mostrato con l'ora di aggiornamento, il link al servizio region
 
 Grazie,
 [Nome e cognome] – [email] – [sito]
+
+---
+
+## 5. Capitaneria di Porto di Venezia – elenco dei canali marittimi
+
+**Oggetto:** Richiesta del Regolamento portuale vigente e dell'elenco dei canali marittimi della laguna – progetto VOD Venice Open Data
+
+Buongiorno,
+
+sono il responsabile di VOD – Venice Open Data (https://venice-open-data.vercel.app), una mappa web non commerciale che raccoglie dati aperti su Venezia, tra cui la rete dei canali con i limiti di velocità tratti dagli atti ufficiali (Regolamento comunale per la circolazione acquea e Ordinanza 93/2007 del Provveditorato).
+
+Vorremmo aggiungere un livello che mostri, canale per canale, l'autorità competente (Comune, Provveditorato alle OO.PP., Capitaneria di Porto), così che chi naviga sappia quali regole si applicano. Per la parte di vostra competenza non vogliamo procedere per ipotesi, e vi chiediamo:
+1. il testo vigente del *Regolamento per il servizio marittimo e la sicurezza della navigazione nel porto di Venezia* (Ordinanza n. 175/2009 e successive modifiche), oppure l'indicazione di dove è pubblicato;
+2. l'elenco dei canali marittimi lagunari di vostra competenza con i relativi confini (dove iniziano e finiscono), se disponibile anche in formato cartografico;
+3. i limiti di velocità vigenti in tali canali, se non già contenuti nel Regolamento.
+
+Nel livello citeremo la Capitaneria di Porto come fonte con il riferimento all'atto, e indicheremo che fanno fede gli atti ufficiali. Aggiorneremo o rimuoveremo i dati su vostra indicazione.
+
+Grazie per l'attenzione,
+[Nome e cognome] – [email] – [sito]
+

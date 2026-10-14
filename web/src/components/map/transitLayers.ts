@@ -247,6 +247,31 @@ export function drawStops(rc: RenderContext): void {
   }
 }
 
+/** Fermate bus ACTV: punti piccoli, il nome solo da vicino. */
+export function drawBusStops(rc: RenderContext): void {
+  const { ctx, cw, ch, pal, isDark, sx, sy, mx, my, camera, showBusStops, busStops } = rc;
+  if (!showBusStops || busStops.length === 0) return;
+  const r = camera.s > 0.04 ? 3.5 : 2.4;
+  for (const s of busStops) {
+    const px = sx(mx(s.lon));
+    const py = sy(my(s.lat));
+    if (px < -20 || px > cw + 20 || py < -20 || py > ch + 20) continue;
+    ctx.beginPath();
+    ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.fillStyle = '#3b82f6';
+    ctx.fill();
+    ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    if (camera.s > 0.08) {
+      ctx.font = '500 9px "Bricolage Grotesque", sans-serif';
+      ctx.fillStyle = pal.ink;
+      ctx.textAlign = 'start';
+      ctx.fillText(s.name, px + 6, py + 3);
+    }
+  }
+}
+
 export function drawCantieri(rc: RenderContext): void {
   const { ctx, isDark, sx, sy, mx, my, camera, showCantieri, cantieri } = rc;
   // 7. Opere pubbliche del Comune di Venezia (posizione approssimata da geocodifica)
