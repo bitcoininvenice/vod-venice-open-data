@@ -125,6 +125,9 @@ export const enUi: UiTranslations = {
     loraGateways: "LoRaWAN gateways",
     ordinances: "Temporary City orders",
     busStops: "Bus stops (all)",
+    actvNotices: "ACTV notices (service updates)",
+    actvNoticesUnplaced: "Notices without a specific stop: {n}",
+    actvNoticesAll: "All notices on the ACTV website",
     scheduleSpeed: "Speed required by the timetable vs limits",
     ordinancesUnplaced: "Orders in force without a position on the map: {n}",
     ordinancesAll: "Full list on the City website",
@@ -607,6 +610,16 @@ export const enUi: UiTranslations = {
     note_weekday: "From the official ACTV weekday timetable.",
     note_saturday: "From the official ACTV Saturday timetable.",
     note_sunday: "From the official ACTV holiday timetable."
+  },
+  actvNotice: {
+    title: "ACTV notices",
+    onLines: "On the lines serving this stop",
+    published: "Published on {date}",
+    lines: "Lines: {lines}",
+    stops: "Stops: {stops}",
+    open: "Read the notice on the ACTV website",
+    subtitle: "ACTV notice · {date}",
+    note: "From the ACTV notices feed. Stops and lines are recognised automatically from the text: the ACTV notice prevails."
   },
   feature: {
     stelleHotel: "5-star: {five}, 4-star: {four}, 3-star: {three}",
@@ -1380,6 +1393,7 @@ export const enUi: UiTranslations = {
     refresh_r60s: "refetched every 60 s",
     refresh_r5min: "refetched every 5 min",
     refresh_r10min: "refetched every 10 min",
+    refresh_r15min: "refetched every 15 min",
     refresh_weekly: "weekly pipeline (Monday)",
     refresh_census: "manual pipeline at each new census release",
     licenseUnconfirmed: "License to be confirmed",
@@ -1456,6 +1470,8 @@ export const enUi: UiTranslations = {
     detailAisNotConfigured: "AISSTREAM_API_KEY key not configured",
     "name_bdap-mop": "City public works from the BDAP monitoring (pipeline)",
     "meta_bdap-mop": "State General Accounting Office CSV “Public Works Projects MOP – Veneto”, filtered on the City of Venice once a week; the source updates quarterly.",
+    "name_actv-avvisi": "ACTV service notices (RSS feed)",
+    "meta_actv-avvisi": "Latest ACTV service notices, read every 15 minutes; stops and lines recognised from the text, finished notices excluded. The ACTV notice prevails.",
     "name_comune-ordinanze": "City of Venice orders (historic city, islands, Lido, whole municipality)",
     "meta_comune-ordinanze": "List read hourly from the API behind the Orders page of the City website; validity and PDF from each order's page. Only orders in force or starting within 7 days, for the historic city, islands, Lido and the whole municipality (mainland-only orders excluded). The text of the order prevails.",
     "name_osm-toponyms": "OpenStreetMap place names: calli, fondamenta, bridges, campi (pipeline)",

@@ -13,6 +13,8 @@ import { useSimulation } from '@/lib/simulationModel';
 import { lastDeparturesForStop } from '@/lib/lastDepartures';
 import { clock } from '@/lib/tripView';
 import { romeDayType } from '@/lib/time';
+import { noticesForStop, useActvNotices } from '@/lib/useActvNotices';
+import { ActvNoticeBox } from '@/components/ActvNoticeList';
 
 interface StopDetailModalProps {
   stop: StopItem | null;
@@ -106,6 +108,8 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
         )}
 
         <RealtimeArrivals lat={stop.lat} lon={stop.lon} gtfsIds={stop.gtfsIds} />
+
+        <StopNotices stop={stop} />
 
         {(stop.mode === 'navigazione' || stop.mode === 'ferry') && <LastDeparturesList stop={stop} />}
 
@@ -234,4 +238,11 @@ const LastDeparturesList: React.FC<{ stop: StopItem }> = ({ stop }) => {
       <p className="text-[10px] text-[var(--ink-3)]">{t(`ui.lastService.note_${day}`)}</p>
     </section>
   );
+};
+
+/** Avvisi ACTV su questa fermata o sulle sue linee. */
+const StopNotices: React.FC<{ stop: StopItem }> = ({ stop }) => {
+  const notices = useActvNotices();
+  const { here, onLines } = noticesForStop(notices, stop.gtfsIds, stop.lines);
+  return <ActvNoticeBox here={here} onLines={onLines} />;
 };

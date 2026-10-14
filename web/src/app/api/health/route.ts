@@ -10,6 +10,8 @@ import { getShipsSnapshot } from '@/server/sources/aisstream';
 import { PACKET_BROKER_URL, parseGateways } from '@/server/sources/packetBroker';
 import { CAMPO_API_URL, parseCampo } from '@/server/sources/campo';
 import { AMBITI, ORDINANCES_API, parseOrdinanceList } from '@/server/sources/comuneOrdinances';
+import { parseRss } from '@/server/sources/actvNotices';
+import { ACTV_RSS_URL } from '@/lib/contracts/actvNotices';
 import osmToponyms from '@/data/osm-toponyms.json';
 import { openMeteoWindUrl, parseOpenMeteoWind } from '@/server/sources/openMeteoWind';
 import { airQualityUrl, parseAirQuality } from '@/server/sources/openMeteoAir';
@@ -49,7 +51,7 @@ const ACQUA_ALTA = OCEAN_STATIONS_DATA.find((s) => s.id === 'CNR-PLAT-01') ?? { 
  */
 export async function GET() {
   const now = new Date();
-  const [levels, forecast, metar, rtNav, rtAut, wind, flights, windField, cams, marine, ais, lora, campo, ordinances] = await Promise.all([
+  const [levels, forecast, metar, rtNav, rtAut, wind, flights, windField, cams, marine, ais, lora, campo, ordinances, actvRss] = await Promise.all([
     fetchUpstream(TIDE_LEVELS_URL, parseTideLevels, { revalidate: 60 }),
     fetchUpstream(TIDE_FORECAST_URL, (raw) => parseTideForecast(raw, now), { revalidate: 600 }),
     fetchUpstream(LIPZ_METAR_URL, parseLipzMetar, { revalidate: 300 }),
@@ -64,6 +66,7 @@ export async function GET() {
     fetchUpstream(PACKET_BROKER_URL, parseGateways, { revalidate: 600, timeoutMs: 8000 }),
     fetchUpstream(CAMPO_API_URL, parseCampo, { revalidate: 3600, timeoutMs: 8000 }),
     fetchUpstream(`${ORDINANCES_API}/filtra?numeroPagina=0&elementiPerPagina=20&idAmbito=${AMBITI.trafficoAcqueo}`, parseOrdinanceList, { revalidate: 3600, timeoutMs: 8000 }),
+    fetchUpstream(ACTV_RSS_URL, (raw) => parseRss(String(raw)), { responseType: 'text', revalidate: 900, timeoutMs: 8000 }),
   ]);
 
   const newestVehicle = (r: typeof rtNav) =>
@@ -87,6 +90,8 @@ export async function GET() {
       campo.ok ? undefined : 'API CAMPO non raggiungibile'),
     assess('packet-broker', 'Gateway LoRaWAN (Packet Broker)', 'live', lora.ok ? new Date(lora.fetchedAt) : null, 30, now,
       lora.ok ? undefined : 'Packet Broker Mapper non raggiungibile'),
+    assess('actv-avvisi', 'Avvisi di servizio ACTV (RSS)', 'live', actvRss.ok ? new Date(actvRss.fetchedAt) : null, 60, now,
+      actvRss.ok ? undefined : 'feed degli avvisi ACTV non raggiungibile'),
     assess('comune-ordinanze', 'Ordinanze del Comune di Venezia', 'live', ordinances.ok ? new Date(ordinances.fetchedAt) : null, 120, now,
       ordinances.ok ? undefined : 'elenco delle ordinanze non raggiungibile'),
     assess('opensky', 'OpenSky Network', 'live', flights.ok ? now : null, 5, now, flights.ok ? undefined : 'quota esaurita o servizio non raggiungibile'),

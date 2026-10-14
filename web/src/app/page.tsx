@@ -457,6 +457,7 @@ export default function HomePage() {
     [data, categoryCounts, alilagunaBoats]
   );
   const liveWebcamsCount = useMemo(() => data.cameras.filter((c) => c.hasLiveFeed).length, [data.cameras]);
+  const unplacedActvNotices = useMemo(() => data.actvNotices.filter((n) => n.stops.length === 0), [data.actvNotices]);
   const unplacedOrdinances = useMemo(() => data.ordinances.filter((o) => !isPlacedOrdinance(o)), [data.ordinances]);
 
   // Stato dinamico di marea (reale o simulato) che segue l'ora corrente o il punto della timeline
@@ -684,6 +685,7 @@ export default function HomePage() {
               onFountainFilterChange={setFountainFilter}
               liveWebcamsCount={liveWebcamsCount}
               unplacedOrdinances={unplacedOrdinances}
+              unplacedActvNotices={unplacedActvNotices}
               bufferRadiusMeters={bufferRadiusMeters}
               onBufferRadiusChange={setBufferRadiusMeters}
               selectedCategory={selectedCategory}
@@ -730,6 +732,7 @@ export default function HomePage() {
                 onFountainFilterChange={setFountainFilter}
                 liveWebcamsCount={liveWebcamsCount}
                 unplacedOrdinances={unplacedOrdinances}
+                unplacedActvNotices={unplacedActvNotices}
                 bufferRadiusMeters={bufferRadiusMeters}
                 onBufferRadiusChange={setBufferRadiusMeters}
                 selectedCategory={selectedCategory}

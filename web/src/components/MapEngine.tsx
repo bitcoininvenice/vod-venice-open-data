@@ -18,7 +18,7 @@ import { simClock } from '@/lib/simClock';
 import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
 import { freshDelay, isLiveView, MAX_LATE_S, mergedThisFrame, realtimeByTrip, shownDistance, tripKey } from './map/liveFleet';
-import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri, drawScheduleSpeed, drawBusStops, SHUTTLE_LAYOVER_S } from './map/transitLayers';
+import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri, drawScheduleSpeed, drawBusStops, drawActvNotices, SHUTTLE_LAYOVER_S } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawPasserelle } from './map/tideLayers';
 import { drawCurrentFlow } from './map/currentFlow';
@@ -739,6 +739,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         L.showRecyclingCentres && target({ items: D.recyclingCentres, radius: 14, select: feature('civicPoi') }),
         L.showLibraries && target({ items: D.libraries, radius: 14, select: feature('civicPoi') }),
         L.showCityAssets && target({ items: filterFountains(D.fountains, fountainFilter), radius: 16, select: feature('fountain') }),
+        L.showActvNotices &&
+          target({
+            items: D.actvNotices.flatMap((n) => n.stops.map((s) => ({ n, s }))),
+            at: (x) => [x.s.lon, x.s.lat],
+            dy: -11,
+            radius: 14,
+            select: (x) => feature('actvNotice')(x.n),
+          }),
         L.showOrdinances && target({ items: D.ordinances.filter(isPlacedOrdinance), radius: 16, select: feature('ordinance') }),
         L.showCantieri && target({ items: cantieri, radius: 18, select: onSelectCantiere }),
         L.showStops && target({ items: D.stops, radius: 15, select: onSelectStop }),
@@ -1039,8 +1047,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
         drawTributaries(rc);
 
-        // Avvisi del Comune sopra gli altri livelli
+        // Avvisi del Comune e di ACTV sopra gli altri livelli
         drawOrdinances(rc);
+        drawActvNotices(rc);
       });
       // Itinerario del planner e segnaposto del luogo cercato, sopra a tutto
       drawItinerary(rc);

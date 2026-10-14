@@ -120,6 +120,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
           e('showRoutes', 'layers.layerRoutes', 'circleDot', 'cyan'),
           e('showStops', 'layers.layerStops', 'anchor', 'cyan'),
           e('showBusStops', 'ui.layerPanel.busStops', 'circleDot', 'blue'),
+          e('showActvNotices', 'ui.layerPanel.actvNotices', 'shieldAlert', 'blue'),
           e('showAlilaguna', 'layers.layerAlilaguna', 'waves', 'blue'),
         ],
       },

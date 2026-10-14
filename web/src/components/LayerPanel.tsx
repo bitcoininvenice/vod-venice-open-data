@@ -46,6 +46,8 @@ import { SPORT_FILTERS, type SportFilter } from '@/lib/sports';
 import { FOUNTAIN_FILTERS, type FountainFilter } from '@/lib/fountainFilter';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 import { UnplacedOrdinances } from '@/components/OrdinanceList';
+import { UnplacedActvNotices } from '@/components/ActvNoticeList';
+import type { ActvNotice } from '@/lib/contracts/actvNotices';
 import { SPEED_VERDICT_COLORS, type SpeedVerdict } from '@/lib/scheduleSpeed';
 
 interface LayerPanelProps {
@@ -58,6 +60,8 @@ interface LayerPanelProps {
   liveWebcamsCount?: number;
   /** ordinanze in vigore che non hanno una posizione sulla mappa */
   unplacedOrdinances?: OrdinanceItem[];
+  /** avvisi ACTV senza una fermata precisa */
+  unplacedActvNotices?: ActvNotice[];
   /** Filtro per sport del livello Sport */
   sportFilter?: SportFilter;
   onSportFilterChange?: (f: SportFilter) => void;
@@ -99,6 +103,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   counts,
   liveWebcamsCount = 0,
   unplacedOrdinances = [],
+  unplacedActvNotices = [],
   sportFilter = 'all',
   onSportFilterChange,
   fountainFilter = 'all',
@@ -193,6 +198,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           </div>
         )}
         {entry.key === 'showOrdinances' && on && <UnplacedOrdinances ordinances={unplacedOrdinances} />}
+        {entry.key === 'showActvNotices' && on && <UnplacedActvNotices notices={unplacedActvNotices} />}
         {entry.key === 'showScheduleSpeed' && on && (
           <Legend items={(['tooFast', 'tight', 'ok', 'partial'] as SpeedVerdict[]).map((v) => [SPEED_VERDICT_COLORS[v](true), t(`ui.scheduleSpeed.short_${v}`)])} />
         )}

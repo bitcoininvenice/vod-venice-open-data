@@ -40,6 +40,7 @@ import { filterFountains } from './fountainFilter';
 import type { OrdinanceItem } from './contracts/ordinances';
 import { isPlacedOrdinance } from './canalOrdinances';
 import type { ScheduleSpeedSegment } from './scheduleSpeed';
+import type { ActvNotice } from './contracts/actvNotices';
 
 export interface TideInfo {
   observedAt: string | null;
@@ -59,6 +60,8 @@ export interface CityData {
   stops: StopItem[];
   /** tutte le fermate bus ACTV (/api/fermate-bus) */
   busStops: StopItem[];
+  /** avvisi di servizio ACTV in corso (/api/avvisi-actv) */
+  actvNotices: ActvNotice[];
   realtimeVehicles: RealtimeVehicleDto[];
   flights: FlightItem[];
   ships: ShipItem[];
@@ -133,6 +136,7 @@ export const INITIAL_CITY_DATA: CityData = {
   moseGates: [],
   stops: ACTV_STOPS_REFERENCE,
   busStops: [],
+  actvNotices: [],
   realtimeVehicles: [],
   flights: [],
   ships: [],
@@ -252,6 +256,7 @@ export const RESOURCES = {
   parks: { url: '/api/parks', pick: (j) => (j.success ? { parkPlaces: list(j.data) } : undefined) },
   loraGateways: { url: '/api/lora-gateways', pick: (j) => ({ loraGateways: list(j.data) }) },
   cantieri: { url: '/api/cantieri', pick: (j) => (j.success ? { cantieri: nonEmpty(j.data) } : undefined) },
+  actvNotices: { url: '/api/avvisi-actv', refreshMs: 15 * 60_000, pick: (j) => (j.success ? { actvNotices: list(j.data) } : undefined) },
   busStops: { url: '/api/fermate-bus', pick: (j) => (j.success ? { busStops: list(j.data) } : undefined) },
   stops: { url: '/api/stops', pick: (j) => (j.success ? { stops: nonEmpty(j.data) } : undefined) },
   cameras: { url: '/api/cameras', pick: (j) => (j.success ? { cameras: nonEmpty(j.data) } : undefined) },
@@ -412,6 +417,7 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
     cantieri: l.showCantieri || l.showSpatialBuffer || ui.lists,
     stops: l.showStops || ui.lists,
     busStops: l.showBusStops,
+    actvNotices: l.showActvNotices,
     cameras: l.showCameras || ui.lists,
     cityAssets: l.showCityAssets || l.showAccessibleBridges || l.showWasteBoats || l.showParkings || l.showRecyclingCentres || l.showLibraries || l.showWifiVenues || ui.lists,
     environment: l.showAirQuality,
@@ -441,6 +447,7 @@ export function layerCounts(d: CityData, extra: { scheduledVehicles: number; ali
     showRealtimeVehicles: d.realtimeVehicles.length,
     showStops: d.stops.length,
     showBusStops: d.busStops.length,
+    showActvNotices: d.actvNotices.length,
     showAlilaguna: extra.alilagunaBoats,
     showCantieri: d.cantieri.length,
     showCameras: d.cameras.length,

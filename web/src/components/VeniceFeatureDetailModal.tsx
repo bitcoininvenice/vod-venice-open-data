@@ -19,6 +19,7 @@ import {
   Wind,
   Gauge,
   Timer,
+  Megaphone,
   Navigation,
   Train,
   Trash2,
@@ -87,6 +88,8 @@ import { ORDINANCE_COLORS, ordinancesForCanal } from '@/lib/canalOrdinances';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 import { OrdinanceBody, OrdinanceList } from '@/components/OrdinanceList';
 import { ScheduleSpeedBody } from '@/components/ScheduleSpeedBody';
+import { ActvNoticeBody } from '@/components/ActvNoticeList';
+import type { ActvNotice } from '@/lib/contracts/actvNotices';
 import { SPEED_VERDICT_COLORS, type ScheduleSpeedSegment } from '@/lib/scheduleSpeed';
 import { VENICE_TAP_WATER_URL } from '@/lib/fountainFilter';
 import type { TideForecast } from '@/lib/contracts/tide';
@@ -141,6 +144,7 @@ export type VeniceFeatureSelected =
   | { type: 'loraGateway'; data: LoraGateway }
   | { type: 'ordinance'; data: OrdinanceItem }
   | { type: 'scheduleSpeed'; data: ScheduleSpeedSegment }
+  | { type: 'actvNotice'; data: ActvNotice }
   | { type: 'wifiVenue'; data: WifiVenue }
   | { type: 'sportPlace'; data: SportPlace }
   | { type: 'nauticalPlace'; data: NauticalPlace }
@@ -305,6 +309,9 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             {feature.type === 'loraGateway' && (
               <div className="p-2 rounded-xl bg-violet-500/20 text-violet-400"><Radio className="w-5 h-5" /></div>
             )}
+            {feature.type === 'actvNotice' && (
+              <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400"><Megaphone className="w-5 h-5" /></div>
+            )}
             {feature.type === 'scheduleSpeed' && (
               <div className="p-2 rounded-xl text-white" style={{ background: SPEED_VERDICT_COLORS[feature.data.verdict](true) }}><Timer className="w-5 h-5" /></div>
             )}
@@ -360,6 +367,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'loraGateway' && t('ui.lora.title')}
                 {feature.type === 'ordinance' && t(`ui.ordinance.kind_${feature.data.kind}`)}
                 {feature.type === 'scheduleSpeed' && `${feature.data.from} → ${feature.data.to}`}
+                {feature.type === 'actvNotice' && feature.data.title}
                 {feature.type === 'wifiVenue' && (feature.data.name ?? t(`ui.wifiVenue.kind_${feature.data.kind}`))}
                 {feature.type === 'sportPlace' && (feature.data.name ?? t(`ui.sport.kind_${feature.data.kind}`))}
                 {feature.type === 'nauticalPlace' && (feature.data.name ?? t(`ui.nautical.kind_${feature.data.kind}`))}
@@ -389,6 +397,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'fiberCell' && t('ui.feature.fiberSubtitle', { date: feature.data.dataDate.split('-').reverse().join('/') })}
                 {feature.type === 'bdapWork' && (feature.data.place ?? t('ui.bdap.publicWork'))}
                 {feature.type === 'loraGateway' && feature.data.network}
+                {feature.type === 'actvNotice' && t('ui.actvNotice.subtitle', { date: feature.data.publishedAt ? new Date(feature.data.publishedAt).toLocaleDateString('it-IT', { timeZone: 'Europe/Rome' }) : '' })}
                 {feature.type === 'scheduleSpeed' && `${t('map.vehicleLine')} ${feature.data.line} · ${t('ui.scheduleSpeed.subtitle')}`}
                 {feature.type === 'ordinance' && [feature.data.placeName ?? feature.data.canalName, feature.data.luogo].filter(Boolean).join(' · ')}
                 {feature.type === 'wifiVenue' && `${t(`ui.wifiVenue.kind_${feature.data.kind}`)} · ${feature.data.zone}`}
@@ -407,6 +416,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {feature.type === 'loraGateway' && <LoraGatewayBody gateway={feature.data} />}
           {feature.type === 'ordinance' && <OrdinanceBody ordinance={feature.data} />}
           {feature.type === 'scheduleSpeed' && <ScheduleSpeedBody segment={feature.data} />}
+          {feature.type === 'actvNotice' && <ActvNoticeBody notice={feature.data} />}
           {feature.type === 'wifiVenue' && <WifiVenueBody venue={feature.data} />}
           {feature.type === 'sportPlace' && <SportPlaceBody place={feature.data} />}
           {feature.type === 'nauticalPlace' && <NauticalBody place={feature.data} />}
@@ -1481,7 +1491,7 @@ const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
 ]);
 
 /** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
-const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['passerella', 'speedLimit', 'publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'lagoonCurrent', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace', 'parkPlace', 'civicNumber', 'ordinance', 'scheduleSpeed']);
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['passerella', 'speedLimit', 'publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'lagoonCurrent', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace', 'parkPlace', 'civicNumber', 'ordinance', 'scheduleSpeed', 'actvNotice']);
 
 /** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
 const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {

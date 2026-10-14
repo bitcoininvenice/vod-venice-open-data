@@ -20,6 +20,7 @@ import { GET as cantieriGET } from '@/app/api/cantieri/route';
 import { GET as bdapGET } from '@/app/api/opere-bdap/route';
 import { GET as loraGET } from '@/app/api/lora-gateways/route';
 import { GET as serviceGET } from '@/app/api/servizio/route';
+import { GET as actvNoticesGET } from '@/app/api/avvisi-actv/route';
 import { GET as scheduleSpeedGET } from '@/app/api/velocita-orario/route';
 import { serverSimulation } from '@/server/sources/simulationServer';
 import { lastDeparturesByStop } from '@/lib/lastDepartures';
@@ -189,6 +190,10 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   },
   sports: async () => {
     const j = await read(sportsGET());
+    return { items: asRows(j.data), meta: j.meta as Row };
+  },
+  actv_notices: async () => {
+    const j = await read(actvNoticesGET());
     return { items: asRows(j.data), meta: j.meta as Row };
   },
   service_now: async () => {

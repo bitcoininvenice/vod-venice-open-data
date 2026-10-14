@@ -299,6 +299,44 @@ export function drawBusStops(rc: RenderContext): void {
   }
 }
 
+/** Avvisi ACTV: segnale blu sulle fermate citate dall'avviso (codice o nome). */
+export function drawActvNotices(rc: RenderContext): void {
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showActvNotices, actvNotices } = rc;
+  if (!showActvNotices || actvNotices.length === 0) return;
+  ctx.save();
+  for (const n of actvNotices) {
+    for (const s of n.stops) {
+      const px = sx(mx(s.lon));
+      const py = sy(my(s.lat));
+      if (px < -30 || px > cw + 30 || py < -30 || py > ch + 30) continue;
+      ctx.beginPath();
+      ctx.roundRect(px - 8, py - 18, 16, 14, 3);
+      ctx.fillStyle = '#2563eb';
+      ctx.fill();
+      ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(px - 3, py - 4);
+      ctx.lineTo(px, py);
+      ctx.lineTo(px + 3, py - 4);
+      ctx.fillStyle = '#2563eb';
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 10px "DM Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('i', px, py - 7);
+      if (camera.s > 0.05) {
+        ctx.font = '600 9px "DM Mono", monospace';
+        ctx.fillStyle = isDark ? '#bfdbfe' : '#1e3a8a';
+        ctx.textAlign = 'start';
+        ctx.fillText(n.title.length > 40 ? `${n.title.slice(0, 38)}…` : n.title, px + 11, py - 8);
+      }
+    }
+  }
+  ctx.restore();
+}
+
 export function drawCantieri(rc: RenderContext): void {
   const { ctx, isDark, sx, sy, mx, my, camera, showCantieri, cantieri } = rc;
   // 7. Opere pubbliche del Comune di Venezia (posizione approssimata da geocodifica)

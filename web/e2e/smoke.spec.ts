@@ -600,6 +600,17 @@ test('la scheda informativa non copre il pannello livelli e non blocca la mappa'
 test('fermate bus: il clic apre la scheda con linee e orari ufficiali della fermata', async ({ page, isMobile }) => {
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   const STOP = { lat: 45.43727, lon: 12.335071 };
+  await page.route('**/api/avvisi-actv', (route) =>
+    route.fulfill({
+      json: {
+        success: true, meta: {},
+        data: [
+          { id: '1', title: 'Fermata spostata di prova', url: 'https://actv.avmspa.it/it/content/prova', publishedAt: '2026-10-13T09:00:00.000Z', text: 'La fermata ID 4568 viene spostata.', lines: [], stops: [{ id: '4568', name: 'Fermata di prova', lat: 45.43727, lon: 12.335071, match: 'id' }], lastDate: null, openEnded: true },
+          { id: '2', title: 'Deviazione linea B', url: 'https://actv.avmspa.it/it/content/prova-2', publishedAt: '2026-10-12T09:00:00.000Z', text: 'La linea B è deviata.', lines: ['B'], stops: [], lastDate: '2099-01-01', openEnded: false },
+        ],
+      },
+    }),
+  );
   await page.route('**/api/fermate-bus', (route) =>
     route.fulfill({ json: { success: true, count: 1, meta: {}, data: [{ id: 'busstop:4567', name: 'Fermata di prova', ...STOP, mode: 'bus', lines: ['A', 'B'], gtfsIds: ['4567', '4568'] }] } }),
   );
@@ -618,6 +629,10 @@ test('fermate bus: il clic apre la scheda con linee e orari ufficiali della ferm
   await expect(info).toContainText('Fermata di prova');
   await expect(info).toContainText('Linea B');
   await expect(info.getByRole('link', { name: /orari ufficiali di questa fermata/i })).toHaveAttribute('href', /stopid=4567&service=AUT/);
+  // avvisi ACTV: quello sulla fermata (per codice) e quello sulla linea
+  const notices = info.getByTestId('actv-notices');
+  await expect(notices).toContainText('Fermata spostata di prova');
+  await expect(notices).toContainText('Deviazione linea B');
 });
 
 test('trasporto pubblico: livello "velocità da orario" e sezione in /metrics', async ({ page, isMobile }) => {
@@ -952,6 +967,18 @@ test.describe('API', () => {
     expect([200, 503]).toContain(res.status());
     expect(body.data.moseGates).toHaveLength(4);
     expect(body.meta.levels.kind).toBe('live');
+  });
+
+  test('avvisi ACTV: feed ufficiale, solo avvisi in corso, link ad ACTV', async ({ request }) => {
+    const res = await request.get('/api/avvisi-actv');
+    const body = await res.json();
+    console.log('avvisi ACTV:', JSON.stringify({ ok: body.success, avvisi: body.data.length, conFermata: body.data.filter((n: { stops: unknown[] }) => n.stops.length).length }));
+    test.skip(!body.success, 'feed ACTV non raggiungibile');
+    for (const n of body.data) {
+      expect(n.url).toMatch(/^https:\/\/(actv|avm)\.avmspa\.it\//);
+      expect(n.title.length).toBeGreaterThan(3);
+      for (const s of n.stops) expect(typeof s.lat).toBe('number');
+    }
   });
 
   test('fermate bus: tutte quelle del GTFS nell\'area della mappa, con linee e codici', async ({ request }) => {

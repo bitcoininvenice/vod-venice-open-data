@@ -11,6 +11,8 @@ import { clock, resolveTrip, tripStops, type TripRef } from '@/lib/tripView';
 import { useSimulation } from '@/lib/simulationModel';
 import { romeSecondsOfDay } from '@/lib/time';
 import { useServiceNow } from '@/lib/useServiceNow';
+import { noticesForStop, useActvNotices } from '@/lib/useActvNotices';
+import { ActvNoticeBox } from '@/components/ActvNoticeList';
 
 /** Mezzo ACTV selezionato: posizione simulata dall'orario o reale (GTFS-RT). */
 export interface VehicleSelection {
@@ -195,6 +197,7 @@ export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose,
         />
         {gps && !v.delay && <p className="text-[11px] text-[var(--ink-3)]">{t(v.delayConflict ? 'ui.delay.conflict' : 'ui.delay.noDelay')}</p>}
         <LineNowBox line={v.line} vehicleId={v.vehicleId} />
+        <LineNotices line={v.line} />
         {v.trip && <TripStopsList vehicle={v} timeSeconds={timeSeconds} />}
       </InfoPanel>
     );
@@ -370,4 +373,11 @@ const LineNowBox: React.FC<{ line: string; vehicleId?: string }> = ({ line, vehi
       <span className="text-[10px] text-[var(--ink-3)]">{t('ui.serviceNow.boxNote')}</span>
     </div>
   );
+};
+
+/** Avvisi ACTV che citano la linea del mezzo. */
+const LineNotices: React.FC<{ line: string }> = ({ line }) => {
+  const notices = useActvNotices();
+  const { onLines } = noticesForStop(notices, [], [line]);
+  return <ActvNoticeBox here={[]} onLines={onLines} />;
 };

@@ -1009,5 +1009,21 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     technicalNotesIt: 'Dal GTFS automobilistico ACTV (pipeline/export_simulation_data.py, aggiornamento settimanale): corsie con lo stesso nome entro 150 m unite in una fermata, tram e People Mover esclusi (sono nelle fermate principali). Confrontate con la mappa Google delle fermate ACTV: nell\'area della mappa mancano solo poche fermate non presenti nel GTFS open data.',
     technicalNotesEn: 'From the ACTV bus GTFS (pipeline/export_simulation_data.py, weekly refresh): lanes with the same name within 150 m merged into one stop, tram and People Mover excluded (they are in the main stops). Checked against ACTV\'s Google map of stops: within the map area only a few stops missing from the open-data GTFS are absent.',
     endpointOrFile: '/api/fermate-bus (src/data/actv-bus-stops.json)'
+  },
+  {
+    id: 'avvisi_actv',
+    nameIt: 'Avvisi ACTV (infomobilità)',
+    nameEn: 'ACTV notices (service updates)',
+    group: 'mobility',
+    regime: 'realtime',
+    acquisition: 'api',
+    institution: 'ACTV / AVM S.p.A.',
+    portalUrl: 'https://avm.avmspa.it/it/content/infomobilit%C3%A0-avmactv-venezia',
+    portalName: 'actv.avmspa.it (feed RSS)',
+    descriptionIt: 'Avvisi di servizio ACTV in corso: fermate spostate, deviazioni, modifiche alle linee per eventi o lavori. Il segnale compare sulla fermata citata; le schede delle fermate e dei mezzi mostrano gli avvisi sulla fermata o sulla linea.',
+    descriptionEn: 'Current ACTV service notices: moved stops, diversions, line changes for events or works. The marker appears on the stop named; stop and vehicle cards show the notices about that stop or line.',
+    technicalNotesIt: 'Feed RSS ufficiale di ACTV (ultimi 10 avvisi, riletto ogni 15 minuti). Fermate dal codice "ID" citato (codice GTFS) o dal nome completo, linee riconosciute nell\'orario; esclusi gli avvisi la cui ultima data citata è passata (salvo "fino al termine dei lavori"). Riconoscimento automatico: fa fede l\'avviso di ACTV.',
+    technicalNotesEn: 'Official ACTV RSS feed (latest 10 notices, read every 15 minutes). Stops from the "ID" code cited (GTFS code) or the full name, lines recognised in the timetable; notices whose last cited date has passed are excluded (unless "until the end of works"). Automatic recognition: the ACTV notice prevails.',
+    endpointOrFile: '/api/avvisi-actv'
   }
 ];

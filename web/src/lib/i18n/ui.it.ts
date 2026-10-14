@@ -123,6 +123,9 @@ export const itUi = {
     loraGateways: "Gateway LoRaWAN",
     ordinances: "Ordinanze temporanee del Comune",
     busStops: "Fermate bus (tutte)",
+    actvNotices: "Avvisi ACTV (infomobilità)",
+    actvNoticesUnplaced: "Avvisi senza una fermata precisa: {n}",
+    actvNoticesAll: "Tutti gli avvisi sul sito ACTV",
     scheduleSpeed: "Velocità richiesta dall'orario e limiti",
     ordinancesUnplaced: "Atti in vigore senza posizione sulla mappa: {n}",
     ordinancesAll: "Elenco completo sul sito del Comune",
@@ -605,6 +608,16 @@ export const itUi = {
     note_weekday: "Dall'orario ufficiale ACTV del giorno feriale.",
     note_saturday: "Dall'orario ufficiale ACTV del sabato.",
     note_sunday: "Dall'orario ufficiale ACTV festivo."
+  },
+  actvNotice: {
+    title: "Avvisi ACTV",
+    onLines: "Sulle linee di questa fermata",
+    published: "Pubblicato il {date}",
+    lines: "Linee: {lines}",
+    stops: "Fermate: {stops}",
+    open: "Leggi l'avviso sul sito ACTV",
+    subtitle: "Avviso ACTV · {date}",
+    note: "Dal feed degli avvisi ACTV. Fermate e linee sono riconosciute automaticamente dal testo: fa fede l'avviso di ACTV."
   },
   feature: {
     stelleHotel: "5 stelle: {five}, 4 stelle: {four}, 3 stelle: {three}",
@@ -1378,6 +1391,7 @@ export const itUi = {
     refresh_r60s: "riletto ogni 60 s",
     refresh_r5min: "riletto ogni 5 min",
     refresh_r10min: "riletto ogni 10 min",
+    refresh_r15min: "riletto ogni 15 min",
     refresh_weekly: "pipeline settimanale (lunedì)",
     refresh_census: "pipeline manuale a ogni nuova edizione del censimento",
     licenseUnconfirmed: "Licenza da confermare",
@@ -1454,6 +1468,8 @@ export const itUi = {
     detailAisNotConfigured: "chiave AISSTREAM_API_KEY non configurata",
     "name_bdap-mop": "Opere pubbliche del Comune dal monitoraggio BDAP (pipeline)",
     "meta_bdap-mop": "CSV «Progetti Opere Pubbliche MOP – Veneto» della Ragioneria Generale dello Stato, filtrato sul Comune di Venezia una volta a settimana; la fonte si aggiorna ogni trimestre.",
+    "name_actv-avvisi": "Avvisi di servizio ACTV (feed RSS)",
+    "meta_actv-avvisi": "Ultimi avvisi di infomobilità ACTV, riletti ogni 15 minuti; fermate e linee riconosciute dal testo, avvisi conclusi esclusi. Fa fede l'avviso ACTV.",
     "name_comune-ordinanze": "Ordinanze del Comune di Venezia (città storica, isole, Lido, tutto il territorio)",
     "meta_comune-ordinanze": "Elenco letto ogni ora dall'API della pagina Ordinanze del sito del Comune; validità e PDF dalla pagina di ogni atto. Solo atti in vigore o in arrivo nei prossimi 7 giorni, per città storica, isole, Lido e tutto il territorio comunale (esclusi gli atti solo per la terraferma). Fa fede il testo dell'atto.",
     "name_osm-toponyms": "Toponimi OpenStreetMap: calli, fondamenta, ponti, campi (pipeline)",
