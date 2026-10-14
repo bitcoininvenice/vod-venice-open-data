@@ -979,22 +979,6 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     endpointOrFile: '/api/ordinanze'
   },
   {
-    id: 'ultima_corsa',
-    nameIt: 'Ultima corsa dalle fermate',
-    nameEn: 'Last departure from stops',
-    group: 'mobility',
-    regime: 'static',
-    acquisition: 'local',
-    institution: 'ACTV / AVM S.p.A. (orario GTFS)',
-    portalUrl: 'https://actv.avmspa.it',
-    portalName: 'actv.avmspa.it',
-    descriptionIt: 'Ogni fermata della navigazione colorata per l\'ora dell\'ultima partenza del giorno: prima delle 21, entro le 23, entro l\'1 di notte oppure servizio notturno. La scheda della fermata elenca l\'ultima partenza per ogni linea e destinazione.',
-    descriptionEn: 'Each waterbus stop coloured by the time of the last departure of the day: before 9 pm, by 11 pm, by 1 am or night service. The stop card lists the last departure for each line and destination.',
-    technicalNotesIt: 'Calcolata nel browser dall\'orario ufficiale GTFS ACTV usato per la simulazione, per il tipo di giorno scelto (feriale, sabato, festivo). Nei festivi infrasettimanali ACTV usa l\'orario festivo. Variazioni del giorno (scioperi, servizio ridotto) non sono incluse.',
-    technicalNotesEn: 'Computed in the browser from the official ACTV GTFS timetable used by the simulation, for the chosen day type (weekday, Saturday, holiday). On weekday holidays ACTV uses the holiday timetable. Same-day changes (strikes, reduced service) are not included.',
-    endpointOrFile: 'public/data/sim-*.json (src/lib/lastDepartures.ts)'
-  },
-  {
     id: 'velocita_orario',
     nameIt: 'Velocità richiesta dall\'orario e limiti',
     nameEn: 'Speed required by the timetable vs limits',
@@ -1006,8 +990,8 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     portalName: 'actv.avmspa.it',
     descriptionIt: 'I tratti delle linee di navigazione tra due fermate, colorati confrontando il tempo dell\'orario con il tempo minimo per percorrerli rispettando i limiti di velocità noti: più veloce dei limiti, al limite, con margine, non valutabile. È un calcolo dall\'orario, non una misura dei mezzi.',
     descriptionEn: 'Waterbus line stretches between two stops, coloured by comparing the timetable time with the minimum time to cover them within known speed limits: faster than limits, at the limit, with margin, not assessable. Computed from the timetable, not a measurement of the vehicles.',
-    technicalNotesIt: 'Minimo legale: somma di lunghezza/limite sui pezzi del tratto entro 25 m da un canale con limite (limite ACTV se diverso); gli altri pezzi contano zero, quindi è una stima per difetto. Il tempo da orario include attracco e partenza. Segnalato "più veloce dei limiti" solo se l\'orario resta sotto il minimo anche con 60 s di tolleranza per gli arrotondamenti. Giorno feriale. Esclusi i canali della Capitaneria di Porto: molti tratti in laguna non sono valutabili.',
-    technicalNotesEn: 'Legal minimum: sum of length/limit over the pieces of the stretch within 25 m of a canal with a limit (ACTV limit if different); other pieces count zero, so it is a lower bound. Timetable time includes docking and departure. Flagged "faster than limits" only if the timetable stays below the minimum even with 60 s of tolerance for rounding. Weekday. Harbour Office channels excluded: many lagoon stretches are not assessable.',
+    technicalNotesIt: 'Minimo legale: somma di lunghezza/limite sui pezzi del tratto entro 25 m da un canale con limite (limite ACTV se diverso); gli altri pezzi contano zero, quindi è una stima per difetto. Il tempo da orario include attracco e partenza. Segnalato "più veloce dei limiti" solo se l\'orario resta sotto il minimo anche con 60 s di tolleranza per gli arrotondamenti e il 10% per l\'incertezza del percorso. Giorno feriale. Esclusi i canali della Capitaneria di Porto: molti tratti in laguna non sono valutabili.',
+    technicalNotesEn: 'Legal minimum: sum of length/limit over the pieces of the stretch within 25 m of a canal with a limit (ACTV limit if different); other pieces count zero, so it is a lower bound. Timetable time includes docking and departure. Flagged "faster than limits" only if the timetable stays below the minimum even with 60 s of tolerance for rounding and 10% for route uncertainty. Weekday. Harbour Office channels excluded: many lagoon stretches are not assessable.',
     endpointOrFile: '/api/velocita-orario'
   }
 ];

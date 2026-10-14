@@ -124,7 +124,6 @@ export const enUi: UiTranslations = {
     bdapWorks: "Works in progress (BDAP)",
     loraGateways: "LoRaWAN gateways",
     ordinances: "Temporary City orders",
-    lastService: "Last departure from stops (timetable)",
     scheduleSpeed: "Speed required by the timetable vs limits",
     ordinancesUnplaced: "Orders in force without a position on the map: {n}",
     ordinancesAll: "Full list on the City website",
@@ -589,7 +588,7 @@ export const enUi: UiTranslations = {
     limitedShare: "Stretch with known limit",
     trips: "Weekday trips",
     tripsTooFast: "{n}, of which {k} below the minimum",
-    method: "The minimum within limits adds up, for each piece of the stretch in a canal with a known limit, the time needed at the limit (the ACTV limit for ACTV). The timetable time also includes docking and departure: while sailing the boat must go faster than that. A stretch is flagged only if the timetable stays below the minimum even with {s} seconds of tolerance for rounding.",
+    method: "The minimum within limits adds up, for each piece of the stretch in a canal with a known limit, the time needed at the limit (the ACTV limit for ACTV). The timetable time also includes docking and departure: while sailing the boat must go faster than that. A stretch is flagged only if the timetable stays below the minimum even with {s} seconds of tolerance for rounding and a {pct}% margin for route uncertainty.",
     note: "Computed from the official timetable, not a measurement of actual vehicle speed. Limits from the acts:",
     regulation: "City regulation",
     ordinance93: "Ordinance 93/2007",
@@ -605,11 +604,7 @@ export const enUi: UiTranslations = {
     afterMidnight: "after midnight",
     note_weekday: "From the official ACTV weekday timetable.",
     note_saturday: "From the official ACTV Saturday timetable.",
-    note_sunday: "From the official ACTV holiday timetable.",
-    band_early: "before 9 pm",
-    band_evening: "9–11 pm",
-    band_late: "11 pm–1 am",
-    band_night: "night service"
+    note_sunday: "From the official ACTV holiday timetable."
   },
   feature: {
     stelleHotel: "5-star: {five}, 4-star: {four}, 3-star: {three}",

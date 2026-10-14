@@ -12,7 +12,7 @@ Run `python scripts/vod.py datasets` (or the MCP tool `list_datasets`) for the l
 | Ships in the lagoon (AIS) | `ships` | real AIS positions heard in the last 30 minutes; `lastSeen` per ship |
 | Is my line running late right now? Bunched boats, trips without GPS | `service_now` | snapshot of this moment, no history; `withoutGps` is a hint, not proof of cancellation |
 | Last waterbus from a stop tonight | `last_departures` | today's day type from the official timetable; `afterMidnight`; strikes and same-day changes not included |
-| Does the timetable require speeding? | `schedule_speed` | computed from the timetable, not measured; `tooFast` = timetable incompatible with known limits (60 s rounding tolerance); Harbour Office channels excluded |
+| Does the timetable require speeding? | `schedule_speed` | computed from the timetable, not measured; `tooFast` = timetable incompatible with known limits (60 s rounding tolerance, 10% route margin); Harbour Office channels excluded |
 | Waterbus stops / live boats | `public_transport_stops`, `realtime_vehicles` | live GPS only when the ACTV feed is up; `delay` = seconds, status, next stop; `source=position` computed from GPS against the official timetable and checked with ACTV (`actvSeconds`), `source=actv` reported by ACTV; `delayConflict` = values disagree, no delay shown; only if updated < 2 min ago |
 | Pharmacies, defibrillators | `pharmacies`, `defibrillators` | duty rota is not open data |
 | Drinking fountains (working / not working) | `drinking_fountains` | Venice Tap Water (venicetapwater.org, primary; always cite it with the link) + OpenStreetMap |

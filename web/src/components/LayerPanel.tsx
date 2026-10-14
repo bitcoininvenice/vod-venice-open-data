@@ -46,7 +46,6 @@ import { SPORT_FILTERS, type SportFilter } from '@/lib/sports';
 import { FOUNTAIN_FILTERS, type FountainFilter } from '@/lib/fountainFilter';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 import { UnplacedOrdinances } from '@/components/OrdinanceList';
-import { LAST_SERVICE_COLORS, type LastServiceBand } from '@/lib/lastDepartures';
 import { SPEED_VERDICT_COLORS, type SpeedVerdict } from '@/lib/scheduleSpeed';
 
 interface LayerPanelProps {
@@ -194,9 +193,6 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           </div>
         )}
         {entry.key === 'showOrdinances' && on && <UnplacedOrdinances ordinances={unplacedOrdinances} />}
-        {entry.key === 'showLastService' && on && (
-          <Legend items={(Object.keys(LAST_SERVICE_COLORS) as LastServiceBand[]).map((b) => [LAST_SERVICE_COLORS[b], t(`ui.lastService.band_${b}`)])} />
-        )}
         {entry.key === 'showScheduleSpeed' && on && (
           <Legend items={(['tooFast', 'tight', 'ok', 'partial'] as SpeedVerdict[]).map((v) => [SPEED_VERDICT_COLORS[v](true), t(`ui.scheduleSpeed.short_${v}`)])} />
         )}

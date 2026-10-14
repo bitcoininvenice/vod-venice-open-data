@@ -597,13 +597,11 @@ test('la scheda informativa non copre il pannello livelli e non blocca la mappa'
   await expect(info).toBeHidden();
 });
 
-test('trasporto pubblico: livelli "ultima corsa" e "velocità da orario", sezione in /metrics', async ({ page, isMobile }) => {
+test('trasporto pubblico: livello "velocità da orario" e sezione in /metrics', async ({ page, isMobile }) => {
   test.skip(isMobile, 'pannello dei livelli controllato su desktop');
-  await page.goto('/?layers=ultima_corsa,velocita_orario');
+  await page.goto('/?layers=velocita_orario');
   await page.locator('canvas').waitFor();
   const panel = page.locator('aside').filter({ visible: true }).first();
-  await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('ultima corsa');
-  await expect(panel).toContainText('servizio notturno');
   await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('velocità richiesta');
   await expect(panel).toContainText('Più veloce dei limiti');
   await page.goto('/metrics');
@@ -948,7 +946,7 @@ test.describe('API', () => {
     expect(speed.meta.note).toMatch(/non misura/);
     for (const s of speed.data) {
       expect(['tooFast', 'tight', 'ok', 'partial']).toContain(s.verdict);
-      if (s.verdict === 'tooFast') expect(s.scheduledS + 60).toBeLessThan(s.legalMinS);
+      if (s.verdict === 'tooFast') expect(s.scheduledS + 60).toBeLessThan(s.legalMinS * 0.9);
       expect(s.limitedM).toBeLessThanOrEqual(s.lengthM + 1);
     }
   });

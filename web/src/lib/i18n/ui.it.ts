@@ -122,7 +122,6 @@ export const itUi = {
     bdapWorks: "Opere in corso (BDAP)",
     loraGateways: "Gateway LoRaWAN",
     ordinances: "Ordinanze temporanee del Comune",
-    lastService: "Ultima corsa dalle fermate (orario)",
     scheduleSpeed: "Velocità richiesta dall'orario e limiti",
     ordinancesUnplaced: "Atti in vigore senza posizione sulla mappa: {n}",
     ordinancesAll: "Elenco completo sul sito del Comune",
@@ -587,7 +586,7 @@ export const itUi = {
     limitedShare: "Tratto con limite noto",
     trips: "Corse feriali",
     tripsTooFast: "{n}, di cui {k} sotto il minimo",
-    method: "Il minimo nei limiti somma, per ogni pezzo del tratto in un canale con limite noto, il tempo necessario andando al limite (per ACTV il limite ACTV). Il tempo da orario comprende anche attracco e partenza: in navigazione il mezzo deve andare più veloce di così. Il tratto è segnalato solo se l'orario resta sotto il minimo anche con {s} secondi di tolleranza per gli arrotondamenti.",
+    method: "Il minimo nei limiti somma, per ogni pezzo del tratto in un canale con limite noto, il tempo necessario andando al limite (per ACTV il limite ACTV). Il tempo da orario comprende anche attracco e partenza: in navigazione il mezzo deve andare più veloce di così. Il tratto è segnalato solo se l'orario resta sotto il minimo anche con {s} secondi di tolleranza per gli arrotondamenti e un margine del {pct}% per l'incertezza del percorso.",
     note: "Calcolo dall'orario ufficiale, non misura della velocità reale dei mezzi. Limiti dagli atti:",
     regulation: "Regolamento comunale",
     ordinance93: "Ordinanza 93/2007",
@@ -603,11 +602,7 @@ export const itUi = {
     afterMidnight: "dopo mezzanotte",
     note_weekday: "Dall'orario ufficiale ACTV del giorno feriale.",
     note_saturday: "Dall'orario ufficiale ACTV del sabato.",
-    note_sunday: "Dall'orario ufficiale ACTV festivo.",
-    band_early: "prima delle 21",
-    band_evening: "21–23",
-    band_late: "23–01",
-    band_night: "servizio notturno"
+    note_sunday: "Dall'orario ufficiale ACTV festivo."
   },
   feature: {
     stelleHotel: "5 stelle: {five}, 4 stelle: {four}, 3 stelle: {three}",

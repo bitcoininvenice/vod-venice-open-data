@@ -3,7 +3,7 @@ import type { SimModel, SimProfile, SimShape } from './simulationCore';
 import { fromGrid, toGrid } from './positionDelay';
 import type { CanalSpeedLimitItem, StopItem } from './types';
 import { bunchedPairs, compareLines, scheduledRunning, serviceNow, type ServiceVehicle } from './serviceNow';
-import { lastDeparturesByStop, lastServiceBand } from './lastDepartures';
+import { lastDeparturesByStop } from './lastDepartures';
 import { scheduleSpeedSegments, verdictOf } from './scheduleSpeed';
 
 // Linea sintetica in Canal Grande: 700 m verso est, fermate ai due capi
@@ -36,6 +36,7 @@ describe('velocità richiesta dall\'orario', () => {
   it('esito con tolleranza per gli arrotondamenti', () => {
     expect(verdictOf(360, 240, 1)).toBe('tooFast');
     expect(verdictOf(360, 320, 1)).toBe('tight'); // sotto il minimo ma entro i 60 s di tolleranza
+    expect(verdictOf(182, 120, 1)).toBe('tight'); // 2 minuti contro 3: troppo vicino per affermarlo
     expect(verdictOf(360, 600, 1)).toBe('ok');
     expect(verdictOf(360, 100, 0.3)).toBe('partial');
   });
@@ -63,13 +64,6 @@ describe('ultime partenze', () => {
     const m = lastDeparturesByStop(sim(300, [36000, 84600, 90000]), STOPS, 'weekday');
     expect(m.get(0)).toEqual([{ line: '1', category: 'vaporetto', headsign: 'Beta', time: 90000 }]);
     expect(m.has(1)).toBe(false);
-  });
-
-  it('fasce del livello', () => {
-    expect(lastServiceBand(20 * 3600)).toBe('early');
-    expect(lastServiceBand(22 * 3600)).toBe('evening');
-    expect(lastServiceBand(24 * 3600 + 1800)).toBe('late');
-    expect(lastServiceBand(26 * 3600)).toBe('night');
   });
 });
 

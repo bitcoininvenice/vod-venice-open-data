@@ -6,7 +6,7 @@
  * se diverso). I pezzi senza limite noto contano zero: il minimo legale è una stima per difetto.
  * Il tempo programmato comprende anche attracco e partenza, quindi la navigazione reale è più veloce:
  * se anche così l'orario resta sotto il minimo legale (con un minuto di tolleranza per gli arrotondamenti
- * dell'orario), l'orario non è compatibile con i limiti. Il contrario non si può dire.
+ * dell'orario e il 10% per l'incertezza del percorso), l'orario non è compatibile con i limiti. Il contrario non si può dire.
  */
 import type { SimModel, SimProfile, SimShape } from './simulationCore';
 import { pointAt } from './simulationCore';
@@ -20,6 +20,10 @@ export const LIMIT_MATCH_M = 25;
 const STEP_M = 10;
 /** Tolleranza per gli orari arrotondati al minuto (s) */
 export const ROUNDING_S = 60;
+/** Margine per l'incertezza del percorso GTFS e dell'abbinamento ai canali: il minimo legale si riduce del 10% */
+export const GEOMETRY_MARGIN = 0.1;
+/** Orario sotto il minimo legale anche con entrambe le tolleranze */
+const belowLegal = (scheduledS: number, legalMinS: number) => scheduledS + ROUNDING_S < legalMinS * (1 - GEOMETRY_MARGIN);
 /** Sotto questa quota di percorso con limite noto il tratto non è valutabile */
 export const MIN_LIMITED_SHARE = 0.5;
 const CELL = 100;
@@ -124,7 +128,7 @@ function pathOf(sh: SimShape, d0: number, d1: number): [number, number][] {
 
 export function verdictOf(legalMinS: number, scheduledS: number, limitedShare: number): SpeedVerdict {
   if (limitedShare < MIN_LIMITED_SHARE) return 'partial';
-  if (scheduledS + ROUNDING_S < legalMinS) return 'tooFast';
+  if (belowLegal(scheduledS, legalMinS)) return 'tooFast';
   if (scheduledS < legalMinS * 1.15) return 'tight';
   return 'ok';
 }
@@ -168,7 +172,7 @@ export function scheduleSpeedSegments(sim: SimModel, stops: StopItem[], limits: 
       const from = stops[seq[i - 1].stop].name;
       const to = stops[seq[i].stop].name;
       const id = `${p.route.n}|${from}|${to}`;
-      const tooFast = scheduledS + ROUNDING_S < g.legalMinS ? trips : 0;
+      const tooFast = belowLegal(scheduledS, g.legalMinS) ? trips : 0;
       const cur = bySegment.get(id);
       if (cur) {
         cur.trips += trips;

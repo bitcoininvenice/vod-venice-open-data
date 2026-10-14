@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTranslation } from '@/lib/i18n';
 import { KeyValues } from '@/components/ui/InfoPanel';
-import { ROUNDING_S, SPEED_VERDICT_COLORS, type ScheduleSpeedSegment } from '@/lib/scheduleSpeed';
+import { GEOMETRY_MARGIN, ROUNDING_S, SPEED_VERDICT_COLORS, type ScheduleSpeedSegment } from '@/lib/scheduleSpeed';
 import { COMUNE_REGULATION_URL, ORDINANCE_93_2007_URL } from '@/lib/waterSpeedLimits';
 
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
@@ -29,7 +29,7 @@ export const ScheduleSpeedBody: React.FC<{ segment: ScheduleSpeedSegment }> = ({
           [v('trips'), s.tripsTooFast > 0 ? v('tripsTooFast', { n: s.trips, k: s.tripsTooFast }) : String(s.trips)],
         ]}
       />
-      <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">{v('method', { s: ROUNDING_S })}</p>
+      <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">{v('method', { s: ROUNDING_S, pct: GEOMETRY_MARGIN * 100 })}</p>
       <p className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2 leading-relaxed">
         {v('note')}{' '}
         <a href={COMUNE_REGULATION_URL} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">{v('regulation')}</a>
