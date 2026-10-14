@@ -7,6 +7,7 @@ import { drawVehicleGlyph, headingFromMotion } from './vehicleGlyphs';
 import type { SimModel, SimProfile } from '@/lib/simulationCore';
 import { clock, tripStops, type TripStop } from '@/lib/tripView';
 import { SPEED_VERDICT_COLORS } from '@/lib/scheduleSpeed';
+import { freshDelay, isLiveView, liveDistance, MAX_LATE_S, mergedThisFrame, pruneShown, realtimeByTrip, tripKey } from './liveFleet';
 
 /** Linea e categoria di ogni forma (dalla prima corsa che la usa), calcolate una volta per modello. */
 const shapeRoutes = new WeakMap<SimModel, Map<object, { n: string; cat: string }>>();
@@ -89,7 +90,7 @@ export function drawVehicles(rc: RenderContext): void {
       const t = currentTimeSeconds;
       const trailSec = 45; // Ghosting trail duration
       // icone più piccole a scala urbana intera, piene da vicino
-      const glyphScale = Math.max(0.6, Math.min(1.1, 0.45 + 12 * rc.camera.s));
+      const glyphScale = Math.max(0.4, Math.min(1.0, 0.45 + 12 * rc.camera.s));
 
 
       const ptNow: [number, number] = [0, 0];
@@ -97,15 +98,29 @@ export function drawVehicles(rc: RenderContext): void {
 
       ctx.globalCompositeOperation = paletteTheme === 'notte' ? 'lighter' : 'source-over';
 
+      // Modalità live: le corse con un mezzo GPS sono spostate del ritardo reale (un'icona sola per corsa)
+      const nowMs = Date.now();
+      const live = isLiveView(t, selectedDay, nowMs);
+      const gpsByTrip = live ? realtimeByTrip(rc.realtimeVehicles) : null;
+      mergedThisFrame.clear();
+      if (live) pruneShown(nowMs);
+
       for (let i = 0; i < count; i++) {
-        if (t0[i] > t || t1[i] < t) continue;
+        if (t0[i] > t || t1[i] + (live ? MAX_LATE_S : 0) < t) continue;
         const prof = sim.profs[tP[i]];
         const rCat: string = prof.route.cat || 'vaporetto';
 
         if (selectedCategory !== 'all' && rCat !== selectedCategory) continue;
 
         const dt = t - t0[i];
-        pointAt(prof.sh, distAt(prof, dt), ptNow);
+        const key = tripKey(prof.route.n, t0[i]);
+        const gps = gpsByTrip?.get(key);
+        const delay = gps ? freshDelay(gps) : null;
+        // corsa finita secondo l'orario: resta solo se il GPS la dà ancora in ritardo
+        if (t1[i] < t && delay === null) continue;
+        const d = delay !== null ? liveDistance(key, prof, dt, delay, nowMs) : distAt(prof, dt);
+        if (gps && delay !== null) mergedThisFrame.add(gps.id);
+        pointAt(prof.sh, d, ptNow);
         const vx = sx(ptNow[0]);
         const vy = sy(ptNow[1]);
 
@@ -113,8 +128,10 @@ export function drawVehicles(rc: RenderContext): void {
 
         const col = lineColor(prof.route.n, rCat) ?? pal.cats[rCat] ?? '#5cc8ff';
 
-        // Trail
-        pointAt(prof.sh, distAt(prof, Math.max(0, dt - trailSec)), ptTail);
+        // Trail: gli ultimi 45 s di percorso prima della posizione mostrata
+        const lag = delay ?? 0;
+        const trailM = distAt(prof, dt - lag) - distAt(prof, Math.max(0, dt - lag - trailSec));
+        pointAt(prof.sh, Math.max(0, d - trailM), ptTail);
         ctx.beginPath();
         ctx.moveTo(vx, vy);
         ctx.lineTo(sx(ptTail[0]), sy(ptTail[1]));
@@ -133,6 +150,21 @@ export function drawVehicles(rc: RenderContext): void {
           scale: glyphScale,
           roof: isDark ? '#e2e8f0' : '#ffffff',
         });
+        // Corsa con GPS: anello del ritardo (verde in orario, giallo 3-5 min, rosso oltre) e punto «live»
+        if (gps?.delay && delay !== null) {
+          ctx.globalAlpha = 1;
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.beginPath();
+          ctx.arc(vx, vy, 10, 0, Math.PI * 2);
+          ctx.strokeStyle = DELAY_COLORS[gps.delay.status];
+          ctx.lineWidth = 2.2;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(vx + 6, vy - 6, 2.2, 0, Math.PI * 2);
+          ctx.fillStyle = '#22c55e';
+          ctx.fill();
+          ctx.globalCompositeOperation = paletteTheme === 'notte' ? 'lighter' : 'source-over';
+        }
       }
 
       ctx.globalCompositeOperation = 'source-over';
@@ -146,6 +178,8 @@ export function drawRealtimeVehicles(rc: RenderContext): void {
   // 5b. Posizioni reali GTFS-RT: stessa icona dei mezzi da orario ma con bordo marcato e punto «live»
   if (showRealtimeVehicles && realtimeVehicles.length > 0) {
     for (const v of realtimeVehicles) {
+      // già disegnato come corsa dell'orario spostata del ritardo reale
+      if (rc.showVehicles && mergedThisFrame.has(v.id)) continue;
       const cat = v.category || 'vaporetto';
       if (selectedCategory !== 'all' && cat !== selectedCategory) continue;
       const vx = sx(mx(v.lon));
@@ -158,7 +192,7 @@ export function drawRealtimeVehicles(rc: RenderContext): void {
         fill: col,
         stroke: isDark ? '#ffffff' : '#0f172a',
         lineWidth: 1.8,
-        scale: Math.max(0.75, Math.min(1.2, 0.6 + 12 * camera.s)),
+        scale: Math.max(0.4, Math.min(1.0, 0.45 + 12 * camera.s)),
         roof: isDark ? '#e2e8f0' : '#ffffff',
       });
       // punto «live»: distingue la posizione reale da quella calcolata dall'orario

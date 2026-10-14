@@ -17,6 +17,7 @@ import { useTranslation } from '@/lib/i18n';
 import { simClock } from '@/lib/simClock';
 import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
+import { freshDelay, isLiveView, MAX_LATE_S, mergedThisFrame, realtimeByTrip, shownDistance, tripKey } from './map/liveFleet';
 import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri, drawScheduleSpeed } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawPasserelle } from './map/tideLayers';
@@ -544,13 +545,40 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       const { tP, t0, t1, count } = tripsData;
       const t = currentTimeSeconds;
       const ptNow: [number, number] = [0, 0];
+      const live = isLiveView(t, selectedDay, Date.now());
+      const gpsByTrip = live ? realtimeByTrip(D.realtimeVehicles) : null;
       for (let i = 0; i < count; i++) {
-        if (t0[i] > t || t1[i] < t) continue;
+        if (t0[i] > t || t1[i] + (live ? MAX_LATE_S : 0) < t) continue;
         const prof = sim.profs[tP[i]];
         const rCat: string = prof.route.cat || 'vaporetto';
         if (selectedCategory !== 'all' && rCat !== selectedCategory) continue;
-        pointAt(prof.sh, distAt(prof, t - t0[i]), ptNow);
+        const key = tripKey(prof.route.n, t0[i]);
+        const gps = gpsByTrip?.get(key);
+        const delay = gps ? freshDelay(gps) : null;
+        if (t1[i] < t && delay === null) continue;
+        // stessa posizione disegnata: per le corse con GPS quella spostata del ritardo reale
+        pointAt(prof.sh, delay !== null ? (shownDistance(key) ?? distAt(prof, t - t0[i] - delay)) : distAt(prof, t - t0[i]), ptNow);
         if (Math.hypot(x - (ptNow[0] - camera.x0) * camera.s, y - (ptNow[1] - camera.y0) * camera.s) > 18) continue;
+        if (gps && delay !== null) {
+          const line = prof.route.n;
+          return () =>
+            onSelectObject?.({
+              type: 'vehicle',
+              data: {
+                line,
+                category: `${rCat.toUpperCase()} · GPS`,
+                speedKmh: null,
+                color: lineColor(line, rCat) ?? paletteAt(currentTimeSeconds).cats[rCat] ?? '#5cc8ff',
+                headsign: `${tr('ui.mapLabels.line', { line })} · ${tr(gps.network === 'navigazione' ? 'ui.mapLabels.networkNav' : 'ui.mapLabels.networkBus')}`,
+                source: 'gps',
+                updatedAt: gps.timestamp,
+                delay: gps.delay ?? null,
+                delayConflict: gps.delayConflict ?? false,
+                trip: { line, profileIndex: tP[i], departure: t0[i], day: selectedDay },
+                vehicleId: gps.id,
+              },
+            });
+        }
         // Velocità media secondo l'orario negli ultimi 30 s (1 unità di griglia ≈ 1 m)
         const dtNow = t - t0[i];
         const spanSec = Math.min(30, Math.max(1, dtNow));
@@ -716,7 +744,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         L.showVehicles && scheduledVehicles,
         L.showRealtimeVehicles &&
           target({
-            items: D.realtimeVehicles,
+            // i mezzi già disegnati come corsa dell'orario si cliccano lì
+            items: L.showVehicles ? D.realtimeVehicles.filter((v) => !mergedThisFrame.has(v.id)) : D.realtimeVehicles,
             radius: 14,
             select: (v) => {
               const cat = v.category || 'vaporetto';

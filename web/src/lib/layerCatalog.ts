@@ -36,8 +36,8 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     institution: 'AVM S.p.A. / ACTV Venezia',
     portalUrl: 'https://actv.avmspa.it',
     portalName: 'actv.avmspa.it & dati.venezia.it',
-    descriptionIt: 'Posizione dei vaporetti calcolata dall\'orario ufficiale ACTV (simulata, non GPS), con eventuale sovrapposizione delle posizioni GTFS-Realtime quando il feed AVM è disponibile.',
-    descriptionEn: 'Waterbus positions computed from the official ACTV timetable (simulated, not GPS), overlaid with GTFS-Realtime positions when the AVM feed is available.',
+    descriptionIt: 'Posizione dei vaporetti calcolata dall\'orario ufficiale ACTV. Quando la mappa mostra l\'ora reale, le corse con un mezzo GPS (feed GTFS-Realtime di AVM) diventano un\'icona sola: la posizione dell\'orario spostata del ritardo reale, con l\'anello colorato del ritardo; a ogni aggiornamento l\'icona raggiunge la nuova posizione lungo il percorso. Le corse senza GPS restano simulate dall\'orario.',
+    descriptionEn: 'Waterbus positions computed from the official ACTV timetable. When the map shows the real time, trips with a GPS vehicle (AVM GTFS-Realtime feed) become a single icon: the timetable position shifted by the real delay, with the coloured delay ring; on each update the icon catches up with the new position along the route. Trips without GPS stay simulated from the timetable.',
     technicalNotesIt: 'Simulato da orario: le coordinate sono interpolate tra le fermate del GTFS statico ACTV (CC BY) lungo i percorsi, sincronizzate con l\'orologio o con la timeline 24h. Non è un tracciamento GPS.',
     technicalNotesEn: 'Simulated from timetable: positions are interpolated between stops of the ACTV static GTFS (CC BY) along route shapes, synced to the clock or the 24h timeline. Not GPS tracking.',
     endpointOrFile: 'GTFS ACTV (actv-shapes.json) + /api/realtime/vehicles'

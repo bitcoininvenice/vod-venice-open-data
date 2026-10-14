@@ -395,7 +395,8 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
     tide: true,
     flights: l.showFlights || ui.airportModal,
     ships: l.showShips,
-    realtimeVehicles: l.showRealtimeVehicles,
+    // con i mezzi da orario accesi servono anche le posizioni GPS: in tempo reale le due icone diventano una
+    realtimeVehicles: l.showRealtimeVehicles || l.showVehicles,
     windField: l.showMarineWind,
     bdapWorks: l.showBdapWorks,
     lagoonNetwork: l.showMarineSignals || l.showCanals,
