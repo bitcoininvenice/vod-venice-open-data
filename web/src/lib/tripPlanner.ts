@@ -53,7 +53,9 @@ export type Leg =
       coords: [number, number][];
       /** partenza della corsa dal capolinea (s dalla mezzanotte): per ritrovare il mezzo nel feed GPS */
       tripDeparture: number;
-    };
+    }
+  /** in barca con un mezzo privato (planner «In barca», lib/boatRouting) */
+  | { kind: 'boat'; from: string; to: string; meters: number; seconds: number; start: number; end: number; coords: [number, number][] };
 
 export interface Itinerary extends WetSummary {
   /** secondi dalla mezzanotte */
@@ -66,8 +68,8 @@ export interface Itinerary extends WetSummary {
   ridesInHighWater: boolean;
 }
 
-/** Più veloce (a piedi o in vaporetto), solo a piedi, oppure con meno strada a piedi possibile */
-export type PlanMode = 'fastest' | 'walk' | 'boat';
+/** Più veloce (a piedi o in vaporetto), solo a piedi, con meno strada a piedi possibile; `private`: in barca propria (lib/boatRouting) */
+export type PlanMode = 'fastest' | 'walk' | 'boat' | 'private';
 
 export interface PlanOptions {
   mode?: PlanMode;

@@ -757,3 +757,84 @@ def test_flixbus_proiezione_e_ritaglio_sull_area():
     assert abs(d_mestre - cum[-1]) < 1
     clipped = flix.clip_window(points, cum, 0, cum[-1])
     assert [p for p, _ in clipped][0] == (12.20, 45.45)  # (12.0, 45.40) è oltre il margine dell'area
+
+
+# --- Rete dei canali per il planner in barca (OSM + Testo Unico) ---
+
+import import_osm_boat as boat  # noqa: E402
+
+
+def _canal(way_id, nodes, name=None, **tags):
+    """Via d'acqua in formato Overpass «out body geom» con nodi i → (12.30 + i·0,001, 45.43)."""
+    geometry = [{"lon": 12.30 + n * 0.001, "lat": 45.43} for n in nodes]
+    return {"type": "way", "id": way_id, "nodes": nodes, "geometry": geometry,
+            "tags": {"waterway": "canal", **({"name": name} if name else {}), **tags}}
+
+
+def test_maxspeed_osm():
+    assert boat.maxspeed_kmh("11") == 11
+    assert boat.maxspeed_kmh("5 knots") == 9.3
+    assert boat.maxspeed_kmh(None) is None
+    assert boat.maxspeed_kmh("walk") is None
+
+
+def test_rete_canali_incroci_divieti_e_tratti_lunghi():
+    payload = {"elements": [
+        _canal(1, list(range(0, 31)), "Canale Lungo", maxspeed="11"),
+        _canal(2, [10, 40], "Rio Laterale"),
+        _canal(3, [20, 41], "Rio Vietato", motorboat="no"),
+        _canal(4, [50, 51], "Isolato"),
+    ]}
+    boat.MIN_COMPONENT_M = 1000
+    g = boat.build_graph(payload)
+    names = {e[3] for e in g["edges"]}
+    assert names == {"Canale Lungo", "Rio Laterale"}  # motorboat=no escluso, componente piccola scartata
+    # nodi agli incroci e almeno ogni SPLIT_M metri
+    assert all(e[2] <= boat.SPLIT_M + 80 for e in g["edges"] if e[3] == "Canale Lungo")
+    assert {e[5] for e in g["edges"] if e[3] == "Canale Lungo"} == {11}
+    # un tratto rettilineo lungo riceve punti intermedi
+    g2 = boat.build_graph({"elements": [_canal(5, [0, 30], "Bacino")]})
+    assert len(g2["edges"]) >= 2
+
+
+def test_regole_senso_unico_e_divieto_per_nome():
+    payload = {"elements": [
+        _canal(1, list(range(0, 21)), "Canal Grande"),
+        _canal(2, list(range(20, 41)), "Rio di Prova"),
+    ]}
+    boat.MIN_COMPONENT_M = 100
+    g = boat.build_graph(payload)
+    assert boat.junction(g, "Canal Grande", "Rio di Prova") is not None
+    rules = [
+        {"id": "ow", "kind": "oneway", "ref": "art. 7", "label": "verso est", "names": ["Rio di Prova"],
+         "paths": [[{"at": ["Rio di Prova", "Canal Grande"]}, [12.34, 45.43]]]},
+        {"id": "ow-back", "kind": "oneway", "ref": "art. 7", "label": "verso ovest", "names": ["Rio di Prova"],
+         "paths": [[[12.34, 45.43], {"at": ["Rio di Prova", "Canal Grande"]}]]},
+        {"id": "nm", "kind": "noMotor", "ref": "art. 8", "label": "vietato", "names": ["Canal Grande"], "paths": []},
+        {"id": "manca", "kind": "oneway", "ref": "art. 7", "label": "?", "names": [],
+         "paths": [[{"at": ["Rio di Prova", "Inesistente"]}, [12.34, 45.43]]]},
+    ]
+    resolved, missing = boat.resolve_rules(g, rules)
+    assert missing == ["manca"]
+    by_id = {r["id"]: r for r in resolved}
+    edges = g["edges"]
+    # i nodi crescono verso est: nel senso del percorso ogni arco va da a verso b (codifica e), al contrario ~e
+    east = by_id["ow"]["edges"]
+    assert east and all(e >= 0 and edges[e][3] == "Rio di Prova" for e in east)
+    assert all(e < 0 for e in by_id["ow-back"]["edges"])
+    assert {edges[e][3] for e in by_id["nm"]["edges"]} == {"Canal Grande"}
+    assert "hours" not in by_id["nm"]
+
+
+def test_regole_del_testo_unico_ben_formate():
+    ids = [r["id"] for r in boat.RULES]
+    assert len(ids) == len(set(ids)) == 29
+    assert sum(1 for r in boat.RULES if r["kind"] == "oneway") == 19
+    for r in boat.RULES:
+        assert r["kind"] in ("oneway", "noMotor", "noPleasure")
+        assert r["ref"].startswith("art.")
+        # i sensi unici hanno sempre un percorso con almeno due punti
+        if r["kind"] == "oneway":
+            assert r["paths"] and all(len(seg) >= 2 for seg in r["paths"])
+        if "hours" in r:
+            assert 0 <= r["hours"][0] < r["hours"][1] <= 1440

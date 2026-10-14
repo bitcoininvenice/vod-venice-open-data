@@ -464,7 +464,10 @@ export function drawSelectedTrip(rc: RenderContext): void {
   ctx.restore();
 }
 
-/** Itinerario del planner: tratti a piedi tratteggiati, corse nel colore della linea, partenza e arrivo. */
+/** Percorso in barca propria nel planner */
+const BOAT_ROUTE_COLOR = '#14b8a6';
+
+/** Itinerario del planner: tratti a piedi tratteggiati, corse nel colore della linea, barca propria in verde acqua, partenza e arrivo. */
 export function drawItinerary(rc: RenderContext): void {
   const { ctx, sx, sy, mx, my, isDark, itinerary } = rc;
   if (!itinerary) return;
@@ -485,7 +488,7 @@ export function drawItinerary(rc: RenderContext): void {
       ctx.stroke();
       ctx.setLineDash([]);
     } else {
-      const col = lineColor(leg.line, leg.category) ?? '#0ea5e9';
+      const col = leg.kind === 'boat' ? BOAT_ROUTE_COLOR : (lineColor(leg.line, leg.category) ?? '#0ea5e9');
       ctx.strokeStyle = isDark ? 'rgba(0,0,0,0.6)' : 'rgba(15,23,42,0.5)';
       ctx.lineWidth = 8;
       ctx.stroke();

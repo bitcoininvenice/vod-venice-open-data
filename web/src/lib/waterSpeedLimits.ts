@@ -81,39 +81,41 @@ const ORDINANCE_93: Record<string, { kmh: number; art: number }> = {
   'Canale Vecchio di Fusina': { kmh: 14, art: 16 },
 };
 
+export type CanalLimit = Pick<CanalSpeedLimitItem, 'maxSpeedKmh' | 'actvSpeedKmh' | 'highWater' | 'authority' | 'legalRef' | 'sourceUrl'>;
+
+/** Limite di un canale per nome e tracciato, se un atto lo fissa (comunale o ordinanza 93/2007). */
+export function canalLimit(name: string | null, coords: [number, number][]): CanalLimit | null {
+  if (!name || coords.length < 2) return null;
+  const comune = comuneRule(name, areaOf(coords));
+  if (comune) {
+    return { ...comune, authority: 'comune', legalRef: 'Regolamento per la circolazione acquea nel Comune di Venezia, art. 2 e 3', sourceUrl: COMUNE_REGULATION_URL };
+  }
+  const ord = ORDINANCE_93[name];
+  if (ord) {
+    return {
+      maxSpeedKmh: ord.kmh,
+      actvSpeedKmh: null,
+      highWater: null,
+      authority: 'provveditorato',
+      legalRef: `Ordinanza 93/2007 del Magistrato alle Acque (ora Provveditorato OO.PP.), art. ${ord.art}`,
+      sourceUrl: ORDINANCE_93_2007_URL,
+    };
+  }
+  return null;
+}
+
+/** Zona di un tratto senza nome: nel centro storico, a Murano e a Burano i tratti senza nome sono rii. */
+export function urbanArea(coords: [number, number][]): 'centro' | 'murano' | 'burano' | null {
+  const a = areaOf(coords);
+  return a === 'centro' || a === 'murano' || a === 'burano' ? a : null;
+}
+
 /** Limiti per ogni canale OSM riconosciuto (uno per tratto, con il tracciato del canale). */
 export function buildSpeedLimits(canals: OsmCanal[]): CanalSpeedLimitItem[] {
   const out: CanalSpeedLimitItem[] = [];
   for (const c of canals) {
-    if (!c.name || c.coords.length < 2) continue;
-    const area = areaOf(c.coords);
-    const comune = comuneRule(c.name, area);
-    if (comune) {
-      out.push({
-        id: `speed-${c.id}`,
-        channelName: c.name,
-        ...comune,
-        authority: 'comune',
-        legalRef: 'Regolamento per la circolazione acquea nel Comune di Venezia, art. 2 e 3',
-        sourceUrl: COMUNE_REGULATION_URL,
-        path: c.coords,
-      });
-      continue;
-    }
-    const ord = ORDINANCE_93[c.name];
-    if (ord) {
-      out.push({
-        id: `speed-${c.id}`,
-        channelName: c.name,
-        maxSpeedKmh: ord.kmh,
-        actvSpeedKmh: null,
-        highWater: null,
-        authority: 'provveditorato',
-        legalRef: `Ordinanza 93/2007 del Magistrato alle Acque (ora Provveditorato OO.PP.), art. ${ord.art}`,
-        sourceUrl: ORDINANCE_93_2007_URL,
-        path: c.coords,
-      });
-    }
+    const limit = canalLimit(c.name, c.coords);
+    if (limit) out.push({ id: `speed-${c.id}`, channelName: c.name as string, ...limit, path: c.coords });
   }
   return out;
 }

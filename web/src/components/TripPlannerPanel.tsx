@@ -18,6 +18,10 @@ import { clock } from '@/lib/tripView';
 import { romeDayType, romeSecondsOfDay } from '@/lib/time';
 import { civicLabel, parseCivicQuery, type CivicMatch } from '@/lib/civici';
 import { lineColor, lineTextColor } from '@/lib/actvLines';
+import { buildBoatGraph, ordinancesOnRoute, planBoat, type BoatGraph, type RawBoat } from '@/lib/boatRouting';
+import { BOAT_URL } from '@/lib/boat-data';
+import type { OrdinanceItem } from '@/lib/contracts/ordinances';
+import { BoatPlanResult } from '@/components/BoatPlanResult';
 
 let walkPromise: Promise<WalkGraph> | null = null;
 /** Rete pedonale: scaricata una sola volta, alla prima apertura del planner. */
@@ -35,7 +39,43 @@ function loadWalk(): Promise<WalkGraph> {
   return walkPromise;
 }
 
+let boatPromise: Promise<BoatGraph> | null = null;
+/** Rete dei canali con le regole del Testo Unico: scaricata solo alla prima scelta della modalità in barca. */
+function loadBoat(): Promise<BoatGraph> {
+  boatPromise ??= fetch(BOAT_URL)
+    .then((r) => {
+      if (!r.ok) throw new Error(`rete dei canali non disponibile (${r.status})`);
+      return r.json() as Promise<RawBoat>;
+    })
+    .then(buildBoatGraph)
+    .catch((e) => {
+      boatPromise = null;
+      throw e;
+    });
+  return boatPromise;
+}
+
+/** Ordinanze del Comune (per gli avvisi sui canali del percorso in barca), una volta sola. */
+function useOrdinances(enabled: boolean): OrdinanceItem[] {
+  const [data, setData] = useState<OrdinanceItem[]>([]);
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    fetch('/api/ordinanze')
+      .then((r) => r.json())
+      .then((j) => !cancelled && Array.isArray(j.data) && setData(j.data))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled]);
+  return data;
+}
+
 export type PickTarget = 'from' | 'to';
+
+/** Ora di partenza scelta (HH:MM) in secondi dalla mezzanotte, altrimenti adesso a Venezia. */
+const departSeconds = (time: string): number => (/^\d{2}:\d{2}$/.test(time) ? Number(time.slice(0, 2)) * 3600 + Number(time.slice(3)) * 60 : romeSecondsOfDay());
 
 interface TripPlannerPanelProps {
   open: boolean;
@@ -55,7 +95,7 @@ interface TripPlannerPanelProps {
 }
 
 const ACTV_SITE = 'https://actv.avmspa.it/it';
-const MODES: PlanMode[] = ['fastest', 'walk', 'boat'];
+const MODES: PlanMode[] = ['fastest', 'walk', 'boat', 'private'];
 
 const WATER_STOPS = ACTV_STOPS_REFERENCE.filter((s) => s.mode === 'navigazione' || s.mode === 'ferry');
 
@@ -179,20 +219,51 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
   const [walkError, setWalkError] = useState(false);
   const [time, setTime] = useState('');
   const [mode, setMode] = useState<PlanMode>('fastest');
+  const [boat, setBoat] = useState<BoatGraph | null>(null);
+  const [boatError, setBoatError] = useState(false);
+  const [resident, setResident] = useState(false);
+  const isPrivate = mode === 'private';
   useEffect(() => {
     if (!open || walk) return;
     loadWalk().then(setWalk, () => setWalkError(true));
   }, [open, walk]);
+  useEffect(() => {
+    if (!open || !isPrivate || boat) return;
+    loadBoat().then(setBoat, () => setBoatError(true));
+  }, [open, isPrivate, boat]);
+  const ordinances = useOrdinances(open && isPrivate);
 
   const result = useMemo(() => {
-    if (!open || !sim || !walk || !from || !to) return null;
-    const now = /^\d{2}:\d{2}$/.test(time) ? Number(time.slice(0, 2)) * 3600 + Number(time.slice(3)) * 60 : romeSecondsOfDay();
-    return planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, now, romeDayType(), { mode, tideAt, passerelle });
-  }, [open, sim, walk, from, to, time, mode, tideAt, passerelle]);
+    if (!open || isPrivate || !sim || !walk || !from || !to) return null;
+    return planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time), romeDayType(), { mode, tideAt, passerelle });
+  }, [open, isPrivate, sim, walk, from, to, time, mode, tideAt, passerelle]);
+
+  // In barca propria: rete dei canali e regole del Testo Unico (lib/boatRouting)
+  const boatResult = useMemo(() => {
+    if (!open || !isPrivate || !boat || !from || !to) return null;
+    const now = departSeconds(time);
+    return planBoat(boat, from, to, now, romeDayType(), { resident, tideCm: tideAt?.(now) ?? null });
+  }, [open, isPrivate, boat, from, to, time, resident, tideAt]);
+  const boatOrdinances = useMemo(() => (boatResult?.ok ? ordinancesOnRoute(boatResult.plan, ordinances) : []), [boatResult, ordinances]);
+  const boatItinerary = useMemo<Itinerary | null>(() => {
+    if (!boatResult?.ok || !from || !to) return null;
+    const p = boatResult.plan;
+    return {
+      depart: p.depart,
+      arrive: p.arrive,
+      legs: [{ kind: 'boat', from: from.label, to: to.label, meters: p.meters, seconds: p.arrive - p.depart, start: p.depart, end: p.arrive, coords: p.coords }],
+      walkMeters: 0,
+      rides: 0,
+      ridesInHighWater: false,
+      wetMeters: 0,
+      passerellaMeters: 0,
+      maxDepthCm: 0,
+    };
+  }, [boatResult, from, to]);
 
   useEffect(() => {
-    onItinerary(result?.best ?? null);
-  }, [result, onItinerary]);
+    onItinerary(isPrivate ? boatItinerary : (result?.best ?? null));
+  }, [isPrivate, boatItinerary, result, onItinerary]);
 
   const best = result?.best ?? null;
   // Ritardo attuale delle corse proposte (solo partenza "adesso" e mezzi già in viaggio con il GPS)
@@ -214,7 +285,7 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
     return delayStatus(s) === 'onTime' ? t('ui.planner.liveOnTime') : m > 0 ? t('ui.planner.liveLate', { min: m }) : t('ui.planner.liveEarly', { min: Math.abs(m) });
   };
 
-  const loading = open && (!sim || (!walk && !walkError));
+  const loading = open && (isPrivate ? !boat && !boatError : !sim || (!walk && !walkError));
   const minutes = (s: number) => Math.max(1, Math.round(s / 60));
 
   return (
@@ -261,11 +332,22 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
             </button>
           ))}
         </div>
+        {isPrivate && (
+          <div className="flex flex-col gap-1.5 p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/30 text-[11px] text-[var(--ink-2)]" data-testid="planner-boat-options">
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" checked={resident} onChange={(e) => setResident(e.target.checked)} className="mt-0.5 accent-teal-500" data-testid="planner-boat-resident" />
+              <span>{t('ui.planner.boat_resident')}</span>
+            </label>
+            <span className="text-[10px] text-[var(--ink-3)]">{resident ? t('ui.planner.boat_residentNote') : t('ui.planner.boat_ztlNote')}</span>
+          </div>
+        )}
       </div>
 
-      {loading && from && to && <p className="text-xs text-[var(--ink-3)]">{t('ui.planner.loading')}</p>}
-      {walkError && <p className="text-xs text-rose-400">{t('ui.planner.loadError')}</p>}
+      {loading && from && to && <p className="text-xs text-[var(--ink-3)]">{isPrivate ? t('ui.planner.boat_loading') : t('ui.planner.loading')}</p>}
+      {!isPrivate && walkError && <p className="text-xs text-rose-400">{t('ui.planner.loadError')}</p>}
+      {isPrivate && boatError && <p className="text-xs text-rose-400">{t('ui.planner.boat_loadError')}</p>}
       {result && !best && <p className="text-xs text-amber-400">{t('ui.planner.noRoute')}</p>}
+      {boatResult && <BoatPlanResult result={boatResult} resident={resident} ordinances={boatOrdinances} />}
 
       {best && (
         <div className="flex flex-col gap-3" data-testid="planner-result">
@@ -287,7 +369,7 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
                     )}
                   </span>
                 </li>
-              ) : (
+              ) : leg.kind === 'ride' ? (
                 <li key={i} className="flex items-start gap-2 text-xs">
                   <span
                     className="px-1.5 py-0.5 rounded-md font-mono font-bold text-[11px] shrink-0 border border-black/15"
@@ -308,7 +390,7 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
                     )}
                   </span>
                 </li>
-              ),
+              ) : null,
             )}
           </ol>
           {result?.floodLevelCm != null && (
@@ -347,7 +429,7 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
           {best.rides === 0 && <p className="text-[11px] text-[var(--ink-3)]">{t('ui.planner.walkBest')}</p>}
         </div>
       )}
-      <p className="text-[10px] text-[var(--ink-3)] leading-relaxed">{t('ui.planner.note')}</p>
+      <p className="text-[10px] text-[var(--ink-3)] leading-relaxed">{isPrivate ? t('ui.planner.boat_note') : t('ui.planner.note')}</p>
     </InfoPanel>
   );
 };
