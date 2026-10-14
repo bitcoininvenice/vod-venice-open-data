@@ -46,12 +46,12 @@ interface SourceMetadata {
 
 const COMUNE = 'Comune di Venezia';
 const SOURCES_METADATA: Record<string, SourceMetadata> = {
-  tide: { institution: `${COMUNE} – Centro Maree (CPSM)`, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY', format: 'JSON', refresh: 'r60s' },
-  'tide-forecast': { institution: `${COMUNE} – Centro Maree (CPSM)`, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY', format: 'JSON', refresh: 'r10min' },
+  tide: { institution: `${COMUNE} – Centro Maree (CPSM)`, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY-SA 3.0 / CC BY', format: 'JSON', refresh: 'r60s', hasNote: true },
+  'tide-forecast': { institution: `${COMUNE} – Centro Maree (CPSM)`, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY-SA 3.0 / CC BY', format: 'JSON', refresh: 'r10min', hasNote: true },
   metar: { institution: 'NOAA Aviation Weather Center', portalUrl: 'https://aviationweather.gov', portalName: 'aviationweather.gov', license: 'Public domain (NOAA)', format: 'METAR JSON', refresh: 'r5min' },
   'gtfs-rt-nav': { institution: 'AVM / ACTV', portalUrl: 'https://actv.avmspa.it', portalName: 'tpl.actv.it', license: '—', format: 'GTFS-RT (protobuf)', refresh: 'r20s', hasNote: true },
   'gtfs-rt-aut': { institution: 'AVM / ACTV', portalUrl: 'https://actv.avmspa.it', portalName: 'tpl.actv.it', license: '—', format: 'GTFS-RT (protobuf)', refresh: 'r20s', hasNote: true },
-  'cpsm-meteo': { institution: `${COMUNE} – Centro Maree (CPSM)`, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY', format: 'JSON', refresh: 'r5min' },
+  'cpsm-meteo': { institution: `${COMUNE} – Centro Maree (CPSM)`, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY-SA 3.0 / CC BY', format: 'JSON', refresh: 'r5min', hasNote: true },
   aisstream: { institution: 'aisstream.io', portalUrl: 'https://aisstream.io', portalName: 'aisstream.io', license: 'Messaggi AIS pubblici', format: 'WebSocket JSON', refresh: 'r60s', hasNote: true },
   opensky: { institution: 'OpenSky Network', portalUrl: 'https://opensky-network.org', portalName: 'opensky-network.org', license: 'OpenSky Terms of Use', format: 'REST JSON', refresh: 'r15s', hasNote: true },
   'open-meteo': { institution: 'Open-Meteo (modelli DWD ICON / ECMWF)', portalUrl: 'https://open-meteo.com', portalName: 'open-meteo.com', license: 'CC BY 4.0', format: 'REST JSON', refresh: 'r30min', hasNote: true },

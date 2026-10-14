@@ -4,7 +4,7 @@ Run `python scripts/vod.py datasets` (or the MCP tool `list_datasets`) for the l
 
 | Question | Dataset id | Tip |
 |---|---|---|
-| Tide now / acqua alta forecast | `tide` | `context.reference`, `context.forecast` with issue time |
+| Tide now / acqua alta forecast | `tide` | `context.reference`, `context.forecast` with issue time; CPSM data: reuse under CC BY-SA 3.0 (cite "Comune di Venezia – Centro Maree") |
 | Wind, waves, air temperature | `weather_stations`, `wind_forecast`, `marine_platform` | stations are measurements, grid is a forecast |
 | Air quality | `air_quality` | annual ARPAV means + hourly CAMS forecast in `forecast` |
 | Pollen | `pollen` | forecast; the Venezia point also has the ARPAV measured calendar |

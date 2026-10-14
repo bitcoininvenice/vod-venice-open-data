@@ -993,6 +993,14 @@ test.describe('API', () => {
     expect(body.meta.levels.kind).toBe('live');
   });
 
+  test('dati del Centro Maree: licenza CC BY-SA 3.0 sui dati redistribuiti, con le due fonti della licenza', async ({ request }) => {
+    const tide = await (await request.get('/api/tide')).json();
+    expect(tide.meta.levels.license).toBe('CC BY-SA 3.0');
+    expect(tide.meta.levels.licenseSources).toContain('https://www.comune.venezia.it/it/content/open-data-0');
+    const weather = await (await request.get('/api/weather')).json();
+    expect(weather.meta.windStations.license).toBe('CC BY-SA 3.0');
+  });
+
   test('avvisi ACTV: feed ufficiale, solo avvisi in corso, link ad ACTV', async ({ request }) => {
     const res = await request.get('/api/avvisi-actv');
     const body = await res.json();

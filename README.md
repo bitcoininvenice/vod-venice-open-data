@@ -277,7 +277,7 @@ Le API sono pubbliche e in sola lettura, con cache server per ogni fonte e un li
 * **OpenSky Network**: dati ADS-B, uso non commerciale/ricerca secondo i termini OpenSky.
 * **SkylineWebcams, CNR-ISMAR**: solo collegamenti alle pagine ufficiali delle dirette; nessuna immagine viene ripubblicata.
 * **Anopticon (tramaci.org)**: mappatura civica delle telecamere. I termini d'uso vietano l'accesso automatico senza autorizzazione: il dataset completo non è incluso (bozza di richiesta in `docs/richieste-autorizzazione.md`).
-* **Comune di Venezia – dati.venezia.it**: Elenco Annuale dei Lavori, hotspot WiFi, rete meteo-marina CPSM (CC BY).
+* **Comune di Venezia – dati.venezia.it**: Elenco Annuale dei Lavori, hotspot WiFi (CC BY); marea e rete meteo-marina CPSM: la scheda del dataset indica CC BY, la [pagina Open Data del Comune](https://www.comune.venezia.it/it/content/open-data-0) CC BY-SA 3.0. VOD applica la più restrittiva (CC BY-SA 3.0) ai dati CPSM che redistribuisce (API, MCP, esportazioni).
 * **ARPAV**: medie annue validate di PM10, PM2.5 e NO2 (CC BY 4.0).
 * **CelesTrak**: elementi orbitali TLE.
 * **OpenStreetMap contributors**: geometrie della laguna (ODbL – © OpenStreetMap contributors).

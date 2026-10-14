@@ -40,7 +40,8 @@ export function buildGeoJson(layers: ExportLayerData[], exportedAt: string, plat
       format: 'GeoJSON RFC 7946 (WGS84, lon/lat)',
       licenseNote:
         'Licenza della fonte originale di ciascun elemento (campo officialSource/source quando presente): ' +
-        'es. CC BY per dati del Comune di Venezia, ODbL per dati OpenStreetMap.',
+        'es. CC BY per dati del Comune di Venezia, ODbL per dati OpenStreetMap; i dati del Centro Maree (marea, meteo CPSM) ' +
+        'sono redistribuiti con licenza CC BY-SA 3.0 (la scheda del dataset indica CC BY, la pagina Open Data del Comune CC BY-SA 3.0).',
       platform: platformUrl,
     },
     features,

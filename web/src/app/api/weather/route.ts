@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { CPSM_LICENSE_META } from '@/lib/cpsmLicense';
 import { METEO_MARINE_WIND_STATIONS } from '@/lib/weatherWindData';
 import type { MeteoMarineWindItem } from '@/lib/types';
 import { fetchUpstream } from '@/server/upstream';
@@ -68,7 +69,7 @@ export async function GET() {
         kind: 'live',
         source: 'Comune di Venezia – CPSM, rete meteo-marina (dati.venezia.it)',
         sourceUrl: 'https://dati.venezia.it/?q=content/cpsm-dati-meteomarini-laguna-e-litorale-veneziano',
-        license: 'CC BY – Comune di Venezia',
+        ...CPSM_LICENSE_META,
         fetchedAt: new Date().toISOString(),
         note: `${cpsmStations.length} stazioni CPSM con coordinate pubblicate; misure aggiornate ogni 5 minuti.`,
       },
@@ -76,7 +77,7 @@ export async function GET() {
         kind: cityTemp ? 'live' : 'unavailable',
         source: 'Comune di Venezia – CPSM, temperatura e umidità dell’aria (dati.venezia.it)',
         sourceUrl: 'https://dati.venezia.it/sites/default/files/dataset/opendata/temparia.json',
-        license: 'CC BY – Comune di Venezia',
+        ...CPSM_LICENSE_META,
         note: 'Prima stazione del centro storico con una misura delle ultime 2 ore: Palazzo Cavalli, poi San Giorgio, poi Misericordia. L’umidità è della stessa stazione.',
       },
     },

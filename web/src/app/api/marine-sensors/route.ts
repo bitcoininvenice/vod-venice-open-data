@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { CPSM_LICENSE_META } from '@/lib/cpsmLicense';
 import { OCEAN_STATIONS_DATA, BRICCOLE_SIGNALS_DATA } from '@/lib/marineSensorsData';
 import lagoonNetwork from '@/data/osm-waterways.json';
 import { curatedNotInOsm } from '@/lib/osmPoi';
@@ -52,6 +53,7 @@ export async function GET() {
     meta: {
       kind: hasLive ? 'live' : 'static-reference',
       source: 'CPSM (piattaforma Acqua Alta) + anagrafica stazioni e segnalamenti',
+      cpsmLicense: CPSM_LICENSE_META,
       sourceUrl: 'https://dati.venezia.it/?q=content/cpsm-dati-meteomarini-laguna-e-litorale-veneziano',
       note: 'Solo la piattaforma "Acqua Alta" ha misure in tempo reale; per le altre stazioni non è collegata una fonte aperta.',
       forecastSource: `${MARINE_SOURCE} – previsione, non misura (CC BY 4.0)`,

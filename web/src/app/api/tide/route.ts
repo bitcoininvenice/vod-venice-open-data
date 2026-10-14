@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { CPSM_LICENSE_META } from '@/lib/cpsmLicense';
 import type { MoseGateItem } from '@/lib/types';
 import { MOSE_GATES } from '@/lib/moseGates';
 import type { TideResponse, TideStation } from '@/lib/contracts/tide';
@@ -58,6 +59,7 @@ export async function GET() {
         kind: 'live',
         source: SOURCE_NAME,
         sourceUrl: TIDE_LEVELS_URL,
+        ...CPSM_LICENSE_META,
         fetchedAt: levels.ok ? levels.fetchedAt : undefined,
         observedAt: reference?.observedAt,
         note: levelsOk ? undefined : 'Misure di marea temporaneamente non disponibili dalla fonte',
@@ -66,6 +68,7 @@ export async function GET() {
         kind: 'live',
         source: SOURCE_NAME,
         sourceUrl: TIDE_FORECAST_URL,
+        ...CPSM_LICENSE_META,
         fetchedAt: forecast.ok ? forecast.fetchedAt : undefined,
         observedAt: forecastData?.issuedAt,
         note: forecastData?.stale ? 'La previsione pubblicata non risulta aggiornata nelle ultime 24 ore' : undefined,
