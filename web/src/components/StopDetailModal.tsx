@@ -12,7 +12,8 @@ import { PlanHereButton } from '@/components/ui/PlanHereButton';
 import { useSimulation } from '@/lib/simulationModel';
 import { lastDeparturesForStop } from '@/lib/lastDepartures';
 import { clock } from '@/lib/tripView';
-import { romeDayType } from '@/lib/time';
+import { romeDayType, romeSecondsOfDay } from '@/lib/time';
+import { scheduledDepartures } from '@/lib/scheduledDepartures';
 import { noticesForStop, useActvNotices } from '@/lib/useActvNotices';
 import { ActvNoticeBox } from '@/components/ActvNoticeList';
 
@@ -110,6 +111,8 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
         <RealtimeArrivals lat={stop.lat} lon={stop.lon} gtfsIds={stop.gtfsIds} />
 
         <StopNotices stop={stop} />
+
+        {stop.mode !== 'navigazione' && stop.mode !== 'ferry' && <ScheduledDeparturesList stop={stop} />}
 
         {(stop.mode === 'navigazione' || stop.mode === 'ferry') && <LastDeparturesList stop={stop} />}
 
@@ -245,4 +248,41 @@ const StopNotices: React.FC<{ stop: StopItem }> = ({ stop }) => {
   const notices = useActvNotices();
   const { here, onLines } = noticesForStop(notices, stop.gtfsIds, stop.lines);
   return <ActvNoticeBox here={here} onLines={onLines} />;
+};
+
+/** Partenze dei prossimi 90 minuti dall'orario ufficiale (People Mover, tram, bus: dove il tempo reale manca o è parziale). */
+const ScheduledDeparturesList: React.FC<{ stop: StopItem }> = ({ stop }) => {
+  const { t } = useTranslation();
+  const sim = useSimulation(true);
+  const [now, setNow] = useState(() => romeSecondsOfDay());
+  useEffect(() => {
+    const id = setInterval(() => setNow(romeSecondsOfDay()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+  const day = romeDayType();
+  const minute = Math.floor(now / 60);
+  const list = React.useMemo(() => (sim ? scheduledDepartures(sim, stop, day, minute * 60).slice(0, 14) : null), [sim, stop, day, minute]);
+  return (
+    <section className="flex flex-col gap-1.5" aria-label={t('ui.scheduled.title')} data-testid="scheduled-departures">
+      <span className="text-[11px] font-mono uppercase text-[var(--ink-3)]">{t('ui.scheduled.title')}</span>
+      {list === null && <div className="h-10 rounded-xl bg-[var(--rule)]/30 animate-pulse" aria-busy="true" />}
+      {list !== null && list.length === 0 && <p className="text-[11px] text-[var(--ink-3)]">{t('ui.scheduled.none')}</p>}
+      {list !== null && list.length > 0 && (
+        <ul className="flex flex-col divide-y divide-[var(--rule)] text-xs">
+          {list.map((d) => {
+            const wait = Math.max(0, Math.round((d.time - now) / 60));
+            return (
+              <li key={`${d.line}|${d.headsign}|${d.time}`} className="py-1.5 flex items-center gap-2">
+                <span className="px-1.5 py-0.5 rounded-md font-mono font-bold text-[11px] min-w-[2.2rem] text-center border border-[var(--rule)]">{d.line}</span>
+                <span className="flex-1 min-w-0 truncate text-[var(--ink-2)]">→ {d.headsign}</span>
+                <span className="font-mono font-bold text-[var(--ink)]">{clock(d.time)}</span>
+                <span className="font-mono text-[10px] w-14 text-right text-[var(--ink-3)]">{wait === 0 ? t('ui.scheduled.now') : t('ui.scheduled.inMin', { min: wait })}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <p className="text-[10px] text-[var(--ink-3)]">{t('ui.scheduled.note')}</p>
+    </section>
+  );
 };

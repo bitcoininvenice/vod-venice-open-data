@@ -643,6 +643,13 @@ export const itUi = {
     next: "Prossima fermata",
     note: "Posizione stimata dall'orario ufficiale FlixBus lungo il percorso, non GPS: il bus può essere in anticipo o in ritardo. Orari teorici; verifica sul sito FlixBus."
   },
+  scheduled: {
+    title: "Partenze da orario · prossimi 90 minuti",
+    none: "Nessuna partenza da questa fermata nei prossimi 90 minuti.",
+    now: "ora",
+    inMin: "tra {min} min",
+    note: "Orario ufficiale ACTV (GTFS), lo stesso della simulazione dei mezzi: non tiene conto di ritardi o variazioni del giorno."
+  },
   feature: {
     stelleHotel: "5 stelle: {five}, 4 stelle: {four}, 3 stelle: {three}",
     francoAttualeMarea: "Franco attuale (marea CPSM {cm} cm)",

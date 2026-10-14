@@ -713,6 +713,23 @@ test('trasporto pubblico: livello "velocità da orario" e sezione in /metrics', 
   await expect(speed).toContainText('non il comportamento di un singolo mezzo');
 });
 
+test('fermata del People Mover: partenze da orario nei prossimi 90 minuti', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  await page.goto('/');
+  await page.locator('canvas').waitFor();
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder(/cerca fermate/i).fill('Marittima');
+  await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: /Fermata ACTV \(PM\)/ }).first().click();
+  const section = page.locator('[data-info-panel]').getByTestId('scheduled-departures');
+  await expect(section).toContainText('Partenze da orario');
+  const hour = Number(new Date().toLocaleString('en-GB', { timeZone: 'Europe/Rome', hour: '2-digit', hour12: false }));
+  // servizio dalle 7:10 (8:10 nei festivi) alle 22:50: nelle ore centrali ci sono sempre partenze ogni 10 minuti
+  if (hour >= 9 && hour <= 21) {
+    await expect(section.locator('li').first()).toContainText('PM');
+    expect(await section.locator('li').count()).toBeGreaterThan(8);
+  }
+});
+
 test('note legali: attribuzione OpenStreetMap sempre visibile e pagina privacy con licenze e richieste dei titolari', async ({ page }) => {
   await page.goto('/');
   await page.locator('canvas').waitFor();

@@ -645,6 +645,13 @@ export const enUi: UiTranslations = {
     next: "Next stop",
     note: "Position estimated from the official FlixBus timetable along the route, not GPS: the bus may be early or late. Theoretical times; check on the FlixBus website."
   },
+  scheduled: {
+    title: "Timetable departures · next 90 minutes",
+    none: "No departures from this stop in the next 90 minutes.",
+    now: "now",
+    inMin: "in {min} min",
+    note: "Official ACTV timetable (GTFS), the same used for the vehicle simulation: delays and same-day changes are not included."
+  },
   feature: {
     stelleHotel: "5-star: {five}, 4-star: {four}, 3-star: {three}",
     francoAttualeMarea: "Current clearance (CPSM tide {cm} cm)",
