@@ -17,7 +17,8 @@ import { useTranslation } from '@/lib/i18n';
 import { simClock } from '@/lib/simClock';
 import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
-import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri } from './map/transitLayers';
+import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri, drawLastService, drawScheduleSpeed } from './map/transitLayers';
+import { lastServicePoints, type LastServicePoint } from '@/lib/lastDepartures';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawPasserelle } from './map/tideLayers';
 import { drawCurrentFlow } from './map/currentFlow';
@@ -175,6 +176,12 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   // Corsa del mezzo ACTV selezionato: evidenziata sulla mappa con le sue fermate (l'orario si scarica se serve)
   const selectedVehicle = selectedObject?.type === 'vehicle' ? selectedObject.data : null;
   const simForTrip = useSimulation(Boolean(selectedVehicle?.trip));
+  // Ultima corsa: dall'orario del giorno scelto nella simulazione
+  const simForLastService = useSimulation(layers.showLastService);
+  const lastService = useMemo<LastServicePoint[]>(
+    () => (layers.showLastService && simForLastService ? lastServicePoints(simForLastService, selectedDay) : []),
+    [layers.showLastService, simForLastService, selectedDay],
+  );
   const selectedTrip = useMemo(() => resolveTrip(simForTrip, selectedVehicle?.trip), [simForTrip, selectedVehicle]);
   const dragStartRef = useRef({ x: 0, y: 0, camX: 0, camY: 0 });
 
@@ -685,6 +692,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         // Fiumi: il punto della foce con raggio più ampio, poi i vertici del corso
         L.showTributaries && target({ items: D.lagoonTributaryRivers, radius: 26, select: feature('tributaryRiver') }),
         L.showTributaries && target({ items: D.lagoonTributaryRivers, at: noPoint, path, radius: 20, select: feature('tributaryRiver') }),
+        L.showScheduleSpeed && target({ items: [...D.scheduleSpeed.filter((x) => x.verdict !== 'partial'), ...D.scheduleSpeed.filter((x) => x.verdict === 'partial')], at: noPoint, path, radius: 12, select: feature('scheduleSpeed') }),
         L.showCanalLimits && target({ items: D.canalSpeedLimits, at: noPoint, path, radius: 18, select: feature('speedLimit') }),
         // Stazioni dell'aria: etichetta disegnata sopra il punto
         L.showAirQuality && target({ items: D.airStations, radius: 18, dy: -8, select: feature('airStation') }),
@@ -711,6 +719,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         L.showCityAssets && target({ items: filterFountains(D.fountains, fountainFilter), radius: 16, select: feature('fountain') }),
         L.showOrdinances && target({ items: D.ordinances.filter(isPlacedOrdinance), radius: 16, select: feature('ordinance') }),
         L.showCantieri && target({ items: cantieri, radius: 18, select: onSelectCantiere }),
+        L.showLastService && target({ items: lastService, at: (p) => [p.stop.lon, p.stop.lat], radius: 12, select: (p) => onSelectStop(p.stop) }),
         L.showStops && target({ items: D.stops, radius: 15, select: onSelectStop }),
         L.showVehicles && scheduledVehicles,
         L.showRealtimeVehicles &&
@@ -734,6 +743,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
                   delay: v.delay ?? null,
                   delayConflict: v.delayConflict ?? false,
                   trip: v.line ? { line: v.line, startTime: v.startTime, startDate: v.startDate } : undefined,
+                  vehicleId: v.id,
                 },
               });
             },
@@ -872,6 +882,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         sportFilter,
         fountains: visibleFountains,
         canalOrdinances,
+        lastService,
         tideLevel: effectiveTideLevel,
         tide: tideState,
         pin,
@@ -907,7 +918,11 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
         drawRealtimeVehicles(rc);
 
+        drawScheduleSpeed(rc);
+
         drawStops(rc);
+
+        drawLastService(rc);
 
         drawCantieri(rc);
 
@@ -1017,7 +1032,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     return () => cancelAnimationFrame(animId);
   }, [
     camera, KY, H, W, mx, my, tr, layers, data, cantieri, selectedDay, paletteTheme, bufferRadiusMeters, selectedCategory,
-    sportFilter, visibleFountains, canalOrdinances, simulatedTideLevel, isMoseProtected, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
+    sportFilter, visibleFountains, canalOrdinances, lastService, simulatedTideLevel, isMoseProtected, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
     alilagunaBoats, is3DView, landHiReady, selectedTrip, selectedVehicle, pin, itinerary,
 ]);
 

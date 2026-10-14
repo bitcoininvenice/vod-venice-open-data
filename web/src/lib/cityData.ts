@@ -39,6 +39,7 @@ import { LAGOON_CURRENT_CHANNELS, type LagoonCurrentChannel } from './lagoonCurr
 import { filterFountains } from './fountainFilter';
 import type { OrdinanceItem } from './contracts/ordinances';
 import { isPlacedOrdinance } from './canalOrdinances';
+import type { ScheduleSpeedSegment } from './scheduleSpeed';
 
 export interface TideInfo {
   observedAt: string | null;
@@ -65,6 +66,8 @@ export interface CityData {
   canalSpeedLimits: CanalSpeedLimitItem[];
   /** ordinanze del Comune in vigore (traffico acqueo, lavori a Venezia e isole) */
   ordinances: OrdinanceItem[];
+  /** tratti delle linee: velocità richiesta dall'orario e limiti (/api/velocita-orario) */
+  scheduleSpeed: ScheduleSpeedSegment[];
   bridges: BridgeClearanceItem[];
   gondolas: GondolaStationItem[];
   docks: PublicDockItem[];
@@ -135,6 +138,7 @@ export const INITIAL_CITY_DATA: CityData = {
   parkings: [],
   canalSpeedLimits: [],
   ordinances: [],
+  scheduleSpeed: [],
   bridges: OPEN_BRIDGE_CLEARANCES,
   gondolas: OPEN_GONDOLA_STATIONS,
   docks: OPEN_PUBLIC_DOCKS,
@@ -284,6 +288,7 @@ export const RESOURCES = {
       return d && { bathingWaters: list(d.bathingWaters), trees: list(d.urbanTrees), evCharging: list(d.evCharging), wifiHotspots: list(d.wifiHotspots) };
     },
   },
+  scheduleSpeed: { url: '/api/velocita-orario', pick: (j) => (j.success ? { scheduleSpeed: list(j.data) } : undefined) },
   ordinances: {
     url: '/api/ordinanze',
     // atti nuovi durante la giornata: si rilegge ogni 30 minuti finché canali o limiti sono accesi
@@ -412,6 +417,7 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
     veniceAssets: l.showBathingWaters || l.showTrees || l.showEvCharging || l.showWifiHotspots,
     waterways: l.showCanalLimits || l.showBridges || l.showGondolas || l.showDocks,
     ordinances: l.showCanals || l.showCanalLimits || l.showOrdinances,
+    scheduleSpeed: l.showScheduleSpeed,
     lagoonMorphology: l.showSubsidence || l.showMorphology,
     weather: true,
     railLogistics: l.showTrains || l.showWasteBoats,
@@ -449,6 +455,7 @@ export function layerCounts(d: CityData, extra: { scheduledVehicles: number; ali
     showNautical: d.nauticalPlaces.length,
     showCanals: d.lagoonNetwork?.canals.length ?? 0,
     showOrdinances: d.ordinances.filter(isPlacedOrdinance).length,
+    showScheduleSpeed: d.scheduleSpeed.filter((s) => s.verdict !== 'partial').length,
     showWifiHotspots: d.wifiHotspots.length,
     showEvCharging: d.evCharging.length,
     showCityAssets: filterFountains(d.fountains, 'all').length,

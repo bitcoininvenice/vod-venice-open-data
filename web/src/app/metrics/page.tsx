@@ -36,6 +36,7 @@ import tourismData from '@/data/turismo-comuni.json';
 import { MunicipalProfile } from '@/components/metrics/MunicipalProfile';
 import { PublicWorksMonitor } from '@/components/metrics/PublicWorksMonitor';
 import { ResidentsCensus } from '@/components/metrics/ResidentsCensus';
+import { ScheduleSpeedTable, ServiceNowTable } from '@/components/metrics/TransitNow';
 import { CENSUS, mostEmptiedSestiere } from '@/lib/census';
 import arpavLagoon from '@/data/arpav-lagoon.json';
 
@@ -420,6 +421,16 @@ export default function MetricsPage() {
           <section className="flex flex-col gap-5">
             <SectionHeader icon={Construction} iconCls="text-orange-400" title={t('ui.bdap.metricsTitle')} aside={t('ui.bdap.metricsAside')} />
             <PublicWorksMonitor />
+          </section>
+        )}
+
+        {/* ===================== TRASPORTO PUBBLICO ADESSO (nessuno storico) ===================== */}
+        {showKpi && (
+          <section className="flex flex-col gap-5">
+            <SectionHeader icon={Navigation} iconCls="text-emerald-400" title={t('ui.serviceNow.sectionTitle')} aside={t('ui.serviceNow.sectionAside')} />
+            <ServiceNowTable />
+            <SectionHeader icon={Timer} iconCls="text-red-400" title={t('ui.scheduleSpeed.sectionTitle')} aside={t('ui.scheduleSpeed.sectionAside')} />
+            <ScheduleSpeedTable />
           </section>
         )}
 

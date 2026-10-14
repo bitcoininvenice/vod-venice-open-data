@@ -8,6 +8,10 @@ import { useSimulation } from '@/lib/simulationModel';
 import { buildWalkGraph, type RawWalk, type WalkGraph } from '@/lib/walkGraph';
 import { WALK_URL } from '@/lib/walk-data';
 import { planTrip, type Itinerary, type PlanMode, type PlannerPoint } from '@/lib/tripPlanner';
+import { DELAY_COLORS, delayStatus } from '@/lib/realtimeDelay';
+import { parseGtfsTime } from '@/lib/positionDelay';
+import { startPolling } from '@/lib/polling';
+import type { RealtimeVehicleDto } from '@/lib/contracts/realtime';
 import type { PasserellaItem } from '@/lib/types';
 import { ACTV_STOPS_REFERENCE } from '@/lib/stopsReference';
 import { clock } from '@/lib/tripView';
@@ -144,6 +148,26 @@ const PlaceInput: React.FC<{
   );
 };
 
+/** Mezzi GPS ACTV (/api/realtime/vehicles) ogni 30 s, solo finché servono. */
+function useLiveVehicles(enabled: boolean): RealtimeVehicleDto[] | null {
+  const [data, setData] = useState<RealtimeVehicleDto[] | null>(null);
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    const load = () =>
+      fetch('/api/realtime/vehicles')
+        .then((r) => r.json())
+        .then((j) => !cancelled && setData(Array.isArray(j.data) ? j.data : null))
+        .catch(() => !cancelled && setData(null));
+    const stop = startPolling(load, 30_000);
+    return () => {
+      cancelled = true;
+      stop();
+    };
+  }, [enabled]);
+  return enabled ? data : null;
+}
+
 /**
  * Trip planner a piedi + vaporetto: luoghi di partenza e arrivo, ora di partenza, itinerario migliore
  * sull'orario ufficiale ACTV e sulla rete pedonale OpenStreetMap, con l'alternativa solo a piedi.
@@ -170,8 +194,27 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
     onItinerary(result?.best ?? null);
   }, [result, onItinerary]);
 
-  const loading = open && (!sim || (!walk && !walkError));
   const best = result?.best ?? null;
+  // Ritardo attuale delle corse proposte (solo partenza "adesso" e mezzi già in viaggio con il GPS)
+  const rideLegs = useMemo(() => (best && !time ? best.legs.map((l, i) => (l.kind === 'ride' ? { i, line: l.line, departure: l.tripDeparture } : null)).filter((x) => x !== null) : []), [best, time]);
+  const vehicles = useLiveVehicles(open && rideLegs.length > 0);
+  const liveDelays = useMemo(() => {
+    if (!vehicles || rideLegs.length === 0) return null;
+    const m = new Map<number, number>();
+    for (const r of rideLegs) {
+      const v = vehicles.find((x) => x.line === r.line && parseGtfsTime(x.startTime) === r.departure && x.delay);
+      if (v?.delay) m.set(r.i, v.delay.seconds);
+    }
+    return m;
+  }, [vehicles, rideLegs]);
+  const lastRide = rideLegs[rideLegs.length - 1];
+  const liveArrival = best && lastRide && liveDelays?.has(lastRide.i) ? best.arrive + (liveDelays.get(lastRide.i) as number) : null;
+  const liveLabel = (s: number) => {
+    const m = Math.round(s / 60);
+    return delayStatus(s) === 'onTime' ? t('ui.planner.liveOnTime') : m > 0 ? t('ui.planner.liveLate', { min: m }) : t('ui.planner.liveEarly', { min: Math.abs(m) });
+  };
+
+  const loading = open && (!sim || (!walk && !walkError));
   const minutes = (s: number) => Math.max(1, Math.round(s / 60));
 
   return (
@@ -258,6 +301,11 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
                   <span className="text-[var(--ink)]">
                     <strong>{clock(leg.start)}</strong> {leg.from} → <strong>{clock(leg.end)}</strong> {leg.to}
                     <span className="block text-[11px] text-[var(--ink-3)]">{t('ui.planner.rideLeg', { headsign: leg.headsign, n: leg.stops })}</span>
+                    {liveDelays && liveDelays.get(i) !== undefined && (
+                      <span className="block text-[11px] font-semibold" style={{ color: DELAY_COLORS[delayStatus(liveDelays.get(i) as number)] }} data-testid="planner-live-delay">
+                        {liveLabel(liveDelays.get(i) as number)}
+                      </span>
+                    )}
                   </span>
                 </li>
               ),
@@ -289,6 +337,12 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
           )}
           {result?.walkOnly && best.rides > 0 && (
             <p className="text-[11px] text-[var(--ink-3)]">{t('ui.planner.walkAlternative', { min: minutes(result.walkOnly.arrive - result.walkOnly.depart) })}</p>
+          )}
+          {liveArrival !== null && liveArrival > best.arrive + 59 && (
+            <p className="text-[11px] text-[var(--ink-2)]" data-testid="planner-live-arrival">
+              {t('ui.planner.liveArrival', { time: clock(liveArrival) })}
+              {result?.walkOnly && result.walkOnly.arrive < liveArrival && <> {t('ui.planner.liveWalkFaster', { time: clock(result.walkOnly.arrive) })}</>}
+            </p>
           )}
           {best.rides === 0 && <p className="text-[11px] text-[var(--ink-3)]">{t('ui.planner.walkBest')}</p>}
         </div>

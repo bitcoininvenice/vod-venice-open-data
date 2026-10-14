@@ -10,6 +10,7 @@ import { lineTextColor } from '@/lib/actvLines';
 import { clock, resolveTrip, tripStops, type TripRef } from '@/lib/tripView';
 import { useSimulation } from '@/lib/simulationModel';
 import { romeSecondsOfDay } from '@/lib/time';
+import { useServiceNow } from '@/lib/useServiceNow';
 
 /** Mezzo ACTV selezionato: posizione simulata dall'orario o reale (GTFS-RT). */
 export interface VehicleSelection {
@@ -27,6 +28,8 @@ export interface VehicleSelection {
   delayConflict?: boolean;
   /** riferimento alla corsa dell'orario (per evidenziarla e mostrarne le fermate) */
   trip?: TripRef;
+  /** id del mezzo nel feed GTFS-RT (per i mezzi in coda) */
+  vehicleId?: string;
 }
 
 /** Oggetti in movimento cliccati sulla mappa (le schede dei punti fissi sono in VeniceFeatureDetailModal). */
@@ -191,6 +194,7 @@ export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose,
           ]}
         />
         {gps && !v.delay && <p className="text-[11px] text-[var(--ink-3)]">{t(v.delayConflict ? 'ui.delay.conflict' : 'ui.delay.noDelay')}</p>}
+        <LineNowBox line={v.line} vehicleId={v.vehicleId} />
         {v.trip && <TripStopsList vehicle={v} timeSeconds={timeSeconds} />}
       </InfoPanel>
     );
@@ -331,6 +335,39 @@ const TripStopsList: React.FC<{ vehicle: VehicleSelection; timeSeconds?: number 
         })}
       </ol>
       <span className="text-[10px] text-[var(--ink-3)]">{t(delay !== 0 ? 'ui.trip.noteDelay' : 'ui.trip.note')}</span>
+    </div>
+  );
+};
+
+const signedMin = (s: number) => {
+  const m = Math.round(s / 60);
+  return m === 0 ? '0' : m > 0 ? `+${m}` : `−${Math.abs(m)}`;
+};
+
+/** La linea del mezzo in questo momento (nessuno storico): mezzi GPS, corse in servizio, ritardi, mezzi in coda. */
+const LineNowBox: React.FC<{ line: string; vehicleId?: string }> = ({ line, vehicleId }) => {
+  const { t } = useTranslation();
+  const service = useServiceNow(true);
+  const l = service?.find((x) => x.line === line);
+  if (!l) return null;
+  const pair = vehicleId ? l.bunched.find((p) => p.a === vehicleId || p.b === vehicleId) : undefined;
+  return (
+    <div className="flex flex-col gap-1 p-3 rounded-xl bg-[var(--rule)]/25 border border-[var(--rule)] text-[11px]" data-testid="line-now">
+      <span className="text-[10px] font-mono uppercase text-[var(--ink-3)]">{t('ui.serviceNow.lineNow', { line })}</span>
+      <span className="text-[var(--ink-2)]">
+        {l.scheduled !== null ? t('ui.serviceNow.vehiclesOf', { gps: l.gps, n: l.scheduled }) : t('ui.serviceNow.vehicles', { gps: l.gps })}
+      </span>
+      {l.avgDelayS !== null && l.maxDelayS !== null && (
+        <span className="text-[var(--ink-2)]">
+          {t('ui.serviceNow.delaySummary', { avg: signedMin(l.avgDelayS), max: signedMin(l.maxDelayS), pct: Math.round((l.onTimeShare ?? 0) * 100) })}
+        </span>
+      )}
+      {pair && (
+        <span className="text-amber-400 font-semibold" data-testid="bunched-warning">
+          {t('ui.serviceNow.bunchedHere', { gap: Math.max(1, Math.round(pair.gapS / 60)), headway: Math.round(pair.headwayS / 60), to: pair.terminus })}
+        </span>
+      )}
+      <span className="text-[10px] text-[var(--ink-3)]">{t('ui.serviceNow.boxNote')}</span>
     </div>
   );
 };

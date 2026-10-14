@@ -57,7 +57,9 @@ export type LayerKey =
   | 'showNautical'
   | 'showParks'
   | 'showLagoonCurrents'
-  | 'showOrdinances';
+  | 'showOrdinances'
+  | 'showLastService'
+  | 'showScheduleSpeed';
 
 /**
  * Mapping from LayerKey to canonical Open Data catalog slug (matching /layers page IDs)
@@ -122,6 +124,8 @@ export const LAYER_SLUG_BY_KEY: Record<LayerKey, string> = {
   showParks: 'parchi_giardini',
   showLagoonCurrents: 'correnti_laguna',
   showOrdinances: 'ordinanze_comune',
+  showLastService: 'ultima_corsa',
+  showScheduleSpeed: 'velocita_orario',
 };
 
 /**
@@ -192,9 +196,14 @@ export const SLUG_TO_LAYER_KEY: Record<string, LayerKey> = {
   parchi_giardini: 'showParks',
   correnti_laguna: 'showLagoonCurrents',
   ordinanze_comune: 'showOrdinances',
+  ultima_corsa: 'showLastService',
+  velocita_orario: 'showScheduleSpeed',
 
   // Convenient aliases
   ordinanze: 'showOrdinances',
+  ultime_corse: 'showLastService',
+  last_service: 'showLastService',
+  velocita_linee: 'showScheduleSpeed',
   ordinances: 'showOrdinances',
   avvisi: 'showOrdinances',
   correnti: 'showLagoonCurrents',

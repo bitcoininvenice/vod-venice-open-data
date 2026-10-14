@@ -318,6 +318,15 @@ test('ritardi ACTV: scheda del mezzo e prossimi arrivi alla fermata', async ({ p
       },
     })
   );
+  await page.route('**/api/servizio', (route) =>
+    route.fulfill({
+      json: {
+        success: true, count: 1, meta: {},
+        data: [{ line: '2', category: 'vaporetto', network: 'navigazione', gps: 15, scheduled: 17, withoutGps: 2, withDelay: 12, avgDelayS: 126, maxDelayS: 605, onTimeShare: 0.5,
+          bunched: [{ a: 'test-1', b: 'test-2', terminus: 'Lido S.M.E.', headwayS: 600, gapS: 90 }] }],
+      },
+    })
+  );
   let arrivalsQuery = '';
   await page.route('**/api/realtime/arrivals?*', (route) => {
     arrivalsQuery = new URL(route.request().url()).search;
@@ -337,6 +346,10 @@ test('ritardi ACTV: scheda del mezzo e prossimi arrivi alla fermata', async ({ p
   const info = page.locator('[data-info-panel]');
   await expect(info.getByTestId('realtime-arrivals')).toContainText('In ritardo di 4 min');
   expect(arrivalsQuery).toContain('stops=5038'); // la fermata usa i codici GTFS ufficiali
+  // ultime partenze di oggi dall'orario ufficiale
+  const last = info.getByTestId('last-departures');
+  await expect(last).toContainText('Ultime partenze di oggi');
+  await expect(last.locator('li').first()).toContainText(/\d{2}:\d{2}/);
   await page.keyboard.press('Escape');
   // spente le fermate, al centro della mappa resta solo il vaporetto
   const panel = page.locator('aside').filter({ visible: true }).first();
@@ -367,6 +380,11 @@ test('ritardi ACTV: scheda del mezzo e prossimi arrivi alla fermata', async ({ p
   // fonte del ritardo: calcolato dalla posizione, con il dato ACTV come verifica
   await expect(info.getByTestId('delay-source')).toContainText('Calcolato dalla posizione GPS');
   await expect(info.getByTestId('delay-source')).toContainText('ACTV indica +3 min');
+  // la linea adesso: mezzi, ritardi e il mezzo in coda con un altro della stessa linea
+  const lineNow = info.getByTestId('line-now');
+  await expect(lineNow).toContainText('Linea 2 adesso');
+  await expect(lineNow).toContainText('15 mezzi con GPS su 17 corse');
+  await expect(lineNow.getByTestId('bunched-warning')).toContainText('a 2 min da un altro mezzo della linea verso Lido S.M.E.');
   // fermate della corsa, dall'orario ufficiale, con la corsa evidenziata sulla mappa
   const stops = info.getByTestId('trip-stops');
   await expect(stops).toContainText('Fermate della corsa');
@@ -577,6 +595,22 @@ test('la scheda informativa non copre il pannello livelli e non blocca la mappa'
   await expect(info.getByRole('link', { name: /scheda del livello/i })).toHaveAttribute('href', /\/layers#fermate_actv/);
   await page.keyboard.press('Escape');
   await expect(info).toBeHidden();
+});
+
+test('trasporto pubblico: livelli "ultima corsa" e "velocità da orario", sezione in /metrics', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'pannello dei livelli controllato su desktop');
+  await page.goto('/?layers=ultima_corsa,velocita_orario');
+  await page.locator('canvas').waitFor();
+  const panel = page.locator('aside').filter({ visible: true }).first();
+  await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('ultima corsa');
+  await expect(panel).toContainText('servizio notturno');
+  await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('velocità richiesta');
+  await expect(panel).toContainText('Più veloce dei limiti');
+  await page.goto('/metrics');
+  await expect(page.getByRole('heading', { name: 'Trasporto pubblico adesso' })).toBeVisible();
+  const speed = page.getByTestId('schedule-speed');
+  await expect(speed).toContainText('Con margine');
+  await expect(speed).toContainText('non il comportamento di un singolo mezzo');
 });
 
 test('metriche: residenti per sestiere dal censimento ISTAT, non più valori di esempio', async ({ page }) => {
@@ -897,6 +931,26 @@ test.describe('API', () => {
     expect([200, 503]).toContain(res.status());
     expect(body.data.moseGates).toHaveLength(4);
     expect(body.meta.levels.kind).toBe('live');
+  });
+
+  test('servizio adesso e velocità da orario: dati coerenti, nessuno storico', async ({ request }) => {
+    const service = await (await request.get('/api/servizio')).json();
+    console.log('servizio:', JSON.stringify({ ok: service.success, linee: service.count, inCoda: service.data.reduce((n: number, l: { bunched: unknown[] }) => n + l.bunched.length, 0) }));
+    for (const l of service.data) {
+      expect(l.gps).toBeGreaterThanOrEqual(0);
+      if (l.withoutGps !== null) expect(l.withoutGps).toBe(Math.max(0, l.scheduled - l.gps));
+      if (l.onTimeShare !== null) expect(l.onTimeShare).toBeGreaterThanOrEqual(0);
+      for (const p of l.bunched) expect(p.gapS).toBeLessThan(p.headwayS);
+    }
+    const speed = await (await request.get('/api/velocita-orario')).json();
+    expect(speed.success).toBe(true);
+    expect(speed.count).toBeGreaterThan(100);
+    expect(speed.meta.note).toMatch(/non misura/);
+    for (const s of speed.data) {
+      expect(['tooFast', 'tight', 'ok', 'partial']).toContain(s.verdict);
+      if (s.verdict === 'tooFast') expect(s.scheduledS + 60).toBeLessThan(s.legalMinS);
+      expect(s.limitedM).toBeLessThanOrEqual(s.lengthM + 1);
+    }
   });
 
   test('ordinanze: atti del Comune in vigore, con link ufficiale e senza terraferma', async ({ request }) => {

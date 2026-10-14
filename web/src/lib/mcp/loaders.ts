@@ -19,6 +19,13 @@ import { GET as fiberGET } from '@/app/api/fiber/route';
 import { GET as cantieriGET } from '@/app/api/cantieri/route';
 import { GET as bdapGET } from '@/app/api/opere-bdap/route';
 import { GET as loraGET } from '@/app/api/lora-gateways/route';
+import { GET as serviceGET } from '@/app/api/servizio/route';
+import { GET as scheduleSpeedGET } from '@/app/api/velocita-orario/route';
+import { serverSimulation } from '@/server/sources/simulationServer';
+import { lastDeparturesByStop } from '@/lib/lastDepartures';
+import { ACTV_STOPS_REFERENCE } from '@/lib/stopsReference';
+import { clock } from '@/lib/tripView';
+import { romeDayType } from '@/lib/time';
 import { GET as ordinancesGET } from '@/app/api/ordinanze/route';
 import { GET as sportsGET } from '@/app/api/sports/route';
 import { GET as nauticalGET } from '@/app/api/nautical/route';
@@ -181,6 +188,26 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   sports: async () => {
     const j = await read(sportsGET());
     return { items: asRows(j.data), meta: j.meta as Row };
+  },
+  service_now: async () => {
+    const j = await read(serviceGET());
+    return { items: asRows(j.data), meta: j.meta as Row };
+  },
+  last_departures: async () => {
+    const sim = await serverSimulation();
+    if (!sim) return { items: [], meta: { error: 'orario non disponibile' } };
+    const day = romeDayType();
+    const items: Row[] = [];
+    for (const [i, list] of lastDeparturesByStop(sim.model, ACTV_STOPS_REFERENCE, day)) {
+      const s = ACTV_STOPS_REFERENCE[i];
+      for (const d of list) items.push({ stop: s.name, lat: s.lat, lon: s.lon, line: d.line, headsign: d.headsign, seconds: d.time, time: clock(d.time), afterMidnight: d.time >= 86400 });
+    }
+    return { items, meta: { dayType: day, source: 'Orario ufficiale ACTV (GTFS)' } };
+  },
+  schedule_speed: async () => {
+    const j = await read(scheduleSpeedGET());
+    // i tracciati restano fuori: per le domande bastano linea, tratto e tempi
+    return { items: asRows(j.data).map((row) => Object.fromEntries(Object.entries(row).filter(([k]) => k !== 'path'))), meta: { ...(j.meta as Row), summary: j.summary } };
   },
   city_orders: async () => {
     const j = await read(ordinancesGET());

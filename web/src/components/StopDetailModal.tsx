@@ -9,6 +9,10 @@ import { DELAY_COLORS, delayMinutes, type StopArrival } from '@/lib/realtimeDela
 import { startPolling } from '@/lib/polling';
 import { lineColor, lineTextColor } from '@/lib/actvLines';
 import { PlanHereButton } from '@/components/ui/PlanHereButton';
+import { useSimulation } from '@/lib/simulationModel';
+import { lastDeparturesForStop } from '@/lib/lastDepartures';
+import { clock } from '@/lib/tripView';
+import { romeDayType } from '@/lib/time';
 
 interface StopDetailModalProps {
   stop: StopItem | null;
@@ -103,6 +107,8 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
 
         <RealtimeArrivals lat={stop.lat} lon={stop.lon} gtfsIds={stop.gtfsIds} />
 
+        {(stop.mode === 'navigazione' || stop.mode === 'ferry') && <LastDeparturesList stop={stop} />}
+
         {/* Institutional Verification Notice */}
         <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 flex flex-col gap-2">
           <div className="flex items-center gap-2 text-xs text-blue-300 font-semibold">
@@ -186,6 +192,42 @@ const RealtimeArrivals: React.FC<{ lat: number; lon: number; gtfsIds?: string[] 
         </ul>
       )}
       <p className="text-[10px] text-[var(--ink-3)]">{t('ui.delay.arrivalsNote')}</p>
+    </section>
+  );
+};
+
+/** Ultime partenze del giorno per linea e destinazione, dall'orario ufficiale ACTV. */
+const LastDeparturesList: React.FC<{ stop: StopItem }> = ({ stop }) => {
+  const { t } = useTranslation();
+  const sim = useSimulation(true);
+  const day = romeDayType();
+  const list = React.useMemo(() => (sim ? lastDeparturesForStop(sim, day, stop).slice(0, 8) : null), [sim, day, stop]);
+  return (
+    <section className="flex flex-col gap-1.5" aria-label={t('ui.lastService.title')} data-testid="last-departures">
+      <span className="text-[11px] font-mono uppercase text-[var(--ink-3)]">{t('ui.lastService.title')}</span>
+      {list === null && <div className="h-10 rounded-xl bg-[var(--rule)]/30 animate-pulse" aria-busy="true" />}
+      {list !== null && list.length === 0 && <p className="text-[11px] text-[var(--ink-3)]">{t('ui.lastService.none')}</p>}
+      {list !== null && list.length > 0 && (
+        <ul className="flex flex-col divide-y divide-[var(--rule)] text-xs">
+          {list.map((d) => {
+            const bg = lineColor(d.line, d.category);
+            return (
+              <li key={`${d.line}|${d.headsign}`} className="py-1.5 flex items-center gap-2">
+                <span
+                  className="px-1.5 py-0.5 rounded-md font-mono font-bold text-[11px] min-w-[2.2rem] text-center border border-black/15"
+                  style={bg ? { background: bg, color: lineTextColor(d.line, bg) } : undefined}
+                >
+                  {d.line}
+                </span>
+                <span className="flex-1 min-w-0 truncate text-[var(--ink-2)]">→ {d.headsign}</span>
+                <span className="font-mono font-bold text-[var(--ink)]">{clock(d.time)}</span>
+                {d.time >= 86400 && <span className="text-[10px] text-[var(--ink-3)]">{t('ui.lastService.afterMidnight')}</span>}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <p className="text-[10px] text-[var(--ink-3)]">{t(`ui.lastService.note_${day}`)}</p>
     </section>
   );
 };

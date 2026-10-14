@@ -51,6 +51,8 @@ export type Leg =
       end: number;
       stops: number;
       coords: [number, number][];
+      /** partenza della corsa dal capolinea (s dalla mezzanotte): per ritrovare il mezzo nel feed GPS */
+      tripDeparture: number;
     };
 
 export interface Itinerary extends WetSummary {
@@ -88,7 +90,7 @@ export interface PlanResult {
 /** Fermate della mappa (navigazione e ferry) servite da ogni profilo, in ordine, con l'indice della fermata nel profilo. */
 const profileStopsCache = new WeakMap<SimModel, Map<SimProfile, { stop: number; k: number }[]>>();
 
-function profileStops(sim: SimModel, stops: StopItem[]): Map<SimProfile, { stop: number; k: number }[]> {
+export function profileStops(sim: SimModel, stops: StopItem[]): Map<SimProfile, { stop: number; k: number }[]> {
   let cached = profileStopsCache.get(sim);
   if (cached) return cached;
   cached = new Map();
@@ -308,6 +310,7 @@ function buildItinerary(q: Search, rounds: Label[][], best: { round: number; sto
       start,
       end: ride.departure + ride.profile.T[kAlight],
       stops: ride.stops,
+      tripDeparture: ride.departure,
       coords: rideCoords(ride.profile, ride.profile.Dd[kBoard], ride.profile.Dd[kAlight]),
     });
   }

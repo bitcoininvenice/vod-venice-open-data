@@ -46,6 +46,8 @@ import { SPORT_FILTERS, type SportFilter } from '@/lib/sports';
 import { FOUNTAIN_FILTERS, type FountainFilter } from '@/lib/fountainFilter';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 import { UnplacedOrdinances } from '@/components/OrdinanceList';
+import { LAST_SERVICE_COLORS, type LastServiceBand } from '@/lib/lastDepartures';
+import { SPEED_VERDICT_COLORS, type SpeedVerdict } from '@/lib/scheduleSpeed';
 
 interface LayerPanelProps {
   layers: LayerVisibility;
@@ -192,6 +194,12 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           </div>
         )}
         {entry.key === 'showOrdinances' && on && <UnplacedOrdinances ordinances={unplacedOrdinances} />}
+        {entry.key === 'showLastService' && on && (
+          <Legend items={(Object.keys(LAST_SERVICE_COLORS) as LastServiceBand[]).map((b) => [LAST_SERVICE_COLORS[b], t(`ui.lastService.band_${b}`)])} />
+        )}
+        {entry.key === 'showScheduleSpeed' && on && (
+          <Legend items={(['tooFast', 'tight', 'ok', 'partial'] as SpeedVerdict[]).map((v) => [SPEED_VERDICT_COLORS[v](true), t(`ui.scheduleSpeed.short_${v}`)])} />
+        )}
         {entry.key === 'showCityAssets' && on && onFountainFilterChange && (
           <div className="flex flex-wrap gap-1 px-2 pb-1" role="group" aria-label={t('ui.layerPanel.fountainFilter')}>
             {FOUNTAIN_FILTERS.map((f) => (
@@ -502,3 +510,15 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
     </aside>
   );
 };
+
+/** Legenda dei colori di un livello, sotto la sua voce nel pannello. */
+const Legend: React.FC<{ items: [color: string, label: string][] }> = ({ items }) => (
+  <div className="flex flex-wrap gap-x-3 gap-y-1 px-2.5 pb-1 text-[10px] text-[var(--ink-2)]">
+    {items.map(([color, label]) => (
+      <span key={label} className="inline-flex items-center gap-1">
+        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: color }} aria-hidden />
+        {label}
+      </span>
+    ))}
+  </div>
+);

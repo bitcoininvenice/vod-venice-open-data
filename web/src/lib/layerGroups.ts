@@ -119,6 +119,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
           e('showVehicles', 'layers.layerVaporetti', 'navigation', 'cyan'),
           e('showRoutes', 'layers.layerRoutes', 'circleDot', 'cyan'),
           e('showStops', 'layers.layerStops', 'anchor', 'cyan'),
+          e('showLastService', 'ui.layerPanel.lastService', 'bell', 'orange'),
           e('showAlilaguna', 'layers.layerAlilaguna', 'waves', 'blue'),
         ],
       },
@@ -127,6 +128,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
         layers: [
           e('showCanals', 'ui.layerPanel.canals', 'waves', 'sky'),
           e('showCanalLimits', 'layers.layerCanalLimits', 'gauge', 'amber'),
+          e('showScheduleSpeed', 'ui.layerPanel.scheduleSpeed', 'gauge', 'red'),
           e('showBridges', 'layers.layerBridgeClearance', 'navigation', 'cyan'),
           e('showGondolas', 'layers.layerGondolas', 'waves', 'purple'),
           e('showDocks', 'layers.layerPublicDocks', 'anchor', 'blue'),

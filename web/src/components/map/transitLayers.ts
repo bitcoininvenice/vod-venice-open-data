@@ -6,6 +6,8 @@ import { lineColor, needsDarkOutline } from '@/lib/actvLines';
 import { drawVehicleGlyph, headingFromMotion } from './vehicleGlyphs';
 import type { SimModel, SimProfile } from '@/lib/simulationCore';
 import { clock, tripStops, type TripStop } from '@/lib/tripView';
+import { LAST_SERVICE_COLORS, lastServiceBand } from '@/lib/lastDepartures';
+import { SPEED_VERDICT_COLORS } from '@/lib/scheduleSpeed';
 
 /** Linea e categoria di ogni forma (dalla prima corsa che la usa), calcolate una volta per modello. */
 const shapeRoutes = new WeakMap<SimModel, Map<object, { n: string; cat: string }>>();
@@ -349,5 +351,56 @@ export function drawItinerary(rc: RenderContext): void {
     ctx.fillStyle = '#ffffff';
     ctx.fillText(label, px, py + 3.5);
   }
+  ctx.restore();
+}
+
+/** Ultima corsa: ogni fermata colorata per l'ora dell'ultima partenza del giorno (dall'orario ACTV). */
+export function drawLastService(rc: RenderContext): void {
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showLastService, lastService } = rc;
+  if (!showLastService || lastService.length === 0) return;
+  for (const p of lastService) {
+    const px = sx(mx(p.stop.lon));
+    const py = sy(my(p.stop.lat));
+    if (px < -30 || px > cw + 30 || py < -30 || py > ch + 30) continue;
+    ctx.beginPath();
+    ctx.arc(px, py, 6, 0, Math.PI * 2);
+    ctx.fillStyle = LAST_SERVICE_COLORS[lastServiceBand(p.last.time)];
+    ctx.fill();
+    ctx.strokeStyle = isDark ? '#ffffff' : '#1c1917';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    if (camera.s > 0.035) {
+      ctx.font = '600 9px "DM Mono", monospace';
+      ctx.fillStyle = isDark ? '#fde68a' : '#7c2d12';
+      ctx.textAlign = 'start';
+      ctx.fillText(clock(p.last.time), px + 9, py + 3);
+    }
+  }
+}
+
+/** Velocità da orario: tratti delle linee colorati per il confronto tra tempo programmato e minimo legale. */
+export function drawScheduleSpeed(rc: RenderContext): void {
+  const { ctx, isDark, sx, sy, mx, my, camera, showScheduleSpeed, scheduleSpeed } = rc;
+  if (!showScheduleSpeed || scheduleSpeed.length === 0) return;
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  // prima i tratti non valutabili, poi quelli con margine, sopra quelli critici
+  const order: Record<string, number> = { partial: 0, ok: 1, tight: 2, tooFast: 3 };
+  const list = [...scheduleSpeed].sort((a, b) => order[a.verdict] - order[b.verdict]);
+  for (const s of list) {
+    ctx.strokeStyle = SPEED_VERDICT_COLORS[s.verdict](isDark);
+    ctx.lineWidth = (s.verdict === 'tooFast' ? 5 : s.verdict === 'tight' ? 4 : 2.5) * (camera.s > 0.04 ? 1.3 : 1);
+    ctx.setLineDash(s.verdict === 'partial' ? [4, 4] : []);
+    ctx.beginPath();
+    s.path.forEach(([lon, lat], i) => {
+      const x = sx(mx(lon));
+      const y = sy(my(lat));
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
   ctx.restore();
 }

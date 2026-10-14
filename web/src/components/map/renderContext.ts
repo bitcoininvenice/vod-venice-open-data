@@ -8,6 +8,7 @@ import type { SelectedTrip } from '@/lib/tripView';
 import type { Itinerary } from '@/lib/tripPlanner';
 import type { DynamicTideState } from '@/lib/tideCurve';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
+import type { LastServicePoint } from '@/lib/lastDepartures';
 
 export interface HighlightTrip extends SelectedTrip {
   color: string;
@@ -30,6 +31,8 @@ export interface RenderContext
   tide: DynamicTideState;
   /** canali (id OSM) con ordinanze temporanee di traffico acqueo in vigore o in arrivo */
   canalOrdinances: Map<number, OrdinanceItem[]>;
+  /** fermate con l'ultima partenza del giorno (livello "Ultima corsa") */
+  lastService: LastServicePoint[];
   sportFilter: SportFilter;
   /** itinerario del planner */
   itinerary: Itinerary | null;
