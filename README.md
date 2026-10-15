@@ -173,7 +173,7 @@ mostrati solo nella mappa e non ridistribuiti. L'elenco completo con licenze e s
 
 ### Licenza
 
-- **Codice**: [GNU AGPL-3.0](LICENSE), © i contributori di Venice Open Data. Chiunque può usarlo, studiarlo,
+- **Codice**: [GNU AGPL-3.0](LICENSE), © bitcoininvenice e i contributori di Venice Open Data. Chiunque può usarlo, studiarlo,
   modificarlo e ridistribuirlo gratuitamente; chi pubblica una versione modificata, anche solo come sito web,
   deve rendere disponibile il suo codice con la stessa licenza. Così VOD e ogni sua derivazione restano aperti.
   Chi pubblica una copia imposta `NEXT_PUBLIC_SOURCE_URL` sul proprio repository: il link «Codice» in fondo alla
@@ -184,6 +184,11 @@ mostrati solo nella mappa e non ridistribuiti. L'elenco completo con licenze e s
   `/sources` (per esempio ODbL per OpenStreetMap, CC BY-SA 3.0 per i dati CPSM ridistribuiti).
 - **Nessuna garanzia**: VOD è fornito «così com'è» (articoli 15 e 16 della AGPL-3.0). Dati e percorsi sono
   indicativi: non usarli per la navigazione né in emergenza, dove valgono le fonti ufficiali e il 112.
+
+### Crediti
+
+Ideato e sviluppato da **bitcoininvenice**, scrivendo il codice con [Claude Code](https://claude.com/claude-code)
+(Anthropic). Grazie a chi pubblica i dati aperti usati da VOD e a chi contribuisce.
 
 ---
 
@@ -285,7 +290,7 @@ and never redistributed. Full list with licences and status on `/sources`.
 
 ### Licence
 
-- **Code**: [GNU AGPL-3.0](LICENSE), © Venice Open Data contributors. Anyone may use, study, modify and
+- **Code**: [GNU AGPL-3.0](LICENSE), © bitcoininvenice and Venice Open Data contributors. Anyone may use, study, modify and
   redistribute it for free; whoever publishes a modified version, even only as a website, must make its source
   available under the same licence, so VOD and every derivative stay open. Forks set `NEXT_PUBLIC_SOURCE_URL` to
   their own repository: the "Code" link at the bottom of the map and pages points there.
@@ -295,3 +300,8 @@ and never redistributed. Full list with licences and status on `/sources`.
   (e.g. ODbL for OpenStreetMap, CC BY-SA 3.0 for redistributed CPSM data).
 - **No warranty**: VOD is provided "as is" (sections 15 and 16 of the AGPL-3.0). Data and routes are indicative:
   do not use them for navigation or in emergencies, where official sources and 112 apply.
+
+### Credits
+
+Created and developed by **bitcoininvenice**, writing the code with [Claude Code](https://claude.com/claude-code)
+(Anthropic). Thanks to everyone who publishes the open data VOD uses and to every contributor.
