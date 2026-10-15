@@ -855,3 +855,23 @@ def test_regole_del_testo_unico_ben_formate():
             assert r["paths"] and all(len(seg) >= 2 for seg in r["paths"])
         if "hours" in r:
             assert 0 <= r["hours"][0] < r["hours"][1] <= 1440
+
+
+# --- Guida per chi contribuisce ---
+
+def test_guida_aggiungere_fonte_cita_solo_file_esistenti():
+    """I percorsi citati nella guida e nei modelli di GitHub esistono: la guida non invecchia senza che ce ne accorgiamo."""
+    import re
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    docs = ["docs/AGGIUNGERE-UNA-FONTE.md", "CONTRIBUTING.md", ".github/PULL_REQUEST_TEMPLATE.md"]
+    found = 0
+    for doc in docs:
+        text = open(os.path.join(root, doc), encoding="utf-8").read()
+        for path in re.findall(r"`((?:web|pipeline|docs|skills|\.github)/[^`\s<>*]+)`", text):
+            if "<" in path or "*" in path:
+                continue
+            found += 1
+            assert os.path.exists(os.path.join(root, path)), f"{doc}: {path} non esiste"
+    assert found >= 20
+    for tpl in ["proponi-una-fonte.yml", "segnala-un-errore.yml", "config.yml"]:
+        assert os.path.exists(os.path.join(root, ".github", "ISSUE_TEMPLATE", tpl))

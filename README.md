@@ -278,6 +278,13 @@ Le API sono pubbliche e in sola lettura, con cache server per ogni fonte e un li
 
 ---
 
+## 🤝 Contribuire
+
+Proposte di fonti, segnalazioni e pull request sono benvenute: [CONTRIBUTING.md](CONTRIBUTING.md).
+Per aggiungere una fonte o un livello (file aperto con pipeline, API in tempo reale, orario GTFS, elenco curato)
+c'è la guida passo passo [docs/AGGIUNGERE-UNA-FONTE.md](docs/AGGIUNGERE-UNA-FONTE.md); chi non programma può
+usare il modulo «Proponi una fonte» negli issue. Problemi di sicurezza: [SECURITY.md](SECURITY.md).
+
 ## 📄 Fonti, licenze e crediti
 * **ACTV S.p.A. / AVM**: GTFS Navigazione e Automobilistico (Open Data, CC BY – citazione obbligatoria). Il feed GTFS-RT è pubblico ma la licenza d'uso va confermata con AVM.
 * **Comune di Venezia – CPSM**: livelli e previsioni di marea da `dati.venezia.it`.

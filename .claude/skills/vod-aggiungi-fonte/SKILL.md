@@ -5,6 +5,9 @@ description: Procedura completa per aggiungere o aggiornare una fonte di dati in
 
 # Aggiungere una fonte a VOD
 
+La guida pubblica e completa per chi contribuisce è `docs/AGGIUNGERE-UNA-FONTE.md`: tenerla allineata a
+questi passaggi quando cambia la procedura (un test verifica che i percorsi citati esistano).
+
 Regola generale: **fonte, licenza e natura del dato sempre dichiarate** (live, previsione, simulato,
 dataset ufficiale, OpenStreetMap, elenco curato). Mai presentare valori di esempio come misure.
 Completare **tutti** i passaggi nello stesso giro e verificare tutto prima del commit.

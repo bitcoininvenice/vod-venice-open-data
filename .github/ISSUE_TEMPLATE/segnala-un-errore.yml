@@ -1,0 +1,27 @@
+name: Segnala un errore
+description: Un dato sbagliato, un livello che non funziona, un testo da correggere
+title: "Errore: "
+labels: ["errore"]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: Dove
+      description: "Livello, pagina o link (puoi copiare l'indirizzo della mappa, che contiene i livelli accesi)"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: Cosa succede e cosa ti aspettavi
+    validations:
+      required: true
+  - type: input
+    id: proof
+    attributes:
+      label: Fonte ufficiale che smentisce il dato (se è un dato sbagliato)
+  - type: input
+    id: device
+    attributes:
+      label: Dispositivo e browser
+      description: Es. iPhone Safari, PC Chrome

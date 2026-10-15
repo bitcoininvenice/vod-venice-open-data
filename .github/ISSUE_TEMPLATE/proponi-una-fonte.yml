@@ -1,0 +1,55 @@
+name: Proponi una fonte
+description: Suggerisci un dataset o un'API da mostrare su VOD (non serve saper programmare)
+title: "Fonte: "
+labels: ["fonte"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie! VOD integra solo dati di cui si conosce origine e licenza. Più informazioni ci dai, prima possiamo valutarla.
+  - type: input
+    id: url
+    attributes:
+      label: Link ai dati
+      description: Pagina del dataset, file da scaricare o documentazione dell'API
+    validations:
+      required: true
+  - type: input
+    id: owner
+    attributes:
+      label: Chi pubblica i dati
+      description: Ente, azienda o progetto
+    validations:
+      required: true
+  - type: input
+    id: license
+    attributes:
+      label: Licenza
+      description: Nome e link alla pagina dove è scritta (es. CC BY 4.0, ODbL). Se non la trovi, scrivi «non indicata».
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: Cosa mostrare su VOD
+      description: Livello sulla mappa, scheda, metrica… e perché è utile per chi vive o visita Venezia
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Che tipo di dato è
+      options:
+        - Misura in tempo reale
+        - Previsione
+        - Orario (es. GTFS)
+        - Dataset ufficiale aggiornato di rado
+        - OpenStreetMap
+        - Non lo so
+  - type: checkboxes
+    id: personal
+    attributes:
+      label: Dati personali
+      options:
+        - label: Per quanto ne so, i dati non contengono informazioni su persone (nomi, contatti privati, targhe…)
+          required: true
