@@ -47,6 +47,7 @@ import { distAt, getSimulation, pointAt, useSimulation } from '@/lib/simulationM
 import { resolveTrip } from '@/lib/tripView';
 import { romeSecondsOfDay } from '@/lib/time';
 import { PROVIDERS } from '@/lib/provenance/providers';
+import { SOURCE_CODE_URL } from '@/lib/site';
 
 export interface MapEngineProps {
   /** Livelli accesi */
@@ -1171,6 +1172,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         <a href="/sources" className="hover:text-cyan-400">{tr('ui.mapLabels.allSources')}</a>
         {' · '}
         <a href="/privacy" className="hover:text-cyan-400">{tr('ui.mapLabels.privacy')}</a>
+        {' · '}
+        <a href={SOURCE_CODE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400">{tr('ui.mapLabels.sourceCode')}</a>
       </div>
 
       {/* Floating map hint (desktop only to prevent clutter on mobile) */}

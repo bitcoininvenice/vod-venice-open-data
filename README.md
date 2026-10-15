@@ -171,6 +171,20 @@ Open-Meteo, NOAA, CelesTrak, CAMPO (CC BY 4.0), The Things Network. OpenSky Netw
 mostrati solo nella mappa e non ridistribuiti. L'elenco completo con licenze e stato è in `/sources` e in
 [docs/note-legali-fonti.md](docs/note-legali-fonti.md).
 
+### Licenza
+
+- **Codice**: [GNU AGPL-3.0](LICENSE), © i contributori di Venice Open Data. Chiunque può usarlo, studiarlo,
+  modificarlo e ridistribuirlo gratuitamente; chi pubblica una versione modificata, anche solo come sito web,
+  deve rendere disponibile il suo codice con la stessa licenza. Così VOD e ogni sua derivazione restano aperti.
+  Chi pubblica una copia imposta `NEXT_PUBLIC_SOURCE_URL` sul proprio repository: il link «Codice» in fondo alla
+  mappa e alle pagine punta lì.
+- **Dati e testi creati da VOD** (elenchi curati, calcoli, descrizioni): [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.it),
+  citando «Venice Open Data (VOD)».
+- **Dati di terzi**: restano sotto la licenza della loro fonte, indicata in ogni livello, risposta API e in
+  `/sources` (per esempio ODbL per OpenStreetMap, CC BY-SA 3.0 per i dati CPSM ridistribuiti).
+- **Nessuna garanzia**: VOD è fornito «così com'è» (articoli 15 e 16 della AGPL-3.0). Dati e percorsi sono
+  indicativi: non usarli per la navigazione né in emergenza, dove valgono le fonti ufficiali e il 112.
+
 ---
 
 ## English
@@ -268,3 +282,16 @@ redistributed by VOD under CC BY-SA 3.0), ARPAV, ISTAT, AGCOM (CC BY 4.0), MEF-R
 OpenStreetMap contributors and FlixMobility (ODbL), Alilaguna S.p.A., Copernicus and Open-Meteo, NOAA,
 CelesTrak, CAMPO (CC BY 4.0), The Things Network. OpenSky Network and aisstream.io data are shown on the map only
 and never redistributed. Full list with licences and status on `/sources`.
+
+### Licence
+
+- **Code**: [GNU AGPL-3.0](LICENSE), © Venice Open Data contributors. Anyone may use, study, modify and
+  redistribute it for free; whoever publishes a modified version, even only as a website, must make its source
+  available under the same licence, so VOD and every derivative stay open. Forks set `NEXT_PUBLIC_SOURCE_URL` to
+  their own repository: the "Code" link at the bottom of the map and pages points there.
+- **Data and texts created by VOD** (curated lists, calculations, descriptions): [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/),
+  credited to "Venice Open Data (VOD)".
+- **Third-party data** keep the licence of their source, stated in every layer, API response and on `/sources`
+  (e.g. ODbL for OpenStreetMap, CC BY-SA 3.0 for redistributed CPSM data).
+- **No warranty**: VOD is provided "as is" (sections 15 and 16 of the AGPL-3.0). Data and routes are indicative:
+  do not use them for navigation or in emergencies, where official sources and 112 apply.

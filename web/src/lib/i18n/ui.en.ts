@@ -1298,6 +1298,7 @@ export const enUi: UiTranslations = {
     methodologyMissingTitle: "Unavailable sources",
     methodologyMissingBody: "No value is randomly generated. If a live source does not respond, or a figure is not published as open data, the page shows \"n/a\" instead of a fallback value.",
     footer: "Venice Open Data (VOD) · map, analysis and open data for Venice and its lagoon",
+    sourceCode: "Source code (AGPL-3.0)",
     card_tourism_title: "Tourist overnight stays in Venice",
     card_tourism_unit: "nights per year",
     card_tourism_note: "{year}: {arrivals} arrivals, {residents} residents, {ratio} stays per resident (Chamber of Commerce, Region/ISTAT data)"
@@ -1461,6 +1462,7 @@ export const enUi: UiTranslations = {
   },
   mapLabels: {
     privacy: "Privacy",
+    sourceCode: "Code",
     allSources: "Data sources",
     offshorePlatform: "CNR platform",
     crosswind: "RWY 04R crosswind {kt} kt",

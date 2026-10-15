@@ -1296,6 +1296,7 @@ export const itUi = {
     methodologyMissingTitle: "Fonti non disponibili",
     methodologyMissingBody: "Nessun valore è generato casualmente. Se una fonte live non risponde, o se un dato non è pubblicato come open data, la pagina mostra \"n.d.\" invece di un valore di ripiego.",
     footer: "Venice Open Data (VOD) · mappa, analisi e open data per Venezia e la laguna",
+    sourceCode: "Codice sorgente (AGPL-3.0)",
     card_tourism_title: "Presenze turistiche a Venezia",
     card_tourism_unit: "notti nell'anno",
     card_tourism_note: "{year}: {arrivals} arrivi, {residents} residenti, {ratio} presenze per residente (Camera di Commercio, dati Regione/ISTAT)"
@@ -1459,6 +1460,7 @@ export const itUi = {
   },
   mapLabels: {
     privacy: "Privacy",
+    sourceCode: "Codice",
     allSources: "Fonti dei dati",
     offshorePlatform: "Piattaforma CNR",
     crosswind: "Pista 04R: vento al traverso {kt} kt",

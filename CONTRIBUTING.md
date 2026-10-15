@@ -37,6 +37,6 @@ senza ridistribuirla. La verifica legale finale la fa il manutentore.
 
 ## Licenza dei contributi
 
-Contribuendo accetti che il tuo contributo sia distribuito con la licenza del progetto indicata nel file
-`LICENSE` (codice) e con le licenze dichiarate per i dati. I dati di terzi restano sotto la licenza della loro
-fonte.
+Contribuendo accetti che il tuo contributo sia distribuito con le licenze del progetto: il codice con la
+[GNU AGPL-3.0](LICENSE), i dati e i testi creati per VOD con la CC BY-SA 4.0. Resti titolare di ciò che scrivi
+e lo rilasci a tutti con queste licenze. I dati di terzi restano sotto la licenza della loro fonte.

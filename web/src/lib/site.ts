@@ -13,3 +13,9 @@ export const SITE_URL = (
 ).replace(/\/$/, '');
 
 export const MCP_ENDPOINT = `${SITE_URL}/api/mcp`;
+
+/**
+ * Codice sorgente del sito. La licenza AGPL-3.0 chiede che chi offre il programma in rete ne indichi il codice:
+ * chi pubblica una versione modificata imposta qui (o in NEXT_PUBLIC_SOURCE_URL) il proprio repository.
+ */
+export const SOURCE_CODE_URL = process.env.NEXT_PUBLIC_SOURCE_URL || 'https://github.com/bitcoininvenice/vod-venice-open-data';

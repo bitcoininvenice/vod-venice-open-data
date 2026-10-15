@@ -6,6 +6,7 @@ import { Activity, ArrowLeft, BarChart3, Bot, Globe, Layers, Sparkles } from 'lu
 import { ALL_LAYER_KEYS } from '@/lib/urlLayers';
 import { useTranslation } from '@/lib/i18n';
 import Image from 'next/image';
+import { SOURCE_CODE_URL } from '@/lib/site';
 
 /** Numero di layer della mappa: unica fonte per intestazioni, piè di pagina e pagina 404. */
 export const LAYER_COUNT = ALL_LAYER_KEYS.length;
@@ -106,6 +107,9 @@ export function SiteFooter() {
           <Link href="/privacy" className="hover:text-cyan-400 transition-colors">
             {t('ui.privacyPage.navLabel')}
           </Link>
+          <a href={SOURCE_CODE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400 transition-colors">
+            {t('ui.metricsPage.sourceCode')}
+          </a>
         </div>
       </div>
     </footer>
