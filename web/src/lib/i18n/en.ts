@@ -59,6 +59,8 @@ export const enTranslations: Translations = {
     menu: 'Menu',
     menuTitle: 'Tools and options menu',
     guideHint: 'Tutorial: layers, scenarios and info cards',
+    searchHint: "Stops, addresses, house numbers, services",
+    plannerHint: "Route with all public transport",
     metricsHint: 'KPI dashboard and forecasts',
     sources: 'Source status',
     sourcesHint: 'Data availability and freshness',

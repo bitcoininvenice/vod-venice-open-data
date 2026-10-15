@@ -24,7 +24,7 @@ import type { SearchResultItem } from '@/components/GlobalSearchModal';
 import { Layers } from 'lucide-react';
 import { getFloodedGroundPercentage } from '@/lib/flood';
 import { isPlacedOrdinance } from '@/lib/canalOrdinances';
-import { isLocated, type CameraViewPreset, type PaletteTheme, type DayType, type TransportModeCategory, type StopItem, type CantiereItem, type SatelliteItem, type VeniceCameraItem } from '@/lib/types';
+import { type CameraViewPreset, type PaletteTheme, type DayType, type TransportModeCategory, type StopItem, type CantiereItem, type SatelliteItem, type VeniceCameraItem } from '@/lib/types';
 import { NOTTE, CARTA, getDynamicPalette, isDaylightTheme } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { useTranslation } from '@/lib/i18n';
@@ -151,7 +151,6 @@ export default function HomePage() {
     [layers, isSearchOpen, isExportModalOpen, isAlilagunaModalOpen, isAirportModalOpen, isTideModalOpen, simulatedTideLevel, tideReachesPasserelle, isPlannerOpen]
   );
   const data = useCityData(needs);
-  const locatedCantieri = useMemo(() => data.cantieri.filter(isLocated), [data.cantieri]);
 
   // Global Keyboard Shortcut: Cmd+K / Ctrl+K for Global Search
   useEffect(() => {
@@ -608,7 +607,6 @@ export default function HomePage() {
         }}
         palette={paletteTheme}
         onSelectPalette={handleSelectPalette}
-        onOpenSpatialModal={() => setIsSpatialModalOpen(true)}
         onOpenLayers={() => {
           setIsLayerPanelOpenMobile(true);
           setIsDesktopLayerPanelOpen(true);
@@ -621,7 +619,6 @@ export default function HomePage() {
           setIsTideModalOpen(true);
         }}
         onOpenExportModal={() => setIsExportModalOpen(true)}
-        activeCantieriCount={locatedCantieri.length}
         tideLevel={data.tideLevel ?? (data.tideInfo?.forecast ? currentDynamicTide.lagoonTideCm : null)}
         tideObservedAt={data.tideInfo.observedAt}
         tideTrend={data.tideInfo.trend}
@@ -718,6 +715,10 @@ export default function HomePage() {
               unplacedActvNotices={unplacedActvNotices}
               bufferRadiusMeters={bufferRadiusMeters}
               onBufferRadiusChange={setBufferRadiusMeters}
+              onOpenSpatialAnalysis={() => {
+                setIsLayerPanelOpenMobile(false);
+                setIsSpatialModalOpen(true);
+              }}
               selectedCategory={selectedCategory}
               onSelectCategory={setSelectedCategory}
               categoryCounts={categoryCounts}
@@ -765,6 +766,10 @@ export default function HomePage() {
                 unplacedActvNotices={unplacedActvNotices}
                 bufferRadiusMeters={bufferRadiusMeters}
                 onBufferRadiusChange={setBufferRadiusMeters}
+              onOpenSpatialAnalysis={() => {
+                setIsLayerPanelOpenMobile(false);
+                setIsSpatialModalOpen(true);
+              }}
                 selectedCategory={selectedCategory}
                 onSelectCategory={setSelectedCategory}
                 categoryCounts={categoryCounts}

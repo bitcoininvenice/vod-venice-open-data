@@ -84,6 +84,7 @@ export const enUi: UiTranslations = {
     switchTarget: "IT"
   },
   layerPanel: {
+    openSpatialAnalysis: "ACTV stops near the works",
     motoscafo: "Motorboat",
     motonave: "Motorship",
     busTerraferma: "Mainland Bus",

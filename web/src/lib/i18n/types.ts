@@ -60,6 +60,8 @@ export interface Translations {
     menu: string;
     menuTitle: string;
     guideHint: string;
+    searchHint: string;
+    plannerHint: string;
     metricsHint: string;
     sources: string;
     sourcesHint: string;

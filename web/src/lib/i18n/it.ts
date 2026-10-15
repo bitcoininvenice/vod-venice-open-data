@@ -59,6 +59,8 @@ export const itTranslations: Translations = {
     menu: 'Menu',
     menuTitle: 'Menu strumenti e opzioni',
     guideHint: 'Tutorial: livelli, scenari e schede',
+    searchHint: "Fermate, indirizzi, civici, servizi",
+    plannerHint: "Percorso con tutti i mezzi",
     metricsHint: 'Cruscotto KPI e previsioni',
     sources: 'Stato fonti',
     sourcesHint: 'Disponibilità e freschezza dei dati',

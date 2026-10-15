@@ -70,6 +70,8 @@ interface LayerPanelProps {
   onFountainFilterChange?: (f: FountainFilter) => void;
   bufferRadiusMeters: number;
   onBufferRadiusChange: (radius: number) => void;
+  /** apre l'analisi «fermate vicine ai cantieri» (dal livello Buffer spaziale cantieri) */
+  onOpenSpatialAnalysis?: () => void;
   selectedCategory: TransportModeCategory | 'all';
   onSelectCategory: (cat: TransportModeCategory | 'all') => void;
   categoryCounts: Record<string, number>;
@@ -110,6 +112,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   onFountainFilterChange,
   bufferRadiusMeters,
   onBufferRadiusChange,
+  onOpenSpatialAnalysis,
   selectedCategory,
   onSelectCategory,
   categoryCounts,
@@ -236,6 +239,16 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               aria-label={t('ui.layerPanel.raggioImpatto')}
               className="w-full h-1.5"
             />
+            {onOpenSpatialAnalysis && (
+              <button
+                type="button"
+                onClick={onOpenSpatialAnalysis}
+                data-testid="open-spatial-analysis"
+                className="self-start mt-1 px-2 py-1 rounded-lg text-[11px] border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 cursor-pointer"
+              >
+                {t('ui.layerPanel.openSpatialAnalysis')}
+              </button>
+            )}
           </div>
         )}
       </React.Fragment>

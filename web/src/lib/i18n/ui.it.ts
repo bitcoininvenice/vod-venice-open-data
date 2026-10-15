@@ -82,6 +82,7 @@ export const itUi = {
     switchTarget: "EN"
   },
   layerPanel: {
+    openSpatialAnalysis: "Fermate ACTV vicine ai cantieri",
     motoscafo: "Motoscafo",
     motonave: "Motonave",
     busTerraferma: "Bus Terraferma",

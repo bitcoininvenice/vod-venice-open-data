@@ -102,6 +102,35 @@ test('il menu porta all\'elenco dei livelli', async ({ page, isMobile }) => {
   await expect(page).toHaveURL(/\/layers$/);
 });
 
+test('menu uguale su desktop e mobile; su mobile in più ricerca, come arrivare e tema', async ({ page, isMobile }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: isMobile ? /altre azioni/i : /menu strumenti/i }).click();
+  const menu = page.getByRole('menu');
+  const labels = await menu.locator('[role="menuitem"] .font-semibold').allTextContents();
+  // voci comuni, nello stesso ordine
+  const common = ['Funzionalità', 'Metriche', 'Fonti', 'Collega la tua AI', 'Esportazione dati', 'Lingua'];
+  let last = -1;
+  for (const c of common) {
+    const i = labels.findIndex((l) => l.toLowerCase().includes(c.toLowerCase()));
+    expect(i, c).toBeGreaterThan(last);
+    last = i;
+  }
+  // l'analisi dei cantieri non è più nel menu: si apre dal suo livello
+  expect(labels.some((l) => /incrocio|cantieri/i.test(l))).toBe(false);
+  const extras = [labels.some((l) => /ricerca/i.test(l)), labels.some((l) => /come arrivare/i.test(l)), (await menu.getByRole('menuitemradio').count()) === 3];
+  expect(extras).toEqual(isMobile ? [true, true, true] : [false, false, false]);
+});
+
+test('l\'analisi «fermate vicine ai cantieri» si apre dal livello Buffer spaziale cantieri', async ({ page, isMobile }) => {
+  await page.goto('/?layers=buffer_spaziale');
+  await page.locator('canvas').waitFor();
+  if (isMobile) await page.getByRole('button', { name: 'Livelli', exact: true }).click();
+  const panel = page.locator('aside').filter({ visible: true }).first();
+  await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('buffer');
+  await panel.getByTestId('open-spatial-analysis').click();
+  await expect(page.locator('#spatial-modal-title')).toBeVisible();
+});
+
 test('il menu strumenti si usa da tastiera', async ({ page, isMobile }) => {
   test.skip(isMobile, 'solo desktop');
   await page.goto('/');

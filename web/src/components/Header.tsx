@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { CameraViewPreset, PaletteTheme } from '@/lib/types';
-import { Moon, Sun, Sparkles, Layers, BarChart3, HelpCircle, Globe, Waves, MoreHorizontal, Construction, Search, Download, TrendingUp, TrendingDown, Activity, Menu, Bot, Route } from 'lucide-react';
+import { Moon, Sun, Sparkles, Layers, BarChart3, HelpCircle, Globe, Waves, MoreHorizontal, Search, Download, TrendingUp, TrendingDown, Activity, Menu, Bot, Route } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { formatSignedCm, formatLocalStamp } from '@/lib/time';
 import Image from 'next/image';
@@ -13,14 +13,12 @@ interface HeaderProps {
   onSelectView: (view: CameraViewPreset) => void;
   palette: PaletteTheme;
   onSelectPalette: (palette: PaletteTheme) => void;
-  onOpenSpatialModal: () => void;
   onOpenLayers?: () => void;
   onOpenTutorial?: () => void;
   onOpenSearch?: () => void;
   onOpenTripPlanner?: () => void;
   onOpenTideModal?: () => void;
   onOpenExportModal?: () => void;
-  activeCantieriCount: number;
   /** Marea reale a Punta Salute; null se la fonte CPSM non è disponibile */
   tideLevel: number | null;
   tideObservedAt?: string | null;
@@ -32,89 +30,17 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectView,
   palette,
   onSelectPalette,
-  onOpenSpatialModal,
   onOpenLayers,
   onOpenTutorial,
   onOpenSearch,
   onOpenTripPlanner,
   onOpenTideModal,
   onOpenExportModal,
-  activeCantieriCount,
   tideLevel,
   tideObservedAt,
   tideTrend,
 }) => {
-  const { toggleLanguage, t } = useTranslation();
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
-  const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
-  const moreRef = useRef<HTMLDivElement>(null);
-  const desktopMenuRef = useRef<HTMLDivElement>(null);
-
-  // Menu accessibili da tastiera (pattern ARIA "menu button"): all'apertura il focus va sulla
-  // prima voce, frecce/Home/End scorrono le voci, Escape chiude e riporta il focus al pulsante,
-  // Tab chiude. Tap esterno chiude.
-  useEffect(() => {
-    if (!isMoreOpen && !isDesktopMenuOpen) return;
-    const container = (isMoreOpen ? moreRef : desktopMenuRef).current;
-    const items = () =>
-      Array.from(
-        container?.querySelectorAll<HTMLElement>('[role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"]') ?? [],
-      );
-    const trigger = () => container?.querySelector<HTMLElement>('[aria-haspopup="menu"]');
-    const close = () => {
-      setIsMoreOpen(false);
-      setIsDesktopMenuOpen(false);
-    };
-
-    const focusTimer = requestAnimationFrame(() => items()[0]?.focus());
-
-    const onPointer = (e: PointerEvent) => {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setIsMoreOpen(false);
-      if (desktopMenuRef.current && !desktopMenuRef.current.contains(e.target as Node)) setIsDesktopMenuOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      const list = items();
-      const idx = list.indexOf(document.activeElement as HTMLElement);
-      const move = (i: number) => {
-        e.preventDefault();
-        list[(i + list.length) % list.length]?.focus();
-      };
-      switch (e.key) {
-        case 'Escape':
-          close();
-          trigger()?.focus();
-          break;
-        case 'Tab':
-          close();
-          break;
-        case 'ArrowDown':
-          move(idx + 1);
-          break;
-        case 'ArrowUp':
-          move(idx <= 0 ? list.length - 1 : idx - 1);
-          break;
-        case 'Home':
-          move(0);
-          break;
-        case 'End':
-          move(list.length - 1);
-          break;
-      }
-    };
-    document.addEventListener('pointerdown', onPointer);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      cancelAnimationFrame(focusTimer);
-      document.removeEventListener('pointerdown', onPointer);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [isMoreOpen, isDesktopMenuOpen]);
-
-  const runAndClose = (action: () => void) => {
-    setIsMoreOpen(false);
-    action();
-  };
-
+  const { t } = useTranslation();
   const viewLabels: Record<CameraViewPreset, string> = {
     lagoon: t('header.viewLagoon'),
     venezia: t('header.viewVenice'),
@@ -174,143 +100,16 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-          <div className="relative" ref={moreRef}>
-            <button
-              type="button"
-              onClick={() => setIsMoreOpen((v) => !v)}
-              className={`p-1.5 rounded-lg border cursor-pointer active:scale-95 transition-all ${
-                isMoreOpen ? 'bg-cyan-500 text-white border-cyan-500' : 'bg-[var(--rule)] text-[var(--ink)] border-[var(--rule)]'
-              }`}
-              aria-label={t('ui.header.altreAzioni')}
-              aria-haspopup="menu"
-              aria-expanded={isMoreOpen}
-            >
-              <MoreHorizontal className="w-4 h-4" aria-hidden />
-            </button>
-
-            {isMoreOpen && (
-              <div
-                role="menu"
-                className="absolute right-0 top-full mt-2 w-60 rounded-xl border border-[var(--rule)] bg-[var(--ground)] shadow-2xl p-1.5 flex flex-col gap-0.5 z-50"
-              >
-                {onOpenSearch && (
-                  <MobileMenuItem
-                    icon={<Search className="w-4 h-4 text-cyan-400" />}
-                    label={t('ui.search.title')}
-                    onClick={() => runAndClose(onOpenSearch)}
-                  />
-                )}
-                {onOpenTripPlanner && (
-                  <MobileMenuItem
-                    icon={<Route className="w-4 h-4 text-emerald-400" />}
-                    label={t('ui.planner.title')}
-                    onClick={() => runAndClose(onOpenTripPlanner)}
-                  />
-                )}
-                {onOpenTideModal && (
-                  <MobileMenuItem
-                    icon={<Waves className="w-4 h-4 text-blue-400" />}
-                    label={t('ui.floodModal.title')}
-                    onClick={() => runAndClose(onOpenTideModal)}
-                  />
-                )}
-                {onOpenExportModal && (
-                  <MobileMenuItem
-                    icon={<Download className="w-4 h-4 text-emerald-400" />}
-                    label={t('ui.exportModal.title')}
-                    onClick={() => runAndClose(onOpenExportModal)}
-                  />
-                )}
-                <MobileMenuItem
-                  icon={<Construction className="w-4 h-4 text-amber-400" />}
-                  label={activeCantieriCount > 0 ? `${t('header.spatialIntersection')} (${activeCantieriCount})` : t('header.spatialIntersection')}
-                  onClick={() => runAndClose(onOpenSpatialModal)}
-                />
-                <Link
-                  href="/features"
-                  role="menuitem"
-                  onClick={() => setIsMoreOpen(false)}
-                  className="flex items-center gap-2.5 w-full px-2.5 py-2.5 rounded-lg text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none cursor-pointer"
-                >
-                  <Sparkles className="w-4 h-4 text-cyan-400" />
-                  <span>{t('ui.featuresPage.navLabel')}</span>
-                </Link>
-                <Link
-                  href="/metrics"
-                  role="menuitem"
-                  onClick={() => setIsMoreOpen(false)}
-                  className="flex items-center gap-2.5 w-full px-2.5 py-2.5 rounded-lg text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none cursor-pointer"
-                >
-                  <BarChart3 className="w-4 h-4 text-cyan-400" />
-                  <span>{t('header.metrics')}</span>
-                </Link>
-                <Link
-                  href="/sources"
-                  role="menuitem"
-                  onClick={() => setIsMoreOpen(false)}
-                  className="flex items-center gap-2.5 w-full px-2.5 py-2.5 rounded-lg text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none cursor-pointer"
-                >
-                  <Activity className="w-4 h-4 text-emerald-400" />
-                  <span>{t('header.sources')}</span>
-                </Link>
-                <Link
-                  href="/layers"
-                  role="menuitem"
-                  onClick={() => setIsMoreOpen(false)}
-                  className="flex items-center gap-2.5 w-full px-2.5 py-2.5 rounded-lg text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none cursor-pointer"
-                >
-                  <Layers className="w-4 h-4 text-cyan-400" />
-                  <span>{t('header.layersList')}</span>
-                </Link>
-                <Link
-                  href="/mcp"
-                  role="menuitem"
-                  onClick={() => setIsMoreOpen(false)}
-                  className="flex items-center gap-2.5 w-full px-2.5 py-2.5 rounded-lg text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none cursor-pointer"
-                >
-                  <Bot className="w-4 h-4 text-cyan-400" />
-                  <span>{t('header.connectAi')}</span>
-                </Link>
-                {onOpenTutorial && (
-                  <MobileMenuItem
-                    icon={<HelpCircle className="w-4 h-4 text-amber-400" />}
-                    label={t('header.guide')}
-                    onClick={() => runAndClose(onOpenTutorial)}
-                  />
-                )}
-                <MobileMenuItem
-                  icon={<Globe className="w-4 h-4 text-cyan-400" />}
-                  label={t('ui.header.linguaItalianoEnglish')}
-                  onClick={() => runAndClose(toggleLanguage)}
-                />
-                <div className="border-t border-[var(--rule)] my-1" />
-                <span className="px-2.5 pt-0.5 text-[10px] uppercase font-mono text-[var(--ink-3)]">
-                  {t('ui.header.paletteMappa')}
-                </span>
-                <div className="grid grid-cols-3 gap-1 p-1">
-                  {([
-                    { key: 'notte', icon: <Moon className="w-4 h-4" />, label: t('ui.header.notte'), active: 'bg-cyan-500 text-white' },
-                    { key: 'carta', icon: <Sun className="w-4 h-4" />, label: t('ui.header.carta'), active: 'bg-amber-600 text-white' },
-                    { key: 'dynamic', icon: <Sparkles className="w-4 h-4" />, label: t('ui.header.dinamica'), active: 'bg-purple-600 text-white' },
-                  ] as const).map((p) => (
-                    <button
-                      key={p.key}
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={palette === p.key}
-                      onClick={() => runAndClose(() => onSelectPalette(p.key))}
-                      className={`flex flex-col items-center gap-1 py-2 rounded-lg text-[10px] font-mono cursor-pointer transition-all ${
-                        palette === p.key ? p.active : 'bg-[var(--rule)]/50 text-[var(--ink-2)]'
-                      }`}
-                    >
-                      {p.icon}
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          <HeaderMenu
+            mobile
+            onOpenSearch={onOpenSearch}
+            onOpenTripPlanner={onOpenTripPlanner}
+            onOpenTutorial={onOpenTutorial}
+            onOpenTideModal={onOpenTideModal}
+            onOpenExportModal={onOpenExportModal}
+            palette={palette}
+            onSelectPalette={onSelectPalette}
+          />
         </div>
       </div>
 
@@ -422,201 +221,225 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
-        {/* Desktop Hamburger Dropdown Menu */}
-        <div className="relative" ref={desktopMenuRef}>
-          <button
-            type="button"
-            onClick={() => setIsDesktopMenuOpen((v) => !v)}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-mono font-medium transition-all cursor-pointer active:scale-95 ${
-              isDesktopMenuOpen
-                ? 'bg-cyan-500 text-white border-cyan-500 shadow-md shadow-cyan-500/30'
-                : 'bg-[var(--rule)]/60 hover:bg-[var(--rule)] text-[var(--ink)] border-[var(--rule)]'
-            }`}
-            aria-label={t('header.menuTitle')}
-            aria-haspopup="menu"
-            aria-expanded={isDesktopMenuOpen}
-            title={t('header.menuTitle')}
-          >
-            <Menu className="w-4 h-4 text-cyan-400" />
-            <span className="font-semibold">{t('header.menu')}</span>
-          </button>
-
-          {isDesktopMenuOpen && (
-            <div
-              role="menu"
-              className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-[var(--rule)] bg-[var(--ground)]/95 backdrop-blur-xl shadow-2xl p-1.5 flex flex-col gap-0.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
-            >
-              {/* 1. Guida */}
-              {onOpenTutorial && (
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setIsDesktopMenuOpen(false);
-                    onOpenTutorial();
-                  }}
-                  className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none transition-all cursor-pointer"
-                >
-                  <HelpCircle className="w-4 h-4 text-amber-400 shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="font-semibold">{t('header.guide')}</span>
-                    <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('header.guideHint')}</span>
-                  </div>
-                </button>
-              )}
-
-              {/* Funzionalità di VOD */}
-              <Link
-                href="/features"
-                role="menuitem"
-                onClick={() => setIsDesktopMenuOpen(false)}
-                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none transition-all cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 text-cyan-400 shrink-0" />
-                <div className="flex flex-col">
-                  <span className="font-semibold">{t('ui.featuresPage.navLabel')}</span>
-                  <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('ui.featuresPage.subtitle')}</span>
-                </div>
-              </Link>
-
-              {/* 2. Metriche */}
-              <Link
-                href="/metrics"
-                role="menuitem"
-                onClick={() => setIsDesktopMenuOpen(false)}
-                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none transition-all cursor-pointer"
-              >
-                <BarChart3 className="w-4 h-4 text-cyan-400 shrink-0" />
-                <div className="flex flex-col">
-                  <span className="font-semibold">{t('header.metrics')}</span>
-                  <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('header.metricsHint')}</span>
-                </div>
-              </Link>
-
-              {/* 3. Stato Fonti */}
-              <Link
-                href="/sources"
-                role="menuitem"
-                onClick={() => setIsDesktopMenuOpen(false)}
-                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none transition-all cursor-pointer"
-              >
-                <Activity className="w-4 h-4 text-emerald-400 shrink-0" />
-                <div className="flex flex-col">
-                  <span className="font-semibold">{t('header.sources')}</span>
-                  <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('header.sourcesHint')}</span>
-                </div>
-              </Link>
-
-              {/* 3b. Elenco Livelli */}
-              <Link
-                href="/layers"
-                role="menuitem"
-                onClick={() => setIsDesktopMenuOpen(false)}
-                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none transition-all cursor-pointer"
-              >
-                <Layers className="w-4 h-4 text-cyan-400 shrink-0" />
-                <div className="flex flex-col">
-                  <span className="font-semibold">{t('header.layersList')}</span>
-                  <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('header.layersListHint')}</span>
-                </div>
-              </Link>
-
-              {/* 3c. Collega la tua AI (MCP) */}
-              <Link
-                href="/mcp"
-                role="menuitem"
-                onClick={() => setIsDesktopMenuOpen(false)}
-                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none transition-all cursor-pointer"
-              >
-                <Bot className="w-4 h-4 text-cyan-400 shrink-0" />
-                <div className="flex flex-col">
-                  <span className="font-semibold">{t('header.connectAi')}</span>
-                  <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('header.connectAiHint')}</span>
-                </div>
-              </Link>
-
-              {/* 4. Esportazioni dati */}
-              {onOpenExportModal && (
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setIsDesktopMenuOpen(false);
-                    onOpenExportModal();
-                  }}
-                  className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none transition-all cursor-pointer"
-                >
-                  <Download className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="font-semibold">{t('ui.exportModal.title')}</span>
-                    <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('header.exportHint')}</span>
-                  </div>
-                </button>
-              )}
-
-              {/* 5. Simulatore Maree */}
-              {onOpenTideModal && (
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setIsDesktopMenuOpen(false);
-                    onOpenTideModal();
-                  }}
-                  className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none transition-all cursor-pointer"
-                >
-                  <Waves className="w-4 h-4 text-blue-400 shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="font-semibold">{t('ui.floodModal.title')}</span>
-                    <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('header.floodHint')}</span>
-                  </div>
-                </button>
-              )}
-
-              {/* Divisore */}
-              <div className="border-t border-[var(--rule)] my-1" />
-
-              {/* 6. Lingua */}
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  toggleLanguage();
-                  setIsDesktopMenuOpen(false);
-                }}
-                className="flex items-center justify-between w-full px-3 py-2 rounded-xl text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none transition-all cursor-pointer"
-              >
-                <div className="flex items-center gap-2.5">
-                  <Globe className="w-4 h-4 text-cyan-400 shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="font-semibold">{t('header.language')}</span>
-                    <span className="text-[10px] text-[var(--ink-3)] font-mono">
-                      {t('ui.header.currentLanguage')}
-                    </span>
-                  </div>
-                </div>
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-[var(--rule)] text-cyan-400 border border-[var(--rule)]">
-                  {t('ui.header.switchTarget')}
-                </span>
-              </button>
-            </div>
-          )}
-        </div>
+        <HeaderMenu
+          mobile={false}
+          onOpenTutorial={onOpenTutorial}
+          onOpenTideModal={onOpenTideModal}
+          onOpenExportModal={onOpenExportModal}
+          palette={palette}
+          onSelectPalette={onSelectPalette}
+        />
       </div>
     </header>
   );
 };
 
-function MobileMenuItem({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
+interface MenuEntry {
+  key: string;
+  icon: React.ReactNode;
+  label: string;
+  hint: string;
+  /** link a una pagina oppure azione */
+  href?: string;
+  action?: () => void;
+}
+
+const ENTRY_CLASS =
+  'flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none transition-all cursor-pointer';
+
+/**
+ * Menu dell'header, uguale su desktop e mobile. Su mobile ha in più le azioni che sul desktop stanno già
+ * nell'header (ricerca, come arrivare, tema della mappa). Accessibile da tastiera (pattern ARIA «menu button»):
+ * all'apertura il focus va sulla prima voce, frecce/Home/End scorrono, Escape chiude e torna al pulsante.
+ */
+function HeaderMenu({
+  mobile,
+  onOpenSearch,
+  onOpenTripPlanner,
+  onOpenTutorial,
+  onOpenTideModal,
+  onOpenExportModal,
+  palette,
+  onSelectPalette,
+}: {
+  mobile: boolean;
+  onOpenSearch?: () => void;
+  onOpenTripPlanner?: () => void;
+  onOpenTutorial?: () => void;
+  onOpenTideModal?: () => void;
+  onOpenExportModal?: () => void;
+  palette: PaletteTheme;
+  onSelectPalette: (palette: PaletteTheme) => void;
+}) {
+  const { toggleLanguage, t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const container = ref.current;
+    const items = () => Array.from(container?.querySelectorAll<HTMLElement>('[role="menuitem"], [role="menuitemradio"]') ?? []);
+    const trigger = () => container?.querySelector<HTMLElement>('[aria-haspopup="menu"]');
+    const focusTimer = requestAnimationFrame(() => items()[0]?.focus());
+    const onPointer = (e: PointerEvent) => {
+      if (container && !container.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      const list = items();
+      const idx = list.indexOf(document.activeElement as HTMLElement);
+      const move = (i: number) => {
+        e.preventDefault();
+        list[(i + list.length) % list.length]?.focus();
+      };
+      switch (e.key) {
+        case 'Escape':
+          setOpen(false);
+          trigger()?.focus();
+          break;
+        case 'Tab':
+          setOpen(false);
+          break;
+        case 'ArrowDown':
+          move(idx + 1);
+          break;
+        case 'ArrowUp':
+          move(idx <= 0 ? list.length - 1 : idx - 1);
+          break;
+        case 'Home':
+          move(0);
+          break;
+        case 'End':
+          move(list.length - 1);
+          break;
+      }
+    };
+    document.addEventListener('pointerdown', onPointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      cancelAnimationFrame(focusTimer);
+      document.removeEventListener('pointerdown', onPointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const entries: MenuEntry[] = [
+    // solo su mobile: sul desktop sono pulsanti dell'header
+    ...(mobile && onOpenSearch ? [{ key: 'search', icon: <Search className="w-4 h-4 text-cyan-400 shrink-0" />, label: t('ui.search.title'), hint: t('header.searchHint'), action: onOpenSearch }] : []),
+    ...(mobile && onOpenTripPlanner ? [{ key: 'planner', icon: <Route className="w-4 h-4 text-emerald-400 shrink-0" />, label: t('ui.planner.title'), hint: t('header.plannerHint'), action: onOpenTripPlanner }] : []),
+    ...(onOpenTutorial ? [{ key: 'guide', icon: <HelpCircle className="w-4 h-4 text-amber-400 shrink-0" />, label: t('header.guide'), hint: t('header.guideHint'), action: onOpenTutorial }] : []),
+    { key: 'features', icon: <Sparkles className="w-4 h-4 text-cyan-400 shrink-0" />, label: t('ui.featuresPage.navLabel'), hint: t('ui.featuresPage.subtitle'), href: '/features' },
+    { key: 'metrics', icon: <BarChart3 className="w-4 h-4 text-cyan-400 shrink-0" />, label: t('header.metrics'), hint: t('header.metricsHint'), href: '/metrics' },
+    { key: 'sources', icon: <Activity className="w-4 h-4 text-emerald-400 shrink-0" />, label: t('header.sources'), hint: t('header.sourcesHint'), href: '/sources' },
+    { key: 'layers', icon: <Layers className="w-4 h-4 text-cyan-400 shrink-0" />, label: t('header.layersList'), hint: t('header.layersListHint'), href: '/layers' },
+    { key: 'mcp', icon: <Bot className="w-4 h-4 text-cyan-400 shrink-0" />, label: t('header.connectAi'), hint: t('header.connectAiHint'), href: '/mcp' },
+    ...(onOpenExportModal ? [{ key: 'export', icon: <Download className="w-4 h-4 text-emerald-400 shrink-0" />, label: t('ui.exportModal.title'), hint: t('header.exportHint'), action: onOpenExportModal }] : []),
+    ...(onOpenTideModal ? [{ key: 'tide', icon: <Waves className="w-4 h-4 text-blue-400 shrink-0" />, label: t('ui.floodModal.title'), hint: t('header.floodHint'), action: onOpenTideModal }] : []),
+  ];
+
+  const palettes: { key: PaletteTheme; icon: React.ReactNode; label: string; active: string }[] = [
+    { key: 'notte', icon: <Moon className="w-4 h-4" />, label: t('ui.header.notte'), active: 'bg-cyan-500 text-white' },
+    { key: 'carta', icon: <Sun className="w-4 h-4" />, label: t('ui.header.carta'), active: 'bg-amber-600 text-white' },
+    { key: 'dynamic', icon: <Sparkles className="w-4 h-4" />, label: t('ui.header.dinamica'), active: 'bg-purple-600 text-white' },
+  ];
+
+  const run = (action: () => void) => {
+    setOpen(false);
+    action();
+  };
+
   return (
-    <button
-      type="button"
-      role="menuitem"
-      onClick={onClick}
-      className="flex items-center gap-2.5 w-full px-2.5 py-2.5 rounded-lg text-left text-xs text-[var(--ink)] hover:bg-[var(--rule)] active:bg-[var(--rule)] focus-visible:bg-[var(--rule)] focus-visible:outline-none cursor-pointer"
-    >
-      {icon}
-      <span>{label}</span>
-    </button>
+    <div className="relative" ref={ref} data-testid={mobile ? 'header-menu-mobile' : 'header-menu'}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={
+          mobile
+            ? `p-1.5 rounded-lg border cursor-pointer active:scale-95 transition-all ${open ? 'bg-cyan-500 text-white border-cyan-500' : 'bg-[var(--rule)] text-[var(--ink)] border-[var(--rule)]'}`
+            : `flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-mono font-medium transition-all cursor-pointer active:scale-95 ${
+                open ? 'bg-cyan-500 text-white border-cyan-500 shadow-md shadow-cyan-500/30' : 'bg-[var(--rule)]/60 hover:bg-[var(--rule)] text-[var(--ink)] border-[var(--rule)]'
+              }`
+        }
+        aria-label={mobile ? t('ui.header.altreAzioni') : t('header.menuTitle')}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        title={mobile ? undefined : t('header.menuTitle')}
+      >
+        {mobile ? (
+          <MoreHorizontal className="w-4 h-4" aria-hidden />
+        ) : (
+          <>
+            <Menu className="w-4 h-4 text-cyan-400" />
+            <span className="font-semibold">{t('header.menu')}</span>
+          </>
+        )}
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-full mt-2 w-64 max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-2xl border border-[var(--rule)] bg-[var(--ground)]/95 backdrop-blur-xl shadow-2xl p-1.5 flex flex-col gap-0.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+        >
+          {entries.map((e) => {
+            const body = (
+              <>
+                {e.icon}
+                <div className="flex flex-col">
+                  <span className="font-semibold">{e.label}</span>
+                  <span className="text-[10px] text-[var(--ink-3)] font-mono">{e.hint}</span>
+                </div>
+              </>
+            );
+            return e.href ? (
+              <Link key={e.key} href={e.href} role="menuitem" onClick={() => setOpen(false)} className={ENTRY_CLASS}>
+                {body}
+              </Link>
+            ) : (
+              <button key={e.key} type="button" role="menuitem" onClick={() => run(e.action!)} className={ENTRY_CLASS}>
+                {body}
+              </button>
+            );
+          })}
+
+          <div className="border-t border-[var(--rule)] my-1" />
+
+          {/* Tema della mappa: solo su mobile (sul desktop è nell'header) */}
+          {mobile && (
+            <>
+              <span className="px-3 pt-1 text-[10px] uppercase font-mono text-[var(--ink-3)]">{t('ui.header.paletteMappa')}</span>
+              <div className="flex gap-1 px-2 pb-1">
+                {palettes.map((p) => (
+                  <button
+                    key={p.key}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={palette === p.key}
+                    onClick={() => run(() => onSelectPalette(p.key))}
+                    className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-[10px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 ${
+                      palette === p.key ? p.active : 'bg-[var(--rule)]/60 text-[var(--ink-2)]'
+                    }`}
+                  >
+                    {p.icon}
+                    <span>{p.label}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          <button type="button" role="menuitem" onClick={() => run(toggleLanguage)} className={`${ENTRY_CLASS} justify-between`}>
+            <div className="flex items-center gap-2.5">
+              <Globe className="w-4 h-4 text-cyan-400 shrink-0" />
+              <div className="flex flex-col">
+                <span className="font-semibold">{t('header.language')}</span>
+                <span className="text-[10px] text-[var(--ink-3)] font-mono">{t('ui.header.currentLanguage')}</span>
+              </div>
+            </div>
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-[var(--rule)] text-cyan-400 border border-[var(--rule)]">
+              {t('ui.header.switchTarget')}
+            </span>
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
