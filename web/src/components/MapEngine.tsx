@@ -1168,6 +1168,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         </a>
         {' · '}
         <a href="/sources" className="hover:text-cyan-400">{tr('ui.mapLabels.allSources')}</a>
+        {' · '}
+        <a href="/privacy" className="hover:text-cyan-400">{tr('ui.mapLabels.privacy')}</a>
       </div>
 
       {/* Floating map hint (desktop only to prevent clutter on mobile) */}

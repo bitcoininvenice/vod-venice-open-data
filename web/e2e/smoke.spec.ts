@@ -580,6 +580,17 @@ test('come arrivare con tutti i mezzi: alternative con ACTV e Alilaguna, si sceg
   await expect(panel.getByTestId('planner-result')).toContainText(/\d{2}:\d{2} → \d{2}:\d{2}/);
 });
 
+test('privacy raggiungibile dalla mappa e avvertenza del simulatore di marea', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  await page.goto('/');
+  await expect(page.getByTestId('map-attribution').getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', '/privacy');
+  await page.goto('/?open=tide&marea=130');
+  await expect(page.getByTestId('simulator-disclaimer')).toContainText('non è il bollettino del Centro Maree');
+  await page.goto('/privacy');
+  await expect(page.locator('body')).toContainText('registri di funzionamento e sicurezza');
+  await expect(page.locator('body')).toContainText('server MCP');
+});
+
 test('i link delle risposte della skill aprono il planner già compilato e il simulatore al livello indicato', async ({ page, isMobile }) => {
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   await page.goto('/?open=planner&da=45.44120,12.32150&daNome=Ferrovia&a=45.45470,12.35040&aNome=Murano%20Colonna&ora=10:00');

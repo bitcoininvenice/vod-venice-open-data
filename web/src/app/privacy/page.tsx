@@ -40,7 +40,7 @@ export default function PrivacyPage() {
             </a>
             {p('contactInstagram')}
           </p>
-          <p className="text-xs text-[var(--ink-3)] font-mono">{p('updated', { date: '14/10/2026' })}</p>
+          <p className="text-xs text-[var(--ink-3)] font-mono">{p('updated', { date: '15/10/2026' })}</p>
         </section>
       </main>
       <SiteFooter />

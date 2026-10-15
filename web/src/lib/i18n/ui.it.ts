@@ -506,11 +506,11 @@ export const itUi = {
     title: "Privacy",
     intro: "VOD è un progetto indipendente e non ufficiale che mostra dati aperti su Venezia. Non chiede di registrarsi, non vende dati e raccoglie solo quanto serve per far funzionare il sito e capire quali funzioni vengono usate.",
     noCookiesTitle: "Nessun cookie, nessun account",
-    noCookiesBody: "Il sito non usa cookie, né propri né di terze parti, e non chiede nome, email o altri dati personali. Le ricerche di indirizzi e i percorsi calcolati non vengono salvati.",
+    noCookiesBody: "Il sito non usa cookie, né propri né di terze parti, e non chiede nome, email o altri dati personali. VOD non salva le ricerche di luoghi e indirizzi né i percorsi calcolati: restano solo, per poco tempo, nei registri tecnici del server descritti qui sotto.",
     analyticsTitle: "Statistiche d'uso",
     analyticsBody: "Per sapere quali pagine e quali livelli della mappa vengono usati, VOD usa Vercel Web Analytics, che funziona senza cookie e registra solo dati aggregati: pagine visitate, paese, tipo di browser e di dispositivo, sito di provenienza e quali livelli vengono accesi o aperti. I visitatori non vengono identificati: Vercel distingue le visite con un codice calcolato dalla richiesta che viene scartato entro 24 ore, e l'indirizzo IP non viene conservato nelle statistiche. Il trattamento si basa sul legittimo interesse a migliorare il servizio (art. 6.1.f GDPR).",
     hostingTitle: "Hosting e registri tecnici",
-    hostingBody: "Il sito è ospitato da Vercel Inc. Come ogni server web, i server di Vercel ricevono l'indirizzo IP e i dati tecnici della richiesta (browser, pagina richiesta, orario) e li conservano per un periodo limitato nei registri di funzionamento e sicurezza. Vercel tratta questi dati come fornitore del servizio secondo la propria informativa (vercel.com/legal/privacy-policy), anche fuori dall'Unione europea con le garanzie previste dal GDPR.",
+    hostingBody: "Il sito è ospitato da Vercel Inc. Come ogni server web, i server di Vercel ricevono l'indirizzo IP e i dati tecnici della richiesta (browser, orario, indirizzo della pagina o dell'API richiesta) e li conservano per un periodo limitato nei registri di funzionamento e sicurezza. L'indirizzo richiesto può contenere ciò che hai cercato: per esempio un civico o i luoghi di partenza e arrivo di un percorso, anche quando li chiede un assistente AI tramite il server MCP o la skill. VOD usa questi registri solo per correggere errori, non li incrocia con altri dati e non li usa per statistiche. Vercel tratta questi dati come fornitore del servizio secondo la propria informativa (vercel.com/legal/privacy-policy), anche fuori dall'Unione europea con le garanzie previste dal GDPR.",
     browserTitle: "Preferenze salvate nel browser",
     browserBody: "La lingua, il tema della mappa e il fatto di aver già visto la guida iniziale vengono salvati nella memoria locale del browser (localStorage). Restano sul tuo dispositivo, non vengono inviati a VOD e si possono cancellare dalle impostazioni del browser.",
     sourcesTitle: "Fonti dei dati",
@@ -1000,6 +1000,7 @@ export const itUi = {
     subOcean: "Stazione oceanografica"
   },
   floodModal: {
+    disclaimer: "Simulazione divulgativa di VOD: non è il bollettino del Centro Maree né il sistema di gestione del MOSE. La quota allagata viene dalla tabella ufficiale CPSM, le singole calli e le passerelle sono stime; per decisioni reali valgono le comunicazioni ufficiali e le sirene.",
     tabLagoon: "Laguna e correnti",
     cycleStart: "Avvia simulazione marea",
     cyclePause: "Pausa simulazione",
@@ -1540,6 +1541,7 @@ export const itUi = {
     cardSourcesBody: "Disponibilità ed età del dato di ogni fonte live e dataset."
   },
   mapLabels: {
+    privacy: "Privacy",
     allSources: "Fonti dei dati",
     offshorePlatform: "Piattaforma CNR",
     crosswind: "Pista 04R: vento al traverso {kt} kt",

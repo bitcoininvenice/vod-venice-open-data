@@ -41,6 +41,7 @@ titolare non conferma (bozze in [richieste-autorizzazione.md](richieste-autorizz
 | Rivenditori autorizzati ACTV (mappa Google) | dati vecchi (verifiche 2015–2022) e nomi di titolari di ditte individuali |
 | ViaggiaTreno (treni) | servizio non pubblicato come open data, senza licenza |
 | Anopticon | i termini vietano l'accesso automatico senza autorizzazione |
+| Starlink (file pubblici availability-cells, metrics_*, feed GeoIP) | nessuna licenza dichiarata; i poligoni di disponibilità non dicono lo stato di Venezia (solo eccezioni mondiali), le metriche sono per paese o per regioni con codici Mapbox proprietari, il feed GeoIP elenca punti di rete, non utenti. Valutato il 15/10/2026, non integrato |
 
 ## Planner in barca (mezzo privato)
 
@@ -59,6 +60,9 @@ titolare non conferma (bozze in [richieste-autorizzazione.md](richieste-autorizz
 - Ordinanze: esclusi i titoli che possono riguardare persone (sig./sig.ra, "a carico di", residente, codice fiscale, trattamenti sanitari, minori…).
 - Gateway LoRa: nessun identificativo né nome del proprietario.
 - Mezzi ACTV: si mostra il numero o il nome del mezzo pubblicato nel feed, nessun dato del personale.
+- Registri tecnici di Vercel: contengono l'URL delle richieste, quindi anche i luoghi cercati con planner, indirizzi, civici, skill e MCP; dichiarato in `/privacy` (15/10/2026).
+- Mappa: link «Privacy» sempre visibile accanto all'attribuzione; simulatore di marea con avvertenza «divulgativo, non ufficiale».
+- **Da completare dal titolare:** nome ed email del titolare del trattamento in `/privacy` (art. 13 GDPR); licenza del codice e dei dati prodotti da VOD.
 - Contatto per privacy, rimozioni e correzioni: messaggio diretto all'account Instagram [@veniceopendata](https://www.instagram.com/veniceopendata/), indicato in `/privacy`.
 
 ## Sicurezza

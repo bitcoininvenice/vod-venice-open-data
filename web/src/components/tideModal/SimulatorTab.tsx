@@ -79,6 +79,9 @@ export const SimulatorTab: React.FC<SimulatorTabProps> = ({
 
   return (
     <>
+      <p className="text-[11px] leading-relaxed text-[var(--ink-3)] px-1" data-testid="simulator-disclaimer">
+        {t('ui.floodModal.disclaimer')}
+      </p>
       {/* Livello simulato */}
       <div className="p-4 rounded-xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col gap-4">
         <div className="flex items-center justify-between">

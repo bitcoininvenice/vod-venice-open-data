@@ -508,11 +508,11 @@ export const enUi: UiTranslations = {
     title: "Privacy",
     intro: "VOD is an independent, unofficial project showing open data about Venice. It does not ask you to sign up, does not sell data and collects only what is needed to run the site and understand which features are used.",
     noCookiesTitle: "No cookies, no accounts",
-    noCookiesBody: "The site uses no cookies, first- or third-party, and never asks for your name, email or other personal data. Address searches and computed routes are not stored.",
+    noCookiesBody: "The site uses no cookies, first- or third-party, and never asks for your name, email or other personal data. VOD does not store searches for places and addresses or computed routes: they only remain, for a short time, in the server's technical logs described below.",
     analyticsTitle: "Usage statistics",
     analyticsBody: "To learn which pages and map layers are used, VOD uses Vercel Web Analytics, which works without cookies and records only aggregate data: pages visited, country, browser and device type, referring site and which layers are switched on or opened. Visitors are not identified: Vercel tells visits apart with a code derived from the request that is discarded within 24 hours, and IP addresses are not kept in the statistics. The legal basis is the legitimate interest in improving the service (Art. 6(1)(f) GDPR).",
     hostingTitle: "Hosting and technical logs",
-    hostingBody: "The site is hosted by Vercel Inc. Like any web server, Vercel's servers receive the IP address and technical details of each request (browser, requested page, time) and keep them for a limited period in operational and security logs. Vercel processes this data as a service provider under its own policy (vercel.com/legal/privacy-policy), including outside the European Union with the safeguards required by the GDPR.",
+    hostingBody: "The site is hosted by Vercel Inc. Like any web server, Vercel's servers receive the IP address and technical details of each request (browser, time, address of the requested page or API) and keep them for a limited period in operational and security logs. The requested address may contain what you searched for: for example a house number or the start and end of a route, also when an AI assistant asks for it through the MCP server or the skill. VOD uses these logs only to fix errors, does not combine them with other data and does not use them for statistics. Vercel processes this data as a service provider under its own policy (vercel.com/legal/privacy-policy), including outside the European Union with the safeguards required by the GDPR.",
     browserTitle: "Preferences stored in your browser",
     browserBody: "Your language, the map theme and whether you have already seen the introduction are stored in your browser's local storage. They stay on your device, are not sent to VOD and can be deleted from your browser settings.",
     sourcesTitle: "Data sources",
@@ -1002,6 +1002,7 @@ export const enUi: UiTranslations = {
     subOcean: "Oceanographic station"
   },
   floodModal: {
+    disclaimer: "VOD's educational simulation: it is not the Tide Centre bulletin nor the MOSE operating system. The flooded share comes from the official CPSM table, single streets and walkways are estimates; for real decisions rely on official notices and sirens.",
     tabLagoon: "Lagoon and currents",
     cycleStart: "Start tide simulation",
     cyclePause: "Pause simulation",
@@ -1542,6 +1543,7 @@ export const enUi: UiTranslations = {
     cardSourcesBody: "Availability and data age for every live source and dataset."
   },
   mapLabels: {
+    privacy: "Privacy",
     allSources: "Data sources",
     offshorePlatform: "CNR platform",
     crosswind: "RWY 04R crosswind {kt} kt",
