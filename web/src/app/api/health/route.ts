@@ -5,7 +5,7 @@ import { REFERENCE_STATION_ID, TIDE_FORECAST_URL, TIDE_LEVELS_URL, parseTideFore
 import { LIPZ_METAR_URL, parseLipzMetar } from '@/server/sources/metar';
 import { ACTV_GTFS_RT_FEEDS, parseVehiclePositions } from '@/server/sources/gtfsRt';
 import { CPSM_METEO_URLS, parseCpsmFeed } from '@/server/sources/cpsmMeteo';
-import { OPENSKY_STATES_URL, parseOpenSkyStates } from '@/server/sources/opensky';
+import { openSkyFlights } from '@/server/sources/openskyClient';
 import { getShipsSnapshot } from '@/server/sources/aisstream';
 import { PACKET_BROKER_URL, parseGateways } from '@/server/sources/packetBroker';
 import { CAMPO_API_URL, parseCampo } from '@/server/sources/campo';
@@ -60,7 +60,7 @@ export async function GET() {
     fetchUpstream(ACTV_GTFS_RT_FEEDS.navigazione, (raw) => parseVehiclePositions(raw as ArrayBuffer), { revalidate: 20, responseType: 'arrayBuffer' }),
     fetchUpstream(ACTV_GTFS_RT_FEEDS.automobilistico, (raw) => parseVehiclePositions(raw as ArrayBuffer), { revalidate: 20, responseType: 'arrayBuffer' }),
     fetchUpstream(CPSM_METEO_URLS.vento, parseCpsmFeed, { revalidate: 300 }),
-    fetchUpstream(OPENSKY_STATES_URL, parseOpenSkyStates, { revalidate: 15 }),
+    openSkyFlights(),
     fetchUpstream(openMeteoWindUrl(), parseOpenMeteoWind, { revalidate: 1800, timeoutMs: 8000 }),
     fetchUpstream(airQualityUrl(ARPAV_AIR_STATIONS), parseAirQuality, { revalidate: 1800, timeoutMs: 8000 }),
     fetchUpstream(marineUrl(ACQUA_ALTA.lat, ACQUA_ALTA.lon), parseMarine, { revalidate: 1800, timeoutMs: 8000 }),
@@ -96,7 +96,7 @@ export async function GET() {
       actvRss.ok ? undefined : 'feed degli avvisi ACTV non raggiungibile'),
     assess('comune-ordinanze', 'Ordinanze del Comune di Venezia', 'live', ordinances.ok ? new Date(ordinances.fetchedAt) : null, 120, now,
       ordinances.ok ? undefined : 'elenco delle ordinanze non raggiungibile'),
-    assess('opensky', 'OpenSky Network', 'live', flights.ok ? now : null, 5, now, flights.ok ? undefined : 'quota esaurita o servizio non raggiungibile'),
+    assess('opensky', 'OpenSky Network', 'live', flights.fetchedAt ? new Date(flights.fetchedAt) : null, 5, now, flights.quotaUntil ? `quota giornaliera esaurita, nuovo tentativo dopo ${flights.quotaUntil}` : flights.ok ? undefined : 'servizio non raggiungibile'),
     assess('open-meteo', 'Previsione vento Open-Meteo', 'live', windField.ok ? fromRomeLocal(windField.data.validTime.replace('T', ' ')) : null, 90, now),
     assess('cams-air', 'Previsione aria, pollini e UV Copernicus CAMS', 'live', cams.ok && cams.data[0] ? fromRomeLocal(cams.data[0].air.validTime.replace('T', ' ')) : null, 120, now),
     assess('open-meteo-marine', 'Previsione marina Open-Meteo', 'live', marine.ok ? fromRomeLocal(marine.data.validTime.replace('T', ' ')) : null, 120, now),

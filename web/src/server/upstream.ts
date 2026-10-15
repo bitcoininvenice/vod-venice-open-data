@@ -12,7 +12,7 @@ interface FetchUpstreamOptions {
   headers?: Record<string, string>;
 }
 
-const USER_AGENT = 'VOD-VeniceOpenData/1.0 (+https://venice-open-data.vercel.app)';
+export const USER_AGENT = 'VOD-VeniceOpenData/1.0 (+https://venice-open-data.vercel.app)';
 
 /**
  * Legge una fonte esterna con timeout, cache condivisa e parsing validato.

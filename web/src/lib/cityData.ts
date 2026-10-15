@@ -248,7 +248,8 @@ export const RESOURCES = {
       };
     },
   },
-  flights: { url: '/api/flights', refreshMs: 15_000, pick: (j) => ({ flights: list(j.data) }) },
+  // OpenSky si legge ogni 30 s lato server (quota giornaliera): chiedere più spesso non porta dati nuovi
+  flights: { url: '/api/flights', refreshMs: 30_000, pick: (j) => ({ flights: list(j.data) }) },
   ships: { url: '/api/ships', refreshMs: 60_000, pick: (j) => (j.success ? { ships: list(j.data) } : undefined) },
   realtimeVehicles: { url: '/api/realtime/vehicles', refreshMs: 20_000, pick: (j) => ({ realtimeVehicles: list(j.data) }) },
   windField: { url: '/api/wind-field', refreshMs: 30 * 60_000, pick: (j) => (j.success && j.data ? { windField: j.data as WindField } : undefined) },

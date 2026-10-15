@@ -8,17 +8,17 @@ import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
 import { romeSecondsOfDay } from '@/lib/time';
 import { fetchUpstream } from '@/server/upstream';
 import { REFERENCE_STATION_ID, TIDE_LEVELS_URL, parseTideLevels } from '@/server/sources/tide';
-import { OPENSKY_STATES_URL, parseOpenSkyStates } from '@/server/sources/opensky';
+import { openSkyFlights } from '@/server/sources/openskyClient';
 import { gtfsNetworkStats } from '@/server/sources/gtfsStats';
 import { CPSM_METEO_URLS, parseCpsmFeed, platformReadings } from '@/server/sources/cpsmMeteo';
 
 export const revalidate = 60;
 
 export async function GET() {
-  // Stesse URL e stessa cache di /api/tide e /api/flights: nessuna chiamata upstream aggiuntiva.
+  // Stessa cache di /api/tide e stessa lettura OpenSky di /api/flights (openskyClient): nessuna chiamata in più.
   const [tide, flights, waves, waterTemp] = await Promise.all([
     fetchUpstream(TIDE_LEVELS_URL, parseTideLevels, { revalidate: 60 }),
-    fetchUpstream(OPENSKY_STATES_URL, parseOpenSkyStates, { revalidate: 15 }),
+    openSkyFlights(),
     fetchUpstream(CPSM_METEO_URLS.ondeMare, parseCpsmFeed, { revalidate: 300 }),
     fetchUpstream(CPSM_METEO_URLS.tempAcqua, parseCpsmFeed, { revalidate: 300 }),
   ]);
@@ -33,7 +33,7 @@ export async function GET() {
     alilagunaBoatsNow: getScheduledAlilagunaBoats(Math.floor(romeSecondsOfDay())).length,
     shipsCount: peekShipsCount(),
     tideLevelCm,
-    activeFlightsCount: flights.ok ? flights.data.length : null,
+    activeFlightsCount: flights.ok && !flights.stale ? flights.flights.length : null,
     satellitesCount: SATELLITES_DATA.length,
     passerelleTotalMeters: PASSERELLE_TOTAL_METERS,
     // percorsi previsti dal piano con la marea misurata adesso
