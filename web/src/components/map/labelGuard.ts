@@ -15,7 +15,7 @@ export interface LabelGuardOptions {
   padding: number;
 }
 
-export const DEFAULT_LABEL_GUARD: LabelGuardOptions = { maxLabels: 70, padding: 3 };
+const DEFAULT_LABEL_GUARD: LabelGuardOptions = { maxLabels: 70, padding: 3 };
 
 /** Testi fino a questa lunghezza sono glifi dei simboli, non etichette. */
 const GLYPH_MAX_LENGTH = 3;

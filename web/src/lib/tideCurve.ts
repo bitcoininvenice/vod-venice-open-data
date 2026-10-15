@@ -2,7 +2,7 @@ import type { TideForecast, TideForecastExtreme } from '@/lib/contracts/tide';
 import type { MoseGateItem } from '@/lib/types';
 import { dateAtRomeSeconds, romeLocalToDate } from '@/lib/time';
 
-export type MoseStatus = 'ABBASSATO' | 'IN_SOLLEVAMENTO' | 'ATTIVATO' | 'IN_ABBASSAMENTO';
+type MoseStatus = 'ABBASSATO' | 'IN_SOLLEVAMENTO' | 'ATTIVATO' | 'IN_ABBASSAMENTO';
 
 /** Origine del livello in città: misura CPSM, previsione CPSM, simulatore o nessun dato. */
 export type TideSource = 'measured' | 'forecast' | 'simulated' | 'none';
@@ -13,7 +13,7 @@ export type TideSource = 'measured' | 'forecast' | 'simulated' | 'none';
  * - forecast: chiusura probabile secondo la previsione CPSM (picco >= 110 cm)
  * - simulated: scelto nel simulatore
  */
-export type MoseBasis = 'measured' | 'forecast' | 'simulated' | 'none';
+type MoseBasis = 'measured' | 'forecast' | 'simulated' | 'none';
 
 export interface DynamicTideState {
   /** Livello atteso senza MOSE (previsione CPSM, o misura lato mare). null se non disponibile. */

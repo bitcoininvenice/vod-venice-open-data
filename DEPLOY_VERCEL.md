@@ -1,71 +1,71 @@
-# 🚀 Guida al Deploy su Vercel: VOD (Venice Open Data)
+# Deploy su Vercel / Deploying to Vercel
 
-Il progetto è pronto al 100% per essere deployato su **Vercel** sia tramite la **Dashboard web di Vercel (GitHub/GitLab/Bitbucket)** sia tramite **Vercel CLI**.
-
----
-
-## 🌟 Metodo 1: Deploy tramite Dashboard Web di Vercel (Consigliato)
-
-1. Vai su [vercel.com](https://vercel.com) ed effettua l'accesso.
-2. Clicca su **Add New...** → **Project**.
-3. Importa il repository Git del progetto.
-4. Nella schermata di configurazione **Configure Project**:
-   * **Project Name**: `vod-venice-open-data` (o il nome che preferisci).
-   * **Framework Preset**: Seleziona **Next.js** (verrà rilevato automaticamente).
-   * ⚠️ **Root Directory**: Clicca su **Edit** e seleziona la cartella **`web`**.
-     *(Questo dice a Vercel di eseguire la build e il runtime all'interno dell'applicazione Next.js).*
-   * **Build and Output Settings**: Lascia i valori predefiniti, il file `web/vercel.json` imposterà automaticamente:
-     * **Build Command**: `next build --webpack` (garantisce zero errori Turbopack su Tailwind v4).
-   * **Environment Variables (Facoltative)**:
-     Non sono necessarie variabili d'ambiente obbligatorie. Facoltative: `OPENSKY_CLIENT_ID` e `OPENSKY_CLIENT_SECRET` (quota OpenSky più alta: l'IP condiviso di Vercel esaurisce rapidamente la quota anonima). Se una fonte live non risponde l'interfaccia mostra "n.d." invece di valori sostitutivi.
-     Se disponi di un database cloud (Neon, Supabase, Vercel Postgres) o vuoi integrare PostHog, puoi aggiungere:
-     * `DATABASE_URL`: stringa di connessione PostgreSQL + PostGIS (es. Neon).
-     * `NEXT_PUBLIC_POSTHOG_KEY`: chiave API di PostHog per le metriche utenti.
-     * `NEXT_PUBLIC_POSTHOG_HOST`: es. `https://eu.i.posthog.com`.
-5. Clicca su **Deploy**.
-6. Entro circa 60 secondi il deploy sarà online con certificato SSL e dominio `https://tuo-progetto.vercel.app`.
+[Italiano](#italiano) · [English](#english)
 
 ---
 
-### ⚠️ Risoluzione Errore: `No Output Directory named "public" found`
-Se il progetto è già stato creato su Vercel e vedi questo errore, significa che Vercel sta cercando di compilare la root invece della sottocartella `web/`:
+## Italiano
 
-1. Vai sul tuo progetto su **Vercel** (`vercel.com`).
-2. Clicca sulla scheda **Settings** in alto.
-3. Nella sezione **General**:
-   - Scorri fino a **Root Directory**, clicca su **Edit**, seleziona o digita **`web`** e clicca su **Save**.
-   - Subito sopra, verifica che **Framework Preset** sia impostato su **Next.js**.
-4. Vai nella scheda **Deployments**, clicca sui tre puntini `...` dell'ultimo deployment e seleziona **Redeploy**.
+VOD non usa database: i dataset sono file nel repository e le fonti in tempo reale si leggono dalle route API
+con cache. Basta un progetto Next.js su Vercel.
 
----
+### Dalla dashboard di Vercel
 
-## ⚡ Metodo 2: Deploy tramite Vercel CLI
+1. **Add New… → Project** e importa il repository.
+2. **Root Directory**: `web`. Il framework (Next.js) e il comando di build (`next build --webpack`, da
+   `web/vercel.json`) si impostano da soli.
+3. **Environment Variables**: nessuna è obbligatoria. Quelle facoltative sono descritte in `web/.env.example`:
+   - `NEXT_PUBLIC_SITE_URL`: indirizzo pubblico, per link canonici e sitemap;
+   - `OPENSKY_CLIENT_ID`, `OPENSKY_CLIENT_SECRET`: quota OpenSky più alta (l'IP condiviso di Vercel esaurisce in
+     fretta la quota anonima);
+   - `AISSTREAM_API_KEY` (e `AISSTREAM_LISTEN_MS`): navi in tempo reale nella mappa;
+   - `API_RATE_LIMIT_PER_MINUTE`, `MCP_RATE_LIMIT_PER_MINUTE`: limite di richieste per IP.
+4. **Deploy**. Se una fonte non risponde, l'interfaccia mostra «n.d.» invece di valori sostitutivi.
 
-Se preferisci deployare dal terminale:
+Errore `No Output Directory named "public" found`: Vercel sta compilando la radice del repository. In
+**Settings → General** imposta **Root Directory** a `web` e **Framework Preset** a Next.js, poi **Redeploy**.
+
+### Da terminale
 
 ```bash
-# 1. Accedi alla cartella dell'applicazione web
 cd web
-
-# 2. Esegui il deploy di preview
-npx vercel
-
-# 3. Oppure esegui direttamente il deploy di produzione
-npx vercel --prod
+npx vercel          # anteprima
+npx vercel --prod   # produzione
 ```
+
+### File di configurazione
+
+- `web/vercel.json`: framework e comando di build quando la Root Directory è `web`.
+- `vercel.json` nella radice: stessa build se il progetto punta alla radice del repository.
+- `.vercelignore` e `web/.vercelignore`: escludono pipeline, skill, documentazione e file temporanei dal
+  caricamento.
 
 ---
 
-## 🛠️ Cosa è stato configurato per Vercel:
+## English
 
-1. **`web/vercel.json`**:
-   Configura esplicitamente `"buildCommand": "next build --webpack"` e framework `"nextjs"`, evitando il panic di Turbopack con PostCSS/Tailwind v4 e garantendo una compilazione pulita in meno di 7 secondi.
+VOD has no database: datasets are files in the repository and live sources are read by cached API routes. A
+plain Next.js project on Vercel is enough.
 
-2. **Root `package.json`**:
-   Configura gli script delegati (`npm run build --workspace=web`) in modo che `npm run build` funzioni sia dalla root che dalla cartella `web/`.
+### From the Vercel dashboard
 
-3. **`web/.vercelignore` e `.vercelignore`**:
-   Ignorano file temporanei, directory locali del database Docker (`db/`), pipeline Python (`pipeline/`), evitando upload inutili su Vercel.
+1. **Add New… → Project** and import the repository.
+2. **Root Directory**: `web`. Framework (Next.js) and build command (`next build --webpack`, from
+   `web/vercel.json`) are set automatically.
+3. **Environment Variables**: none required. Optional ones are described in `web/.env.example`:
+   `NEXT_PUBLIC_SITE_URL` (public URL for canonical links and sitemap), `OPENSKY_CLIENT_ID` and
+   `OPENSKY_CLIENT_SECRET` (higher OpenSky quota; Vercel's shared IP quickly uses up the anonymous one),
+   `AISSTREAM_API_KEY` and `AISSTREAM_LISTEN_MS` (live ships on the map), `API_RATE_LIMIT_PER_MINUTE` and
+   `MCP_RATE_LIMIT_PER_MINUTE` (per-IP request limits).
+4. **Deploy**. When a source does not answer, the interface shows "n/a" instead of made-up values.
 
-4. **`web/.env.example`**:
-   Fornisce la documentazione immediata di tutte le variabili d'ambiente opzionali (PostGIS, PostHog, URL di produzione).
+Error `No Output Directory named "public" found`: Vercel is building the repository root. In
+**Settings → General** set **Root Directory** to `web` and **Framework Preset** to Next.js, then **Redeploy**.
+
+### From the terminal
+
+```bash
+cd web
+npx vercel          # preview
+npx vercel --prod   # production
+```

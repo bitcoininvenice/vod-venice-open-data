@@ -29,7 +29,7 @@ import { formatTimeParts, getSolarPhase } from '@/lib/solar';
 import { useTranslation } from '@/lib/i18n';
 import { WIND_COLOR_STOPS } from '@/components/map/windLayer';
 
-export interface TideSimulatorProps {
+interface TideSimulatorProps {
   level: number;
   formattedCm: string;
   floodedPercentText: string;

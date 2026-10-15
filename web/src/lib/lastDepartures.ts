@@ -56,7 +56,7 @@ export function lastDeparturesByStop(sim: SimModel, stops: StopItem[], day: DayT
 const cache = new WeakMap<SimModel, Map<string, Map<number, LastDeparture[]>>>();
 
 /** Ultime partenze per le fermate della mappa (ACTV_STOPS_REFERENCE), calcolate una volta per orario e giorno. */
-export function lastDepartures(sim: SimModel, day: DayType, nextDay?: DayType): Map<number, LastDeparture[]> {
+function lastDepartures(sim: SimModel, day: DayType, nextDay?: DayType): Map<number, LastDeparture[]> {
   const byDay = cache.get(sim) ?? new Map<string, Map<number, LastDeparture[]>>();
   const key = `${day}|${nextDay ?? ''}`;
   let m = byDay.get(key);

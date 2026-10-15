@@ -16,7 +16,7 @@ export function delayStatus(seconds: number): DelayStatus {
 }
 
 /** Oltre questa età un ritardo non viene mostrato: non si spaccia per attuale un dato scaduto. */
-export const MAX_DELAY_AGE_SECONDS = 120;
+const MAX_DELAY_AGE_SECONDS = 120;
 
 export function isFresh(updatedAt: number | null, nowSec: number = Date.now() / 1000): boolean {
   return updatedAt !== null && nowSec - updatedAt <= MAX_DELAY_AGE_SECONDS;

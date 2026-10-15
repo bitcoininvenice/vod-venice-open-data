@@ -17,7 +17,7 @@ import { romeLocalToDate } from '@/lib/time';
 /** Natura del risultato, da mostrare in UI accanto a ogni indicatore. */
 export type MetricBasis = 'calcolato' | 'stima' | 'illustrativo';
 
-export interface MetricProvenance {
+interface MetricProvenance {
   basis: MetricBasis;
   /** Da dove viene il valore e quali limiti ha, in una frase */
   basisNote: string;
@@ -220,7 +220,7 @@ export function calculateBarrierFreeIndex(): AccessibilityBarriersStats {
 // 5. PREVISIONE DI ALLAGAMENTO PEDONALE A 72-96 ORE (Forecast CPSM + Flood Matrix)
 // ============================================================================
 
-export interface HourlyFloodForecastPoint {
+interface HourlyFloodForecastPoint {
   timeStr: string;
   timestampMs: number;
   heightCm: number;

@@ -15,7 +15,7 @@ import { profileStops } from './tripPlanner';
 import type { CanalSpeedLimitItem, StopItem } from './types';
 
 /** Distanza massima tra il percorso della linea e il tracciato del canale (m) */
-export const LIMIT_MATCH_M = 25;
+const LIMIT_MATCH_M = 25;
 /** Passo di campionamento del percorso (m) */
 const STEP_M = 10;
 /** Tolleranza per gli orari arrotondati al minuto (s) */

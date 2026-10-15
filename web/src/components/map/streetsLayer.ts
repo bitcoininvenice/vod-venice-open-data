@@ -32,15 +32,6 @@ let streetsRequestedAt = 0;
 
 export const isStreetsLoaded = (): boolean => streetsData !== null;
 
-export const getStreetsData = (): IndexedStreets | null => streetsData;
-
-export function getStreetsStats(): { loaded: boolean; edges: number } {
-  return {
-    loaded: streetsData !== null,
-    edges: streetsData ? streetsData.edgeCount : 0,
-  };
-}
-
 export function getFloodedEdgesStats(tideCm: number): { floodedCount: number; totalCalli: number; percentage: number } {
   if (!streetsData || tideCm < 80) return { floodedCount: 0, totalCalli: 0, percentage: 0 };
   let flooded = 0;

@@ -18,7 +18,7 @@ export interface FloodZone {
  * sotto la quale le etichette testuali delle quote di allagamento vengono nascoste
  * per non coprire calli, canali e campi sommersi di Venezia.
  */
-export const FLOOD_LABEL_MIN_SCALE = 0.80;
+const FLOOD_LABEL_MIN_SCALE = 0.80;
 
 export const VENICE_FLOOD_ZONES: FloodZone[] = [
   {

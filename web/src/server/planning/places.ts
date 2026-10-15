@@ -14,7 +14,7 @@ let index: ReturnType<typeof buildAddressIndex> | null = null;
 /** Gazzettiere degli indirizzi OSM, costruito alla prima richiesta e tenuto in memoria */
 export const addressIndex = () => (index ??= buildAddressIndex(toponyms.names as unknown as Record<string, [number, number][]>, CIVICI));
 
-export type PlaceKind = 'coordinates' | 'airport' | 'civic' | 'stop' | 'address';
+type PlaceKind = 'coordinates' | 'airport' | 'civic' | 'stop' | 'address';
 
 export interface ResolvedPlace {
   lat: number;

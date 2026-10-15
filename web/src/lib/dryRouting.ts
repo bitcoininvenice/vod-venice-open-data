@@ -14,9 +14,9 @@ export const WET_COST = 4;
 /** Distanza massima tra una calle e il tracciato (indicativo) di una passerella */
 const PASSERELLA_SNAP_M = 25;
 
-export const EDGE_DRY = 0;
-export const EDGE_WET = 1;
-export const EDGE_PASSERELLA = 2;
+/** stato di ogni arco: 0 asciutto, EDGE_WET allagato, EDGE_PASSERELLA su passerella */
+const EDGE_WET = 1;
+const EDGE_PASSERELLA = 2;
 
 export interface FloodWeights {
   levelCm: number;
@@ -41,7 +41,7 @@ function segmentDistance(lon: number, lat: number, a: [number, number], b: [numb
 const thresholdCache = new WeakMap<WalkGraph, WeakMap<PasserellaItem[], Float32Array>>();
 
 /** Per ogni arco la quota più bassa a cui una passerella del piano lo copre (Infinity se nessuna). */
-export function passerellaThresholds(g: WalkGraph, passerelle: PasserellaItem[]): Float32Array {
+function passerellaThresholds(g: WalkGraph, passerelle: PasserellaItem[]): Float32Array {
   let byList = thresholdCache.get(g);
   if (!byList) thresholdCache.set(g, (byList = new WeakMap()));
   const cached = byList.get(passerelle);

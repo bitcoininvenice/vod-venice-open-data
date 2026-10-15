@@ -54,7 +54,7 @@ function kindOf(p: Record<string, unknown>, sport: string): SportPlace['kind'] {
 }
 
 /** Metadati legali dichiarati da CAMPO in testa al GeoJSON (licenza, attribuzione, esclusione di responsabilità). */
-export interface CampoMeta {
+interface CampoMeta {
   license: string;
   licenseUrl: string | null;
   attribution: string;

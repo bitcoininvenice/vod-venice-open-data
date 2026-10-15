@@ -18,7 +18,7 @@ import type { DayType, StopItem } from './types';
 /** Terminal passeggeri dell'aeroporto Marco Polo */
 export const AIRPORT: PlannerPoint = { lon: 12.3385, lat: 45.505, label: 'Aeroporto Marco Polo (VCE)' };
 /** Un punto entro questa distanza dal terminal è «l'aeroporto» (m) */
-export const AIRPORT_RADIUS_M = 1000;
+const AIRPORT_RADIUS_M = 1000;
 /** Capolinea del bus 5 a Piazzale Roma (fermata della rete automobilistica ACTV) */
 export const PIAZZALE_ROMA: PlannerPoint = { lon: 12.3192, lat: 45.4383, label: 'Piazzale Roma' };
 /** Linea ACTV Aerobus tra Piazzale Roma e l'aeroporto */

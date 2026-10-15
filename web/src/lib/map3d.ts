@@ -4,7 +4,7 @@
  * Le coordinate di clic/tocco sono nello spazio dello schermo: vanno riportate sul piano
  * della mappa prima dell'hit test, altrimenti in 3D si seleziona il punto sbagliato.
  */
-export const MAP_3D = { PERSPECTIVE_PX: 1400, TILT_DEG: 24, SCALE: 1.06 } as const;
+const MAP_3D = { PERSPECTIVE_PX: 1400, TILT_DEG: 24, SCALE: 1.06 } as const;
 
 export const MAP_3D_CSS_TRANSFORM = `perspective(${MAP_3D.PERSPECTIVE_PX}px) rotateX(${MAP_3D.TILT_DEG}deg) scale(${MAP_3D.SCALE})`;
 

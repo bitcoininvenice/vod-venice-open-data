@@ -1,7 +1,7 @@
 import type { SportPlace } from './types';
 
 /** Distanza entro cui un impianto OSM e una segnalazione CAMPO sono considerati lo stesso posto. */
-export const SAME_PLACE_METERS = 60;
+const SAME_PLACE_METERS = 60;
 
 function meters(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number {
   const dLat = (a.lat - b.lat) * 111_000;
@@ -35,7 +35,7 @@ export function matchesSportFilter(p: SportPlace, filter: SportFilter): boolean 
 }
 
 /** Colore del simbolo per lo sport principale. */
-export const SPORT_COLORS: Record<string, string> = {
+const SPORT_COLORS: Record<string, string> = {
   basketball: '#f97316',
   soccer: '#16a34a',
   tennis: '#ca8a04',

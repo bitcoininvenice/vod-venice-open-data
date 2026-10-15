@@ -43,7 +43,7 @@ import type { ScheduleSpeedSegment } from './scheduleSpeed';
 import type { ActvNotice } from './contracts/actvNotices';
 import { flixbusPositions, type FlixbusData } from './flixbus';
 
-export interface TideInfo {
+interface TideInfo {
   observedAt: string | null;
   trend: TideTrend | null;
   category: TideCategory | null;

@@ -13,9 +13,9 @@ import type { SimModel, SimProfile, SimShape } from '@/lib/simulationCore';
 import type { DayType } from '@/lib/types';
 
 /** Oltre questa distanza dal percorso la posizione non viene usata (m). */
-export const MAX_OFFSET_M = 200;
+const MAX_OFFSET_M = 200;
 /** Entro questa distanza da una fermata il mezzo può essere in sosta: niente calcolo (m). */
-export const AT_STOP_M = 15;
+const AT_STOP_M = 15;
 /** Due passaggi più vicini di così lungo il percorso sono lo stesso passaggio (m). */
 const PASS_GAP_M = 300;
 /** Tra più passaggi plausibili si sceglie quello coerente con il ritardo atteso, se non più lontano di così (m). */
@@ -23,7 +23,7 @@ const PASS_SLACK_M = 50;
 /** Disaccordo massimo tra ritardo calcolato e ritardo ACTV (s). */
 export const DISAGREE_SECONDS = 15 * 60;
 /** Ritardi oltre le due ore sono considerati errori di associazione (s). */
-export const MAX_ABS_DELAY_SECONDS = 2 * 60 * 60;
+const MAX_ABS_DELAY_SECONDS = 2 * 60 * 60;
 
 const [LON0, LON1, LAT0, LAT1] = GRID.frame;
 const KX = GRID.W / (LON1 - LON0);
@@ -87,7 +87,7 @@ export function nearStop(p: SimProfile, d: number): boolean {
 }
 
 /** Tra i passaggi plausibili, quello il cui ritardo è più vicino a quello atteso (es. quello di ACTV). */
-export function pickPass(passes: Pass[], lagAt: (d: number) => number | null, expected: number): Pass {
+function pickPass(passes: Pass[], lagAt: (d: number) => number | null, expected: number): Pass {
   let pick = passes[0];
   let gap = Infinity;
   for (const p of passes) {
@@ -117,7 +117,7 @@ export function positionDelay(p: SimProfile, lon: number, lat: number, elapsed: 
   return lag === null ? null : Math.round(lag) || 0; // || 0: niente "-0"
 }
 
-export type DelaySource = 'position' | 'actv';
+type DelaySource = 'position' | 'actv';
 
 export interface TrustedDelay {
   seconds: number;
@@ -152,7 +152,7 @@ export type TripIndex = Record<DayType, Map<string, ScheduledTrip[]>>;
 
 const WATER = new Set(['vaporetto', 'motoscafo', 'motonave', 'ferry']);
 /** Rete di una corsa dell'orario: navigazione o automobilistico (bus, tram, bus delle isole, People Mover) */
-export const tripNetwork = (p: SimProfile): 'navigazione' | 'automobilistico' => (WATER.has(p.route.cat) ? 'navigazione' : 'automobilistico');
+const tripNetwork = (p: SimProfile): 'navigazione' | 'automobilistico' => (WATER.has(p.route.cat) ? 'navigazione' : 'automobilistico');
 
 export function indexTrips(model: SimModel): TripIndex {
   const out = {} as TripIndex;

@@ -10,7 +10,7 @@ import Image from 'next/image';
 /** Numero di layer della mappa: unica fonte per intestazioni, piè di pagina e pagina 404. */
 export const LAYER_COUNT = ALL_LAYER_KEYS.length;
 
-export type SitePage = 'features' | 'layers' | 'metrics' | 'sources' | 'mcp' | 'privacy' | 'notFound';
+type SitePage = 'features' | 'layers' | 'metrics' | 'sources' | 'mcp' | 'privacy' | 'notFound';
 
 const NAV_CLS =
   'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-[var(--ink-2)] hover:text-[var(--ink)] bg-[var(--rule)]/60 hover:bg-[var(--rule)] transition-all cursor-pointer border border-[var(--rule)]';
@@ -19,18 +19,6 @@ const ACTIVE_CLS: Record<'cyan' | 'emerald', string> = {
   cyan: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold transition-all cursor-pointer shadow-sm',
   emerald: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold transition-all cursor-pointer shadow-sm',
 };
-
-const BADGE_CLS: Record<SitePage, string> = {
-  features: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
-  layers: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
-  metrics: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
-  sources: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-  mcp: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
-  privacy: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
-  notFound: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-};
-
-const BADGE_TEXT: Record<SitePage, string> = { features: '/features', layers: '/layers', metrics: '/metrics', sources: '/sources', mcp: '/mcp', privacy: '/privacy', notFound: '/404' };
 
 /** Voci di navigazione comuni alle pagine secondarie. */
 function useNavItems() {

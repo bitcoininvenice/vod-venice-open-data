@@ -6,8 +6,8 @@ import type { WindField } from '@/lib/types';
  */
 export const WIND_GRID = { lon0: 12.1, lat0: 45.18, dLon: 0.05, dLat: 0.05, nx: 9, ny: 9 } as const;
 
-export const OPEN_METEO_SOURCE = 'Open-Meteo – modelli DWD ICON / ECMWF (best match)';
-export const OPEN_METEO_LICENSE = 'CC BY 4.0 – Weather data by Open-Meteo.com';
+const OPEN_METEO_SOURCE = 'Open-Meteo – modelli DWD ICON / ECMWF (best match)';
+const OPEN_METEO_LICENSE = 'CC BY 4.0 – Weather data by Open-Meteo.com';
 
 function gridCoordinates() {
   const lats: number[] = [];

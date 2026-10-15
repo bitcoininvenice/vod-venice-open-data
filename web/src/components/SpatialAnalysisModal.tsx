@@ -56,7 +56,7 @@ export const SpatialAnalysisModal: React.FC<SpatialAnalysisModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] uppercase font-mono tracking-wider text-amber-400">
-                  {t('ui.spatial.analisiSpazialePostgisStDwithin')}
+                  {t('ui.spatial.title')}
                 </span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-500/20 text-amber-300">
                   {results.length} {t('ui.spatial.intersezioniRilevate')}
@@ -81,7 +81,7 @@ export const SpatialAnalysisModal: React.FC<SpatialAnalysisModalProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-medium text-[var(--ink)]">
               <SlidersHorizontal className="w-4 h-4 text-amber-400" />
-              <span>{t('ui.spatial.raggioProssimitaBufferGeodeticoPostgis')}</span>
+              <span>{t('ui.spatial.radiusLabel')}</span>
             </div>
             <span className="font-mono font-bold text-amber-400 text-sm">{radius} {t('common.meters')}</span>
           </div>
@@ -117,7 +117,7 @@ export const SpatialAnalysisModal: React.FC<SpatialAnalysisModalProps> = ({
         <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 pr-1">
           {loading ? (
             <div className="py-12 text-center text-xs text-[var(--ink-2)] font-mono motion-safe:animate-pulse">
-              {t('ui.spatial.esecuzioneQuerySpazialeStDwithin')}
+              {t('ui.spatial.loading')}
             </div>
           ) : results.length === 0 ? (
             <div className="py-12 text-center text-xs text-[var(--ink-3)] font-mono">

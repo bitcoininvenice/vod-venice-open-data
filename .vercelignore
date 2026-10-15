@@ -1,6 +1,6 @@
-db
 pipeline
-docker-compose.yml
+skills
+docs
 .git
 *.zip
 *.tar.gz

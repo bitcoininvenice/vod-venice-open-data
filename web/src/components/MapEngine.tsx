@@ -665,7 +665,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       [
         L.showFlights &&
           target({
-            items: D.flights.map((f) => ({ f, live: getLiveFlight(f, currentTimeSeconds) })),
+            items: D.flights.map((f) => ({ f, live: getLiveFlight(f) })),
             at: ({ live }) => [live.lon, live.lat],
             radius: 24,
             select: ({ f, live }) =>

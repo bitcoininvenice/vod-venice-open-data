@@ -22,7 +22,7 @@ const OSM_PHARMACIES: PharmacyItem[] = (osmPharmacies.pharmacies as OsmPharmacy[
 
 const DUPLICATE_RADIUS_M = 60;
 
-export const CURATED_PHARMACIES_TO_VERIFY: PharmacyItem[] = CURATED_PHARMACIES.filter(
+const CURATED_PHARMACIES_TO_VERIFY: PharmacyItem[] = CURATED_PHARMACIES.filter(
   (c) => !OSM_PHARMACIES.some((o) => calculateDistanceMeters(c.lat, c.lon, o.lat, o.lon) <= DUPLICATE_RADIUS_M),
 );
 

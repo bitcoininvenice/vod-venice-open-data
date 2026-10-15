@@ -11,7 +11,7 @@ import {
 import type { LayerIconName, LayerRegime, LayerTone } from '@/lib/layerGroups';
 import { useTranslation } from '@/lib/i18n';
 
-export const LAYER_ICONS: Record<LayerIconName, LucideIcon> = {
+const LAYER_ICONS: Record<LayerIconName, LucideIcon> = {
   navigation: Navigation, radio: Radio, circleDot: CircleDot, anchor: Anchor, waves: Waves, gauge: Gauge,
   ship: Ship, compass: Compass, plane: Plane, train: Train, trash: Trash2, car: Car, bike: Bike,
   shieldAlert: ShieldAlert, wind: Wind, lifeBuoy: LifeBuoy, trees: Trees, layers: Layers, droplets: Droplets,

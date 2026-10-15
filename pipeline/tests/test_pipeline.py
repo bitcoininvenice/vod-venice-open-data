@@ -25,11 +25,6 @@ import import_arpav_lagoon as arpav_lagoon  # noqa: E402
 import import_cruscotto_italia as cruscotto  # noqa: E402
 import import_bdap_opere as bdap  # noqa: E402
 from download_gtfs import safe_extract  # noqa: E402
-from vod_common import redact  # noqa: E402
-
-
-def test_redact_hides_credentials():
-    assert redact("postgresql://user:secret@db.example.com:5432/venice") == "postgresql://***@db.example.com:5432/venice"
 
 
 def test_simplify_keeps_endpoints_and_drops_collinear_points():

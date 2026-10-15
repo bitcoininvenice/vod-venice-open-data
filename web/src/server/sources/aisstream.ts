@@ -6,12 +6,12 @@ import type { ShipCategory, ShipItem } from '@/lib/types';
  * Il servizio vieta la connessione diretta dal browser: il server si collega per pochi secondi,
  * raccoglie i messaggi nell'area di Venezia e li unisce a quanto ricevuto nei minuti precedenti.
  */
-export const AISSTREAM_URL = 'wss://stream.aisstream.io/v0/stream';
+const AISSTREAM_URL = 'wss://stream.aisstream.io/v0/stream';
 export const AIS_SOURCE = 'aisstream.io (rete AIS di ricevitori a terra)';
 /** Laguna, bocche di porto e rada antistante: [[lat, lon] SW, [lat, lon] NE] */
 export const VENICE_BBOX: [[number, number], [number, number]] = [[45.15, 12.05], [45.62, 12.75]];
 /** Una nave non sentita da più di questo tempo viene tolta (le navi ferme trasmettono ogni ~3 minuti). */
-export const SHIP_TTL_MS = 30 * 60_000;
+const SHIP_TTL_MS = 30 * 60_000;
 
 const NAV_STATUS: Record<number, string> = {
   0: 'underway', 1: 'anchored', 2: 'notUnderCommand', 3: 'restricted', 4: 'constrained',

@@ -22,7 +22,7 @@ const OSM_DAE = osmDefibrillators.defibrillators as PublicDaeItem[];
 /** Distanza sotto la quale una voce curata è considerata lo stesso DAE già mappato in OSM. */
 const DUPLICATE_RADIUS_M = 60;
 
-export const CURATED_DAE_TO_VERIFY: PublicDaeItem[] = CURATED_PUBLIC_DAE.filter(
+const CURATED_DAE_TO_VERIFY: PublicDaeItem[] = CURATED_PUBLIC_DAE.filter(
   (c) => !OSM_DAE.some((o) => calculateDistanceMeters(c.lat, c.lon, o.lat, o.lon) <= DUPLICATE_RADIUS_M),
 );
 

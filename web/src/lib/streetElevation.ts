@@ -19,9 +19,9 @@ export interface RawWalkGeometry {
 }
 
 /** Quota assegnata ai ponti: sempre fuori dall'acqua */
-export const BRIDGE_ELEVATION_CM = 220;
+const BRIDGE_ELEVATION_CM = 220;
 /** Terraferma e litorale del Cavallino: fuori dal modello dell'acqua alta della città, sempre asciutti */
-export const MAINLAND_ELEVATION_CM = 400;
+const MAINLAND_ELEVATION_CM = 400;
 
 /** Zone della rete pedonale fuori dal modello dell'acqua alta: Mestre e Marghera, Tessera e aeroporto, Cavallino-Treporti */
 const MAINLAND_BOXES: [number, number, number, number][] = [
@@ -105,7 +105,7 @@ function levelForFloodedPercent(pct: number): number {
  * le calli restano nell'ordine dato dagli anchor, e la quota di lunghezza allagata a ciascun livello
  * coincide con la percentuale di suolo allagato pubblicata (stima indicativa, non un rilievo altimetrico).
  */
-export function calibrateToOfficialCurve(
+function calibrateToOfficialCurve(
   elevations: Int16Array,
   rawHeights: Float32Array,
   inArea: Uint8Array,

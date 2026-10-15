@@ -2,8 +2,7 @@
  * VOD - Venice Open Data
  * Dataset di riferimento e calcoli spaziali in memoria.
  *
- * Nota: l'applicazione web non è collegata a PostgreSQL/PostGIS. Le opere pubbliche arrivano dal
- * portale del Comune tramite pipeline; le fermate sono una selezione statica del GTFS ACTV.
+ * Le opere pubbliche arrivano dal portale del Comune tramite pipeline; le fermate dal GTFS ACTV.
  */
 
 import { CantiereItem, StopItem, StopNearCantiere, PlatformMetrics, isLocated } from './types';
@@ -37,7 +36,7 @@ export const OPERE_PUBBLICHE_META = {
   count: operePubbliche.count,
   located: operePubbliche.located,
 };
-export const CANTIERI_REFERENCE: CantiereItem[] = operePubbliche.works as CantiereItem[];
+const CANTIERI_REFERENCE: CantiereItem[] = operePubbliche.works as CantiereItem[];
 
 export { ACTV_STOPS_REFERENCE };
 

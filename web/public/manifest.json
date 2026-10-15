@@ -1,7 +1,7 @@
 {
   "name": "VOD – Venice Open Data",
   "short_name": "Venice Open Data",
-  "description": "Cruscotto geospaziale e gemello digitale della Laguna di Venezia",
+  "description": "Mappa di Venezia e della laguna con dati aperti: marea, vaporetti, acqua alta, servizi, sempre con la fonte",
   "start_url": "/",
   "id": "/",
   "display": "standalone",

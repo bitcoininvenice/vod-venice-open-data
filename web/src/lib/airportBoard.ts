@@ -11,7 +11,7 @@ import { AIRPORT_DOCKS, AEROBUS_COLOR } from './airportPlanner';
 import { dayStart, FLIXBUS_COLOR, type FlixbusData } from './flixbus';
 
 /** Fermata degli autobus ACTV all'aeroporto (GTFS «Aeroporto MARCO POLO») */
-export const AIRPORT_BUS_STOP = { lon: 12.339084, lat: 45.504509 };
+const AIRPORT_BUS_STOP = { lon: 12.339084, lat: 45.504509 };
 /** Nome della fermata dell'aeroporto nel feed FlixBus */
 export const FLIX_AIRPORT_STOP = 'Venice (Marco Polo Airport)';
 export const BOARD_WINDOW_S = 90 * 60;

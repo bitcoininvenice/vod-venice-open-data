@@ -10,7 +10,7 @@ export function drawOceanStations(rc: RenderContext): void {
       const oy = sy(my(st.lat));
       ctx.save();
 
-      // Animated ocean wave concentric ripple circles (60 FPS)
+      // Cerchi concentrici animati attorno alla stazione
       const wavePhase = (currentTimeSeconds * 1.5) % 3;
       const maxRipple = Math.max(16, 32 * (camera.s / 0.02));
       for (let r = 1; r <= 3; r++) {

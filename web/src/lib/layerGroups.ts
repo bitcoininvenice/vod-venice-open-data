@@ -29,7 +29,7 @@ export interface LayerEntry {
   tone: LayerTone;
 }
 
-export interface LayerSubgroup {
+interface LayerSubgroup {
   id: string;
   label: string;
   icon: LayerIconName;

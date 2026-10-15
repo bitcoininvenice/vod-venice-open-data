@@ -37,7 +37,7 @@ export function drawBoatGlyph(ctx: CanvasRenderingContext2D, x: number, y: numbe
 }
 
 /** Autobus (o tram, più lungo e snodato) visto dall'alto, con parabrezza davanti. */
-export function drawRoadGlyph(ctx: CanvasRenderingContext2D, x: number, y: number, headingRad: number, s: GlyphStyle, tram = false): void {
+function drawRoadGlyph(ctx: CanvasRenderingContext2D, x: number, y: number, headingRad: number, s: GlyphStyle, tram = false): void {
   const k = s.scale ?? 1;
   const half = tram ? 12 : 8.5;
   ctx.save();
@@ -69,7 +69,7 @@ export function drawRoadGlyph(ctx: CanvasRenderingContext2D, x: number, y: numbe
 }
 
 /** Convoglio su rotaia (People Mover): due vetture agganciate, finestrini su entrambi i lati. */
-export function drawRailGlyph(ctx: CanvasRenderingContext2D, x: number, y: number, headingRad: number, s: GlyphStyle): void {
+function drawRailGlyph(ctx: CanvasRenderingContext2D, x: number, y: number, headingRad: number, s: GlyphStyle): void {
   const k = s.scale ?? 1;
   ctx.save();
   ctx.translate(x, y);

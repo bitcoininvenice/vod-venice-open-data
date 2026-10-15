@@ -11,7 +11,7 @@ import {
 } from 'satellite.js';
 
 /** Osservatore di riferimento: Piazza San Marco. */
-export const VENICE_OBSERVER = { latitude: 45.4341, longitude: 12.3388, height: 0.005 };
+const VENICE_OBSERVER = { latitude: 45.4341, longitude: 12.3388, height: 0.005 };
 
 export interface OrbitState {
   lat: number;

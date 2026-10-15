@@ -6,7 +6,7 @@ import type { OrdinanceItem, OrdinanceKind } from './contracts/ordinances';
 import { pointSegmentDistance } from './lagoonNetwork';
 
 /** Distanza massima tra il punto dell'ordinanza e il canale (m) */
-export const ORDINANCE_CANAL_METERS = 30;
+const ORDINANCE_CANAL_METERS = 30;
 
 const isWaterTraffic = (o: OrdinanceItem) => /traffico acqueo/i.test(o.ambito);
 

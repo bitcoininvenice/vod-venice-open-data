@@ -29,7 +29,7 @@ export function initSimulation(raw: RawSimulation): SimModel {
 }
 
 /** Scarica la simulazione una sola volta; le chiamate successive riusano la stessa promessa. */
-export function loadSimulation(): Promise<SimModel> {
+function loadSimulation(): Promise<SimModel> {
   if (model) return Promise.resolve(model);
   if (!pending) {
     pending = fetch(SIM_URL)

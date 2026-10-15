@@ -22,7 +22,7 @@ export const WALK_SPEED = 1.25;
 export const MAX_ACCESS_M = 1500;
 /** Tempo minimo per salire a bordo dopo l'arrivo a piedi e per cambiare mezzo (s). */
 export const BOARD_BUFFER_S = 60;
-export const TRANSFER_BUFFER_S = 120;
+const TRANSFER_BUFFER_S = 120;
 /** Orizzonte della ricerca dopo l'ora di partenza (s). */
 export const HORIZON_S = 3 * 3600;
 /** Oltre questa distanza dalla rete il punto non è raggiungibile a piedi (m). */
@@ -30,9 +30,9 @@ export const MAX_SNAP_M = 250;
 /** Mezzi abbinati ai pontili in profileStops (ultime partenze, velocità da orario): navigazione, ferry, bus del Lido */
 const PLANNER_CATEGORIES = new Set(['vaporetto', 'motoscafo', 'motonave', 'ferry', 'island']);
 /** Se con MAX_ACCESS_M non si trova nessun mezzo, si riprova con tratti a piedi fino a (m) */
-export const LONG_ACCESS_M = 3000;
+const LONG_ACCESS_M = 3000;
 /** Modalità «preferisci via acqua»: tratti a piedi verso e dai pontili al massimo di (m) */
-export const BOAT_ACCESS_M = 600;
+const BOAT_ACCESS_M = 600;
 
 
 export interface PlannerPoint {
@@ -322,7 +322,7 @@ export function planTrip(
 }
 
 /** Corse al massimo per itinerario (tre cambi) */
-export const MAX_RIDES = 4;
+const MAX_RIDES = 4;
 /** Un cambio in più deve far arrivare prima di almeno (s) */
 const EXTRA_RIDE_GAIN_S = 120;
 

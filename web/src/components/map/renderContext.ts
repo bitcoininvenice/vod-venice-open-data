@@ -9,7 +9,7 @@ import type { Itinerary } from '@/lib/tripPlanner';
 import type { DynamicTideState } from '@/lib/tideCurve';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 
-export interface HighlightTrip extends SelectedTrip {
+interface HighlightTrip extends SelectedTrip {
   color: string;
   /** ritardo del mezzo (s), per segnare le fermate già servite */
   delaySeconds: number;

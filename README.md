@@ -1,311 +1,269 @@
 # 🌊 VOD – Venice Open Data
 
-**Venice Open Data (VOD)** è una piattaforma web moderna ad alte prestazioni per l'analisi geospaziale, la visualizzazione e l'incrocio degli **Open Data del Comune di Venezia** e della rete di **trasporto pubblico ACTV / AVM** (navigazione lagunare, autobus e tram).
+[Italiano](#italiano) · [English](#english)
 
-VOD integra:
-1. **Simulazione da orario della flotta ACTV** (oltre 5.400 corse feriali dal GTFS ufficiale, rigenerata dalla pipeline) e, separatamente, **posizioni GPS reali** dal feed GTFS-RT.
-2. **Dati live** letti lato server con cache condivisa: maree e rete meteo-marina CPSM (dati.venezia.it), METAR LIPZ (NOAA AWC), voli ADS-B (OpenSky), mezzi ACTV (GTFS-RT), orbite satellitari (TLE CelesTrak), previsione del vento su griglia (Open-Meteo, CC BY 4.0) per l'animazione del layer vento, previsione di aria, pollini e UV (Copernicus CAMS) e del mare (Open-Meteo Marine).
-3. **Analisi spaziale** cantieri ↔ fermate entro un raggio configurabile.
-4. **Palette solare dinamica** sincronizzata con alba e tramonto a Venezia.
-5. **Pipeline Python** per download GTFS, ingestione in PostgreSQL + PostGIS e sincronizzazione GTFS-RT.
+---
 
-> **Nota architetturale**: l'applicazione web oggi non legge da PostgreSQL. Le API servono dati live (fonti esterne) o dataset di riferimento inclusi nel codice; il database è usato solo dalla pipeline. Vedi `docs/AUDIT-2026-10-08.md`.
+## Italiano
 
-## 🧭 Provenienza dei dati
+**Venice Open Data (VOD)** è una mappa di Venezia, della laguna e della terraferma costruita solo con dati
+aperti: marea e acqua alta, vaporetti e bus ACTV, Alilaguna, servizi, ambiente, opere pubbliche, ordinanze.
+Ogni valore dichiara da dove viene e che cosa è: misura in tempo reale, previsione, posizione simulata
+dall'orario, dataset ufficiale, OpenStreetMap o elenco del progetto da verificare.
 
-Ogni layer dichiara la propria natura in interfaccia (badge) e nelle risposte API (`meta.kind`):
+Sito: **https://venice-open-data.vercel.app** · progetto civico, indipendente, senza fini di lucro.
+
+### Cosa fa
+
+- **Mappa** con oltre 60 livelli raccolti in gruppi (Trasporti, Laguna, Città) e scenari pronti
+  (Città, Trasporti, Acqua alta, Ambiente oggi, Servizi utili). I livelli accesi finiscono nell'indirizzo
+  (`?layers=farmacie,fontanelle`), quindi una mappa si condivide con un link.
+- **Mezzi pubblici**: vaporetti, bus, tram e People Mover ACTV simulati dall'orario ufficiale (GTFS) e uniti
+  alle posizioni GPS reali con il ritardo; Alilaguna e FlixBus dall'orario; prossime partenze e ultime corse
+  in ogni fermata; avvisi di servizio ACTV.
+- **Come arrivare**: percorso con tutti i mezzi (ACTV e Alilaguna, fino a 4 con cambi a piedi) da Chioggia a
+  Mestre, all'aeroporto e a Treporti, con le alternative, l'avviso «sbrigati» e la prima soluzione di domani se
+  stasera non c'è più niente; solo a piedi; solo via acqua; in barca propria sui canali, con sensi unici e
+  divieti del Testo Unico della circolazione acquea (indicativo, non per la navigazione).
+- **Acqua alta**: marea misurata e prevista dal Centro Maree, MOSE, simulatore con le calli allagate stimate e le
+  passerelle, percorso a piedi più asciutto.
+- **Ricerca** di fermate, indirizzi, numeri civici («Cannaregio 3450») e servizi.
+- **Per le AI**: server MCP, skill per Claude e API REST con gli stessi calcoli della mappa, sempre con le fonti
+  da citare.
+
+### Da dove vengono i dati
+
+Ogni livello e ogni risposta delle API dichiara la natura del dato (`meta.kind`):
 
 | Tipo | Significato | Esempi |
 | :--- | :--- | :--- |
-| `live` | Misura letta dalla fonte a ogni intervallo di cache | Maree e rete meteo-marina CPSM, METAR LIPZ, voli OpenSky, GTFS-RT ACTV, orbite satellitari (TLE CelesTrak) |
-| `schedule-simulation` | Posizioni calcolate da orari e percorsi ufficiali | Vaporetti/bus ACTV, barche Alilaguna |
-| `static-reference` | Dataset ufficiale importato dalla pipeline o anagrafica statica | Opere pubbliche, WiFi (dati.venezia.it), qualità dell'aria ARPAV (medie annue), fermate, ponti, parcheggi, navi in banchina |
-| `community` | Mappatura collaborativa non verificata | Telecamere OpenStreetMap (ODbL) e selezione Anopticon |
+| `live` | misura letta dalla fonte a ogni intervallo di cache | marea e meteo CPSM, METAR, mezzi ACTV GPS, voli OpenSky |
+| `schedule-simulation` | posizione calcolata dall'orario ufficiale, non GPS | vaporetti e bus ACTV senza GPS, Alilaguna, FlixBus |
+| `static-reference` | dataset ufficiale o OpenStreetMap importato dalla pipeline | opere pubbliche, Wi-Fi, ARPAV, farmacie e fontanelle OSM |
+| `official-plan` | piano ufficiale con tracciati indicativi | passerelle per l'acqua alta |
+| `curated-reference` | elenco del progetto, da verificare presso la fonte citata | idroambulanze, campanili, ponti, isole di calore |
+| `community` | mappatura collaborativa non verificata | telecamere OpenStreetMap |
 
-Quando una fonte live non risponde l'interfaccia mostra "n.d.": nessun valore viene inventato.
+Quando una fonte non risponde l'interfaccia mostra «n.d.»: nessun valore viene inventato. Licenze, privacy e
+sicurezza di ogni fonte: [docs/note-legali-fonti.md](docs/note-legali-fonti.md); stato e licenza di ogni fonte
+anche nella pagina `/sources` del sito.
 
----
-
-## 🏛️ Architettura del Progetto
+### Struttura del progetto
 
 ```
 vod-venice-open-data/
-├── docker-compose.yml              # PostgreSQL 16 + PostGIS 3.4 container
-├── db/
-│   ├── 01_init_postgis.sql         # Schema DDL (GTFS, Comune, GTFS-RT, indici GiST)
-│   └── 02_spatial_queries.sql      # Funzioni spaziali (ST_DWithin buffer, viste GeoJSON)
-├── pipeline/
-│   ├── requirements.txt            # Dipendenze Python
-│   ├── vod_http.py                 # Richieste HTTP condivise: User-Agent, tentativi, Overpass di riserva, Nominatim a 1 req/s
-│   ├── vod_common.py               # Connessione al database e log senza credenziali
-│   ├── download_gtfs.py            # Download automatico archivi GTFS ACTV
-│   ├── import_gtfs.py              # Ingestione e conversione shapes in LineString PostGIS
-│   ├── import_comune_venezia.py    # Ingestione cantieri e opere pubbliche georeferenziate
-│   ├── sync_gtfs_rt.py             # Sincronizzazione feed real-time GTFS-RT
-│   ├── export_simulation_data.py   # GTFS ACTV -> dataset di simulazione e indice corse
-│   ├── import_opere_pubbliche.py   # Elenco Annuale dei Lavori + geocodifica approssimata
-│   ├── import_bdap_opere.py        # Monitoraggio Opere Pubbliche BDAP (MEF-RGS): opere del Comune in corso, fasi, costi, finanziamenti
-│   ├── import_wifi_hotspots.py     # Hotspot WiFi del Comune
-│   ├── import_arpav_air.py         # Qualità dell'aria ARPAV (medie annue validate)
-│   ├── import_osm_surveillance.py  # Telecamere da OpenStreetMap
-│   ├── import_osm_defibrillators.py # Defibrillatori (DAE) da OpenStreetMap
-│   ├── import_osm_pharmacies.py    # Farmacie da OpenStreetMap (i turni non sono open data)
-│   ├── import_osm_fountains.py     # Fontanelle da OpenStreetMap
-│   ├── import_osm_poi.py           # Colonnine, parcheggi, vere da pozzo, alberi monumentali, ecocentri, biblioteche (OSM)
-│   ├── import_alilaguna_gtfs.py    # Orario ufficiale Alilaguna (GTFS dell'operatore)
-│   ├── import_osm_waterways.py     # Briccole, segnalamenti e canali della laguna (OSM)
-│   ├── import_istat_census.py      # Residenti, famiglie e abitazioni per sestiere, isola e municipalità (ISTAT 2021)
-│   ├── import_osm_walk.py          # Rete pedonale da Chioggia a Mestre e all'aeroporto per il planner «Come arrivare» (OSM, per celle)
-│   ├── import_osm_boat.py          # Rete dei canali (OSM) + regole del Testo Unico per il planner in barca propria
-│   ├── import_osm_civici.py        # Numeri civici del centro storico per sestiere (OSM), per la ricerca «Cannaregio 3450»
-│   ├── import_osm_parks.py         # Parchi, giardini pubblici, aree giochi, aree cani e oasi con perimetro (OSM)
-│   ├── import_osm_toponyms.py      # Toponimi (calli, fondamenta, ponti, campi) per collocare le ordinanze (OSM)
-│   ├── import_flixbus.py           # Corse FlixBus che passano per Venezia, dal GTFS europeo (ODbL)
-│   ├── import_arpav_pollen.py      # Pollini misurati da ARPAV a Venezia (calendario mensile)
-│   ├── import_cruscotto_italia.py  # Profilo socio-economico dei comuni della laguna (Cruscotto Italia, AgID)
-│   ├── import_arpav_lagoon.py      # Sonde ARPAV della laguna (ultimo campionamento) e riepilogo balneazione
-│   ├── import_cciaa_turismo.py     # Arrivi, presenze e residenti dei comuni della laguna (CCIAA, CC BY)
-│   ├── import_agcom_fiber.py       # Copertura rete fissa FTTH/FTTC/ADSL (AGCOM BroadbandMap, CC BY 4.0)
-│   ├── enrich_fountains.py         # Toponimo di prossimità per le fontanelle senza nome
-│   ├── import_venice_tap_water.py  # Fontanelle e stato aperta/chiusa da Venice Tap Water
-│   └── tests/                      # Test pytest
-├── web/                            # Applicazione Next.js 16 (App Router)
-│   ├── package.json
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── layout.tsx
-│   │   │   ├── page.tsx            # Dashboard geospaziale interattiva principale
-│   │   │   └── api/                # API RESTful & Endpoint GeoJSON
-│   │   │       ├── cantieri/
-│   │   │       ├── stops/
-│   │   │       ├── spatial/stops-near-cantieri/
-│   │   │       ├── realtime/vehicles/
-│   │   │       └── stats/
-│   │   ├── components/
-│   │   │   ├── Header.tsx           # Navigazione, viste camera, switcher palette
-│   │   │   ├── MapEngine.tsx        # Motore Canvas 2D / Vettoriale ad alte performance
-│   │   │   ├── TimelineControls.tsx # Scrubbing orario 24h, play/pause, velocità
-│   │   │   ├── LayerPanel.tsx       # Scenari, ricerca, gruppi con natura del dato, voci "da verificare"
-│   │   │   ├── ActiveLayersLegend.tsx # Legenda unica dei livelli attivi
-│   │   │   ├── ui/InfoPanel.tsx     # Scheda informativa unica (destra su desktop, cassetto su mobile)
-│   │   │   ├── ui/Modal.tsx         # Finestra modale condivisa (ricerca, esportazione, tutorial, marea, analisi)
-│   │   │   ├── MapObjectPanel.tsx   # Schede di navi, voli, mezzi ACTV e Alilaguna
-│   │   │   ├── StopDetailModal.tsx  # Dettagli fermata e prossime corse programmate
-│   │   │   ├── CantiereDetailModal.tsx # Scheda cantiere, budget e impatto mobilità
-│   │   │   └── SpatialAnalysisModal.tsx # Dashboard intersezioni spaziali buffer
-│   │   └── lib/
-│   │       ├── types.ts            # Modelli di dominio TypeScript
-│   │       ├── cityData.ts         # Dati della mappa (CityData) e registro delle API: cosa caricare, quando, come
-│   │       ├── useCityData.ts      # Caricamento su richiesta e aggiornamento periodico dei dati live
-│   │       ├── solar.ts            # Calcolo effemeridi e interpolazione palette solare
-│   │       ├── simulation-data.ts  # Griglia, isole leggere, configurazione e URL dei file in public/data
-│   │       └── db.ts               # Dataset di riferimento e calcoli spaziali in memoria
-│   ├── public/data/                # Simulazione GTFS e isole dettagliate (JSON con hash nel nome, cache immutabile)
-│   ├── src/server/                 # Accesso alle fonti esterne (fetch con timeout e cache, parser validati)
-│   ├── src/components/map/         # Layer di disegno della mappa (un modulo per tema), contesto del frame e hit-test dei clic
-│   ├── src/data/                   # Dataset generati dalla pipeline (opere, WiFi, ARPAV, telecamere, indice GTFS)
-│   ├── src/proxy.ts                # Rate limit delle API dinamiche (le altre sono in cache CDN)
-│   └── e2e/                        # Test end-to-end Playwright
-└── README.md
+├── web/                     # Sito Next.js (App Router)
+│   ├── src/app/             # Pagine (mappa, /features, /layers, /metrics, /sources, /mcp, /privacy) e API in api/
+│   ├── src/components/      # Interfaccia; map/ contiene il disegno della mappa, un modulo per tema
+│   ├── src/lib/             # Logica condivisa: simulazione, planner, rete dei mezzi, acqua alta, traduzioni (i18n/)
+│   ├── src/server/          # Accesso alle fonti esterne (sources/) e calcoli lato server (planning/)
+│   ├── src/data/            # Dataset generati dalla pipeline
+│   ├── public/data/         # File grandi con l'hash nel nome: orario, rete pedonale, canali, isole
+│   └── e2e/                 # Test end-to-end Playwright
+├── pipeline/                # Script Python che scaricano e preparano i dati (vod_http.py: richieste condivise)
+├── skills/                  # Skill «venice-open-data» per Claude (CLI senza dipendenze) e generatore dello ZIP
+├── docs/                    # Guide: aggiungere una fonte, server MCP, note legali, richieste di autorizzazione
+└── .github/workflows/       # CI su ogni pull request e aggiornamento settimanale dei dati
 ```
+
+### Avvio in locale
+
+Servono Node.js 22 e, per la pipeline, Python 3.12.
+
+```bash
+npm ci
+npm run dev                  # http://localhost:3000
+```
+
+Nessuna variabile è obbligatoria; quelle facoltative (chiavi aisstream e OpenSky, limiti delle API) sono in
+`web/.env.example`.
+
+Verifica completa, la stessa della CI:
+
+```bash
+npm run typecheck && npm run lint && npm test && npm run build
+cd web && npx playwright install chromium && npx playwright test && cd ..
+pip install -r pipeline/requirements-dev.txt && python -m pytest -q pipeline/tests skills/tests
+```
+
+### Aggiornare i dati (pipeline)
+
+I dataset sono versionati in `web/src/data/`, `web/public/data/` e in alcuni moduli di `web/src/lib/`
+(`*-data.ts`). Il workflow `.github/workflows/refresh-data.yml` li rigenera ogni lunedì e apre una pull request.
+Ogni script è indipendente dagli altri, ritenta con attese crescenti e non sovrascrive i dati se la fonte
+risponde in modo incompleto. Dalla cartella `pipeline/`:
+
+| Script | Dati |
+| :--- | :--- |
+| `download_gtfs.py` + `export_simulation_data.py` | orario ACTV (GTFS, CC BY): simulazione dei mezzi, indice delle corse, fermate bus |
+| `import_alilaguna_gtfs.py` | orario Alilaguna (GTFS dell'operatore) |
+| `import_flixbus.py` | corse FlixBus che passano per l'area di Venezia (GTFS FlixMobility, ODbL) |
+| `import_opere_pubbliche.py` | Elenco Annuale dei Lavori del Comune (dati.venezia.it), con geocodifica approssimata |
+| `import_bdap_opere.py` | Monitoraggio Opere Pubbliche BDAP (MEF-RGS), da lanciare dopo il precedente |
+| `import_wifi_hotspots.py` | hotspot Wi-Fi del Comune |
+| `import_arpav_air.py`, `import_arpav_pollen.py`, `import_arpav_lagoon.py` | ARPAV: medie annue dell'aria, pollini, sonde della laguna e balneazione |
+| `import_istat_census.py` | Censimento ISTAT 2021 per sestiere e isola (circa 330 MB, solo a ogni nuova edizione) |
+| `import_cruscotto_italia.py` | profilo dei comuni della laguna (Cruscotto Italia, AgID) |
+| `import_cciaa_turismo.py` | arrivi, presenze e residenti (Camera di Commercio) |
+| `import_agcom_fiber.py` | copertura della rete fissa (AGCOM BroadbandMap) |
+| `import_osm_pharmacies.py`, `import_osm_defibrillators.py`, `import_osm_surveillance.py` | farmacie, defibrillatori, telecamere (OpenStreetMap) |
+| `import_osm_fountains.py` + `enrich_fountains.py`, `import_venice_tap_water.py` | fontanelle (OpenStreetMap e Venice Tap Water) |
+| `import_osm_poi.py`, `import_osm_parks.py` | colonnine, parcheggi, vere da pozzo, alberi, ecocentri, biblioteche, parchi (OSM) |
+| `import_osm_waterways.py` | briccole, segnalamenti e canali della laguna (OSM) |
+| `import_osm_walk.py` | rete pedonale da Chioggia a Mestre, aeroporto e Treporti per il planner (OSM; anche `--file` da un estratto) |
+| `import_osm_boat.py` | canali con le regole del Testo Unico per la barca propria |
+| `import_osm_civici.py`, `import_osm_toponyms.py` | numeri civici e toponimi (calli, campi, ponti) per la ricerca e le ordinanze |
+
+### API
+
+Pubbliche e in sola lettura, con cache per ogni fonte e un limite di richieste per IP
+(`API_RATE_LIMIT_PER_MINUTE`, predefinito 600 al minuto).
+
+| Endpoint | Descrizione |
+| :--- | :--- |
+| `/api/come-arrivare?da=&a=[&data=&ora=&modo=piu_veloce\|a_piedi\|via_acqua\|barca&residente=1&marea=]` | come arrivare da A a B, con fonti usate e link alla mappa |
+| `/api/partenze?fermata=[&data=&ora=&minuti=90]` | prossime partenze dall'orario ACTV e Alilaguna |
+| `/api/acqua-alta?marea=[&luogo=&da=&a=]` | simulatore di acqua alta: città allagata, un luogo, percorso a piedi più asciutto |
+| `/api/luoghi?q=` | come VOD riconosce un luogo (fermata, indirizzo, civico, aeroporto, coordinate) |
+| `/api/indirizzi?q=`, `/api/civici?q=` | indirizzi (gazzettiere OSM) e numeri civici veneziani |
+| `/api/aeroporto` | bus, Alilaguna e FlixBus dell'aeroporto nei prossimi 90 minuti |
+| `/api/tide`, `/api/weather`, `/api/wind-field`, `/api/marine-sensors` | marea e previsione CPSM, METAR, vento previsto, piattaforma e segnalamenti |
+| `/api/realtime/vehicles`, `/api/realtime/arrivals` | posizioni GPS dei mezzi ACTV con ritardo, arrivi previsti a una fermata |
+| `/api/servizio`, `/api/velocita-orario` | servizio ACTV adesso per linea; tempi da orario contro limiti di velocità |
+| `/api/stops`, `/api/fermate-bus`, `/api/avvisi-actv` | fermate ACTV, fermate bus, avvisi di servizio |
+| `/api/alilaguna`, `/api/flixbus` | linee e corse Alilaguna e FlixBus (dall'orario) |
+| `/api/flights`, `/api/ships` | voli (OpenSky) e navi (AIS): solo per la mappa, non ridistribuiti |
+| `/api/satellites` | satelliti con orbite da CelesTrak |
+| `/api/ordinanze` | ordinanze del Comune in vigore o in arrivo, con posizione e link all'atto |
+| `/api/cantieri`, `/api/opere-bdap`, `/api/spatial/stops-near-cantieri?radius=` | opere pubbliche, Monitoraggio Opere Pubbliche, fermate vicine alle opere |
+| `/api/emergency-health`, `/api/city-assets`, `/api/venice-assets`, `/api/heritage` | salute (farmacie, DAE, idroambulanze), servizi, colonnine e balneazione, patrimonio |
+| `/api/cameras` | webcam ufficiali (solo link) e telecamere mappate su OpenStreetMap |
+| `/api/passerelle` | percorsi su passerelle del piano del Comune |
+| `/api/lagoon-network`, `/api/waterways`, `/api/nautical` | segnalamenti e canali OSM, limiti di velocità e ponti, servizi nautici |
+| `/api/environment`, `/api/regional-data` | qualità dell'aria ARPAV e previsione Copernicus; pollini e sonde della laguna |
+| `/api/parks`, `/api/sports`, `/api/fiber`, `/api/census`, `/api/lora-gateways` | verde, spazi sportivi (CAMPO e OSM), fibra AGCOM, censimento ISTAT, gateway LoRa |
+| `/api/lagoon-morphology`, `/api/urban-microclimate`, `/api/pedestrian-flows`, `/api/rail-logistics` | elenchi del progetto da verificare: barene e subsidenza, isole di calore, varchi, treni e battelli di esempio |
+| `/api/stats`, `/api/health` | indicatori aggregati; stato ed età di ogni fonte |
+| `/api/datasets`, `/api/datasets/<id>`, `POST /api/mcp` | catalogo dei dataset, API REST equivalente e server MCP |
+
+### Per le AI
+
+- **Server MCP** in sola lettura: `https://venice-open-data.vercel.app/api/mcp`. Strumenti per i dati
+  (`list_datasets`, `query_dataset`) e per i calcoli (`plan_trip`, `stop_departures`, `flood_simulation`,
+  `airport_connections`, `find_place`). Istruzioni nella pagina `/mcp`, dettagli in [docs/MCP.md](docs/MCP.md).
+- **Skill «venice-open-data»** per Claude: `skills/venice-open-data/`, ZIP in
+  `web/public/downloads/venice-open-data-skill.zip` (dopo ogni modifica `python skills/build_skill_zip.py`).
+- **`/llms.txt`**: descrizione del sito per gli assistenti.
+
+### Contribuire
+
+Proposte di fonti, segnalazioni e pull request sono benvenute: [CONTRIBUTING.md](CONTRIBUTING.md). Per aggiungere
+una fonte o un livello c'è la guida [docs/AGGIUNGERE-UNA-FONTE.md](docs/AGGIUNGERE-UNA-FONTE.md); chi non
+programma può usare il modulo «Proponi una fonte» negli issue. Sicurezza: [SECURITY.md](SECURITY.md).
+
+### Fonti principali e licenze
+
+ACTV / AVM (GTFS, CC BY; GTFS-RT nel catalogo «Open Data Real Time»), Comune di Venezia e Centro Maree
+(dati.venezia.it; ai dati CPSM ridistribuiti VOD applica CC BY-SA 3.0), ARPAV, ISTAT, AGCOM (CC BY 4.0),
+MEF-RGS BDAP (CC BY), OpenStreetMap contributors e FlixMobility (ODbL), Alilaguna S.p.A., Copernicus e
+Open-Meteo, NOAA, CelesTrak, CAMPO (CC BY 4.0), The Things Network. OpenSky Network e aisstream.io sono
+mostrati solo nella mappa e non ridistribuiti. L'elenco completo con licenze e stato è in `/sources` e in
+[docs/note-legali-fonti.md](docs/note-legali-fonti.md).
 
 ---
 
-## 🚀 Avvio Rapido
+## English
 
-### 1. Avviare il Database (PostgreSQL 16 + PostGIS)
-Il progetto include una configurazione Docker pronta con estensione PostGIS e inizializzazione automatica delle tabelle e delle funzioni spaziali:
+**Venice Open Data (VOD)** is a map of Venice, its lagoon and mainland built only with open data: tide and high
+water, ACTV waterbuses and buses, Alilaguna, services, environment, public works, City orders. Every value states
+where it comes from and what it is: live measurement, forecast, position simulated from the timetable, official
+dataset, OpenStreetMap or a project list to be verified.
 
-```bash
-# Dalla radice del progetto:
-docker compose up -d
+Site: **https://venice-open-data.vercel.app** · independent, non-profit civic project. The interface is
+available in Italian and English.
 
-# Verificare che il container sia attivo e sano:
-docker compose ps
-```
+### What it does
 
-Prima dell'avvio copiare `.env.example` in `.env` e impostare `POSTGRES_PASSWORD` e `DATABASE_URL`
-(nessuna credenziale di default è inclusa nel codice). Il database è esposto solo su `127.0.0.1:5432`.
+- **Map** with more than 60 layers in groups (Transport, Lagoon, City) and ready-made scenarios. Active layers
+  are kept in the URL (`?layers=farmacie,fontanelle`), so a map can be shared as a link.
+- **Public transport**: ACTV waterbuses, buses, tram and People Mover simulated from the official timetable
+  (GTFS) and merged with live GPS positions and delays; Alilaguna and FlixBus from their timetables; next and
+  last departures at every stop; ACTV service notices.
+- **Get there**: routes with every service (ACTV and Alilaguna, up to 4 with walking changes) from Chioggia to
+  Mestre, the airport and Treporti, with alternatives, a "hurry" warning and tomorrow's first option when nothing
+  runs tonight; walking only; water only; by own boat along the canals with the one-way rules and bans of the
+  City's water-traffic code (indicative, not for navigation).
+- **High water**: tide measured and forecast by the Tide Centre, MOSE, a simulator with estimated flooded
+  streets and walkways, the driest walking route.
+- **Search** for stops, addresses, Venetian house numbers ("Cannaregio 3450") and services.
+- **For AI assistants**: MCP server, Claude skill and REST API with the same calculations as the map, always
+  with the sources to cite.
 
-### 2. Aggiornare i dati (pipeline)
-I dataset statici dell'app sono generati dalla pipeline e versionati in `web/src/data/`,
-`web/src/lib/simulation-data.ts` e `web/public/data/` (file con hash nel nome). Il workflow `.github/workflows/refresh-data.yml` li rigenera ogni
-lunedì e apre una pull request; in locale:
+### Data provenance
 
-```bash
-cd pipeline
-pip install -r requirements-dev.txt
+Every layer and API response declares the nature of the data (`meta.kind`): `live` (measured at each cache
+interval), `schedule-simulation` (computed from the official timetable, not GPS), `static-reference` (official
+dataset or OpenStreetMap imported by the pipeline), `official-plan` (official plan with indicative paths),
+`curated-reference` (project list to be verified at the cited source), `community` (unverified crowd mapping).
+When a source does not answer, the interface shows "n/a": no value is made up. Licences, privacy and security of
+every source: [docs/note-legali-fonti.md](docs/note-legali-fonti.md) and the `/sources` page.
 
-# Simulazione dei mezzi dai GTFS ACTV (download + rigenerazione di D e dell'indice corse)
-python download_gtfs.py
-python export_simulation_data.py            # opzionale: --date YYYY-MM-DD; non scrive nulla se il calendario GTFS non ha corse per i giorni simulati
+### Project structure
 
-# Dataset ufficiali (ognuno indipendente dagli altri)
-python import_opere_pubbliche.py            # Elenco Annuale dei Lavori (dati.venezia.it) + geocodifica OSM
-python import_bdap_opere.py                 # Monitoraggio Opere Pubbliche BDAP (dopo import_opere_pubbliche, per il collegamento via CUP)
-python import_wifi_hotspots.py              # Hotspot WiFi del Comune
-python import_arpav_air.py                  # Medie annue validate ARPAV
-python import_osm_surveillance.py           # Telecamere da OpenStreetMap
-python import_osm_defibrillators.py         # Defibrillatori da OpenStreetMap (non esiste un dataset ufficiale aperto)
-python import_osm_pharmacies.py             # Farmacie da OpenStreetMap
-python import_osm_fountains.py && python enrich_fountains.py  # Fontanelle da OpenStreetMap
-python import_venice_tap_water.py                             # Fontanelle Venice Tap Water (venicetapwater.org)
-python import_osm_poi.py                    # Colonnine, parcheggi ≥100 posti, vere da pozzo, alberi monumentali, ecocentri, biblioteche (OSM)
-python import_alilaguna_gtfs.py             # Orario Alilaguna (simulazione delle barche dall'orario)
-python import_agcom_fiber.py                # Copertura fibra AGCOM su celle di ~100 m
-python import_osm_waterways.py              # Briccole, segnalamenti e canali della laguna (OSM)
-python import_istat_census.py               # Censimento ISTAT 2021 per sestiere e isola (circa 330 MB da ISTAT, solo a ogni nuova edizione)
-python import_osm_walk.py                   # Rete pedonale per il planner con tutti i mezzi (OSM -> public/data/walk-<hash>.json)
-python import_osm_boat.py                   # Canali OSM + sensi unici e divieti del Testo Unico per il planner in barca (-> public/data/boat-<hash>.json)
-python import_osm_civici.py                 # Numeri civici del centro storico per sestiere (OSM)
-python import_osm_parks.py                  # Parchi, giardini pubblici, aree giochi, aree cani e oasi (OSM)
-python import_osm_toponyms.py               # Toponimi per collocare le ordinanze del Comune (OSM)
-python import_flixbus.py                    # Corse FlixBus per Venezia (GTFS FlixMobility, ODbL)
-python import_arpav_pollen.py               # Pollini misurati ARPAV a Venezia
-python import_cruscotto_italia.py           # Profilo dei comuni da Cruscotto Italia (MCP AgID, CC BY 4.0)
-python import_arpav_lagoon.py               # Sonde ARPAV della laguna e balneazione (anche --probe-file/--year/--bathing-file per file locali)
-python import_cciaa_turismo.py              # Turismo e popolazione dei comuni della laguna
+`web/` is the Next.js site (pages and API in `src/app`, map drawing in `src/components/map`, shared logic in
+`src/lib`, source access and server-side calculations in `src/server`, generated datasets in `src/data` and
+`public/data`, Playwright tests in `e2e`). `pipeline/` holds the Python scripts that download and prepare the
+data, `skills/` the Claude skill, `docs/` the guides, `.github/workflows/` the CI and the weekly data refresh.
 
-# Test della pipeline
-python -m pytest -q tests
-```
+### Run locally
 
-Caricamento facoltativo in PostgreSQL/PostGIS (non usato dall'app web):
+Node.js 22 (and Python 3.12 for the pipeline):
 
 ```bash
-python import_gtfs.py
-python import_comune_venezia.py             # opere pubbliche reali + esempi statici
-python sync_gtfs_rt.py                      # posizioni GTFS-RT reali; nessuna scrittura se il feed non risponde
+npm ci
+npm run dev                  # http://localhost:3000
 ```
 
-### 3. Avviare il Frontend Web
+No environment variable is required; optional ones are listed in `web/.env.example`. Full check, the same as CI:
+
 ```bash
-cd web
-
-# Modalità sviluppo:
-npm run dev
-
-# Oppure build di produzione:
-npm run build
-npm start
-
-# Qualità:
-npm run typecheck
-npm run lint
-npm test                                  # Vitest (unit, contratto API, parser su fixture reali)
-npm run build && PW_CHANNEL=chrome npm run test:e2e --workspace=web   # Playwright
+npm run typecheck && npm run lint && npm test && npm run build
+cd web && npx playwright install chromium && npx playwright test && cd ..
+pip install -r pipeline/requirements-dev.txt && python -m pytest -q pipeline/tests skills/tests
 ```
 
-La CI (`.github/workflows/ci.yml`) esegue typecheck, lint, test, build, test end-to-end,
-`npm audit` sulle dipendenze di produzione e i test della pipeline.
+### Data refresh
 
-Apri il browser su: **`http://localhost:3000`**
+Datasets are versioned in the repository and regenerated every Monday by `.github/workflows/refresh-data.yml`,
+which opens a pull request. Each script in `pipeline/` (listed in the Italian table above) is independent, retries
+with backoff and never overwrites data when the source answers with incomplete data.
 
----
+### API
 
-## 🛰️ Funzionalità Chiave
+Public, read-only, cached per source and rate-limited per IP. The full list with descriptions is in the Italian
+table above; the calculation endpoints are `/api/come-arrivare` (route from A to B, English aliases `from`, `to`,
+`date`, `time`, `mode`), `/api/partenze` (`stop`), `/api/acqua-alta` (`levelCm`, `place`) and `/api/luoghi`
+(`q`). Every calculation response includes `sources` and a `vodUrl` link to the same result on the map.
 
-### 1. Mappa Interattiva e Motore di Simulazione
-* **60 FPS anche su Mobile**: rendering ottimizzato su Canvas 2D con proiezione cartesiana su griglia $26.194 \times 38.701$ unità virtuali.
-* **Scia dei Mezzi (Ghosting Trail)**: ogni mezzo calcola e traccia la posizione precedente lungo il percorso in funzione della velocità di simulazione.
-* **Modalità Fusione Additiva (`lighter`)**: in modalità notte, l'incrocio dei vaporetti genera fasci di luce combinati.
-* **7 Categorie Distinte**: Vaporetto, Motoscafo, Motonave, Ferry-boat, Tram T1/T2, Bus Terraferma e Bus Isole.
-* **Scenari invece di "attiva tutto"**: *Città* (predefinito alla prima visita), *Muoversi*, *Acqua alta*, *Ambiente oggi*, *Servizi utili*. Ogni scenario attiva 3-6 livelli e usa solo dati verificati. Link: `?preset=acqua-alta`; i vecchi nomi (`mobility`, `lagoon`, `city`, `satellites`, `regional`) restano validi e `?layers=all` apre lo scenario predefinito. I livelli attivi finiscono in `?layers=slug1,slug2`.
-* **Pannello dei livelli**: ricerca (anche per nome inglese, ente o slug), "Attiva / Disattiva" per gruppo, "Pulisci mappa", bollino con la natura del dato (Live, Simulato, Dataset, Da verificare), elenchi curati raccolti in "Da verificare", avviso oltre 12 livelli attivi.
-* **Scheda informativa unica**: tutto ciò che si clicca sulla mappa si apre nella stessa scheda, a destra su desktop e dal basso su mobile, senza oscurare la mappa; nel piede natura del dato, ente e link alla scheda del livello in `/layers`.
-* **Guida (tutorial)**: alla prima visita spiega gruppi, ricerca, bollini, scheda informativa e legenda, e fa scegliere lo scenario di partenza; si riapre dal menu in alto a destra, voce "Guida".
-* **Consumi ridotti**: all'avvio parte solo la marea; ogni altra API si carica quando serve (livello acceso, ricerca, esportazione, schede) e una sola volta, con cache del browser proporzionata alla freschezza del dato. Simulazione ACTV (~220 KB compressi) e isole dettagliate (~390 KB) sono file statici scaricati solo con mezzi/rotte accesi o al primo zoom. La mappa di base è in cache su un canvas nascosto (si ridisegna solo se cambiano vista o colori), le isole fuori schermo sono scartate e l'animazione è limitata a 30 fps. Finestre e schede meno frequenti si scaricano all'apertura.
-* **Etichette diradate e legenda unica**: le etichette che si sovrappongono vengono saltate (massimo 70 per frame); la legenda "Livelli attivi" elenca i livelli attivi e permette di disattivarli.
+### For AI assistants
 
-### 2. Incrocio spaziale: opere pubbliche e fermate
-* Raggio configurabile (10–2000 m) attorno alle opere pubbliche localizzate dell'Elenco Annuale dei Lavori.
-* Nell'app il calcolo avviene in memoria (`/api/spatial/stops-near-cantieri`); la stessa analisi è disponibile
-  in PostGIS con `get_stops_near_cantieri(raggio)` (`db/02_spatial_queries.sql`, indici GiST su geography).
-* Le posizioni delle opere sono approssimate (geocodifica del luogo citato nel titolo).
+- **MCP server** (read-only): `https://venice-open-data.vercel.app/api/mcp`, with data tools (`list_datasets`,
+  `query_dataset`) and calculation tools (`plan_trip`, `stop_departures`, `flood_simulation`,
+  `airport_connections`, `find_place`). Setup instructions on `/mcp`, details in [docs/MCP.md](docs/MCP.md).
+- **Claude skill "venice-open-data"**: `skills/venice-open-data/`, ZIP at `/downloads/venice-open-data-skill.zip`.
+- **`/llms.txt`**: site description for assistants.
 
-### 3. Palette Solare Dinamica
-* Oltre alle modalità fisse (**Notte** e **Carta**), la modalità **Dinamica** calcola al secondo la posizione del sole a Venezia (Alba nautica, Alba civile, Sunrise, Tramonto, Crepuscolo) e interpola la palette cromatica di laguna, cielo e mezzi in modo continuo.
+### Contributing
 
----
+Source proposals, bug reports and pull requests are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md) and the
+step-by-step guide [docs/AGGIUNGERE-UNA-FONTE.md](docs/AGGIUNGERE-UNA-FONTE.md) (in Italian, like the code
+comments). If you do not code, use the "Proponi una fonte" (propose a source) issue form. Security issues:
+[SECURITY.md](SECURITY.md).
 
-## 📡 Riferimento API
+### Main sources and licences
 
-| Metodo | Endpoint | Descrizione |
-| :--- | :--- | :--- |
-| `GET` | `/api/stops` | Fermate e pontili ACTV con filtro opzionale `?mode=navigazione`. |
-| `GET` | `/api/spatial/stops-near-cantieri?radius=200` | Query spaziale: fermate entro il raggio indicato da cantieri attivi. |
-| `GET` | `/api/realtime/vehicles` | Posizioni reali dei mezzi ACTV dal feed GTFS-RT (cache 20 s), con il ritardo stimato da ACTV (`delay`, feed TripUpdates) quando il mezzo indica la corsa e l'aggiornamento ha meno di 2 minuti. |
-| `GET` | `/api/realtime/arrivals?lat=&lon=&stops=` | Prossimi arrivi previsti (90 minuti) ai codici GTFS indicati in `stops` o, in mancanza, alle fermate entro 150 m dal punto, con ritardo e tipo di stima. |
-| `GET` | `/api/stops` | Fermate ACTV dal GTFS ufficiale (pontili, tram, nodi bus) con linee e codici GTFS (`gtfsIds`). |
-| `GET` | `/api/tide` | Livelli di marea reali, previsione CPSM con data di emissione, anagrafica MOSE. |
-| `GET` | `/api/weather` | METAR LIPZ reale e stazioni vento di riferimento. |
-| `GET` | `/api/ships` | Navi nell'area di Venezia via AIS (aisstream.io, chiave in `AISSTREAM_API_KEY`): collegamento di 15 s al massimo una volta al minuto, navi sentite negli ultimi 30 minuti. Senza chiave restituisce un elenco vuoto con `meta.kind: not-configured`. |
-| `GET` | `/api/flights` | Aerei rilevati da OpenSky nell'area di Venezia (cache 15 s). |
-| `GET` | `/api/datasets` | Catalogo dei dataset (lo stesso del server MCP) e servizi MCP correlati. |
-| `GET` | `/api/datasets/<id>` | Voci di un dataset con filtri `text`, `lat`/`lon`/`radius`, `limit` (≤100), `offset`: per script e scaricamenti in blocco. |
-| `POST` | `/api/mcp` | Server MCP in sola lettura (Streamable HTTP): strumenti `list_datasets` e `query_dataset` sui dati e `plan_trip`, `stop_departures`, `flood_simulation`, `airport_connections`, `find_place` per i calcoli, per collegare Claude, ChatGPT, Cursor e altri assistenti. Istruzioni in `/mcp`, descrizione per AI in `/llms.txt`, dettagli in `docs/MCP.md`. |
-| `GET` | `/api/lagoon-network` | Briccole, pali, segnali, boe, fanali e canali della laguna da OpenStreetMap (ODbL). Non per la navigazione. |
-| `GET` | `/api/fiber` | Copertura della rete fissa (FTTH, FTTC, ADSL) su celle di ~100 m da AGCOM BroadbandMap, CC BY 4.0. |
-| `GET` | `/api/environment` | Medie annue ARPAV per stazione più previsione oraria Copernicus CAMS nello stesso punto (indice europeo, PM, NO₂, ozono, UV). |
-| `GET` | `/api/wind-field` | Vento previsto a 10 m su griglia 9×9 (Open-Meteo, cache 30 min): previsione di modello, non misura. |
-| `GET` | `/api/stats` | Metriche aggregate; `null` dove manca una fonte in tempo reale. |
-| `GET` | `/api/health` | Stato ed età di ogni fonte live e dei dataset della pipeline (`ok` / `stale` / `down`). |
-| `GET` | `/api/satellites` | Satelliti con orbite SGP4 da TLE CelesTrak e prossimo passaggio sopra Venezia. |
-| `GET` | `/api/cantieri` | Opere pubbliche dell'Elenco Annuale dei Lavori 2026 (posizioni approssimate); il campo `bdap` aggiunge, per CUP, fase reale, date, costi e finanziamenti dal Monitoraggio Opere Pubbliche. |
-| `GET` | `/api/city-assets` | Fontanelle (Venice Tap Water con stato aperta/chiusa, e OpenStreetMap), parcheggi, ecocentri, biblioteche e luoghi con Wi-Fi (`wifiVenues`: hotel, bar, biblioteche con tipo di accesso) da OpenStreetMap (ODbL). |
-| `GET` | `/api/census` | Residenti, età, stranieri, famiglie e abitazioni (anche vuote o di soli non residenti) per Comune, municipalità, sestiere e isola dal Censimento ISTAT 2021 (CC BY 4.0). |
-| `GET` | `/api/civici?q=Cannaregio 3450` | Numero civico veneziano (anche «CN 3450», «S. Polo 1200/a»): posizione esatta se è su OpenStreetMap, altrimenti il civico noto più vicino dello stesso sestiere (`match=nearest`). |
-| `GET` | `/api/indirizzi?q=cannaregio calle minestra` | Indirizzi di Venezia (calli, campi, fondamenta, ponti) dal gazzettiere OpenStreetMap di VOD, con sestiere o isola stimati: usato dal planner e dalla ricerca, nessun servizio esterno interrogato. |
-| `GET` | `/api/aeroporto` | Aeroporto Marco Polo: partenze e arrivi dei prossimi 90 minuti di autobus ACTV (5 Aerobus, 15, 45…), barche Alilaguna e FlixBus, dagli orari ufficiali. I voli non sono dati aperti. |
-| `GET` | `/api/come-arrivare?da=Ferrovia&a=Murano Colonna[&data=&ora=&modo=piu_veloce\|a_piedi\|via_acqua\|barca&residente=1&marea=]` | Come arrivare da A a B lato server (stesso motore della mappa), con fonti usate e link a VOD. |
-| `GET` | `/api/partenze?fermata=Rialto[&data=&ora=&minuti=90]` | Prossime partenze dall'orario ACTV e Alilaguna, con la prossima corsa se non ce ne sono a breve. |
-| `GET` | `/api/acqua-alta?marea=130[&luogo=&da=&a=]` | Simulatore di acqua alta: centro storico allagato, sirene, MOSE, passerelle, un luogo e il percorso a piedi più asciutto. |
-| `GET` | `/api/luoghi?q=calle minestra` | Come VOD riconosce un luogo (fermata, indirizzo, civico, aeroporto, coordinate). |
-| `GET` | `/api/parks` | Parchi, giardini pubblici, aree giochi, aree cani e oasi con perimetro, accesso e superficie da OpenStreetMap (ODbL); il Comune non pubblica un dataset aperto del verde. |
-| `GET` | `/api/ordinanze` | Ordinanze del Comune in vigore o in arrivo nei prossimi 7 giorni (ogni ambito; città storica, isole, Lido e tutto il territorio comunale, esclusa la terraferma) con validità, tipo, canale o luogo citato, posizione e link all'atto e al PDF. Riletto ogni ora; fa fede il testo dell'atto. |
-| `GET` | `/api/fermate-bus` | Tutte le fermate bus ACTV nell'area della mappa (GTFS automobilistico), con linee e codici GTFS; corsie con lo stesso nome unite. |
-| `GET` | `/api/avvisi-actv` | Avvisi di servizio ACTV in corso dal feed RSS ufficiale (fermate spostate, deviazioni, modifiche per eventi), con fermate e linee citate; riletto ogni 15 minuti, fa fede l'avviso ACTV. |
-| `GET` | `/api/flixbus` | Corse FlixBus che passano per Venezia nei prossimi giorni (GTFS FlixMobility, ODbL): orari e percorso ritagliato sull'area della mappa, per simulare la posizione dei bus. Nessun dato in tempo reale. |
-| `GET` | `/api/servizio` | Servizio ACTV adesso per linea (nessuno storico): mezzi con GPS, corse in servizio secondo l'orario e senza posizione nel feed (indizio), ritardo medio e massimo, puntualità, mezzi in coda. Ricalcolato ogni 30 s. |
-| `GET` | `/api/velocita-orario` | Tratti delle linee di navigazione: tempo da orario contro tempo minimo rispettando i limiti di velocità noti (stima per difetto, 60 s di tolleranza per gli arrotondamenti e 10% per l'incertezza del percorso). Calcolo dall'orario, non misura dei mezzi. |
-| `GET` | `/api/nautical` | Marine, carburante per barche, scivoli, cantieri, noleggi e ormeggi da OpenStreetMap (ODbL); non le concessioni comunali, non pubblicate come open data. |
-| `GET` | `/api/sports` | Spazi sportivi: segnalazioni della comunità CAMPO (CC BY 4.0, indirizzo in `web/src/server/sources/campo.ts`, riletta ogni ora) unite agli impianti OpenStreetMap; CAMPO prevale entro 60 m. |
-| `GET` | `/api/lora-gateways` | Gateway LoRaWAN online della rete comunitaria The Things Network nell'area della mappa (Packet Broker Mapper, cache 10 min): posizione come pubblicata dal proprietario, nessun identificativo né nome. |
-| `GET` | `/api/opere-bdap` | Opere del Comune con lavori in corso dal Monitoraggio Opere Pubbliche (BDAP – Ragioneria Generale dello Stato, CC BY) e riepilogo di tutti i progetti per fase, settore e finanziamento. |
-
-Le API sono pubbliche e in sola lettura, con cache server per ogni fonte e un limite di
-600 richieste al minuto per IP (`API_RATE_LIMIT_PER_MINUTE`).
-
----
-
-## 🤝 Contribuire
-
-Proposte di fonti, segnalazioni e pull request sono benvenute: [CONTRIBUTING.md](CONTRIBUTING.md).
-Per aggiungere una fonte o un livello (file aperto con pipeline, API in tempo reale, orario GTFS, elenco curato)
-c'è la guida passo passo [docs/AGGIUNGERE-UNA-FONTE.md](docs/AGGIUNGERE-UNA-FONTE.md); chi non programma può
-usare il modulo «Proponi una fonte» negli issue. Problemi di sicurezza: [SECURITY.md](SECURITY.md).
-
-## 📄 Fonti, licenze e crediti
-* **ACTV S.p.A. / AVM**: GTFS Navigazione e Automobilistico (Open Data, CC BY – citazione obbligatoria). Il feed GTFS-RT è pubblico ma la licenza d'uso va confermata con AVM.
-* **Comune di Venezia – CPSM**: livelli e previsioni di marea da `dati.venezia.it`.
-* **CAMPO – Dati forniti dalla comunità di CAMPO Venezia**: spazi sportivi di Venezia (CC BY 4.0; licenza, avvertenze e richieste di rimozione nella pagina `/licenza` di CAMPO).
-* **The Things Network – Packet Broker Mapper**: gateway LoRaWAN con stato e posizione resi pubblici dai proprietari (VOD non mostra identificativi né nomi; il gateway sparisce se il proprietario rende privata la posizione).
-* **MEF – Ragioneria Generale dello Stato (BDAP OpenData)**: Monitoraggio Opere Pubbliche (MOP) Veneto, CC BY.
-* **NOAA Aviation Weather Center**: METAR LIPZ (pubblico dominio).
-* **OpenSky Network**: dati ADS-B, uso non commerciale/ricerca secondo i termini OpenSky; mostrati solo nella mappa, non ridistribuiti via MCP. Citazione: Schäfer et al., «Bringing Up OpenSky», IPSN 2014.
-* **aisstream.io**: messaggi AIS mostrati solo nella mappa, non ridistribuiti via MCP (termini in verifica).
-
-Revisione completa di licenze, privacy e sicurezza: [docs/note-legali-fonti.md](docs/note-legali-fonti.md). VOD è un progetto senza fini di lucro.
-* **SkylineWebcams, CNR-ISMAR**: solo collegamenti alle pagine ufficiali delle dirette; nessuna immagine viene ripubblicata.
-* **Anopticon (tramaci.org)**: mappatura civica delle telecamere. I termini d'uso vietano l'accesso automatico senza autorizzazione: il dataset completo non è incluso (bozza di richiesta in `docs/richieste-autorizzazione.md`).
-* **Comune di Venezia – dati.venezia.it**: Elenco Annuale dei Lavori, hotspot WiFi (CC BY); marea e rete meteo-marina CPSM: la scheda del dataset indica CC BY, la [pagina Open Data del Comune](https://www.comune.venezia.it/it/content/open-data-0) CC BY-SA 3.0. VOD applica la più restrittiva (CC BY-SA 3.0) ai dati CPSM che redistribuisce (API, MCP, esportazioni).
-* **ARPAV**: medie annue validate di PM10, PM2.5 e NO2 (CC BY 4.0).
-* **CelesTrak**: elementi orbitali TLE.
-* **OpenStreetMap contributors**: geometrie della laguna (ODbL – © OpenStreetMap contributors).
-
-## Collegare la propria AI
-
-- **Server MCP** in sola lettura: `https://venice-open-data.vercel.app/api/mcp` (alias `POST /mcp`). Istruzioni per Claude, ChatGPT, Claude Code e Cursor nella pagina `/mcp`; dettagli tecnici in `docs/MCP.md`.
-- **Skill "venice-open-data"** per Claude (istruzioni + script CLI senza dipendenze): sorgenti in `skills/venice-open-data/`, ZIP pubblicato in `web/public/downloads/venice-open-data-skill.zip`. Dopo ogni modifica: `python skills/build_skill_zip.py` (un test verifica che lo ZIP sia aggiornato).
-- **Skill di sviluppo** per chi contribuisce con un'AI: `.claude/skills/vod-aggiungi-fonte/` descrive la procedura completa per integrare una fonte.
-- **`/llms.txt`**: descrizione del sito per gli assistenti, generata dal catalogo.
+ACTV / AVM (GTFS, CC BY; GTFS-RT listed as "Open Data Real Time"), City of Venice and Tide Centre (CPSM data
+redistributed by VOD under CC BY-SA 3.0), ARPAV, ISTAT, AGCOM (CC BY 4.0), MEF-RGS BDAP (CC BY),
+OpenStreetMap contributors and FlixMobility (ODbL), Alilaguna S.p.A., Copernicus and Open-Meteo, NOAA,
+CelesTrak, CAMPO (CC BY 4.0), The Things Network. OpenSky Network and aisstream.io data are shown on the map only
+and never redistributed. Full list with licences and status on `/sources`.

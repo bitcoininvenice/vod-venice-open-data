@@ -5,7 +5,7 @@ import { ORDINANCE_COLORS, isPlacedOrdinance } from '@/lib/canalOrdinances';
 import { matchesSportFilter, sportColor } from '@/lib/sports';
 
 /** Colore di una fontanella: blu aperta, rosso chiusa, grigio non indicato; OSM azzurro (stato non verificato) */
-export function fountainColor(status: 'open' | 'closed' | 'unknown' | undefined, fromVtw: boolean, isDark: boolean): string {
+function fountainColor(status: 'open' | 'closed' | 'unknown' | undefined, fromVtw: boolean, isDark: boolean): string {
   if (!fromVtw) return isDark ? '#22d3ee' : '#0891b2';
   if (status === 'open') return isDark ? '#3b82f6' : '#1d4ed8';
   if (status === 'closed') return isDark ? '#f87171' : '#dc2626';
@@ -907,7 +907,7 @@ export function drawLoraGateways(rc: RenderContext): void {
 }
 
 /** Colore del Wi-Fi per tipo di accesso dichiarato su OSM. */
-export const WIFI_ACCESS_COLORS: Record<'free' | 'customers' | 'paid' | 'unknown', string> = {
+const WIFI_ACCESS_COLORS: Record<'free' | 'customers' | 'paid' | 'unknown', string> = {
   free: '#10b981',
   customers: '#f59e0b',
   paid: '#ef4444',
@@ -992,7 +992,7 @@ export function drawSports(rc: RenderContext): void {
 /** Zoom oltre il quale si mostrano gli ormeggi (sono centinaia e molto fitti). */
 export const MOORINGS_MIN_SCALE = 0.04;
 
-export const NAUTICAL_COLORS: Record<string, string> = {
+const NAUTICAL_COLORS: Record<string, string> = {
   marina: '#2563eb',
   fuel: '#dc2626',
   slipway: '#0d9488',
@@ -1000,7 +1000,7 @@ export const NAUTICAL_COLORS: Record<string, string> = {
   rental: '#7c3aed',
 };
 
-export const MOORING_COLORS: Record<string, string> = {
+const MOORING_COLORS: Record<string, string> = {
   allowed: '#16a34a',
   guest: '#16a34a',
   private: '#64748b',

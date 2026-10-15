@@ -86,7 +86,7 @@ export function drawShipRoutes(rc: RenderContext): void {
 }
 
 /** Colori per categoria AIS */
-export const SHIP_COLORS: Record<ShipCategory, string> = {
+const SHIP_COLORS: Record<ShipCategory, string> = {
   PASSENGER: '#6366f1',
   CARGO: '#3b82f6',
   TANKER: '#ef4444',

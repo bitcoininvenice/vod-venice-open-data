@@ -16,7 +16,7 @@ import { noticesForStop, useActvNotices } from '@/lib/useActvNotices';
 import { ActvNoticeBox } from '@/components/ActvNoticeList';
 
 /** Mezzo ACTV selezionato: posizione simulata dall'orario o reale (GTFS-RT). */
-export interface VehicleSelection {
+interface VehicleSelection {
   line: string;
   category: string;
   speedKmh: number | null;

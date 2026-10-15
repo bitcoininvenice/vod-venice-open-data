@@ -7,39 +7,16 @@ import { groundTrack, headingAt, satrecFor, stateAt } from '@/lib/orbits';
 export const prefersReducedMotion = (): boolean =>
   typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
 
-// Live kinematics for airplanes around Venice (continuous 60 FPS motion synced to timeline)
-export function getLiveFlight(
-  f: FlightItem,
-  t: number
-): { lon: number; lat: number; heading: number; alt: number } {
-  if (f.onGround || f.status === 'TAXI') {
-    return {
-      lon: f.lon,
-      lat: f.lat,
-      heading: f.trackDegrees,
-      alt: Math.max(2, f.altitudeMeters || 2)
-    };
-  }
-
-  const rad = (f.trackDegrees * Math.PI) / 180;
-  const cycleSeconds = 240; // 4 minutes radar loop across lagoon sector
-  const seed = (parseInt(f.icao24, 16) || 0) * 31;
-  const progress = ((t + seed) % cycleSeconds) / cycleSeconds;
-
-  // Flight displacement along its track angle (-0.05° to +0.05° across the lagoon sector)
-  const distDeg = (progress - 0.5) * 0.10;
-  const lon = f.lon + Math.sin(rad) * distDeg;
-  const lat = f.lat + Math.cos(rad) * distDeg;
-  const heading = f.trackDegrees;
-  const alt = Math.max(120, Math.round(f.altitudeMeters + (f.verticalRate || 0) * (progress - 0.5) * 40));
-
-  return { lon, lat, heading, alt };
+/**
+ * Posizione dell'aereo da disegnare: quella dell'ultima lettura OpenSky (aggiornata ogni 30 s).
+ * Nessuno spostamento stimato tra una lettura e l'altra: si mostra solo quanto ricevuto.
+ */
+export function getLiveFlight(f: FlightItem): { lon: number; lat: number; heading: number; alt: number } {
+  return { lon: f.lon, lat: f.lat, heading: f.trackDegrees, alt: Math.max(f.onGround ? 2 : 120, Math.round(f.altitudeMeters || 0)) };
 }
 
-// Live kinematics for AIS ships along maritime navigation channels
-
 // Tracce a terra in cache per satellite e minuto: il ricalcolo SGP4 avviene al massimo una volta al minuto
-export const groundTrackCache = new Map<string, [number, number][]>();
+const groundTrackCache = new Map<string, [number, number][]>();
 
 /**
  * Posizione del satellite all'ora simulata (propagazione SGP4 dal TLE CelesTrak).

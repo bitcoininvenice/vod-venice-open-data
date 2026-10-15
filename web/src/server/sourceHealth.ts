@@ -1,6 +1,6 @@
 import { romeLocalToDate } from '@/server/sources/tide';
 
-export type HealthStatus = 'ok' | 'stale' | 'down';
+type HealthStatus = 'ok' | 'stale' | 'down';
 
 export interface SourceHealth {
   id: string;

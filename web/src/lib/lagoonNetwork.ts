@@ -7,7 +7,7 @@
 export type MarkerKind = 1 | 2 | 3 | 4 | 5;
 
 /** [lon, lat, tipo, id del nodo OSM] */
-export type LagoonMarker = [number, number, MarkerKind, number];
+type LagoonMarker = [number, number, MarkerKind, number];
 
 export interface LagoonCanal {
   id: number;

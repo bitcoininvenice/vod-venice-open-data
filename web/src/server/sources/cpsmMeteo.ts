@@ -111,9 +111,9 @@ function stationType(name: string): MeteoMarineWindItem['stationType'] {
 const round1 = (v: number) => Math.round(v * 10) / 10;
 
 /** Stazioni CPSM del centro storico per la temperatura "di Venezia", in ordine di preferenza. */
-export const CITY_AIR_TEMP_STATIONS = ['1026', '1039', '1029'] as const; // Palazzo Cavalli, San Giorgio, Misericordia
+const CITY_AIR_TEMP_STATIONS = ['1026', '1039', '1029'] as const; // Palazzo Cavalli, San Giorgio, Misericordia
 /** Oltre questa età la misura non viene mostrata come temperatura attuale. */
-export const CITY_AIR_TEMP_MAX_AGE_MS = 2 * 60 * 60_000;
+const CITY_AIR_TEMP_MAX_AGE_MS = 2 * 60 * 60_000;
 
 
 /**
@@ -191,7 +191,7 @@ export function buildWindStations(feeds: Partial<Record<CpsmFeedName, CpsmReadin
 }
 
 /** ID CPSM della piattaforma oceanografica "Acqua Alta" (CNR-ISMAR). */
-export const PLATFORM_STATION_ID = '1021';
+const PLATFORM_STATION_ID = '1021';
 
 export interface PlatformReadings {
   waveHeightMeters: number | null;

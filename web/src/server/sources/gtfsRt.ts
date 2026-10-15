@@ -49,7 +49,7 @@ export const ACTV_GTFS_RT_TRIP_UPDATES = {
   automobilistico: 'https://tpl.actv.it/aut/GTFSRT/tripUpdates',
 } as const;
 
-export interface StopDelay {
+interface StopDelay {
   seq: number | null;
   stopId: string;
   /** ritardo in secondi (negativo = in anticipo) */

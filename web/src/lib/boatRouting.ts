@@ -17,11 +17,11 @@ import type { DayType } from './types';
 /** Velocità ipotizzata nei canali di cui VOD non ha il limite (km/h) */
 export const ASSUMED_KMH = 11;
 /** Velocità nei rii senza nome del centro storico, Murano e Burano (come i rii comunali, km/h) */
-export const RIO_KMH = 5;
+const RIO_KMH = 5;
 /** Oltre questa distanza dall'acqua il punto non è collegato alla rete dei canali (m) */
-export const MAX_SNAP_M = 250;
+const MAX_SNAP_M = 250;
 
-export type BoatRuleKind = 'oneway' | 'noMotor' | 'noPleasure';
+type BoatRuleKind = 'oneway' | 'noMotor' | 'noPleasure';
 
 export interface BoatRule {
   id: string;
@@ -189,7 +189,7 @@ export interface BoatOptions {
   tideCm?: number | null;
 }
 
-export interface BoatStretch {
+interface BoatStretch {
   name: string | null;
   meters: number;
   /** tracciato del tratto [lon, lat] */
@@ -219,7 +219,7 @@ export interface BoatPlan {
   tideRule: 'none' | 'slow' | 'noMotor';
 }
 
-export type BoatFailure = 'farFromWater' | 'restricted' | 'noRoute';
+type BoatFailure = 'farFromWater' | 'restricted' | 'noRoute';
 
 export type BoatResult = { ok: true; plan: BoatPlan } | { ok: false; reason: BoatFailure };
 

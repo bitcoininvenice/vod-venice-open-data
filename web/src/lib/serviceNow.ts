@@ -7,9 +7,9 @@ import type { SimModel } from './simulationCore';
 import type { DayType } from './types';
 
 /** Mezzi in coda: intervallo programmato almeno di… (s) */
-export const BUNCH_MIN_HEADWAY_S = 6 * 60;
+const BUNCH_MIN_HEADWAY_S = 6 * 60;
 /** …e intervallo reale sotto un terzo di quello programmato e comunque sotto… (s) */
-export const BUNCH_MAX_GAP_S = 4 * 60;
+const BUNCH_MAX_GAP_S = 4 * 60;
 /** Puntuale: ritardo tra −1 e +3 min (stessa soglia delle schede, vedi delayStatus) */
 const ON_TIME = (s: number) => s >= -60 && s < 180;
 
@@ -54,7 +54,7 @@ export interface LineNow {
 }
 
 const WATER = new Set(['vaporetto', 'motoscafo', 'motonave', 'ferry', 'island']);
-export const networkOfCategory = (cat: string): 'navigazione' | 'automobilistico' => (WATER.has(cat) ? 'navigazione' : 'automobilistico');
+const networkOfCategory = (cat: string): 'navigazione' | 'automobilistico' => (WATER.has(cat) ? 'navigazione' : 'automobilistico');
 
 const PREV_DAY: Record<DayType, DayType> = { weekday: 'weekday', saturday: 'weekday', sunday: 'saturday' };
 
@@ -64,7 +64,7 @@ const PREV_DAY: Record<DayType, DayType> = { weekday: 'weekday', saturday: 'week
  * (es. lunedì dopo la domenica).
  */
 /** Chiave di una linea: lo stesso numero può essere un vaporetto e un bus (es. 15) */
-export const lineKey = (line: string, network: 'navigazione' | 'automobilistico') => `${line}|${network}`;
+const lineKey = (line: string, network: 'navigazione' | 'automobilistico') => `${line}|${network}`;
 
 export function scheduledRunning(sim: SimModel, day: DayType, secondsOfDay: number, prevDay: DayType = PREV_DAY[day]): Map<string, { count: number; category: string; line: string }> {
   const out = new Map<string, { count: number; category: string; line: string }>();

@@ -12,9 +12,9 @@ import { metersBetween } from './walkGraph';
 import { ALILAGUNA_STOPS, alilagunaTripsOn, type AlilagunaTripTimes } from './alilaguna-schedule';
 import type { DayType } from './types';
 
-export type StopKind = 'water' | 'land' | 'alilaguna';
+type StopKind = 'water' | 'land' | 'alilaguna';
 
-export interface NetStop {
+interface NetStop {
   name: string;
   lon: number;
   lat: number;
@@ -22,7 +22,7 @@ export interface NetStop {
 }
 
 /** Sequenza di fermate di una linea con gli orari relativi alla partenza della corsa (s) */
-export interface Pattern {
+interface Pattern {
   stops: number[];
   /** partenza e arrivo a ogni fermata, in secondi dalla partenza della corsa */
   dep: number[];
@@ -60,7 +60,7 @@ const STOP_MATCH_M = 150;
 /** Cambio a piedi tra fermate entro (m in linea d'aria) */
 export const TRANSFER_RADIUS_M = 450;
 /** Le calli e le strade non sono in linea retta */
-export const DETOUR = 1.3;
+const DETOUR = 1.3;
 
 const GRID = 0.003;
 const key = (lon: number, lat: number) => `${Math.floor(lon / GRID)}|${Math.floor(lat / GRID)}`;
@@ -97,7 +97,7 @@ function nearestIn(grid: Map<string, number[]>, stops: NetStop[], lon: number, l
 }
 
 /** Tutte le fermate: pontili e nodi ACTV della mappa, fermate bus del GTFS, darsene Alilaguna. */
-export function networkStops(): NetStop[] {
+function networkStops(): NetStop[] {
   const out: NetStop[] = [];
   for (const s of actvStops.stops as { name: string; lon: number; lat: number; mode: string }[]) {
     out.push({ name: s.name, lon: s.lon, lat: s.lat, kind: s.mode === 'navigazione' || s.mode === 'ferry' ? 'water' : 'land' });

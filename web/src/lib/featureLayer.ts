@@ -2,7 +2,7 @@ import type { LayerKey } from '@/lib/urlLayers';
 import type { VeniceFeatureSelected } from '@/components/VeniceFeatureDetailModal';
 
 /** Layer della mappa da cui proviene ciascun tipo di scheda (usato da schede e analytics). */
-export const FEATURE_LAYER: Record<Exclude<VeniceFeatureSelected['type'], 'civicPoi' | 'civicNumber'>, LayerKey> = {
+const FEATURE_LAYER: Record<Exclude<VeniceFeatureSelected['type'], 'civicPoi' | 'civicNumber'>, LayerKey> = {
   passerella: 'showPasserelle', briccola: 'showMarineSignals', oceanStation: 'showOceanStations',
   bathingWater: 'showBathingWaters', urbanTree: 'showTrees', evCharging: 'showEvCharging',
   wifiHotspot: 'showWifiHotspots', speedLimit: 'showCanalLimits', bridgeClearance: 'showBridges',

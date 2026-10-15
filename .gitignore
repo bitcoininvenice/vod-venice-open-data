@@ -89,7 +89,6 @@ next-env.d.ts.bak
 *.dump
 *.sql.gz
 pgdata/
-postgres-data/
 
 # Dati grezzi scaricati (es. zip GTFS da 50-100MB)
 data/*.zip

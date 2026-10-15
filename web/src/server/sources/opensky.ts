@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { FlightItem } from '@/lib/types';
 
 /** Bounding box della TMA di Venezia (Tessera VCE, Treviso TSF, Chioggia, rotte adriatiche). */
-export const VENICE_TMA_BBOX = { lamin: 45.1, lamax: 45.72, lomin: 12.05, lomax: 12.65 } as const;
+const VENICE_TMA_BBOX = { lamin: 45.1, lamax: 45.72, lomin: 12.05, lomax: 12.65 } as const;
 
 export const OPENSKY_STATES_URL =
   `https://opensky-network.org/api/states/all?lamin=${VENICE_TMA_BBOX.lamin}&lomin=${VENICE_TMA_BBOX.lomin}` +

@@ -13,7 +13,7 @@ export interface SimShape {
   n: number;
 }
 
-export interface SimRoute {
+interface SimRoute {
   /** nome breve della linea */
   n: string;
   /** categoria base del dataset (vaporetto, ferry, island, bus, tram) */
@@ -33,7 +33,7 @@ export interface SimProfile {
   Dd: Int32Array;
 }
 
-export interface SimDay {
+interface SimDay {
   /** indice del profilo per ogni corsa */
   tP: Int32Array;
   /** partenza (secondi dalla mezzanotte, negativa per corse iniziate il giorno prima) */

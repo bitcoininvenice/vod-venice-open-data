@@ -9,7 +9,7 @@
 import type { TideForecast } from '@/lib/contracts/tide';
 import { parseForecastExtremes } from '@/lib/tideCurve';
 
-export type LagoonCurrentPhase = 'FLUSSO' | 'STANCA' | 'RIFLUSSO';
+type LagoonCurrentPhase = 'FLUSSO' | 'STANCA' | 'RIFLUSSO';
 
 export interface LagoonCurrentChannel {
   id: string;

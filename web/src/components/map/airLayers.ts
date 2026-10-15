@@ -241,7 +241,7 @@ export function drawFlights(rc: RenderContext): void {
       const r04y = sy(my(45.4943));
 
       for (const f of flights) {
-        const live = getLiveFlight(f, currentTimeSeconds);
+        const live = getLiveFlight(f);
         const fx = sx(mx(live.lon));
         const fy = sy(my(live.lat));
         const isSelected = selectedFlight?.icao24 === f.icao24;
@@ -301,7 +301,7 @@ export function drawFlights(rc: RenderContext): void {
     // 10. Render Airplane Silhouettes and Tags
     if (flights && flights.length > 0) {
       for (const f of flights) {
-        const live = getLiveFlight(f, currentTimeSeconds);
+        const live = getLiveFlight(f);
         const fx = sx(mx(live.lon));
         const fy = sy(my(live.lat));
 

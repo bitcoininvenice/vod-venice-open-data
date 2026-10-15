@@ -5,11 +5,11 @@
  * redistribuisce (API, MCP, esportazioni) si applica la più restrittiva, CC BY-SA 3.0.
  */
 export const CPSM_LICENSE = 'CC BY-SA 3.0 (dati redistribuiti da VOD) · la scheda del dataset indica CC BY';
-export const CPSM_LICENSE_SHORT = 'CC BY-SA 3.0';
-export const CPSM_LICENSE_URL = 'https://creativecommons.org/licenses/by-sa/3.0/it/';
-export const CPSM_DATASET_URL = 'https://dati.venezia.it/?q=content/cpsm-dati-meteomarini-laguna-e-litorale-veneziano';
-export const COMUNE_OPEN_DATA_POLICY_URL = 'https://www.comune.venezia.it/it/content/open-data-0';
-export const CPSM_ATTRIBUTION = 'Dati: Comune di Venezia – Centro Previsioni e Segnalazioni Maree (dati.venezia.it), elaborati da VOD';
+const CPSM_LICENSE_SHORT = 'CC BY-SA 3.0';
+const CPSM_LICENSE_URL = 'https://creativecommons.org/licenses/by-sa/3.0/it/';
+const CPSM_DATASET_URL = 'https://dati.venezia.it/?q=content/cpsm-dati-meteomarini-laguna-e-litorale-veneziano';
+const COMUNE_OPEN_DATA_POLICY_URL = 'https://www.comune.venezia.it/it/content/open-data-0';
+const CPSM_ATTRIBUTION = 'Dati: Comune di Venezia – Centro Previsioni e Segnalazioni Maree (dati.venezia.it), elaborati da VOD';
 
 /** Campi da aggiungere al meta delle risposte che contengono dati CPSM */
 export const CPSM_LICENSE_META = {

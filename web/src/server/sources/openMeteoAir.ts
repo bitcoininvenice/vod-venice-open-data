@@ -7,7 +7,7 @@ import type { AirForecast, PollenFamilyItem, PollenKey, PollenLevel } from '@/li
 export const CAMS_SOURCE = 'Copernicus CAMS via Open-Meteo Air Quality';
 export const CAMS_LICENSE = 'CC BY 4.0 – Copernicus Atmosphere Monitoring Service / Open-Meteo.com';
 
-export const POLLEN_KEYS: PollenKey[] = ['alder', 'birch', 'grass', 'mugwort', 'olive', 'ragweed'];
+const POLLEN_KEYS: PollenKey[] = ['alder', 'birch', 'grass', 'mugwort', 'olive', 'ragweed'];
 
 /** Soglie indicative (granuli/m³) per BASSO / MEDIO / ALTO, sul modello delle classi ARPAV per famiglia. */
 const POLLEN_THRESHOLDS: Record<PollenKey, [number, number]> = {

@@ -8,7 +8,7 @@ import { ASSUMED_KMH, type BoatResult, type BoatRule } from '@/lib/boatRouting';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 
 /** Testo Unico della circolazione acquea: pagina del Comune con l'atto e le modifiche */
-export const TESTO_UNICO_URL = 'https://www.comune.venezia.it/it/content/normativa-circolazione-acquea';
+const TESTO_UNICO_URL = 'https://www.comune.venezia.it/it/content/normativa-circolazione-acquea';
 
 const RuleList: React.FC<{ rules: BoatRule[]; icon: React.ReactNode; title: string; testId: string }> = ({ rules, icon, title, testId }) =>
   rules.length === 0 ? null : (

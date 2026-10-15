@@ -172,7 +172,7 @@ export interface PlatformMetrics {
   wifiHotspotsCount: number;
 }
 
-export interface MaritimeWaypoint {
+interface MaritimeWaypoint {
   name: string;
   depth: string;
   lon: number;
@@ -403,7 +403,7 @@ export interface SatelliteItem {
   nextPassStart?: string;
 }
 
-export type CameraType =
+type CameraType =
   | 'CCTV_DOME'
   | 'CCTV_SPOT'
   | 'CCTV_ROTATING'
@@ -551,7 +551,7 @@ export interface CivicPoiItem {
 }
 
 /** Origine di un punto: OpenStreetMap (ODbL) o elenco compilato nel progetto, da verificare. */
-export type PointSource = 'OPENSTREETMAP' | 'ELENCO_CURATO' | 'VENICE_TAP_WATER';
+type PointSource = 'OPENSTREETMAP' | 'ELENCO_CURATO' | 'VENICE_TAP_WATER';
 
 export interface EvChargingItem {
   id: string;
@@ -1109,4 +1109,3 @@ export interface CityAirTemperature {
   observedAt: string;
 }
 
-export type { LagoonCurrentChannel, LagoonCurrentPhase, LagoonCurrentState } from './lagoonCurrents';

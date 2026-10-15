@@ -8,7 +8,7 @@ export type FeatureIcon =
   | 'clock' | 'layers' | 'sun' | 'box' | 'thermometer' | 'share' | 'chart' | 'users' | 'construction' | 'download'
   | 'activity' | 'code' | 'bot' | 'package' | 'shield' | 'alert';
 
-export interface Feature {
+interface Feature {
   id: string;
   icon: FeatureIcon;
   /** link «Prova» */

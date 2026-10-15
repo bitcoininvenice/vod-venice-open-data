@@ -61,7 +61,7 @@ export const CARTA: ColorScheme = {
   }
 };
 
-export const ORA_BLU: ColorScheme = {
+const ORA_BLU: ColorScheme = {
   ground: '#101529',
   water: '#141b36',
   sea: '#10162d',
@@ -83,7 +83,7 @@ export const ORA_BLU: ColorScheme = {
   }
 };
 
-export const ALBA: ColorScheme = {
+const ALBA: ColorScheme = {
   ground: '#f8e7df',
   water: '#e6d2e0',
   sea: '#d9c6da',
@@ -105,7 +105,7 @@ export const ALBA: ColorScheme = {
   }
 };
 
-export const TRAMONTO: ColorScheme = {
+const TRAMONTO: ColorScheme = {
   ground: '#f9e5d0',
   water: '#ecc3c0',
   sea: '#e3b3b6',
@@ -127,7 +127,7 @@ export const TRAMONTO: ColorScheme = {
   }
 };
 
-export const CREPUSCOLO: ColorScheme = {
+const CREPUSCOLO: ColorScheme = {
   ground: '#190f23',
   water: '#1f142b',
   sea: '#190f24',
@@ -309,7 +309,7 @@ export function formatTimeParts(seconds: number): { hoursMinutes: string; second
   };
 }
 
-export type SolarIconType = 'sun' | 'moon' | 'sunrise' | 'sunset';
+type SolarIconType = 'sun' | 'moon' | 'sunrise' | 'sunset';
 
 export interface SolarPhaseInfo {
   phaseKey: 'notte' | 'alba' | 'giorno' | 'goldenHour' | 'crepuscolo';
