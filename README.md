@@ -243,7 +243,7 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/flights` | Aerei rilevati da OpenSky nell'area di Venezia (cache 15 s). |
 | `GET` | `/api/datasets` | Catalogo dei dataset (lo stesso del server MCP) e servizi MCP correlati. |
 | `GET` | `/api/datasets/<id>` | Voci di un dataset con filtri `text`, `lat`/`lon`/`radius`, `limit` (≤100), `offset`: per script e scaricamenti in blocco. |
-| `POST` | `/api/mcp` | Server MCP in sola lettura (Streamable HTTP): strumenti `list_datasets` e `query_dataset` per collegare Claude, ChatGPT, Cursor e altri assistenti. Istruzioni in `/mcp`, descrizione per AI in `/llms.txt`, dettagli in `docs/MCP.md`. |
+| `POST` | `/api/mcp` | Server MCP in sola lettura (Streamable HTTP): strumenti `list_datasets` e `query_dataset` sui dati e `plan_trip`, `stop_departures`, `flood_simulation`, `airport_connections`, `find_place` per i calcoli, per collegare Claude, ChatGPT, Cursor e altri assistenti. Istruzioni in `/mcp`, descrizione per AI in `/llms.txt`, dettagli in `docs/MCP.md`. |
 | `GET` | `/api/lagoon-network` | Briccole, pali, segnali, boe, fanali e canali della laguna da OpenStreetMap (ODbL). Non per la navigazione. |
 | `GET` | `/api/fiber` | Copertura della rete fissa (FTTH, FTTC, ADSL) su celle di ~100 m da AGCOM BroadbandMap, CC BY 4.0. |
 | `GET` | `/api/environment` | Medie annue ARPAV per stazione più previsione oraria Copernicus CAMS nello stesso punto (indice europeo, PM, NO₂, ozono, UV). |
@@ -257,6 +257,10 @@ Apri il browser su: **`http://localhost:3000`**
 | `GET` | `/api/civici?q=Cannaregio 3450` | Numero civico veneziano (anche «CN 3450», «S. Polo 1200/a»): posizione esatta se è su OpenStreetMap, altrimenti il civico noto più vicino dello stesso sestiere (`match=nearest`). |
 | `GET` | `/api/indirizzi?q=cannaregio calle minestra` | Indirizzi di Venezia (calli, campi, fondamenta, ponti) dal gazzettiere OpenStreetMap di VOD, con sestiere o isola stimati: usato dal planner e dalla ricerca, nessun servizio esterno interrogato. |
 | `GET` | `/api/aeroporto` | Aeroporto Marco Polo: partenze e arrivi dei prossimi 90 minuti di autobus ACTV (5 Aerobus, 15, 45…), barche Alilaguna e FlixBus, dagli orari ufficiali. I voli non sono dati aperti. |
+| `GET` | `/api/come-arrivare?da=Ferrovia&a=Murano Colonna[&data=&ora=&modo=piu_veloce\|a_piedi\|via_acqua\|barca&residente=1&marea=]` | Come arrivare da A a B lato server (stesso motore della mappa), con fonti usate e link a VOD. |
+| `GET` | `/api/partenze?fermata=Rialto[&data=&ora=&minuti=90]` | Prossime partenze dall'orario ACTV e Alilaguna, con la prossima corsa se non ce ne sono a breve. |
+| `GET` | `/api/acqua-alta?marea=130[&luogo=&da=&a=]` | Simulatore di acqua alta: centro storico allagato, sirene, MOSE, passerelle, un luogo e il percorso a piedi più asciutto. |
+| `GET` | `/api/luoghi?q=calle minestra` | Come VOD riconosce un luogo (fermata, indirizzo, civico, aeroporto, coordinate). |
 | `GET` | `/api/parks` | Parchi, giardini pubblici, aree giochi, aree cani e oasi con perimetro, accesso e superficie da OpenStreetMap (ODbL); il Comune non pubblica un dataset aperto del verde. |
 | `GET` | `/api/ordinanze` | Ordinanze del Comune in vigore o in arrivo nei prossimi 7 giorni (ogni ambito; città storica, isole, Lido e tutto il territorio comunale, esclusa la terraferma) con validità, tipo, canale o luogo citato, posizione e link all'atto e al PDF. Riletto ogni ora; fa fede il testo dell'atto. |
 | `GET` | `/api/fermate-bus` | Tutte le fermate bus ACTV nell'area della mappa (GTFS automobilistico), con linee e codici GTFS; corsie con lo stesso nome unite. |

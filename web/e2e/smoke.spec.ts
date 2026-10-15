@@ -580,6 +580,18 @@ test('come arrivare con tutti i mezzi: alternative con ACTV e Alilaguna, si sceg
   await expect(panel.getByTestId('planner-result')).toContainText(/\d{2}:\d{2} → \d{2}:\d{2}/);
 });
 
+test('i link delle risposte della skill aprono il planner già compilato e il simulatore al livello indicato', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  await page.goto('/?open=planner&da=45.44120,12.32150&daNome=Ferrovia&a=45.45470,12.35040&aNome=Murano%20Colonna&ora=10:00');
+  const panel = page.locator('[data-info-panel]');
+  await expect(panel.getByTestId('planner-from')).toContainText('Ferrovia');
+  await expect(panel.getByTestId('planner-to')).toContainText('Murano Colonna');
+  await expect(panel.locator('input[type="time"]')).toHaveValue('10:00');
+  await expect(panel.getByTestId('planner-result')).toBeVisible({ timeout: 15000 });
+  await page.goto('/?open=tide&marea=130');
+  await expect(page.getByText(/\+?130\s*cm/).first()).toBeVisible({ timeout: 15000 });
+});
+
 test('come arrivare di corsa: mostra la corsa che sta per partire con l\'avviso «Sbrigati»', async ({ page, isMobile }) => {
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   // 23:53:30 a Venezia: l'ultima 4.2 da Murano Colonna parte alle 23:54, troppo presto per il margine normale
@@ -1084,7 +1096,16 @@ test.describe('API', () => {
     const init = await rpc(1, 'initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'e2e', version: '1' } });
     expect(init.serverInfo.name).toBe('vod-venice-open-data');
     const tools = await rpc(2, 'tools/list');
-    expect(tools.tools.map((t: { name: string }) => t.name).sort()).toEqual(['list_datasets', 'query_dataset']);
+    expect(tools.tools.map((t: { name: string }) => t.name).sort()).toEqual(['airport_connections', 'find_place', 'flood_simulation', 'list_datasets', 'plan_trip', 'query_dataset', 'stop_departures']);
+    // come arrivare: stesso motore della mappa, con fonti e link a VOD
+    const trip = JSON.parse((await rpc(10, 'tools/call', { name: 'plan_trip', arguments: { from: 'Ferrovia', to: 'Murano Colonna', date: '2026-10-14', time: '10:00' } })).content[0].text);
+    expect(trip.found).toBe(true);
+    expect(trip.itineraries[0].legs.some((l: { type: string }) => l.type === 'mezzo')).toBe(true);
+    expect(trip.sources.map((x: { name: string }) => x.name).join(' ')).toMatch(/ACTV/);
+    expect(trip.vodUrl).toMatch(/open=planner/);
+    const flood = JSON.parse((await rpc(11, 'tools/call', { name: 'flood_simulation', arguments: { levelCm: 130, place: 'Piazza San Marco' } })).content[0].text);
+    expect(flood.floodedHistoricCentrePercent).toBeGreaterThan(60);
+    expect(flood.place.wet).toBe(true);
     const list = await rpc(3, 'tools/call', { name: 'list_datasets', arguments: {} });
     expect(JSON.parse(list.content[0].text).datasets.length).toBeGreaterThan(20);
     // navi (aisstream) e voli (OpenSky): solo nella mappa, non ridistribuiti
@@ -1382,6 +1403,64 @@ test.describe('API', () => {
     }
     expect(body.meta.note).toMatch(/voli/);
     expect(body.meta.sources.length).toBe(3);
+  });
+
+  test('come arrivare lato server: itinerario con fonti, link a VOD ed errori espliciti', async ({ request }) => {
+    const body = await (await request.get('/api/come-arrivare?da=Ferrovia&a=Murano%20Colonna&data=2026-10-14&ora=10:00')).json();
+    expect(body.success).toBe(true);
+    expect(body.found).toBe(true);
+    expect(body.from.kind).toBe('stop');
+    const it = body.itineraries[0];
+    expect(it.depart).toMatch(/^\d{2}:\d{2}$/);
+    expect(it.legs.some((l: { type: string; operator?: string }) => l.type === 'mezzo' && l.operator === 'ACTV')).toBe(true);
+    expect(body.sources.some((x: { license: string }) => /ODbL/.test(x.license))).toBe(true);
+    expect(body.vodUrl).toContain('open=planner');
+    expect(body.vodUrl).toContain('ora=10%3A00');
+    // indirizzi, civici e coordinate come luoghi
+    const civic = await (await request.get('/api/come-arrivare?da=Cannaregio%203450&a=45.4341,12.3388&data=2026-10-14&ora=10:00&modo=a_piedi')).json();
+    expect(civic.from.kind).toBe('civic');
+    expect(civic.to.kind).toBe('coordinates');
+    expect(civic.itineraries[0].vehicles).toBe(0);
+    expect((await request.get('/api/come-arrivare?da=Ferrovia')).status()).toBe(400);
+    expect((await request.get('/api/come-arrivare?da=Ferrovia&a=Xyzzzz%20Qwerty')).status()).toBe(404);
+    expect((await request.get('/api/come-arrivare?da=Ferrovia&a=Rialto&ora=25:00')).status()).toBe(400);
+  });
+
+  test('come arrivare in barca privata lato server: regole del Testo Unico e fonti degli atti', async ({ request }) => {
+    const body = await (await request.get('/api/come-arrivare?da=45.4318,12.3283&a=45.4274,12.3287&modo=barca&residente=1&data=2026-10-14&ora=14:00')).json();
+    expect(body.success).toBe(true);
+    expect(body.found).toBe(true);
+    expect(body.caveat).toMatch(/non valido per la navigazione/);
+    expect(body.sources.map((x: { name: string }) => x.name).join(' ')).toMatch(/Testo Unico/);
+  });
+
+  test('partenze lato server: orario ACTV e Alilaguna, con la prossima corsa', async ({ request }) => {
+    const rialto = await (await request.get('/api/partenze?fermata=Rialto&data=2026-10-14&ora=10:00')).json();
+    expect(rialto.success).toBe(true);
+    expect(rialto.departures.length).toBeGreaterThan(0);
+    expect(rialto.departures[0].time).toMatch(/^\d{2}:\d{2}$/);
+    const air = await (await request.get('/api/partenze?fermata=aeroporto&data=2026-10-14&ora=10:00')).json();
+    expect(air.departures.some((d: { operator: string; line: string }) => d.operator === 'ACTV' && d.line === '5')).toBe(true);
+    expect(air.departures.some((d: { operator: string }) => d.operator === 'Alilaguna')).toBe(true);
+    expect(air.sources.map((x: { name: string }) => x.name).join(' ')).toMatch(/Alilaguna/);
+    expect((await request.get('/api/partenze')).status()).toBe(400);
+  });
+
+  test('acqua alta lato server: città allagata, un luogo, percorso asciutto e link al simulatore', async ({ request }) => {
+    const body = await (await request.get('/api/acqua-alta?marea=120&luogo=Piazza%20San%20Marco&da=Ferrovia&a=Rialto')).json();
+    expect(body.success).toBe(true);
+    expect(body.floodedHistoricCentrePercent).toBeCloseTo(35.5, 0);
+    expect(body.sirenTones).toBe(2);
+    expect(body.place.estimatedGroundCm).toBeLessThan(120);
+    expect(body.walkingRoute.itinerary.legs.length).toBeGreaterThan(0);
+    expect(body.vodUrl).toContain('marea=120');
+    expect(body.caveat).toMatch(/Stima/);
+    expect((await request.get('/api/acqua-alta?marea=999')).status()).toBe(400);
+  });
+
+  test('luoghi lato server: «marco polo» è l\'aeroporto', async ({ request }) => {
+    const body = await (await request.get('/api/luoghi?q=marco%20polo')).json();
+    expect(body.place.kind).toBe('airport');
   });
 
   test('indirizzi: calli e campi dal gazzettiere OSM, con la zona, senza servizi esterni', async ({ request }) => {

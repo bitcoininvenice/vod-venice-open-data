@@ -32,13 +32,18 @@ const securityHeaders = [
 // Il ritardo dalla posizione legge l'orario ACTV (public/data/sim-*.json) dal disco: va incluso
 // nelle funzioni che rispondono con i mezzi in tempo reale (API, server MCP e API dei dataset).
 const SIM_FILES = ["./public/data/sim-*.json"];
+// Planner, partenze e acqua alta lato server (API, server MCP, CLI della skill) leggono anche rete pedonale e canali
+const PLANNING_FILES = [...SIM_FILES, "./public/data/walk-*.json", "./public/data/boat-*.json"];
 
 const nextConfig: NextConfig = {
   reactStrictMode: false,
   poweredByHeader: false,
   outputFileTracingIncludes: {
     "/api/realtime/vehicles": SIM_FILES,
-    "/api/mcp": SIM_FILES,
+    "/api/mcp": PLANNING_FILES,
+    "/api/come-arrivare": PLANNING_FILES,
+    "/api/partenze": PLANNING_FILES,
+    "/api/acqua-alta": PLANNING_FILES,
     "/api/datasets/[id]": SIM_FILES,
   },
   async headers() {

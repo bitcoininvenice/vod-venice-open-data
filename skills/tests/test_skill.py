@@ -30,6 +30,24 @@ def test_cli_parsing_and_places():
     assert len(vod.load_places()) >= 15
 
 
+def test_cli_calculation_commands():
+    args = vod.build_parser().parse_args(["route", "Ferrovia", "Murano Colonna", "--time", "10:00", "--mode", "water"])
+    assert vod.calc_request(args) == ("/api/come-arrivare", {"from": "Ferrovia", "to": "Murano Colonna", "time": "10:00", "mode": "water"})
+    args = vod.build_parser().parse_args(["route", "a", "b", "--mode", "private", "--resident"])
+    assert vod.calc_request(args)[1]["resident"] == "1"
+    assert vod.calc_request(vod.build_parser().parse_args(["departures", "Rialto"])) == ("/api/partenze", {"stop": "Rialto", "minutes": 90})
+    assert vod.calc_request(vod.build_parser().parse_args(["flood", "--level", "130", "--from", "Ferrovia", "--to", "Rialto"])) == (
+        "/api/acqua-alta", {"levelCm": 130, "from": "Ferrovia", "to": "Rialto"})
+    assert vod.calc_request(vod.build_parser().parse_args(["find", "marco polo"])) == ("/api/luoghi", {"q": "marco polo"})
+    assert vod.calc_request(vod.build_parser().parse_args(["airport"])) == ("/api/aeroporto", {})
+
+
+def test_skill_mentions_every_calculation_tool():
+    text = open(os.path.join(ROOT, "venice-open-data", "SKILL.md"), encoding="utf-8").read()
+    for tool in ("plan_trip", "stop_departures", "flood_simulation", "airport_connections", "find_place", "vodUrl", "sources"):
+        assert tool in text, tool
+
+
 def test_published_zip_is_up_to_date(tmp_path):
     fresh = build_skill_zip.build(str(tmp_path / "skill.zip"))
     published = build_skill_zip.OUT_FILE

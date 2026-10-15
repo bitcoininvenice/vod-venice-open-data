@@ -14,11 +14,18 @@ VOD espone i propri dati agli assistenti AI con il [Model Context Protocol](http
 |---|---|
 | Tool `list_datasets` | Catalogo: id, natura del dato (`live`, `forecast`, `simulated`, `dataset`, `osm`, `curated`), fonte, licenza, filtro geografico, avvertenze |
 | Tool `query_dataset` | `dataset` (enum), `text` (2-80 caratteri), `near` (lat/lon nell'area di Venezia, raggio 10 m – 20 km), `limit` (1-50), `offset` |
+| Tool `plan_trip` | Come arrivare da A a B: `from`, `to` (fermata, indirizzo, civico, «aeroporto», `lat,lon`), `date`, `time`, `mode` (`fastest`, `walk`, `water`, `private`), `resident`, `tideCm`. Stesso motore della mappa: tutti i mezzi ACTV e Alilaguna, fino a 4, alternative, «di corsa», prima soluzione di domani; barca privata con le regole del Testo Unico |
+| Tool `stop_departures` | Prossime partenze da una fermata (orario ACTV e Alilaguna), `minutes` 10-240, prossima corsa se non ce ne sono |
+| Tool `flood_simulation` | Acqua alta a `levelCm` (o la misura attuale): centro storico allagato (tabella CPSM), sirene, MOSE, passerelle, un luogo (`place`), il percorso a piedi più asciutto (`from`, `to`) |
+| Tool `airport_connections` | Bus, Alilaguna e FlixBus dell'aeroporto nei prossimi 90 minuti |
+| Tool `find_place` | Come VOD riconosce un luogo e le fermate con nome simile |
 | Resource `vod://datasets` | Copia JSON del catalogo |
 | Resource `vod://related-mcp-services` | Server MCP complementari (Cruscotto Italia di AgID), mai interrogati da VOD: niente proxy, niente fusione automatica dei dati |
-| Prompt | `marea_oggi`, `servizi_vicini`, `ambiente_laguna` |
+| Prompt | `marea_oggi`, `servizi_vicini`, `come_arrivare`, `ambiente_laguna` |
 
 Ogni risposta riporta fonte, licenza, natura del dato, avvertenze, data di lettura e i totali (`total`, `matched`, `returned`). Le risposte oltre 120.000 caratteri vengono ridotte e segnalate con `truncatedForSize`.
+
+Gli strumenti di calcolo rispondono con `sources` (solo le fonti usate davvero, con licenza e link), `caveat` e `vodUrl`: il link apre la mappa di VOD con lo stesso risultato (planner già compilato, simulatore al livello indicato), così chi risponde può citare la fonte e farla verificare. Le stesse funzioni sono API REST: `/api/come-arrivare`, `/api/partenze`, `/api/acqua-alta`, `/api/luoghi`, `/api/aeroporto`. Codice in `web/src/server/planning/` (luoghi, contesto di giorno/ora/marea, servizi).
 
 ## Architettura
 

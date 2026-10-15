@@ -129,6 +129,8 @@ interface TripPlannerPanelProps {
   tideAt?: (seconds: number) => number | null;
   /** percorsi su passerelle del piano */
   passerelle?: PasserellaItem[];
+  /** ora e modalità iniziali (link con il planner già compilato) */
+  preset?: { time: string; mode: PlanMode } | null;
 }
 
 const ACTV_SITE = 'https://actv.avmspa.it/it';
@@ -290,13 +292,20 @@ function useLiveVehicles(enabled: boolean): RealtimeVehicleDto[] | null {
  * Trip planner a piedi + vaporetto: luoghi di partenza e arrivo, ora di partenza, itinerario migliore
  * sull'orario ufficiale ACTV e sulla rete pedonale OpenStreetMap, con l'alternativa solo a piedi.
  */
-export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClose, from, to, onChange, onPick, picking, onItinerary, tideAt, passerelle }) => {
+export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClose, from, to, onChange, onPick, picking, onItinerary, tideAt, passerelle, preset }) => {
   const { t } = useTranslation();
   const sim = useSimulation(open);
   const [walk, setWalk] = useState<WalkGraph | null>(null);
   const [walkError, setWalkError] = useState(false);
   const [time, setTime] = useState('');
   const [mode, setMode] = useState<PlanMode>('fastest');
+  // preset da un link: applicato una volta quando arriva (stato aggiornato durante il render, non in un effetto)
+  const [appliedPreset, setAppliedPreset] = useState<typeof preset>(null);
+  if (preset && preset !== appliedPreset) {
+    setAppliedPreset(preset);
+    setTime(preset.time);
+    setMode(preset.mode);
+  }
   const [boat, setBoat] = useState<BoatGraph | null>(null);
   const [boatError, setBoatError] = useState(false);
   const [resident, setResident] = useState(false);

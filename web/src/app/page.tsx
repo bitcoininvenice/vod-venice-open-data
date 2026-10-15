@@ -15,7 +15,7 @@ import { StopDetailModal } from '@/components/StopDetailModal';
 import { CantiereDetailModal } from '@/components/CantiereDetailModal';
 import { MapObjectPanel, type MapObjectSelected } from '@/components/MapObjectPanel';
 import { TripPlannerPanel, type PickTarget } from '@/components/TripPlannerPanel';
-import type { Itinerary, PlannerPoint } from '@/lib/tripPlanner';
+import type { Itinerary, PlanMode, PlannerPoint } from '@/lib/tripPlanner';
 import type { SportFilter } from '@/lib/sports';
 import type { FountainFilter } from '@/lib/fountainFilter';
 import { ActiveLayersLegend } from '@/components/ActiveLayersLegend';
@@ -183,6 +183,8 @@ export default function HomePage() {
   const [plannerFrom, setPlannerFrom] = useState<PlannerPoint | null>(null);
   const [plannerTo, setPlannerTo] = useState<PlannerPoint | null>(null);
   const [pickTarget, setPickTarget] = useState<PickTarget | null>(null);
+  // ora e modalità iniziali del planner da un link (?open=planner&ora=…&modo=…)
+  const [plannerPreset, setPlannerPreset] = useState<{ time: string; mode: PlanMode } | null>(null);
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
   const setPlannerPoint = useCallback((which: PickTarget, p: PlannerPoint | null) => (which === 'from' ? setPlannerFrom(p) : setPlannerTo(p)), []);
   const openPlanner = useCallback((to?: PlannerPoint) => {
@@ -318,9 +320,26 @@ export default function HomePage() {
     if (tool) {
       // chi arriva da un link diretto a uno strumento non vede il tutorial sopra lo strumento
       writePreference(ONBOARDING_KEY, 'true');
-      if (tool === 'planner') openPlanner();
-      else if (tool === 'tide') {
+      if (tool === 'planner') {
+        // link dalle risposte della skill / del server MCP: planner già compilato (?da=lat,lon&daNome=…&a=…&ora=HH:MM&modo=…)
+        const point = (coords: string | null, name: string | null): PlannerPoint | null => {
+          const m = coords?.match(/^(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)$/);
+          if (!m) return null;
+          const lat = Number(m[1]);
+          const lon = Number(m[2]);
+          return { lat, lon, label: (name ?? '').slice(0, 80) || `${lat.toFixed(5)}, ${lon.toFixed(5)}` };
+        };
+        const from = point(params.get('da'), params.get('daNome'));
+        if (from) setPlannerFrom(from);
+        const ora = params.get('ora');
+        const modo = params.get('modo');
+        setPlannerPreset({ time: ora && /^([01]\d|2[0-3]):[0-5]\d$/.test(ora) ? ora : '', mode: modo === 'walk' || modo === 'boat' || modo === 'private' ? modo : 'fastest' });
+        openPlanner(point(params.get('a'), params.get('aNome')) ?? undefined);
+      } else if (tool === 'tide') {
         trackLayerOpen('marea');
+        // ?marea=130: il simulatore parte da quel livello
+        const marea = Number(params.get('marea'));
+        if (params.get('marea') !== null && Number.isFinite(marea)) setSimulatedTideLevel(Math.max(-50, Math.min(220, Math.round(marea))));
         setIsTideModalOpen(true);
       }
       else if (tool === 'aeroporto' || tool === 'airport') {
@@ -844,6 +863,7 @@ export default function HomePage() {
           onItinerary={setItinerary}
           tideAt={plannerTideAt}
           passerelle={data.passerelle}
+          preset={plannerPreset}
         />
         <MapObjectPanel
           object={selectedObject}
