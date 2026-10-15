@@ -3,6 +3,7 @@ import { fetchUpstream } from '@/server/upstream';
 import { CAMPO_API_URL, CAMPO_ATTRIBUTION, CAMPO_LICENSE_PAGE, CAMPO_SITE, parseCampo } from '@/server/sources/campo';
 import { OPEN_SPORT_PLACES, OSM_POI_META } from '@/lib/osmPoi';
 import { mergeSportPlaces } from '@/lib/sports';
+import { PROVIDERS } from '@/lib/provenance/providers';
 
 // CAMPO riletto al massimo una volta all'ora; gli impianti OSM arrivano dalla pipeline settimanale
 export const revalidate = 3600;
@@ -32,7 +33,7 @@ export async function GET() {
         },
         {
           name: 'OpenStreetMap (leisure=pitch, sports_centre, fitness_station, track, stadium, sports_hall)',
-          url: 'https://www.openstreetmap.org',
+          url: PROVIDERS.osm.url,
           license: OSM_POI_META.license,
           attribution: '© OpenStreetMap contributors',
           count: data.length - campoPlaces.length,

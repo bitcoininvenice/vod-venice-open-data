@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { ARPAV_AIR_META, ARPAV_AIR_STATIONS, EU_LIMITS } from '@/lib/airQuality';
 import { fetchUpstream } from '@/server/upstream';
-import { airQualityUrl, CAMS_LICENSE, CAMS_SOURCE, parseAirQuality } from '@/server/sources/openMeteoAir';
+import { airQualityUrl, parseAirQuality } from '@/server/sources/openMeteoAir';
+import { PROVIDERS, providerLicense } from '@/lib/provenance/providers';
 
 // Le medie ARPAV sono annuali; la previsione CAMS cambia ogni ora
 export const revalidate = 1800;
@@ -23,8 +24,8 @@ export async function GET() {
       observedAt: ARPAV_AIR_META.generatedAt,
       note: 'Medie annue validate dell\'anno più recente. ARPAV non pubblica un\'API aperta con i dati orari; posizioni delle stazioni indicative.',
       forecast: {
-        source: CAMS_SOURCE,
-        license: CAMS_LICENSE,
+        source: PROVIDERS.cams.name,
+        license: providerLicense('cams'),
         available: cams.ok,
         note: 'Previsione oraria del modello Copernicus CAMS nel punto di ogni stazione: non è una misura ARPAV.',
       },

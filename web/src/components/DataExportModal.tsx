@@ -8,6 +8,7 @@ import { isLocated } from '@/lib/types';
 import type { CityData } from '@/lib/cityData';
 import { Modal } from '@/components/ui/Modal';
 import { filterFountains } from '@/lib/fountainFilter';
+import { SITE_URL } from '@/lib/site';
 
 interface ExportableLayer {
   id: string;
@@ -86,7 +87,7 @@ export const DataExportModal: React.FC<DataExportModalProps> = ({ isOpen, onClos
   };
 
   const handleExportGeoJson = () => {
-    const fc = buildGeoJson(exportData(), new Date().toISOString(), 'https://venice-open-data.vercel.app');
+    const fc = buildGeoJson(exportData(), new Date().toISOString(), SITE_URL);
     return finishExport(JSON.stringify(fc, null, 2), 'application/geo+json', 'geojson');
   };
 

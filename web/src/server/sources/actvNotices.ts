@@ -3,6 +3,7 @@
  * Funzioni pure; la richiesta è nella route /api/avvisi-actv.
  */
 import type { ActvNotice, ActvNoticeStop } from '@/lib/contracts/actvNotices';
+import { PROVIDERS } from '@/lib/provenance/providers';
 
 export interface RawRssItem {
   title: string;
@@ -118,7 +119,7 @@ export function toNotice(item: RawRssItem, stops: Record<string, [string, number
   return {
     id: /^(\d+)/.exec(item.guid)?.[1] ?? item.link,
     title: plainText(item.title),
-    url: /^https?:\/\/(?:www\.)?(?:actv|avm)\.avmspa\.it\//.test(item.link) ? item.link.replace(/^http:/, 'https:') : 'https://avm.avmspa.it/it/content/infomobilit%C3%A0-avmactv-venezia',
+    url: /^https?:\/\/(?:www\.)?(?:actv|avm)\.avmspa\.it\//.test(item.link) ? item.link.replace(/^http:/, 'https:') : PROVIDERS.actvNotices.url,
     publishedAt: Number.isNaN(published.getTime()) ? '' : published.toISOString(),
     text: text.length > 900 ? `${text.slice(0, 897)}…` : text,
     lines: mentionedLines(text, knownLines),

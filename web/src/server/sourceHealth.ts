@@ -1,4 +1,5 @@
 import { romeLocalToDate } from '@/server/sources/tide';
+import { FEEDS, type FeedId } from '@/lib/provenance/feeds';
 
 type HealthStatus = 'ok' | 'stale' | 'down';
 
@@ -14,16 +15,16 @@ export interface SourceHealth {
   detail?: string;
 }
 
-/** Classifica una fonte in base all'età del dato. */
+/** Classifica un flusso del registro (`lib/provenance/feeds.ts`) in base all'età del dato. */
 export function assess(
-  id: string,
-  name: string,
+  id: FeedId,
   kind: SourceHealth['kind'],
   observedAt: Date | null,
   maxAgeMinutes: number,
   now: Date = new Date(),
   detail?: string,
 ): SourceHealth {
+  const name = FEEDS[id].label;
   if (!observedAt || Number.isNaN(observedAt.getTime())) {
     return { id, name, kind, status: 'down', ageMinutes: null, maxAgeMinutes, detail: detail ?? 'fonte non raggiungibile o senza data' };
   }

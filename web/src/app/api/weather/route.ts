@@ -5,6 +5,7 @@ import type { MeteoMarineWindItem } from '@/lib/types';
 import { fetchUpstream } from '@/server/upstream';
 import { LIPZ_METAR_URL, parseLipzMetar } from '@/server/sources/metar';
 import { buildWindStations, cityAirTemperature, CPSM_METEO_URLS, parseCpsmFeed, type CpsmFeedName } from '@/server/sources/cpsmMeteo';
+import { PROVIDERS, providerMeta } from '@/lib/provenance/providers';
 
 export const revalidate = 300;
 
@@ -58,9 +59,8 @@ export async function GET() {
     meta: {
       metar: {
         kind: 'live',
-        source: 'METAR ICAO LIPZ – NOAA Aviation Weather Center',
-        sourceUrl: 'https://aviationweather.gov/data/metar/?ids=LIPZ',
-        license: 'Pubblico dominio (US Government)',
+        ...providerMeta('noaa', 'METAR ICAO LIPZ – NOAA Aviation Weather Center'),
+        sourceUrl: `${PROVIDERS.noaa.url}/data/metar/?ids=LIPZ`,
         fetchedAt: metar.ok ? metar.fetchedAt : undefined,
         observedAt: metar.ok ? metar.data.observationTime : undefined,
         note: metar.ok ? undefined : 'METAR temporaneamente non disponibile',
@@ -68,7 +68,7 @@ export async function GET() {
       windStations: {
         kind: 'live',
         source: 'Comune di Venezia – CPSM, rete meteo-marina (dati.venezia.it)',
-        sourceUrl: 'https://dati.venezia.it/?q=content/cpsm-dati-meteomarini-laguna-e-litorale-veneziano',
+        sourceUrl: PROVIDERS.cpsm.datasetUrl,
         ...CPSM_LICENSE_META,
         fetchedAt: new Date().toISOString(),
         note: `${cpsmStations.length} stazioni CPSM con coordinate pubblicate; misure aggiornate ogni 5 minuti.`,

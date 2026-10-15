@@ -1,7 +1,6 @@
 import type { MarineForecast } from '@/lib/types';
 
-/** Previsione del moto ondoso e della temperatura del mare (Open-Meteo Marine, CC BY 4.0). */
-export const MARINE_SOURCE = 'Open-Meteo Marine (modelli ECMWF WAM / MeteoFrance MFWAM, Copernicus Marine)';
+/** Previsione del moto ondoso e della temperatura del mare (Open-Meteo Marine, vedi PROVIDERS.openMeteoMarine). */
 
 export function marineUrl(lat: number, lon: number): string {
   const params = new URLSearchParams({

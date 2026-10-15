@@ -4,8 +4,6 @@ import type { AirForecast, PollenFamilyItem, PollenKey, PollenLevel } from '@/li
  * Qualità dell'aria, pollini e indice UV da Open-Meteo Air Quality (modello Copernicus CAMS,
  * CC BY 4.0). Sono previsioni di modello nel punto richiesto, non misure di una centralina.
  */
-export const CAMS_SOURCE = 'Copernicus CAMS via Open-Meteo Air Quality';
-export const CAMS_LICENSE = 'CC BY 4.0 – Copernicus Atmosphere Monitoring Service / Open-Meteo.com';
 
 const POLLEN_KEYS: PollenKey[] = ['alder', 'birch', 'grass', 'mugwort', 'olive', 'ragweed'];
 

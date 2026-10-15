@@ -6,6 +6,7 @@ import { pointAt, type SimProfile } from '@/lib/simulationCore';
 import { ACTV_STOPS_REFERENCE } from '@/lib/stopsReference';
 import { romeDayType, romeLocalToDate, romeSecondsOfDay } from '@/lib/time';
 import { scheduledRunning, serviceNow, type ServiceVehicle } from '@/lib/serviceNow';
+import { providerMeta } from '@/lib/provenance/providers';
 
 export const revalidate = 30;
 
@@ -62,8 +63,7 @@ export async function GET() {
     data,
     meta: {
       kind: 'live',
-      source: 'ACTV / AVM – GTFS-Realtime e orario ufficiale GTFS',
-      sourceUrl: 'https://tpl.actv.it',
+      ...providerMeta('actvRealtime', 'ACTV / AVM – GTFS-Realtime e orario ufficiale GTFS'),
       fetchedAt: body.meta.fetchedAt ?? null,
       computedAt: now.toISOString(),
       timetable: sim !== null,

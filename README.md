@@ -55,7 +55,8 @@ vod-venice-open-data/
 ├── web/                     # Sito Next.js (App Router)
 │   ├── src/app/             # Pagine (mappa, /features, /layers, /metrics, /sources, /mcp, /privacy) e API in api/
 │   ├── src/components/      # Interfaccia; map/ contiene il disegno della mappa, un modulo per tema
-│   ├── src/lib/             # Logica condivisa: simulazione, planner, rete dei mezzi, acqua alta, traduzioni (i18n/)
+│   ├── src/lib/             # Logica condivisa: simulazione, planner, rete dei mezzi, acqua alta, traduzioni (i18n/),
+│   │                        # registro di fornitori, licenze e flussi di dati (provenance/)
 │   ├── src/server/          # Accesso alle fonti esterne (sources/) e calcoli lato server (planning/)
 │   ├── src/data/            # Dataset generati dalla pipeline
 │   ├── public/data/         # File grandi con l'hash nel nome: orario, rete pedonale, canali, isole
@@ -211,7 +212,7 @@ every source: [docs/note-legali-fonti.md](docs/note-legali-fonti.md) and the `/s
 ### Project structure
 
 `web/` is the Next.js site (pages and API in `src/app`, map drawing in `src/components/map`, shared logic in
-`src/lib`, source access and server-side calculations in `src/server`, generated datasets in `src/data` and
+`src/lib`, with the single registry of data providers, licences and feeds in `src/lib/provenance`, source access and server-side calculations in `src/server`, generated datasets in `src/data` and
 `public/data`, Playwright tests in `e2e`). `pipeline/` holds the Python scripts that download and prepare the
 data, `skills/` the Claude skill, `docs/` the guides, `.github/workflows/` the CI and the weekly data refresh.
 

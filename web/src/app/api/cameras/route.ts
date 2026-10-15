@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { OSM_SURVEILLANCE_META, VENICE_CAMERAS } from '@/lib/cameras-data';
+import { PROVIDERS } from '@/lib/provenance/providers';
 
 export const revalidate = 86400;
 
@@ -26,7 +27,7 @@ export async function GET() {
       cctvMonitoring: {
         kind: 'community',
         source: 'OpenStreetMap (man_made=surveillance) + selezione Anopticon (tramaci.org)',
-        sourceUrl: 'https://www.openstreetmap.org/copyright',
+        sourceUrl: PROVIDERS.osm.datasetUrl,
         license: `${OSM_SURVEILLANCE_META.license} – ${OSM_SURVEILLANCE_META.attribution}`,
         observedAt: OSM_SURVEILLANCE_META.generatedAt,
         note: 'Mappature collaborative non verificate da un ente. Il dataset completo di Anopticon non è incluso: i suoi termini d\'uso vietano l\'accesso automatico senza autorizzazione.',

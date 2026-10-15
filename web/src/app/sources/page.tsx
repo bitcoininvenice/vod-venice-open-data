@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { downloadBlob } from '@/lib/dataExport';
 import { SiteFooter, SiteHeader } from '@/components/site/SiteChrome';
 import { useTranslation } from '@/lib/i18n';
-import { CAMPO_SITE } from '@/server/sources/campo';
+import { FEEDS, feedSummary, type FeedId, type FeedSummary } from '@/lib/provenance/feeds';
 import {
   Activity,
   CheckCircle2,
@@ -28,65 +28,10 @@ interface HealthApiResponse {
   sources: SourceHealth[];
 }
 
-/**
- * Metadati delle fonti: solo informazioni verificabili (ente, portale, licenza dichiarata nella
- * pipeline o nel portale, formato, frequenza con cui VOD rilegge il dato). La nota opzionale è
- * una chiave ui.sourcesPage.meta_<id>.
- */
-interface SourceMetadata {
-  institution: string;
-  portalUrl: string;
-  portalName: string;
-  license: string;
-  format: string;
-  /** Chiave di traduzione della frequenza di aggiornamento in VOD */
-  refresh: 'r15s' | 'r20s' | 'r60s' | 'r5min' | 'r10min' | 'r15min' | 'r30min' | 'r60min' | 'weekly' | 'census';
-  hasNote?: boolean;
-}
-
-const COMUNE = 'Comune di Venezia';
-const SOURCES_METADATA: Record<string, SourceMetadata> = {
-  tide: { institution: `${COMUNE} – Centro Maree (CPSM)`, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY-SA 3.0 / CC BY', format: 'JSON', refresh: 'r60s', hasNote: true },
-  'tide-forecast': { institution: `${COMUNE} – Centro Maree (CPSM)`, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY-SA 3.0 / CC BY', format: 'JSON', refresh: 'r10min', hasNote: true },
-  metar: { institution: 'NOAA Aviation Weather Center', portalUrl: 'https://aviationweather.gov', portalName: 'aviationweather.gov', license: 'Public domain (NOAA)', format: 'METAR JSON', refresh: 'r5min' },
-  'gtfs-rt-nav': { institution: 'AVM / ACTV', portalUrl: 'https://actv.avmspa.it/it/content/catalogo-dei-dati-metadati-e-banche-dati-actv', portalName: 'tpl.actv.it', license: 'Open Data Real Time (catalogo ACTV)', format: 'GTFS-RT (protobuf)', refresh: 'r20s', hasNote: true },
-  'gtfs-rt-aut': { institution: 'AVM / ACTV', portalUrl: 'https://actv.avmspa.it/it/content/catalogo-dei-dati-metadati-e-banche-dati-actv', portalName: 'tpl.actv.it', license: 'Open Data Real Time (catalogo ACTV)', format: 'GTFS-RT (protobuf)', refresh: 'r20s', hasNote: true },
-  'cpsm-meteo': { institution: `${COMUNE} – Centro Maree (CPSM)`, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY-SA 3.0 / CC BY', format: 'JSON', refresh: 'r5min', hasNote: true },
-  aisstream: { institution: 'aisstream.io', portalUrl: 'https://aisstream.io', portalName: 'aisstream.io', license: 'Messaggi AIS pubblici', format: 'WebSocket JSON', refresh: 'r60s', hasNote: true },
-  opensky: { institution: 'OpenSky Network', portalUrl: 'https://opensky-network.org', portalName: 'opensky-network.org', license: 'OpenSky Terms of Use', format: 'REST JSON', refresh: 'r15s', hasNote: true },
-  'open-meteo': { institution: 'Open-Meteo (modelli DWD ICON / ECMWF)', portalUrl: 'https://open-meteo.com', portalName: 'open-meteo.com', license: 'CC BY 4.0', format: 'REST JSON', refresh: 'r30min', hasNote: true },
-  'cams-air': { institution: 'Copernicus CAMS via Open-Meteo', portalUrl: 'https://open-meteo.com/en/docs/air-quality-api', portalName: 'open-meteo.com', license: 'CC BY 4.0', format: 'REST JSON', refresh: 'r30min', hasNote: true },
-  'open-meteo-marine': { institution: 'Open-Meteo Marine', portalUrl: 'https://open-meteo.com/en/docs/marine-weather-api', portalName: 'open-meteo.com', license: 'CC BY 4.0', format: 'REST JSON', refresh: 'r30min', hasNote: true },
-  'gtfs-static': { institution: 'ACTV (Open Data)', portalUrl: 'https://actv.avmspa.it', portalName: 'actv.avmspa.it', license: 'CC BY', format: 'GTFS', refresh: 'weekly' },
-  'opere-pubbliche': { institution: COMUNE, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY', format: 'CSV', refresh: 'weekly', hasNote: true },
-  wifi: { institution: COMUNE, portalUrl: 'https://dati.venezia.it', portalName: 'dati.venezia.it', license: 'CC BY', format: 'GeoJSON', refresh: 'weekly' },
-  arpav: { institution: 'ARPAV', portalUrl: 'https://www.arpa.veneto.it', portalName: 'arpa.veneto.it', license: 'CC BY 4.0', format: 'CSV', refresh: 'weekly', hasNote: true },
-  'osm-cameras': { institution: 'OpenStreetMap contributors', portalUrl: 'https://www.openstreetmap.org', portalName: 'openstreetmap.org', license: 'ODbL 1.0', format: 'Overpass JSON', refresh: 'weekly' },
-  'osm-dae': { institution: 'OpenStreetMap contributors', portalUrl: 'https://www.openstreetmap.org', portalName: 'openstreetmap.org', license: 'ODbL 1.0', format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
-  'osm-pharmacies': { institution: 'OpenStreetMap contributors', portalUrl: 'https://www.openstreetmap.org', portalName: 'openstreetmap.org', license: 'ODbL 1.0', format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
-  'osm-fountains': { institution: 'OpenStreetMap contributors', portalUrl: 'https://www.openstreetmap.org', portalName: 'openstreetmap.org', license: 'ODbL 1.0', format: 'Overpass JSON', refresh: 'weekly' },
-  'venice-tap-water': { institution: 'Venice Tap Water', portalUrl: 'https://www.venicetapwater.org', portalName: 'venicetapwater.org', license: 'Uso con citazione della fonte', format: 'KML', refresh: 'weekly', hasNote: true },
-  'osm-poi': { institution: 'OpenStreetMap contributors', portalUrl: 'https://www.openstreetmap.org', portalName: 'openstreetmap.org', license: 'ODbL 1.0', format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
-  'osm-waterways': { institution: 'OpenStreetMap contributors', portalUrl: 'https://www.openstreetmap.org', portalName: 'openstreetmap.org', license: 'ODbL 1.0', format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
-  'osm-civici': { institution: 'OpenStreetMap contributors', portalUrl: 'https://www.openstreetmap.org', portalName: 'openstreetmap.org', license: 'ODbL 1.0', format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
-  'osm-walk': { institution: 'OpenStreetMap contributors', portalUrl: 'https://www.openstreetmap.org', portalName: 'openstreetmap.org', license: 'ODbL 1.0', format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
-  'osm-boat': { institution: 'OpenStreetMap contributors · Comune di Venezia (Testo Unico circolazione acquea)', portalUrl: 'https://www.comune.venezia.it/it/content/normativa-circolazione-acquea', portalName: 'comune.venezia.it', license: 'ODbL 1.0 (canali) · atto pubblico (regole)', format: 'Overpass JSON + PDF', refresh: 'weekly', hasNote: true },
-  'osm-parks': { institution: 'OpenStreetMap contributors', portalUrl: 'https://www.openstreetmap.org', portalName: 'openstreetmap.org', license: 'ODbL 1.0', format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
-  'arpav-pollen': { institution: 'ARPAV', portalUrl: 'https://www.arpa.veneto.it/dati-ambientali/open-data', portalName: 'arpa.veneto.it', license: 'CC BY 4.0', format: 'CSV', refresh: 'weekly', hasNote: true },
-  'cciaa-turismo': { institution: 'Camera di Commercio Venezia Rovigo', portalUrl: 'https://opengovernment.unioncamere.gov.it', portalName: 'opengovernment.unioncamere.gov.it', license: 'CC BY 4.0', format: 'CSV', refresh: 'weekly', hasNote: true },
-  'arpav-lagoon': { institution: 'ARPAV', portalUrl: 'https://www.arpa.veneto.it/dati-ambientali/open-data/file-e-allegati/soaml/laguna-di-venezia/dati-sonda', portalName: 'arpa.veneto.it', license: 'CC BY 4.0', format: 'CSV', refresh: 'weekly', hasNote: true },
-  'istat-census': { institution: 'ISTAT', portalUrl: 'https://www.istat.it/notizia/basi-territoriali-e-variabili-censuarie/', portalName: 'istat.it (basi territoriali e variabili censuarie)', license: 'CC BY 4.0', format: 'XLSX + Shapefile', refresh: 'census', hasNote: true },
-  'cruscotto-italia': { institution: 'Cruscotto Italia – AgID', portalUrl: 'https://cruscotto-italia.dati.gov.it', portalName: 'cruscotto-italia.dati.gov.it', license: 'CC BY 4.0', format: 'MCP (comune_kpi)', refresh: 'weekly', hasNote: true },
-  campo: { institution: 'Comunità CAMPO', portalUrl: CAMPO_SITE, portalName: 'CAMPO (API GeoJSON)', license: 'CC BY 4.0', format: 'GeoJSON', refresh: 'r60min', hasNote: true },
-  flixbus: { institution: 'FlixMobility (FlixBus)', portalUrl: 'https://transport.data.gouv.fr/datasets/flixbus-horaires-theoriques-du-reseau-europeen-1', portalName: 'transport.data.gouv.fr', license: 'ODbL 1.0', format: 'GTFS', refresh: 'weekly', hasNote: true },
-  'actv-avvisi': { institution: 'ACTV / AVM S.p.A.', portalUrl: 'https://avm.avmspa.it/it/content/infomobilit%C3%A0-avmactv-venezia', portalName: 'actv.avmspa.it/rss.xml', license: 'Contenuti ACTV (citati con link)', format: 'RSS', refresh: 'r15min', hasNote: true },
-  'comune-ordinanze': { institution: COMUNE, portalUrl: 'https://www.comune.venezia.it/it/ordinanze', portalName: 'comune.venezia.it/it/ordinanze', license: 'Atti pubblici', format: 'REST JSON + HTML', refresh: 'r60min', hasNote: true },
-  'osm-toponyms': { institution: 'OpenStreetMap contributors', portalUrl: 'https://www.openstreetmap.org', portalName: 'openstreetmap.org', license: 'ODbL 1.0', format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
-  'packet-broker': { institution: 'The Things Network – Packet Broker', portalUrl: 'https://packetbroker.net', portalName: 'mapper.packetbroker.net', license: 'Dati pubblicati dai proprietari', format: 'REST JSON', refresh: 'r10min', hasNote: true },
-  'bdap-mop': { institution: 'MEF – Ragioneria Generale dello Stato (BDAP)', portalUrl: 'https://bdap-opendata.rgs.mef.gov.it/opendata/spd_mop_prg_mon_reg05_01_9999', portalName: 'bdap-opendata.rgs.mef.gov.it', license: 'CC BY', format: 'CSV (CKAN)', refresh: 'weekly', hasNote: true },
-  'agcom-fiber': { institution: 'AGCOM – BroadbandMap', portalUrl: 'https://maps.agcom.it', portalName: 'maps.agcom.it', license: 'CC BY 4.0', format: 'ArcGIS REST (griglia 20 m)', refresh: 'weekly', hasNote: true },
-  'alilaguna-gtfs': { institution: 'Alilaguna S.p.A.', portalUrl: 'https://www.alilaguna.it', portalName: 'alilaguna.it (GTFS)', license: '—', format: 'GTFS', refresh: 'weekly', hasNote: true },
-};
+/** Ente, portale e licenza di un flusso dal registro delle fonti (`lib/provenance`) */
+const SOURCES_METADATA: Record<string, FeedSummary> = Object.fromEntries(
+  (Object.keys(FEEDS) as FeedId[]).map((id) => [id, feedSummary(id)]),
+);
 
 // Dettagli prodotti da /api/health, tradotti quando noti
 const DETAIL_KEYS: Record<string, string> = {
@@ -420,7 +365,7 @@ export default function SourcesPage() {
                             {s_('format')}: {meta.format} · {s_(`refresh_${meta.refresh}`)}
                           </span>
                           <span className="px-1.5 py-0.5 rounded bg-[var(--rule)]/50 text-[var(--ink-2)]">
-                            {meta.license === '—' ? s_('licenseUnconfirmed') : meta.license}
+                            {meta.licenseUndeclared ? s_('licenseUnconfirmed') : meta.license}
                           </span>
                         </div>
                         {meta.hasNote && <p className="text-[11px] text-[var(--ink-2)] leading-snug">{s_(`meta_${s.id}`)}</p>}

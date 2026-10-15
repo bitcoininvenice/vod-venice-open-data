@@ -1344,7 +1344,7 @@ export const enUi: UiTranslations = {
     ageDays: "Data from {n} days ago",
     threshold: "Threshold: {t}",
     format: "Format",
-    refresh_r15s: "refetched every 15 s",
+    refresh_r30s: "refetched every 30 s",
     refresh_r20s: "refetched every 20 s",
     refresh_r60s: "refetched every 60 s",
     refresh_r5min: "refetched every 5 min",

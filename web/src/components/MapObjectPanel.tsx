@@ -14,6 +14,7 @@ import { useServiceNow } from '@/lib/useServiceNow';
 import { FLIXBUS_COLOR, flixTime, type FlixBusPosition } from '@/lib/flixbus';
 import { noticesForStop, useActvNotices } from '@/lib/useActvNotices';
 import { ActvNoticeBox } from '@/components/ActvNoticeList';
+import { PROVIDERS } from '@/lib/provenance/providers';
 
 /** Mezzo ACTV selezionato: posizione simulata dall'orario o reale (GTFS-RT). */
 interface VehicleSelection {
@@ -148,7 +149,7 @@ export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose,
         />
         <p className="text-[11px] text-[var(--ink-3)] leading-relaxed border-t border-[var(--rule)] pt-2" data-testid="flight-attribution">
           {t('ui.map.flightAttribution')}{' '}
-          <a href="https://opensky-network.org" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">opensky-network.org</a>
+          <a href={PROVIDERS.opensky.url} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">opensky-network.org</a>
         </p>
         {onOpenAirport && (
           <button
@@ -451,7 +452,7 @@ const FlixbusCard: React.FC<{ bus: FlixBusPosition; onClose: () => void }> = ({ 
       </div>
       <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">{f('note')}</p>
       <a
-        href="https://transport.data.gouv.fr/datasets/flixbus-horaires-theoriques-du-reseau-europeen-1"
+        href={PROVIDERS.flixbus.url}
         target="_blank"
         rel="noopener noreferrer"
         className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2"

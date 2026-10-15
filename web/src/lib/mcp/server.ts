@@ -6,6 +6,7 @@ import { MCP_LOADERS } from './loaders';
 import { applyQuery } from './query';
 import { departuresService, findPlaceService, floodService, planTripService, type ServiceResult } from '@/server/planning/services';
 import { GET as airportGET } from '@/app/api/aeroporto/route';
+import { SITE_URL } from '@/lib/site';
 
 const INSTRUCTIONS = `VOD – Venice Open Data espone in sola lettura dati pubblici su Venezia e la laguna: marea, meteo, aria, pollini, laguna, trasporti, servizi e patrimonio.
 Usa prima list_datasets per vedere cosa c'è, poi query_dataset con filtri piccoli (limit basso, near per una zona, text per un nome).
@@ -161,7 +162,7 @@ export function createVodMcpServer(): McpServer {
     async () =>
       run(async () => {
         const body = (await (await airportGET()).json()) as Record<string, unknown>;
-        return { ok: true as const, body: { ...body, vodUrl: 'https://venice-open-data.vercel.app/?open=aeroporto' } };
+        return { ok: true as const, body: { ...body, vodUrl: `${SITE_URL}/?open=aeroporto` } };
       }),
   );
 

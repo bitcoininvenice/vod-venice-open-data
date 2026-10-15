@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { GRID } from '@/lib/simulation-data';
 import { arrivalsNear, fetchTripDelays } from '@/server/sources/actvDelays';
+import { providerMeta } from '@/lib/provenance/providers';
 
 const [LON0, LON1, LAT0, LAT1] = GRID.frame;
 
@@ -35,8 +36,7 @@ export async function GET(request: Request) {
       data,
       meta: {
         kind: ok ? 'live' : 'unavailable',
-        source: 'ACTV / AVM – GTFS-Realtime TripUpdates',
-        sourceUrl: 'https://tpl.actv.it',
+        ...providerMeta('actvRealtime', 'ACTV / AVM – GTFS-Realtime TripUpdates'),
         note: 'Orari previsti e ritardi stimati da ACTV. Il ritardo attuale deriva dalla posizione GPS; gli orari alle fermate successive sono stime (estimate=constant: ACTV ripete il ritardo attuale). Feed elencato come «Open Data Real Time» nel catalogo dei dati ACTV (art. 53 CAD).',
       },
     },

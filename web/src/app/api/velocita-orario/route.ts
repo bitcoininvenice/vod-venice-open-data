@@ -5,6 +5,7 @@ import { serverSimulation } from '@/server/sources/simulationServer';
 import { ACTV_STOPS_REFERENCE } from '@/lib/stopsReference';
 import { GEOMETRY_MARGIN, MIN_LIMITED_SHARE, ROUNDING_S, scheduleSpeedSegments, type ScheduleSpeedSegment } from '@/lib/scheduleSpeed';
 import { compareLines } from '@/lib/serviceNow';
+import { PROVIDERS, providerLicense, providersLicense } from '@/lib/provenance/providers';
 
 export const revalidate = 86400;
 
@@ -34,7 +35,8 @@ export async function GET() {
     meta: {
       kind: 'calculated',
       source: 'Orario ufficiale ACTV (GTFS) e limiti di velocità dagli atti (Regolamento comunale art. 2-3, Ordinanza 93/2007) sui canali OpenStreetMap',
-      sourceUrl: 'https://actv.avmspa.it',
+      sourceUrl: PROVIDERS.actvGtfs.url,
+      license: `${providersLicense(['actvGtfs', 'osm'])}; limiti: ${providerLicense('speedLimits')}`,
       note: `Calcolo dall'orario, non misura dei mezzi. Tempo minimo legale: somma di lunghezza/limite sui pezzi del tratto in canali con limite noto (limite ACTV se diverso), gli altri pezzi contano zero; il tempo programmato include attracco e partenza. tooFast: orario più breve del minimo legale anche con ${ROUNDING_S} s di tolleranza per gli arrotondamenti e il ${GEOMETRY_MARGIN * 100}% per l'incertezza del percorso; tight: entro il 15%; partial: limite noto su meno del ${MIN_LIMITED_SHARE * 100}% del tratto. Giorno feriale. Non sono inclusi i canali della Capitaneria di Porto (Giudecca, Bacino San Marco).`,
     },
   });

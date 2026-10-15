@@ -1,4 +1,5 @@
 import { OceanStationItem, BriccolaSignalItem } from './types';
+import { PROVIDERS } from '@/lib/provenance/providers';
 
 // Stazioni oceanografiche, boe ondametriche e piattaforme al largo e nelle bocche di porto (anagrafica).
 // Le misure sono null: per la piattaforma CNR "Acqua Alta" /api/marine-sensors le sostituisce con i feed
@@ -63,7 +64,7 @@ export const OCEAN_STATIONS_DATA: OceanStationItem[] = [
     depthMeters: 14.0,
     observedAt: null,
     officialSource: 'CPSM Centro Maree / Provveditorato OO.PP.',
-    portalLink: 'https://www.comune.venezia.it/it/content/centro-previsioni-e-segnalazioni-maree'
+    portalLink: PROVIDERS.cpsm.url
   },
   {
     id: 'ISPRA-CHIOGGIA-01',

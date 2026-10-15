@@ -1,6 +1,8 @@
+import { PROVIDERS } from '@/lib/provenance/providers';
+
 /** Ordinanze del Comune di Venezia di ogni ambito per città storica, isole, Lido e tutto il territorio comunale, esclusa la terraferma (/api/ordinanze). */
 /** Elenco ufficiale delle ordinanze del Comune */
-export const ORDINANCES_PAGE = 'https://www.comune.venezia.it/it/ordinanze';
+export const ORDINANCES_PAGE = PROVIDERS.comuneOrdinanze.url;
 
 export type OrdinanceKind = 'closure' | 'works' | 'event' | 'other';
 

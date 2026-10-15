@@ -1342,7 +1342,7 @@ export const itUi = {
     ageDays: "Dato di {n} giorni fa",
     threshold: "Soglia: {t}",
     format: "Formato",
-    refresh_r15s: "riletto ogni 15 s",
+    refresh_r30s: "riletto ogni 30 s",
     refresh_r20s: "riletto ogni 20 s",
     refresh_r60s: "riletto ogni 60 s",
     refresh_r5min: "riletto ogni 5 min",

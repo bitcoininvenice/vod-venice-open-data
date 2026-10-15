@@ -7,7 +7,6 @@ import type { ShipCategory, ShipItem } from '@/lib/types';
  * raccoglie i messaggi nell'area di Venezia e li unisce a quanto ricevuto nei minuti precedenti.
  */
 const AISSTREAM_URL = 'wss://stream.aisstream.io/v0/stream';
-export const AIS_SOURCE = 'aisstream.io (rete AIS di ricevitori a terra)';
 /** Laguna, bocche di porto e rada antistante: [[lat, lon] SW, [lat, lon] NE] */
 export const VENICE_BBOX: [[number, number], [number, number]] = [[45.15, 12.05], [45.62, 12.75]];
 /** Una nave non sentita da più di questo tempo viene tolta (le navi ferme trasmettono ogni ~3 minuti). */

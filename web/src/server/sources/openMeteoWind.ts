@@ -1,4 +1,5 @@
 import type { WindField } from '@/lib/types';
+import { PROVIDERS, providerLicense } from '@/lib/provenance/providers';
 
 /**
  * Campo di vento a 10 m da Open-Meteo (CC BY 4.0), modello "best match" (per l'Italia nord-orientale
@@ -6,8 +7,6 @@ import type { WindField } from '@/lib/types';
  */
 export const WIND_GRID = { lon0: 12.1, lat0: 45.18, dLon: 0.05, dLat: 0.05, nx: 9, ny: 9 } as const;
 
-const OPEN_METEO_SOURCE = 'Open-Meteo – modelli DWD ICON / ECMWF (best match)';
-const OPEN_METEO_LICENSE = 'CC BY 4.0 – Weather data by Open-Meteo.com';
 
 function gridCoordinates() {
   const lats: number[] = [];
@@ -63,9 +62,9 @@ export function parseOpenMeteoWind(raw: unknown): Omit<WindField, 'fetchedAt'> {
   if (!validTime) throw new Error('ora della previsione mancante');
   return {
     validTime,
-    source: OPEN_METEO_SOURCE,
-    sourceUrl: 'https://open-meteo.com',
-    license: OPEN_METEO_LICENSE,
+    source: `${PROVIDERS.openMeteo.name} (best match)`,
+    sourceUrl: PROVIDERS.openMeteo.url,
+    license: providerLicense('openMeteo'),
     ...WIND_GRID,
     u,
     v,

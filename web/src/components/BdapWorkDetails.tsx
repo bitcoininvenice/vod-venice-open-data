@@ -5,8 +5,9 @@ import { AlertTriangle, ExternalLink } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { BDAP_FUNDING_KEYS, executionProgress, fundingTotal, isOverdue, type BdapFundingKey, type BdapProject } from '@/lib/bdap';
 import { KeyValues, MoreDetails } from '@/components/ui/InfoPanel';
+import { PROVIDERS } from '@/lib/provenance/providers';
 
-const BDAP_URL = 'https://bdap-opendata.rgs.mef.gov.it/opendata/spd_mop_prg_mon_reg05_01_9999';
+const BDAP_URL = PROVIDERS.bdap.url;
 
 export const FUNDING_COLOR: Record<BdapFundingKey, string> = {
   state: '#3b82f6',

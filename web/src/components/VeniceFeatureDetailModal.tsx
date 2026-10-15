@@ -102,6 +102,7 @@ import {
   evaluateArpavWaterQuality,
   OFFICIAL_LAGOON_SOURCES
 } from '@/lib/lagoonCurrents';
+import { PROVIDERS } from '@/lib/provenance/providers';
 
 export type VeniceFeatureSelected =
   | { type: 'passerella'; data: PasserellaItem }
@@ -1411,7 +1412,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 </p>
               )}
               <p className="text-[11px] text-[var(--ink-3)]">{t('ui.feature.fiberNote')}</p>
-              <a href="https://maps.agcom.it" target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline flex items-center gap-1.5">
+              <a href={PROVIDERS.agcom.url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline flex items-center gap-1.5">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/cc-by-88x31.png" alt="CC BY 4.0" width={66} height={23} />
                 {t('ui.feature.fiberAttribution')}

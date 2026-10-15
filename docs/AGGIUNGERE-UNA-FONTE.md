@@ -24,6 +24,8 @@ viene unita, anche se i test passano.
 5. **Una sola chiamata condivisa per fonte, dentro la quota.** Le API si interrogano solo dal server, con una
    cache adeguata ai limiti del fornitore; il browser non contatta mai la fonte direttamente.
 6. **Citazione visibile.** Fonte e licenza nella scheda del livello, nel catalogo `/layers` e in `/sources`.
+7. **Fonte e licenza scritte una volta sola**, nel registro `web/src/lib/provenance/` (vedi sotto): un test
+   fallisce se un link di un fornitore o un testo di licenza compaiono scritti a mano altrove.
 
 Le note legali di ogni fonte già integrata sono in `docs/note-legali-fonti.md`.
 
@@ -36,6 +38,21 @@ Le note legali di ogni fonte già integrata sono in `docs/note-legali-fonti.md`.
 | **C. Orario** (GTFS) | pipeline che prepara l'orario, posizioni simulate nella mappa | ACTV, Alilaguna, FlixBus |
 | **D. Elenco compilato a mano** | file curato nel codice, segnato «da verificare», con la fonte di ogni voce | idroambulanze, campanili pendenti |
 | **E. Solo una proposta** | issue «Proponi una fonte» con link, licenza e cosa mostrare | per chi non programma |
+
+## 1b. Il registro delle fonti
+
+Tre file in `web/src/lib/provenance/`, da cui leggono API, pagina `/sources`, cataloghi, server MCP e servizi:
+
+| File | Cosa contiene | Quando si tocca |
+|---|---|---|
+| `licenses.ts` | testo e link di ogni licenza (`LicenseId`) | solo per una licenza nuova |
+| `providers.ts` | ogni fornitore: nome, sito, portale, licenza, attribuzione (`ProviderId`) | per ogni fornitore nuovo |
+| `feeds.ts` | i flussi controllati da `/api/health` e mostrati in `/sources` (`FeedId`) | per ogni feed o dataset nuovo |
+
+Nelle route si usa `...providerMeta('<fornitore>')` per `source`, `sourceUrl` e `license` del campo `meta`;
+nel catalogo MCP `providerLicense('<fornitore>')`; nei servizi di calcolo `providerCitation('<fornitore>')`. Le
+chiavi sono tipizzate: un nome sbagliato non compila. Gli indirizzi tecnici delle API interrogate restano nei
+moduli di `web/src/server/sources/`.
 
 ## 2. Preparare l'ambiente
 
@@ -61,13 +78,14 @@ python -m pytest -q pipeline/tests skills/tests
      tentativi con attese crescenti, User-Agent e `Retry-After` già gestiti;
    - accetta `--file` per lavorare su una copia locale quando la fonte è instabile;
    - **controllo di completezza**: se i dati sono pochi o malformati, esce con errore e **non sovrascrive** il file;
-   - scrive `web/src/data/<nome>.json` con `generatedAt`, `source`, `sourceUrl`, `license`, `attribution` e i dati.
+   - scrive `web/src/data/<nome>.json` con `generatedAt`, `source`, `sourceUrl`, `license`, `attribution` e i dati;
+   - il fornitore, se nuovo, va aggiunto a `web/src/lib/provenance/providers.ts`.
    Modello semplice da copiare: `pipeline/import_osm_pharmacies.py`.
 2. **Test** delle funzioni di trasformazione in `pipeline/tests/test_pipeline.py` (senza rete).
 3. **Aggiornamento automatico**: aggiungi il comando a `.github/workflows/refresh-data.yml` con
    `|| echo "::warning::…"`, così un errore della fonte non blocca le altre.
 4. **API**: una route in `web/src/app/api/<nome>/route.ts` che legge il JSON e risponde con i dati e un campo
-   `meta` (`source`, `sourceUrl`, `license`, `generatedAt`, `note`). I file grandi restano lato server.
+   `meta` (`...providerMeta('<fornitore>')`, `generatedAt`, `note`). I file grandi restano lato server.
 
 ## 4. Caso B: API in tempo reale
 
@@ -79,8 +97,9 @@ python -m pytest -q pipeline/tests skills/tests
    stessa fonte, crea un client condiviso come `web/src/server/sources/openskyClient.ts`.
 3. **Chiavi**: solo in variabili d'ambiente lette dal server, documentate in `web/.env.example` senza valore.
    Mai nel codice, nei log o nelle risposte.
-4. **Stato della fonte**: una riga in `web/src/app/api/health/route.ts`, così `/sources` mostra se risponde ed è
-   aggiornata.
+4. **Stato della fonte**: il flusso in `web/src/lib/provenance/feeds.ts` e una riga `assess('<flusso>', …)` in
+   `web/src/app/api/health/route.ts`, così `/sources` mostra se risponde ed è aggiornata (un test verifica che
+   ogni flusso sia controllato).
 
 ## 5. Caso C: orari (GTFS)
 
@@ -114,7 +133,8 @@ Ogni testo visibile passa dalle traduzioni: niente testo fisso nel codice. Se il
 
 ## 8. Fonti, server MCP e skill
 
-- **Pagina `/sources`**: voce in `web/src/app/sources/page.tsx` e testi `name_<id>` / `meta_<id>` nelle traduzioni.
+- **Pagina `/sources`**: il flusso in `web/src/lib/provenance/feeds.ts` (fornitori, formato, frequenza) e i testi
+  `name_<id>` / `meta_<id>` nelle traduzioni.
 - **Server MCP e API dei dataset** (assistenti AI): descrittore in `web/src/lib/mcp/catalog.ts` e loader in
   `web/src/lib/mcp/loaders.ts`, che riusa la route esistente. Solo se la licenza permette la ridistribuzione.
 - **Skill**: se cambia come un'AI deve usare i dati, aggiorna `skills/venice-open-data/` e rigenera lo ZIP con

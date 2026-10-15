@@ -8,6 +8,7 @@ import { useTranslation } from '@/lib/i18n';
 import { formatLocalStamp, formatSignedCm } from '@/lib/time';
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge';
 import { InfoPanel } from '@/components/ui/InfoPanel';
+import { PROVIDERS } from '@/lib/provenance/providers';
 
 interface MoseDetailModalProps {
   isOpen: boolean;
@@ -209,7 +210,7 @@ export const MoseDetailModal: React.FC<MoseDetailModalProps> = ({
         {/* Footer */}
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--rule)] text-xs text-[var(--ink-3)]">
           <a
-            href="https://www.comune.venezia.it/it/content/centro-previsioni-e-segnalazioni-maree"
+            href={PROVIDERS.cpsm.url}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 hover:text-[var(--ink)] hover:underline"

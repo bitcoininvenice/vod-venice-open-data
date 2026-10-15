@@ -10,7 +10,7 @@ import { resolveTideState } from '@/lib/tideCurve';
 import { GET as tideGET } from '@/app/api/tide/route';
 import type { TideResponse } from '@/lib/contracts/tide';
 import type { DayType } from '@/lib/types';
-import { CPSM_LICENSE } from '@/lib/cpsmLicense';
+import { PROVIDERS, providerCitation } from '@/lib/provenance/providers';
 
 /** File statico di public/data letto una volta per istanza del server (stesso file scaricato dal browser) */
 function loader<T>(url: string, build: (raw: never) => T): () => Promise<T | null> {
@@ -113,18 +113,18 @@ export interface SourceRef {
 
 /** Fonti da citare: ogni risposta elenca solo quelle usate davvero */
 export const SOURCES = {
-  actv: { name: 'ACTV / AVM – orario ufficiale GTFS (navigazione e automobilistico)', license: 'CC BY', url: 'https://actv.avmspa.it/it/content/catalogo-dei-dati-metadati-e-banche-dati-actv' },
-  alilaguna: { name: 'Alilaguna S.p.A. – orario GTFS', license: 'nessuna licenza dichiarata: citare Alilaguna S.p.A.', url: 'https://www.alilaguna.it' },
-  osm: { name: 'OpenStreetMap contributors – rete pedonale, calli e civici', license: 'ODbL 1.0', url: 'https://www.openstreetmap.org/copyright' },
-  osmCanals: { name: 'OpenStreetMap contributors – canali', license: 'ODbL 1.0', url: 'https://www.openstreetmap.org/copyright' },
-  cpsm: { name: 'Comune di Venezia – Centro Previsioni e Segnalazioni Maree', license: CPSM_LICENSE, url: 'https://www.comune.venezia.it/it/content/centro-previsioni-e-segnalazioni-maree' },
-  passerelle: { name: 'Comune di Venezia – piano delle passerelle per l\'acqua alta', license: 'atto pubblico (tracciati indicativi di VOD)', url: 'https://www.comune.venezia.it' },
-  testoUnico: { name: 'Comune di Venezia – Testo Unico della circolazione acquea (Ord. 274/2015)', license: 'atto pubblico', url: 'https://www.comune.venezia.it/it/content/normativa-circolazione-acquea' },
-  speedLimits: { name: 'Regolamento circolazione acquea del Comune e ordinanza 93/2007', license: 'atti pubblici', url: 'https://www.comune.venezia.it/it/content/normativa-circolazione-acquea' },
-  vod: { name: 'Venice Open Data (VOD)', license: 'calcolo di VOD su dati aperti', url: 'https://venice-open-data.vercel.app' },
+  actv: providerCitation('actvGtfs', 'navigazione e automobilistico'),
+  alilaguna: providerCitation('alilaguna'),
+  osm: providerCitation('osm', 'rete pedonale, calli e civici'),
+  osmCanals: providerCitation('osm', 'canali'),
+  cpsm: providerCitation('cpsm'),
+  passerelle: providerCitation('passerelle'),
+  testoUnico: providerCitation('testoUnico'),
+  speedLimits: providerCitation('speedLimits'),
+  vod: providerCitation('vod'),
 } satisfies Record<string, SourceRef>;
 
-export const VOD_BASE_URL = 'https://venice-open-data.vercel.app';
+export const VOD_BASE_URL = PROVIDERS.vod.url;
 
 /** HH:MM da secondi dalla mezzanotte (oltre 24 h: dopo mezzanotte) */
 export function hhmm(seconds: number): string {

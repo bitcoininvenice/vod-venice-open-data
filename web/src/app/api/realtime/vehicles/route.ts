@@ -8,6 +8,7 @@ import { matchTrip, parseGtfsTime, positionDelay, trustDelay, type TripIndex } f
 import { serverSimulation } from '@/server/sources/simulationServer';
 import { romeDayType, romeLocalToDate } from '@/lib/time';
 import type { TripDelay } from '@/server/sources/gtfsRt';
+import { providerMeta } from '@/lib/provenance/providers';
 
 export const revalidate = 20;
 
@@ -103,8 +104,7 @@ export async function GET() {
     data: vehicles,
     meta: {
       kind: 'live',
-      source: 'ACTV / AVM – GTFS-Realtime VehiclePositions',
-      sourceUrl: 'https://tpl.actv.it',
+      ...providerMeta('actvRealtime', 'ACTV / AVM – GTFS-Realtime VehiclePositions'),
       fetchedAt: nav.ok ? nav.fetchedAt : aut.ok ? aut.fetchedAt : undefined,
       feeds: { navigazione: nav.ok, automobilistico: aut.ok, ritardi: delays.ok },
       withDelay: vehicles.filter((v) => v.delay).length,

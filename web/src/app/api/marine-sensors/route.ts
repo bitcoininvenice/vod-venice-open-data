@@ -9,7 +9,8 @@ const OSM_MARKERS = (lagoonNetwork.markers as number[][]).map(([lon, lat]) => ({
 const CURATED_BRICCOLE = curatedNotInOsm(BRICCOLE_SIGNALS_DATA, OSM_MARKERS, 30);
 import { fetchUpstream } from '@/server/upstream';
 import { CPSM_METEO_URLS, parseCpsmFeed, platformReadings, type CpsmFeedName } from '@/server/sources/cpsmMeteo';
-import { MARINE_SOURCE, marineUrl, parseMarine } from '@/server/sources/openMeteoMarine';
+import { marineUrl, parseMarine } from '@/server/sources/openMeteoMarine';
+import { PROVIDERS, providerLicense } from '@/lib/provenance/providers';
 
 export const revalidate = 300;
 
@@ -54,9 +55,9 @@ export async function GET() {
       kind: hasLive ? 'live' : 'static-reference',
       source: 'CPSM (piattaforma Acqua Alta) + anagrafica stazioni e segnalamenti',
       cpsmLicense: CPSM_LICENSE_META,
-      sourceUrl: 'https://dati.venezia.it/?q=content/cpsm-dati-meteomarini-laguna-e-litorale-veneziano',
+      sourceUrl: PROVIDERS.cpsm.datasetUrl,
       note: 'Solo la piattaforma "Acqua Alta" ha misure in tempo reale; per le altre stazioni non è collegata una fonte aperta.',
-      forecastSource: `${MARINE_SOURCE} – previsione, non misura (CC BY 4.0)`,
+      forecastSource: `${PROVIDERS.openMeteoMarine.name} – previsione, non misura (${providerLicense('openMeteoMarine')})`,
     },
   });
 }

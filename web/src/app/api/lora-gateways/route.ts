@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { fetchUpstream } from '@/server/upstream';
-import { PACKET_BROKER_SITE, PACKET_BROKER_SOURCE, PACKET_BROKER_URL, parseGateways } from '@/server/sources/packetBroker';
+import { PACKET_BROKER_URL, parseGateways } from '@/server/sources/packetBroker';
+import { providerMeta } from '@/lib/provenance/providers';
 
 // Lo stato dei gateway cambia di rado: una lettura ogni 10 minuti (il Mapper chiede di usare la cache)
 export const revalidate = 600;
@@ -14,9 +15,7 @@ export async function GET() {
       data: res.ok ? res.data : [],
       meta: {
         kind: res.ok ? 'live' : 'unavailable',
-        source: PACKET_BROKER_SOURCE,
-        sourceUrl: PACKET_BROKER_SITE,
-        license: 'Dati pubblicati volontariamente dai proprietari dei gateway tramite Packet Broker (The Things Network)',
+        ...providerMeta('packetBroker'),
         fetchedAt: res.ok ? res.fetchedAt : null,
         error: res.ok ? undefined : res.error,
         note: 'Solo i gateway online nell’area della mappa, con stato e posizione resi pubblici dai proprietari. Posizione come pubblicata dal proprietario (stessa precisione delle mappe di TTN); nessun identificativo né nome. Se il proprietario rende privata la posizione, il gateway sparisce da VOD entro 10 minuti. La copertura radio reale non è indicata.',

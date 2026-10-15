@@ -17,6 +17,12 @@ Completare **tutti** i passaggi nello stesso giro e verificare tutto prima del c
 - Download reale: provare il file o l'API; annotare formato, sistema di coordinate, frequenza di aggiornamento.
 - Se la fonte ha limiti d'uso: User-Agent `VOD-VeniceOpenData/1.0 (...)`, poche richieste, attesa con `Retry-After` dopo 429.
 
+## 1b. Registro delle fonti (`web/src/lib/provenance/`)
+- Fornitore nuovo in `providers.ts` (nome, sito, portale, `LicenseId`, attribuzione); licenza nuova in `licenses.ts`.
+- Flusso controllato da `/api/health` e mostrato in `/sources` in `feeds.ts`.
+- Mai scrivere a mano link del fornitore o testo della licenza: `providerMeta`, `providerLicense`,
+  `providersLicense`, `providerCitation` (un test lo verifica).
+
 ## 2. Pipeline (`pipeline/import_<nome>.py`)
 - Solo libreria standard se possibile (eventuali dipendenze in `pipeline/requirements.txt`).
 - Rete sempre da `pipeline/vod_http.py`: `fetch_bytes`/`fetch_text`/`fetch_json` (User-Agent del progetto, `retries`/`backoff`,
@@ -30,7 +36,7 @@ Completare **tutti** i passaggi nello stesso giro e verificare tutto prima del c
 
 ## 3. Dati nel sito
 - Tipi in `web/src/lib/types.ts`; logica condivisa in `web/src/lib/<nome>.ts` (i JSON grandi restano lato server).
-- API in `web/src/app/api/<nome>/route.ts` oppure dentro una route esistente; campo `meta` con fonte e licenza.
+- API in `web/src/app/api/<nome>/route.ts` oppure dentro una route esistente; campo `meta` con `...providerMeta('<fornitore>')`.
 - Dati curati sostituiti: rimuovere i valori inventati; tenere le voci curate solo se senza riscontro (`curatedNotInOsm`) e segnarle "da verificare".
 
 ## 4. Mappa e interfaccia
@@ -59,7 +65,7 @@ Completare **tutti** i passaggi nello stesso giro e verificare tutto prima del c
 - Voce in `web/src/lib/layerCatalog.ts` (stesso id dello slug; un test lo verifica) con descrizione e note tecniche oneste.
 - Dataset MCP: descrittore in `web/src/lib/mcp/catalog.ts` + loader in `web/src/lib/mcp/loaders.ts` (riusa la route; un test verifica l'allineamento).
 - Se cambia l'uso dei dati per le AI: aggiornare `skills/venice-open-data/` e rigenerare lo ZIP con `python skills/build_skill_zip.py`.
-- Fonte in `/sources` (`SOURCES_METADATA` in `web/src/app/sources/page.tsx`, chiavi `name_` e `meta_`) e in `web/src/app/api/health/route.ts`.
+- Fonte in `/sources`: flusso in `web/src/lib/provenance/feeds.ts` (chiavi `name_` e `meta_` nelle traduzioni) e `assess('<flusso>', …)` in `web/src/app/api/health/route.ts`.
 - README (struttura, comandi, tabella API) e, se serve, `docs/`.
 
 ## 7. Verifica completa (sempre, prima del commit)

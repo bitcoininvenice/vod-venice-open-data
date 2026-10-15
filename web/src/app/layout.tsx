@@ -44,14 +44,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false
   },
-  metadataBase: new URL("https://venice-open-data.vercel.app"),
+  metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: "/"
   },
   openGraph: {
     title: "VOD – Venice Open Data | Mappa di Venezia: vaporetti in tempo reale, marea e open data",
     description: SITE_DESCRIPTION,
-    url: "https://venice-open-data.vercel.app",
+    url: SITE_URL,
     siteName: "VOD - Venice Open Data",
     locale: "it_IT",
     type: "website"

@@ -3,6 +3,8 @@ import { SATELLITES_DATA } from '@/lib/satellitesData';
 import type { SatelliteItem } from '@/lib/types';
 import { headingAt, nextPass, satrecFor, stateAt } from '@/lib/orbits';
 import { celestrakTleUrl, parseTle, tleEpoch } from '@/server/sources/celestrak';
+import { USER_AGENT } from '@/server/upstream';
+import { PROVIDERS, providerMeta } from '@/lib/provenance/providers';
 
 // Posizioni e passaggi vengono ricalcolati ogni 5 minuti; i TLE sono in cache per 6 ore.
 export const revalidate = 300;
@@ -15,7 +17,7 @@ async function fetchTle(noradId: number): Promise<[string, string] | null> {
     const res = await fetch(celestrakTleUrl(noradId), {
       signal: AbortSignal.timeout(6000),
       next: { revalidate: 21600 },
-      headers: { 'User-Agent': 'VOD-VeniceOpenData/1.0 (+https://venice-open-data.vercel.app)' },
+      headers: { 'User-Agent': USER_AGENT },
     });
     if (!res.ok) return null;
     return parseTle(await res.text(), noradId);
@@ -65,8 +67,7 @@ export async function GET() {
     data,
     meta: {
       kind: live > 0 ? 'live' : 'static-reference',
-      source: 'CelesTrak (elementi orbitali GP/TLE) – propagazione SGP4',
-      sourceUrl: 'https://celestrak.org',
+      ...providerMeta('celestrak', `${PROVIDERS.celestrak.name} – propagazione SGP4`),
       fetchedAt: now.toISOString(),
       note: `Orbite calcolate da TLE per ${live}/${data.length} satelliti. Passaggi sopra Venezia con elevazione minima 10°.`,
     },

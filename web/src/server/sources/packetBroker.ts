@@ -8,8 +8,6 @@ import type { LoraGateway } from '@/lib/types';
  * Tutele: solo gateway online, nessun identificativo o nome; se il proprietario rende privata la posizione,
  * il gateway sparisce da VOD alla lettura successiva (entro 10 minuti).
  */
-export const PACKET_BROKER_SOURCE = 'Packet Broker Mapper (The Things Network)';
-export const PACKET_BROKER_SITE = 'https://packetbroker.net';
 
 const [LON0, LON1, LAT0, LAT1] = GRID.frame;
 const CENTER = { lat: (LAT0 + LAT1) / 2, lon: (LON0 + LON1) / 2 };

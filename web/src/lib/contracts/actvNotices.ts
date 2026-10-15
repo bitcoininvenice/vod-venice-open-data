@@ -1,6 +1,8 @@
+import { PROVIDERS } from '@/lib/provenance/providers';
+
 /** Avvisi di servizio ACTV/AVM (feed RSS ufficiale) arricchiti con fermate e linee citate (/api/avvisi-actv). */
 export const ACTV_RSS_URL = 'https://actv.avmspa.it/rss.xml';
-export const ACTV_INFOMOBILITY_PAGE = 'https://avm.avmspa.it/it/content/infomobilit%C3%A0-avmactv-venezia';
+export const ACTV_INFOMOBILITY_PAGE = PROVIDERS.actvNotices.url;
 
 export interface ActvNoticeStop {
   /** codice della fermata GTFS */

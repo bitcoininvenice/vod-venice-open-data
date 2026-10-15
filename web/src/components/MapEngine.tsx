@@ -46,6 +46,7 @@ import { MAP_3D_CSS_TRANSFORM, unprojectFrom3D } from '@/lib/map3d';
 import { distAt, getSimulation, pointAt, useSimulation } from '@/lib/simulationModel';
 import { resolveTrip } from '@/lib/tripView';
 import { romeSecondsOfDay } from '@/lib/time';
+import { PROVIDERS } from '@/lib/provenance/providers';
 
 export interface MapEngineProps {
   /** Livelli accesi */
@@ -1147,7 +1148,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
             ))}
           </div>
           <a
-            href="https://maps.agcom.it"
+            href={PROVIDERS.agcom.url}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-[9px] text-[var(--ink-3)] hover:text-cyan-400"
@@ -1163,7 +1164,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
       {/* Attribuzione della base cartografica (ODbL): sempre visibile, con il rimando a tutte le fonti */}
       <div {...stopMapGestures} className="absolute bottom-0.5 right-1 z-20 px-1.5 py-0.5 rounded bg-[var(--ground)]/75 text-[9px] font-mono text-[var(--ink-3)]" data-testid="map-attribution">
-        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400">
+        <a href={PROVIDERS.osm.datasetUrl} target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400">
           © OpenStreetMap contributors
         </a>
         {' · '}

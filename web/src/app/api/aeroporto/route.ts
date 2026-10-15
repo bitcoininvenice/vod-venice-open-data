@@ -6,6 +6,7 @@ import { airportBoard, BOARD_WINDOW_S } from '@/lib/airportBoard';
 import { alilagunaTripsOn, ALILAGUNA_FEED_META } from '@/lib/alilaguna-schedule';
 import { romeDayType, romeSecondsOfDay, romeTomorrowDayType } from '@/lib/time';
 import type { FlixbusData } from '@/lib/flixbus';
+import { providerCitation } from '@/lib/provenance/providers';
 
 export const revalidate = 60;
 
@@ -35,7 +36,7 @@ export async function GET() {
         kind: 'timetable',
         computedAt: now.toISOString(),
         sources: [
-          { name: 'ACTV – orario ufficiale GTFS (autobus)', license: 'CC BY', url: 'https://actv.avmspa.it' },
+          providerCitation('actvGtfs', 'autobus'),
           { name: ALILAGUNA_FEED_META.source, license: ALILAGUNA_FEED_META.license, url: ALILAGUNA_FEED_META.sourceUrl, validTo: ALILAGUNA_FEED_META.validTo },
           { name: flix.source, license: flix.license, url: flix.licenseUrl },
         ],

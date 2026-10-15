@@ -1,4 +1,5 @@
 import 'server-only';
+import { SITE_URL } from '@/lib/site';
 
 export type UpstreamResult<T> =
   | { ok: true; data: T; fetchedAt: string }
@@ -12,7 +13,7 @@ interface FetchUpstreamOptions {
   headers?: Record<string, string>;
 }
 
-export const USER_AGENT = 'VOD-VeniceOpenData/1.0 (+https://venice-open-data.vercel.app)';
+export const USER_AGENT = `VOD-VeniceOpenData/1.0 (+${SITE_URL})`;
 
 /**
  * Legge una fonte esterna con timeout, cache condivisa e parsing validato.

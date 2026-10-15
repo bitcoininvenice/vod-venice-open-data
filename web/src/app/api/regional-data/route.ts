@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { fetchUpstream } from '@/server/upstream';
-import { airQualityUrl, CAMS_LICENSE, CAMS_SOURCE, overallPollenLevel, parseAirQuality } from '@/server/sources/openMeteoAir';
+import { airQualityUrl, overallPollenLevel, parseAirQuality } from '@/server/sources/openMeteoAir';
 import arpavPollen from '@/data/arpav-pollen-venezia.json';
 import arpavLagoon from '@/data/arpav-lagoon.json';
 import type { LagoonWaterQualityItem, PollenMeasuredProfile } from '@/lib/types';
@@ -15,6 +15,7 @@ import {
   REGIONAL_POLLEN_STATIONS,
   REGIONAL_TRIBUTARY_RIVERS
 } from '@/lib/regionalVenetoData';
+import { PROVIDERS, providerLicense } from '@/lib/provenance/providers';
 
 export const revalidate = 1800;
 
@@ -32,7 +33,7 @@ export async function GET() {
     success: true,
     kind: 'curated-reference',
     source: 'Elenco curato del progetto con valori di esempio, da verificare (riferimenti: dati.veneto.it, ARPAV). Non è un download dal portale regionale.',
-    pollenSource: { source: CAMS_SOURCE, license: CAMS_LICENSE, available: cams.ok },
+    pollenSource: { source: PROVIDERS.cams.name, license: providerLicense('cams'), available: cams.ok },
     waterQualitySource: { source: arpavLagoon.source, sourceUrl: arpavLagoon.sourceUrl, license: arpavLagoon.license, year: arpavLagoon.year },
     pollenMeasuredSource: { source: arpavPollen.source, sourceUrl: arpavPollen.sourceUrl, license: arpavPollen.license, year: arpavPollen.year },
     summary: {
