@@ -20,6 +20,16 @@ export interface RawWalkGeometry {
 
 /** Quota assegnata ai ponti: sempre fuori dall'acqua */
 export const BRIDGE_ELEVATION_CM = 220;
+/** Terraferma e litorale del Cavallino: fuori dal modello dell'acqua alta della città, sempre asciutti */
+export const MAINLAND_ELEVATION_CM = 400;
+
+/** Zone della rete pedonale fuori dal modello dell'acqua alta: Mestre e Marghera, Tessera e aeroporto, Cavallino-Treporti */
+const MAINLAND_BOXES: [number, number, number, number][] = [
+  [12.13, 12.3, 45.43, 45.56],
+  [12.29, 12.395, 45.475, 45.56],
+  [12.43, 12.6, 45.42, 45.52],
+];
+export const isMainland = (lon: number, lat: number) => MAINLAND_BOXES.some(([x0, x1, y0, y1]) => lon >= x0 && lon <= x1 && lat >= y0 && lat <= y1);
 
 /**
  * Quote indicative del piano di calpestio (cm sullo ZMPS) in punti noti: ordinano le calli dalla più bassa
@@ -139,6 +149,13 @@ export function edgeElevations(raw: RawWalkGeometry): Int16Array {
     flags[e] = raw.edges[4 * e + 3];
     if (flags[e] === 1) {
       elevations[e] = BRIDGE_ELEVATION_CM;
+      continue;
+    }
+    const midLon = lon0 + (raw.nodes[2 * u] + raw.nodes[2 * v]) / 2 / raw.scale;
+    const midLat = lat0 + (raw.nodes[2 * u + 1] + raw.nodes[2 * v + 1]) / 2 / raw.scale;
+    if (isMainland(midLon, midLat)) {
+      elevations[e] = MAINLAND_ELEVATION_CM;
+      rawHeights[e] = MAINLAND_ELEVATION_CM;
       continue;
     }
     const ex = (nodeX[u] + nodeX[v]) * 0.5;

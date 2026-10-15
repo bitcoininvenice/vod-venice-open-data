@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Footprints, MapPin, Route, Ship, ArrowDownUp, Crosshair, Droplets, Plane } from 'lucide-react';
+import { Footprints, MapPin, Route, Ship, ArrowDownUp, Crosshair, Droplets, Plane, Bus } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { InfoHeader, InfoPanel } from '@/components/ui/InfoPanel';
 import { useSimulation } from '@/lib/simulationModel';
 import { buildWalkGraph, type RawWalk, type WalkGraph } from '@/lib/walkGraph';
 import { WALK_URL } from '@/lib/walk-data';
-import { planTrip, type HurryInfo, type Itinerary, type PlanMode, type PlannerPoint } from '@/lib/tripPlanner';
+import { planTrip, type HurryInfo, type Itinerary, type PlanMode, type PlannerPoint, type PlanResult } from '@/lib/tripPlanner';
 import { DELAY_COLORS, delayStatus } from '@/lib/realtimeDelay';
 import { parseGtfsTime } from '@/lib/positionDelay';
 import { startPolling } from '@/lib/polling';
@@ -15,14 +15,14 @@ import type { RealtimeVehicleDto } from '@/lib/contracts/realtime';
 import type { PasserellaItem } from '@/lib/types';
 import { ACTV_STOPS_REFERENCE } from '@/lib/stopsReference';
 import { clock } from '@/lib/tripView';
-import { romeDayType, romeSecondsOfDay, romeTomorrowDayType, tomorrowDate } from '@/lib/time';
+import { romeDayType, romeSecondsOfDay, romeTomorrowDayType, todayDate, tomorrowDate } from '@/lib/time';
 import { civicLabel, parseCivicQuery, type CivicMatch } from '@/lib/civici';
 import { lineColor, lineTextColor } from '@/lib/actvLines';
 import { buildBoatGraph, ordinancesOnRoute, planBoat, type BoatGraph, type RawBoat } from '@/lib/boatRouting';
 import { BOAT_URL } from '@/lib/boat-data';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 import { BoatPlanResult } from '@/components/BoatPlanResult';
-import { AIRPORT, isAirport, matchesAirport, planAirportOrTomorrow } from '@/lib/airportPlanner';
+import { AIRPORT, FIRST_SERVICE_FROM_S, isAirport, matchesAirport, planAirportOrTomorrow } from '@/lib/airportPlanner';
 import { addressLabel, type AddressHit } from '@/lib/addresses';
 
 let walkPromise: Promise<WalkGraph> | null = null;
@@ -97,6 +97,20 @@ const HurryBox: React.FC<{ hurry: HurryInfo; now: number; ifLate: Itinerary | nu
   );
 };
 
+/** Chiave di un itinerario (linee e partenze): ricorda la scelta tra le alternative mentre l'orario si aggiorna */
+const optionKey = (it: Itinerary) =>
+  it.legs
+    .filter((l) => l.kind === 'ride')
+    .map((l) => (l.kind === 'ride' ? `${l.line}@${Math.round(l.start)}` : ''))
+    .join('>') || 'walk';
+
+/** Linee di un itinerario: «4.2 › 5.1 › 5» (Alilaguna col nome dell'operatore) */
+const optionLines = (it: Itinerary) =>
+  it.legs
+    .filter((l) => l.kind === 'ride')
+    .map((l) => (l.kind === 'ride' ? (l.operator === 'alilaguna' ? `Alilaguna ${l.line}` : l.line) : ''))
+    .join(' › ');
+
 /** Ora di partenza scelta (HH:MM) in secondi dalla mezzanotte, altrimenti adesso a Venezia. */
 const departSeconds = (time: string, now: number): number => (/^\d{2}:\d{2}$/.test(time) ? Number(time.slice(0, 2)) * 3600 + Number(time.slice(3)) * 60 : now);
 
@@ -120,7 +134,8 @@ interface TripPlannerPanelProps {
 const ACTV_SITE = 'https://actv.avmspa.it/it';
 const MODES: PlanMode[] = ['fastest', 'walk', 'boat', 'private'];
 
-const WATER_STOPS = ACTV_STOPS_REFERENCE.filter((s) => s.mode === 'navigazione' || s.mode === 'ferry');
+/** Fermate proposte nel campo: pontili, tram, People Mover e nodi bus principali (prima i pontili) */
+const PLACE_STOPS = [...ACTV_STOPS_REFERENCE].sort((a, b) => Number(b.mode === 'navigazione' || b.mode === 'ferry') - Number(a.mode === 'navigazione' || a.mode === 'ferry'));
 
 /** Campo di un luogo: fermate per nome, numero civico ("Cannaregio 3450") o punto sulla mappa. */
 const PlaceInput: React.FC<{
@@ -149,7 +164,7 @@ const PlaceInput: React.FC<{
       .catch(() => {});
     return () => ctrl.abort();
   }, [civicKey]);
-  const stopHits = q.length >= 2 && !civicKey ? WATER_STOPS.filter((s) => s.name.toLowerCase().includes(q.toLowerCase())).slice(0, 6) : [];
+  const stopHits = q.length >= 2 && !civicKey ? PLACE_STOPS.filter((s) => s.name.toLowerCase().includes(q.toLowerCase())).slice(0, 6) : [];
   const civicPoint = civic && civic.key === civicKey ? civic.point : null;
   const airportHit = q.length >= 2 && !civicKey && matchesAirport(q);
   // Indirizzi (calli, campi, fondamenta…) dal gazzettiere OpenStreetMap di VOD
@@ -218,7 +233,11 @@ const PlaceInput: React.FC<{
           {stopHits.map((s) => (
             <li key={s.id}>
               <button type="button" onClick={() => onChange({ lon: s.lon, lat: s.lat, label: s.name })} className="w-full text-left px-3 py-2 text-xs hover:bg-[var(--rule)]/50 cursor-pointer">
-                <Ship className="inline w-3.5 h-3.5 mr-1 text-cyan-400" aria-hidden />
+                {s.mode === 'navigazione' || s.mode === 'ferry' ? (
+                  <Ship className="inline w-3.5 h-3.5 mr-1 text-cyan-400" aria-hidden />
+                ) : (
+                  <Bus className="inline w-3.5 h-3.5 mr-1 text-lime-400" aria-hidden />
+                )}
                 {s.name}
               </button>
             </li>
@@ -307,21 +326,35 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
 
   // Da o per l'aeroporto: opzioni Alilaguna (via acqua) e ACTV (bus 5 da Piazzale Roma), dalla più veloce
   const airportTrip = !!from && !!to && isAirport(from) !== isAirport(to);
-  const [airportChoice, setAirportChoice] = useState<'alilaguna' | 'actv' | null>(null);
+  const [airportChoice, setAirportChoice] = useState<'alilaguna' | 'actv' | 'mixed' | null>(null);
   const airportPlan = useMemo(() => {
     if (!open || isPrivate || !airportTrip || !sim || !walk || !from || !to) return null;
     // se stasera non ci sono più collegamenti: le prime opzioni di domani mattina
-    return planAirportOrTomorrow(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time, clockS), romeDayType(), { day: romeTomorrowDayType(), date: tomorrowDate() }, { tideAt, passerelle, nextDay: romeTomorrowDayType(), hurry: !time });
+    return planAirportOrTomorrow(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time, clockS), romeDayType(), { day: romeTomorrowDayType(), date: tomorrowDate() }, { tideAt, passerelle, nextDay: romeTomorrowDayType(), hurry: !time, date: todayDate() });
   }, [open, isPrivate, airportTrip, sim, walk, from, to, time, clockS, tideAt, passerelle]);
   const airportOptions = airportPlan?.options ?? null;
+  // Tutti i mezzi (ACTV, Alilaguna) con le alternative; se stasera non c'è più niente, la prima soluzione di domani mattina
+  const generalPlan = useMemo(() => {
+    if (!open || isPrivate || airportTrip || !sim || !walk || !from || !to) return null;
+    const now = departSeconds(time, clockS);
+    const today = planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, now, romeDayType(), { mode, tideAt, passerelle, nextDay: romeTomorrowDayType(), hurry: !time, date: todayDate() });
+    if (today.best || mode === 'walk') return { ...today, tomorrow: false };
+    const morning = planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, FIRST_SERVICE_FROM_S, romeTomorrowDayType(), { mode, tideAt, passerelle, date: tomorrowDate() });
+    return { ...morning, tomorrow: !!morning.best };
+  }, [open, isPrivate, airportTrip, sim, walk, from, to, time, clockS, mode, tideAt, passerelle]);
+  const [routeChoice, setRouteChoice] = useState<string | null>(null);
   const result = useMemo(() => {
     if (!open || isPrivate || !sim || !walk || !from || !to) return null;
     if (airportOptions) {
       const best = airportOptions.find((o) => o.via === airportChoice) ?? airportOptions[0] ?? null;
-      return { best, walkOnly: null, floodLevelCm: null, shortestWalkWetMeters: null };
+      const airportResult: PlanResult = { best, walkOnly: null, floodLevelCm: null, shortestWalkWetMeters: null };
+      return airportResult;
     }
-    return planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time, clockS), romeDayType(), { mode, tideAt, passerelle, nextDay: romeTomorrowDayType(), hurry: !time });
-  }, [open, isPrivate, sim, walk, from, to, time, clockS, mode, tideAt, passerelle, airportOptions, airportChoice]);
+    if (!generalPlan) return null;
+    const chosen = (generalPlan.alternatives ?? []).find((o) => optionKey(o) === routeChoice);
+    return chosen ? { ...generalPlan, best: chosen } : generalPlan;
+  }, [open, isPrivate, sim, walk, from, to, airportOptions, airportChoice, generalPlan, routeChoice]);
+  const routeOptions = !airportOptions && (generalPlan?.alternatives?.length ?? 0) > 1 ? generalPlan!.alternatives! : null;
 
   // In barca propria: rete dei canali e regole del Testo Unico (lib/boatRouting)
   const boatResult = useMemo(() => {
@@ -462,6 +495,33 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
                   }`}
                 >
                   <span className="font-semibold">{t(`ui.planner.airport_${o.via}`)}</span>
+                  <span className="font-mono shrink-0">
+                    {clock(o.depart)} → {clock(o.arrive)} · {t('ui.planner.duration', { min: minutes(o.arrive - o.depart) })}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+          {generalPlan?.tomorrow && (
+            <p className="text-[11px] text-amber-400" data-testid="planner-tomorrow">{t('ui.planner.tomorrowFirst')}</p>
+          )}
+          {routeOptions && (
+            <div className="flex flex-col gap-1.5" role="radiogroup" aria-label={t('ui.planner.optionsTitle')} data-testid="planner-options">
+              <span className="text-[11px] font-semibold text-[var(--ink-2)]">{t('ui.planner.optionsTitle')}</span>
+              {routeOptions.map((o) => (
+                <button
+                  key={optionKey(o)}
+                  type="button"
+                  role="radio"
+                  aria-checked={best === o}
+                  onClick={() => setRouteChoice(optionKey(o))}
+                  className={`flex items-baseline justify-between gap-2 px-2.5 py-1.5 rounded-lg border text-left text-[11px] cursor-pointer ${
+                    best === o ? 'bg-emerald-500/15 border-emerald-500/50 text-[var(--ink)]' : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)]'
+                  }`}
+                >
+                  <span className="font-semibold truncate">
+                    {optionLines(o)} <span className="font-normal text-[var(--ink-3)]">· {o.rides <= 1 ? t('ui.planner.optionDirect') : t('ui.planner.optionChanges', { n: o.rides - 1 })}</span>
+                  </span>
                   <span className="font-mono shrink-0">
                     {clock(o.depart)} → {clock(o.arrive)} · {t('ui.planner.duration', { min: minutes(o.arrive - o.depart) })}
                   </span>

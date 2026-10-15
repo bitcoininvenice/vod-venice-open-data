@@ -1,7 +1,9 @@
 """
 VOD - Venice Open Data
-Rete pedonale di Venezia (centro storico, Giudecca, Murano, Burano, Lido nord) da OpenStreetMap,
-per il calcolo dei percorsi a piedi e del trip planner a piedi + vaporetto.
+Rete pedonale di Venezia e dintorni da OpenStreetMap (centro storico, Giudecca, isole della laguna nord,
+Lido, Pellestrina, Chioggia e Sottomarina, Mestre e Marghera, Tessera e aeroporto, Treporti e Punta Sabbioni),
+per il calcolo dei percorsi a piedi e del trip planner con tutti i mezzi. Scaricata per zone, una richiesta
+Overpass per zona (le richieste troppo grandi vanno in timeout).
 
 Il grafo ha come nodi gli incroci e le estremità delle vie; ogni arco porta lunghezza, ponti a
 gradini (per un futuro percorso senza barriere) e geometria semplificata per il disegno.
@@ -28,18 +30,61 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TS_FILE = os.path.join(BASE_DIR, "..", "web", "src", "lib", "walk-data.ts")
 
-BBOX = (45.395, 12.29, 45.495, 12.425)
-HIGHWAYS = "footway|pedestrian|path|steps|living_street|residential|service|unclassified|tertiary|secondary|track|corridor|platform"
-QUERY = (
-    f'[out:json][timeout:240];way["highway"~"^({HIGHWAYS})$"]({BBOX[0]},{BBOX[1]},{BBOX[2]},{BBOX[3]});'
-    "out body qt;>;out skel qt;"
+# Zone (sud, ovest, nord, est) abitate e servite dai mezzi
+TILES = [
+    (45.19, 12.24, 45.24, 12.32),   # Chioggia, Sottomarina, Isola Verde
+    (45.24, 12.28, 45.34, 12.34),   # Pellestrina, San Pietro in Volta, Alberoni
+    (45.34, 12.31, 45.43, 12.40),   # Lido, Malamocco
+    (45.395, 12.29, 45.495, 12.435),  # centro storico, Giudecca, Murano, Burano, Sant'Erasmo
+    (45.43, 12.20, 45.475, 12.30),  # Marghera, Mestre sud, San Giuliano
+    (45.475, 12.20, 45.52, 12.30),  # Mestre nord, Carpenedo, Favaro
+    (45.47, 12.29, 45.53, 12.37),   # Campalto, Tessera, aeroporto
+    (45.42, 12.40, 45.50, 12.47),   # Treporti, Punta Sabbioni, Cavallino ovest
+]
+HIGHWAYS = (
+    "footway|pedestrian|path|steps|living_street|residential|service|unclassified|tertiary|tertiary_link|"
+    "secondary|secondary_link|primary|primary_link|track|corridor|platform|cycleway"
 )
+
+
+# Celle piccole (gradi): le richieste Overpass più grandi vanno spesso in timeout
+CELL_DEG = 0.025
+
+
+def cells(tiles: list, step: float = CELL_DEG) -> list:
+    """Divide le zone in celle di `step` gradi (sud, ovest, nord, est)."""
+    out = []
+    for s, w, n, e in tiles:
+        for i in range(math.ceil(round((n - s) / step, 6))):
+            for j in range(math.ceil(round((e - w) / step, 6))):
+                out.append((round(s + i * step, 4), round(w + j * step, 4), round(min(n, s + (i + 1) * step), 4), round(min(e, w + (j + 1) * step), 4)))
+    return out
+
+
+def tile_query(tile: tuple) -> str:
+    s, w, n, e = tile
+    # «out body geom»: i nodi arrivano dentro le vie, una richiesta più leggera per i server Overpass
+    return f'[out:json][timeout:120];way["highway"~"^({HIGHWAYS})$"]({s},{w},{n},{e});out body geom qt;'
+
+
+def geom_elements(payload: dict) -> list:
+    """Vie con geometria («out body geom») -> elementi nodo + via, come «out body;>;out skel»."""
+    out = []
+    for el in payload.get("elements", []):
+        if el.get("type") != "way" or len(el.get("geometry", [])) != len(el.get("nodes", [])):
+            continue
+        for nid, g in zip(el["nodes"], el["geometry"]):
+            out.append({"type": "node", "id": nid, "lon": g["lon"], "lat": g["lat"]})
+        out.append({k: v for k, v in el.items() if k not in ("geometry", "bounds")})
+    return out
+
+
 # Origine delle coordinate intere (1 unità = 1e-5 gradi, circa 1 m)
-LON0, LAT0 = BBOX[1], BBOX[0]
+LON0, LAT0 = min(t[1] for t in TILES), min(t[0] for t in TILES)
 SCALE = 100_000
 SIMPLIFY_M = 2.0
 MIN_COMPONENT = 20
-MIN_NODES = 5_000
+MIN_NODES = 60_000
 
 FLAG_STEPS = 1  # gradini o ponte a gradini
 
@@ -146,7 +191,11 @@ def main() -> int:
             with open(args.file, encoding="utf-8") as fh:
                 payload = json.load(fh)
         else:
-            payload = overpass(QUERY, timeout=300)
+            elements: dict = {}
+            for cell in cells(TILES):
+                for el in geom_elements(overpass(tile_query(cell), timeout=180, rounds=4, pause=15)):
+                    elements[(el["type"], el["id"])] = el
+            payload = {"elements": list(elements.values())}
     except Exception as e:  # noqa: BLE001
         logging.error("Query Overpass fallita: %s", e)
         return 1

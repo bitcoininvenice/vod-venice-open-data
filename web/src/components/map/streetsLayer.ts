@@ -1,6 +1,9 @@
 import { WALK_URL } from '@/lib/walk-data';
 import type { ColorScheme } from '@/lib/solar';
-import { edgeElevations } from '@/lib/streetElevation';
+import { edgeElevations, isMainland } from '@/lib/streetElevation';
+
+/** Arco della terraferma: escluso dal disegno delle calli e dalle statistiche dell'acqua alta */
+const MAINLAND_FLAG = 2;
 import { toGrid } from '@/lib/positionDelay';
 
 const mx = (lon: number): number => toGrid(lon, 0)[0];
@@ -85,7 +88,11 @@ export function indexRawWalk(data: RawWalkData): IndexedStreets {
     offsets[e] = ptr;
     const u = data.edges[4 * e];
     const v = data.edges[4 * e + 1];
-    flags[e] = data.edges[4 * e + 3];
+    // terraferma (Mestre, aeroporto, Cavallino): nella rete del planner ma non è il tessuto delle calli né del modello
+    // dell'acqua alta; flag 2 = non disegnata né contata
+    const midLon = lon0 + (data.nodes[2 * u] + data.nodes[2 * v]) / 2 / sc;
+    const midLat = lat0 + (data.nodes[2 * u + 1] + data.nodes[2 * v + 1]) / 2 / sc;
+    flags[e] = isMainland(midLon, midLat) ? MAINLAND_FLAG : data.edges[4 * e + 3];
 
     let x0 = nodeX[u];
     let x1 = nodeX[u];

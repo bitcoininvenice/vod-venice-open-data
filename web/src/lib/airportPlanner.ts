@@ -119,10 +119,14 @@ function busLeg(bus: { profile: SimProfile; departure: number; kFrom: number; kT
 /** A piedi oltre questa distanza (m) solo se altrimenti non si arriva al bus (es. di notte da Fondamente Nove) */
 export const LONG_WALK_M = 3000;
 
-/** Tratto in città da o per Piazzale Roma: il più veloce, poi ammettendo un tratto a piedi più lungo. */
+/** Tratto in città da o per Piazzale Roma: il più veloce, anche ammettendo un tratto a piedi più lungo. */
 function toRoma(graph: WalkGraph, sim: SimModel, stops: StopItem[], a: PlannerPoint, b: PlannerPoint, now: number, day: DayType, options: PlanOptions): Itinerary | null {
   const base = { ...options, mode: 'fastest' as const };
-  return planTrip(graph, sim, stops, a, b, now, day, base).best ?? planTrip(graph, sim, stops, a, b, now, day, { ...base, maxAccessM: LONG_WALK_M }).best;
+  const normal = planTrip(graph, sim, stops, a, b, now, day, base).best;
+  const longWalk = planTrip(graph, sim, stops, a, b, now, day, { ...base, maxAccessM: LONG_WALK_M }).best;
+  // il più veloce: di notte a volte solo camminando di più si arriva in tempo all'ultimo bus
+  if (!normal || !longWalk) return normal ?? longWalk;
+  return longWalk.arrive < normal.arrive - 60 ? longWalk : normal;
 }
 
 /** ACTV: vaporetto/piedi fino a Piazzale Roma e bus 5, oppure al contrario. */
@@ -250,6 +254,9 @@ export function planAirport(
   if (water) out.push(water);
   const land = viaActv(graph, sim, stops, venice, toAirport, now, day, options);
   if (land) out.push(land);
+  // Tutti i mezzi insieme (es. bus 15 da Mestre, Alilaguna con un cambio): solo se arriva prima delle altre
+  const mixed = planTrip(graph, sim, stops, from, to, now, day, { ...options, mode: 'fastest', date: options.date ?? new Date() }).best;
+  if (mixed && mixed.rides > 0 && out.every((o) => mixed.arrive < o.arrive - 120)) out.push({ ...mixed, via: 'mixed' });
   return out.sort((a, b) => a.arrive - b.arrive);
 }
 

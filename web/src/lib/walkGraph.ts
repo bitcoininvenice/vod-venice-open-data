@@ -84,15 +84,58 @@ export function metersBetween(lon1: number, lat1: number, lon2: number, lat2: nu
   return Math.hypot((lon2 - lon1) * k, (lat2 - lat1) * 110540);
 }
 
+/** Griglia dei nodi (celle di GRID_DEG gradi) per trovare il nodo più vicino senza scorrere tutta la rete. */
+const GRID_DEG = 0.004;
+const gridCache = new WeakMap<WalkGraph, Map<number, number[]>>();
+const cellKey = (cx: number, cy: number) => cx * 100_000 + cy;
+function nodeGrid(g: WalkGraph): Map<number, number[]> {
+  let grid = gridCache.get(g);
+  if (grid) return grid;
+  grid = new Map();
+  for (let i = 0; i < g.lon.length; i++) {
+    const k = cellKey(Math.floor(g.lon[i] / GRID_DEG), Math.floor(g.lat[i] / GRID_DEG));
+    const cell = grid.get(k);
+    if (cell) cell.push(i);
+    else grid.set(k, [i]);
+  }
+  gridCache.set(g, grid);
+  return grid;
+}
+
 /** Nodo della rete più vicino a un punto e la sua distanza in metri. */
 export function nearestNode(g: WalkGraph, lon: number, lat: number): { node: number; meters: number } {
+  const grid = nodeGrid(g);
+  const cx = Math.floor(lon / GRID_DEG);
+  const cy = Math.floor(lat / GRID_DEG);
   let best = -1;
   let bestD = Infinity;
-  for (let i = 0; i < g.lon.length; i++) {
-    const d = metersBetween(lon, lat, g.lon[i], g.lat[i]);
-    if (d < bestD) {
-      bestD = d;
-      best = i;
+  // anelli di celle sempre più larghi: ci si ferma quando il prossimo anello non può contenere un nodo più vicino
+  for (let r = 0; r <= 40; r++) {
+    for (let dx = -r; dx <= r; dx++) {
+      for (let dy = -r; dy <= r; dy++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        const cell = grid.get(cellKey(cx + dx, cy + dy));
+        if (!cell) continue;
+        for (const i of cell) {
+          const d = metersBetween(lon, lat, g.lon[i], g.lat[i]);
+          if (d < bestD) {
+            bestD = d;
+            best = i;
+          }
+        }
+      }
+    }
+    // distanza minima garantita dai nodi fuori dall'anello r: r celle (in metri, sul lato più corto della cella)
+    if (best !== -1 && bestD <= r * GRID_DEG * 78_000) break;
+  }
+  if (best === -1) {
+    // rete molto lontana dal punto: ricerca completa
+    for (let i = 0; i < g.lon.length; i++) {
+      const d = metersBetween(lon, lat, g.lon[i], g.lat[i]);
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
     }
   }
   return { node: best, meters: bestD };

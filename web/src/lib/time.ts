@@ -43,6 +43,11 @@ export function romeDayType(date: Date = new Date()): DayType {
   return 'weekday';
 }
 
+/** Adesso (per l'orario del giorno: calendario Alilaguna). */
+export function todayDate(): Date {
+  return new Date();
+}
+
 /** Stesso istante di domani (per l'orario del giorno dopo). */
 export function tomorrowDate(now: Date = new Date()): Date {
   return new Date(now.getTime() + 86400_000);

@@ -640,6 +640,23 @@ def test_rete_pedonale_incroci_ponti_e_componenti():
     assert walk.walkable({"highway": "footway", "access": "private", "foot": "yes"})
 
 
+def test_rete_pedonale_da_vie_con_geometria():
+    payload = {"elements": [
+        {"type": "way", "id": 1, "nodes": [10, 11], "tags": {"highway": "footway"},
+         "geometry": [{"lon": 12.3, "lat": 45.43}, {"lon": 12.301, "lat": 45.43}]},
+        {"type": "way", "id": 2, "nodes": [10], "tags": {"highway": "footway"}, "geometry": []},
+    ]}
+    els = walk.geom_elements(payload)
+    assert [e["type"] for e in els] == ["node", "node", "way"]
+    assert els[0] == {"type": "node", "id": 10, "lon": 12.3, "lat": 45.43}
+    assert "geometry" not in els[2]
+    assert walk.LON0 <= 12.24 and walk.LAT0 <= 45.20  # rete fino a Chioggia e Mestre
+    # le zone si dividono in celle piccole che le coprono tutte
+    cs = walk.cells([(45.0, 12.0, 45.06, 12.05)], 0.025)
+    assert len(cs) == 3 * 2
+    assert min(c[0] for c in cs) == 45.0 and max(c[2] for c in cs) == 45.06 and max(c[3] for c in cs) == 12.05
+
+
 def test_category_people_mover_e_bus_del_lido():
     # il People Mover è codificato come autobus nel GTFS ACTV
     pm = {"route_short_name": "PM", "route_type": "3", "route_desc": "UM"}

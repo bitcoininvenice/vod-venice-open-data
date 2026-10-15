@@ -464,7 +464,7 @@ test('come arrivare dopo aver aperto una fermata: nessun errore (cache delle fer
   expect(errors).toEqual([]);
 });
 
-test('come arrivare: modalità solo a piedi e preferisci vaporetto', async ({ page, isMobile }) => {
+test('come arrivare: modalità solo a piedi e preferisci via acqua', async ({ page, isMobile }) => {
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   await page.goto('/');
   await page.locator('canvas').waitFor();
@@ -482,7 +482,7 @@ test('come arrivare: modalità solo a piedi e preferisci vaporetto', async ({ pa
   await expect(panel.getByRole('radio', { name: 'Solo a piedi' })).toHaveAttribute('aria-checked', 'true');
   await expect(panel.getByTestId('planner-result')).toBeHidden();
   await expect(panel).toContainText('Nessun percorso trovato');
-  await panel.getByRole('radio', { name: 'Preferisci vaporetto' }).click();
+  await panel.getByRole('radio', { name: 'Preferisci via acqua' }).click();
   await expect(panel.getByTestId('planner-result')).toContainText(/direzione .* fermate/);
 });
 
@@ -550,6 +550,29 @@ test('come arrivare «adesso»: l\'itinerario si aggiorna e non propone una cors
   // tre minuti dopo la 4.2 delle 23:54 è partita: l'itinerario cambia senza toccare nulla
   await page.clock.fastForward('03:00');
   await expect(result).not.toContainText('23:54', { timeout: 15000 });
+});
+
+test('come arrivare con tutti i mezzi: alternative con ACTV e Alilaguna, si sceglie quella da vedere', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  // mercoledì 14/10/2026 alle 10:00, dentro la stagione dell'orario Alilaguna
+  await page.clock.install({ time: new Date('2026-10-14T08:00:00Z') });
+  await page.goto('/');
+  await page.locator('canvas').waitFor();
+  await page.getByTestId('open-planner').click();
+  const panel = page.locator('[data-info-panel]');
+  await panel.getByTestId('planner-from').getByRole('textbox').fill('Lido S.M.E.');
+  await panel.getByRole('button', { name: /^Lido S\.M\.E\.$/ }).click();
+  await panel.getByTestId('planner-to').getByRole('textbox').fill('Tronchetto');
+  await panel.getByRole('button', { name: /^Tronchetto$/ }).first().click();
+  const options = panel.getByTestId('planner-options');
+  await expect(options).toBeVisible({ timeout: 15000 });
+  await expect(options).toContainText('Alilaguna');
+  const radios = options.getByRole('radio');
+  expect(await radios.count()).toBeGreaterThanOrEqual(2);
+  await expect(radios.first()).toHaveAttribute('aria-checked', 'true');
+  await radios.last().click();
+  await expect(radios.last()).toHaveAttribute('aria-checked', 'true');
+  await expect(panel.getByTestId('planner-result')).toContainText(/\d{2}:\d{2} → \d{2}:\d{2}/);
 });
 
 test('come arrivare di corsa: mostra la corsa che sta per partire con l\'avviso «Sbrigati»', async ({ page, isMobile }) => {

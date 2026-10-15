@@ -71,7 +71,7 @@ describe('planner con acqua alta e modalità', () => {
     expect(r2.best!.wetMeters).toBeLessThanOrEqual(r1.best!.wetMeters);
   });
 
-  it('modalità: solo a piedi non usa il vaporetto, preferisci vaporetto cammina meno', () => {
+  it('modalità: solo a piedi non usa il vaporetto, preferisci via acqua cammina meno', () => {
     const walk = planTrip(graph, sim, ACTV_STOPS_REFERENCE, PLACES.ferrovia, PLACES.sanMarco, at, 'weekday', { mode: 'walk' });
     expect(walk.best!.rides).toBe(0);
     const fastest = planTrip(graph, sim, ACTV_STOPS_REFERENCE, PLACES.ferrovia, PLACES.sanMarco, at, 'weekday');
@@ -98,5 +98,35 @@ describe('planner con acqua alta e modalità', () => {
     expect(rushed.ifLate?.arrive).toBe(calm.best!.arrive);
     // con calma (o con un orario scelto) nessun avviso
     expect(calm.best?.hurry).toBeUndefined();
+  });
+
+  it('tutti i mezzi: dal Lido al Tronchetto anche l\'alternativa Alilaguna, dalla più veloce', () => {
+    const tronchetto = { lon: 12.306, lat: 45.4405, label: 'Tronchetto' };
+    const date = new Date('2026-10-14T10:00:00+02:00');
+    const r = planTrip(graph, sim, ACTV_STOPS_REFERENCE, PLACES.lido, tronchetto, 10 * 3600, 'weekday', { nextDay: 'weekday', date });
+    const alts = r.alternatives ?? [];
+    expect(alts.length).toBeGreaterThanOrEqual(1);
+    expect(alts[0]).toBe(r.best);
+    for (let i = 1; i < alts.length; i++) {
+      // le alternative più lente hanno meno cambi
+      expect(alts[i].arrive).toBeGreaterThan(alts[i - 1].arrive);
+      expect(alts[i].rides).toBeLessThan(alts[i - 1].rides);
+    }
+    const all = alts.flatMap((a) => a.legs).filter((l) => l.kind === 'ride');
+    expect(all.some((l) => l.kind === 'ride' && l.operator === 'alilaguna')).toBe(true);
+    // senza data l'orario Alilaguna non si usa
+    const noDate = planTrip(graph, sim, ACTV_STOPS_REFERENCE, PLACES.lido, tronchetto, 10 * 3600, 'weekday', { nextDay: 'weekday' });
+    expect((noDate.alternatives ?? []).flatMap((a) => a.legs).some((l) => l.kind === 'ride' && l.operator === 'alilaguna')).toBe(false);
+  });
+
+  it('itinerari coerenti: ogni tratto parte dopo la fine del precedente, al massimo 4 corse', () => {
+    const date = new Date('2026-10-14T10:00:00+02:00');
+    for (const [a, b] of [[PLACES.ferrovia, PLACES.lido], [PLACES.murano, PLACES.campoSantaMargherita], [PLACES.lido, PLACES.murano]] as const) {
+      const r = planTrip(graph, sim, ACTV_STOPS_REFERENCE, a, b, 10 * 3600, 'weekday', { nextDay: 'weekday', date });
+      for (const it of r.alternatives ?? []) {
+        expect(it.rides).toBeLessThanOrEqual(4);
+        for (let k = 1; k < it.legs.length; k++) expect(it.legs[k].start, `${a.label}→${b.label}`).toBeGreaterThanOrEqual(it.legs[k - 1].end - 1);
+      }
+    }
   });
 });
