@@ -84,7 +84,7 @@ LON0, LAT0 = min(t[1] for t in TILES), min(t[0] for t in TILES)
 SCALE = 100_000
 SIMPLIFY_M = 2.0
 MIN_COMPONENT = 20
-MIN_NODES = 60_000
+MIN_NODES = 30_000
 
 FLAG_STEPS = 1  # gradini o ponte a gradini
 

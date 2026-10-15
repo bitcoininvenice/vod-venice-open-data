@@ -29,6 +29,8 @@ export const HORIZON_S = 3 * 3600;
 export const MAX_SNAP_M = 250;
 /** Mezzi abbinati ai pontili in profileStops (ultime partenze, velocità da orario): navigazione, ferry, bus del Lido */
 const PLANNER_CATEGORIES = new Set(['vaporetto', 'motoscafo', 'motonave', 'ferry', 'island']);
+/** Se con MAX_ACCESS_M non si trova nessun mezzo, si riprova con tratti a piedi fino a (m) */
+export const LONG_ACCESS_M = 3000;
 /** Modalità «preferisci via acqua»: tratti a piedi verso e dai pontili al massimo di (m) */
 export const BOAT_ACCESS_M = 600;
 
@@ -306,11 +308,17 @@ export function planTrip(
     const found = near.best ? near : raptor(search, maxAccessM);
     return withHurry(found.best ?? walkOnly, found.alternatives, near.best ? BOAT_ACCESS_M : maxAccessM);
   }
-  const found = raptor(search, maxAccessM);
+  // fuori dal centro le fermate possono essere lontane (es. Sottomarina): se non si trova niente, più strada a piedi
+  let found = raptor(search, maxAccessM);
+  let limit = maxAccessM;
+  if (!found.best && maxAccessM < LONG_ACCESS_M) {
+    found = raptor(search, LONG_ACCESS_M);
+    limit = LONG_ACCESS_M;
+  }
   const viaTransit = found.best;
   const bestOverall =
     viaTransit && (!walkOnly || viaTransit.arrive + wetSeconds(viaTransit) < walkOnly.arrive + wetSeconds(walkOnly) - 60) ? viaTransit : walkOnly;
-  return withHurry(bestOverall, bestOverall === walkOnly ? [] : found.alternatives, maxAccessM);
+  return withHurry(bestOverall, bestOverall === walkOnly ? [] : found.alternatives, limit);
 }
 
 /** Corse al massimo per itinerario (tre cambi) */

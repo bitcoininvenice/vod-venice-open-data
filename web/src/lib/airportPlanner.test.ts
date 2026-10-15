@@ -138,4 +138,14 @@ describe('aeroporto Marco Polo', () => {
       }
     }
   });
+
+  it('rete allargata: da Sottomarina all\'aeroporto, anche con 4 mezzi', () => {
+    const sottomarina = { lon: 12.29721, lat: 45.21658, label: 'Sottomarina' };
+    const its = planAirport(graph, sim, ACTV_STOPS_REFERENCE, sottomarina, AIRPORT, 10 * 3600, 'weekday', { date, nextDay: 'weekday' });
+    expect(its.length).toBeGreaterThan(0);
+    const actv = its.find((i) => i.via === 'actv')!;
+    expect(actv.rides).toBeGreaterThanOrEqual(3);
+    const last = actv.legs[actv.legs.length - 1];
+    expect(last.kind === 'ride' && last.line).toBe(AEROBUS_LINE);
+  });
 });

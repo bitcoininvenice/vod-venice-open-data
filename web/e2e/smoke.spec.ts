@@ -562,11 +562,16 @@ test('come arrivare con tutti i mezzi: alternative con ACTV e Alilaguna, si sceg
   const panel = page.locator('[data-info-panel]');
   await panel.getByTestId('planner-from').getByRole('textbox').fill('Lido S.M.E.');
   await panel.getByRole('button', { name: /^Lido S\.M\.E\.$/ }).click();
+  // verso Murano Colonna la soluzione è l'Alilaguna Blu diretta
+  await panel.getByTestId('planner-to').getByRole('textbox').fill('Murano Colonna');
+  await panel.getByRole('button', { name: /^Murano Colonna$/ }).first().click();
+  await expect(panel.getByTestId('planner-result')).toContainText('Alilaguna', { timeout: 15000 });
+  // verso il Tronchetto due alternative ACTV (con un cambio o senza), da scegliere
+  await panel.getByTestId('planner-to').getByRole('button', { name: 'cambia' }).click();
   await panel.getByTestId('planner-to').getByRole('textbox').fill('Tronchetto');
   await panel.getByRole('button', { name: /^Tronchetto$/ }).first().click();
   const options = panel.getByTestId('planner-options');
   await expect(options).toBeVisible({ timeout: 15000 });
-  await expect(options).toContainText('Alilaguna');
   const radios = options.getByRole('radio');
   expect(await radios.count()).toBeGreaterThanOrEqual(2);
   await expect(radios.first()).toHaveAttribute('aria-checked', 'true');

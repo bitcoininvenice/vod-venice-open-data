@@ -100,10 +100,11 @@ describe('planner con acqua alta e modalità', () => {
     expect(calm.best?.hurry).toBeUndefined();
   });
 
-  it('tutti i mezzi: dal Lido al Tronchetto anche l\'alternativa Alilaguna, dalla più veloce', () => {
-    const tronchetto = { lon: 12.306, lat: 45.4405, label: 'Tronchetto' };
+  it('tutti i mezzi: dal Lido a Murano Colonna anche l\'Alilaguna, alternative dalla più veloce', () => {
+    // darsena Alilaguna di Murano Colonna: la linea Blu ci va diretta dal Lido
+    const colonna = { lon: 12.3504, lat: 45.4547, label: 'Murano Colonna' };
     const date = new Date('2026-10-14T10:00:00+02:00');
-    const r = planTrip(graph, sim, ACTV_STOPS_REFERENCE, PLACES.lido, tronchetto, 10 * 3600, 'weekday', { nextDay: 'weekday', date });
+    const r = planTrip(graph, sim, ACTV_STOPS_REFERENCE, PLACES.lido, colonna, 10 * 3600, 'weekday', { nextDay: 'weekday', date });
     const alts = r.alternatives ?? [];
     expect(alts.length).toBeGreaterThanOrEqual(1);
     expect(alts[0]).toBe(r.best);
@@ -115,7 +116,7 @@ describe('planner con acqua alta e modalità', () => {
     const all = alts.flatMap((a) => a.legs).filter((l) => l.kind === 'ride');
     expect(all.some((l) => l.kind === 'ride' && l.operator === 'alilaguna')).toBe(true);
     // senza data l'orario Alilaguna non si usa
-    const noDate = planTrip(graph, sim, ACTV_STOPS_REFERENCE, PLACES.lido, tronchetto, 10 * 3600, 'weekday', { nextDay: 'weekday' });
+    const noDate = planTrip(graph, sim, ACTV_STOPS_REFERENCE, PLACES.lido, colonna, 10 * 3600, 'weekday', { nextDay: 'weekday' });
     expect((noDate.alternatives ?? []).flatMap((a) => a.legs).some((l) => l.kind === 'ride' && l.operator === 'alilaguna')).toBe(false);
   });
 
@@ -128,5 +129,32 @@ describe('planner con acqua alta e modalità', () => {
         for (let k = 1; k < it.legs.length; k++) expect(it.legs[k].start, `${a.label}→${b.label}`).toBeGreaterThanOrEqual(it.legs[k - 1].end - 1);
       }
     }
+  });
+
+  it('rete allargata: da Sottomarina alla Ferrovia via Pellestrina e Lido (barca 11, bus 11, vaporetto)', () => {
+    const sottomarina = { lon: 12.29721, lat: 45.21658, label: 'Sottomarina' };
+    const r = planTrip(graph, sim, ACTV_STOPS_REFERENCE, sottomarina, PLACES.ferrovia, 10 * 3600, 'weekday', { nextDay: 'weekday', date: new Date('2026-10-14T10:00:00+02:00') });
+    expect(r.best).not.toBeNull();
+    const lines = r.best!.legs.filter((l) => l.kind === 'ride').map((l) => (l.kind === 'ride' ? `${l.line}/${l.category}` : ''));
+    expect(r.best!.rides).toBe(3);
+    expect(lines[0]).toMatch(/^11\//);
+    expect(lines).toContain('11/island');
+    // fermata lontana: tratto a piedi oltre i 1500 m, entro il tentativo lungo
+    expect(r.best!.legs[0].kind === 'walk' && r.best!.legs[0].meters).toBeGreaterThan(1500);
+  });
+
+  it('rete allargata: da Mestre a Murano con autobus e vaporetto, cambio a piedi a Piazzale Roma', () => {
+    const mestre = { lon: 12.2405, lat: 45.4905, label: 'Mestre centro' };
+    const r = planTrip(graph, sim, ACTV_STOPS_REFERENCE, mestre, PLACES.murano, 10 * 3600, 'weekday', { nextDay: 'weekday' });
+    const rides = r.best!.legs.filter((l) => l.kind === 'ride');
+    expect(rides.some((l) => l.kind === 'ride' && l.category === 'bus')).toBe(true);
+    expect(rides.some((l) => l.kind === 'ride' && l.category !== 'bus')).toBe(true);
+  });
+
+  it('rete allargata: tempi di calcolo da telefono', () => {
+    const mestre = { lon: 12.2405, lat: 45.4905, label: 'Mestre centro' };
+    const t0 = performance.now();
+    planTrip(graph, sim, ACTV_STOPS_REFERENCE, mestre, PLACES.lido, 10 * 3600, 'weekday', { nextDay: 'weekday', date: new Date('2026-10-14T10:00:00+02:00'), hurry: true });
+    expect(performance.now() - t0).toBeLessThan(1500);
   });
 });
