@@ -138,11 +138,23 @@ async function load(fetchImpl: typeof fetch, now: number): Promise<FuelResult> {
     return { ok: true, data, fetchedAt: new Date(now).toISOString() };
   } catch (err) {
     const reason = err instanceof Error ? err.message : String(err);
-    console.warn(`[carburanti] ${reason}`);
+    // «fetch failed»: la connessione non si apre o viene chiusa; la causa (ECONNRESET, timeout di connessione…) è in err.cause
+    const cause = (err as { cause?: { code?: unknown } })?.cause?.code;
+    console.warn(`[carburanti] ${reason}${cause ? ` (${String(cause)})` : ''}`);
     // l'ultima lettura valida resta buona finché il Ministero non pubblica la successiva
     if (last) return { ok: true, data: last.data, fetchedAt: new Date(last.at).toISOString() };
     // motivo esplicito nella risposta (codice HTTP, pagina al posto del CSV, timeout): solo codici, nessun dato
-    const code = /^upstream_[a-z_0-9]+$/.test(reason) ? reason : /timeout|abort/i.test(reason) ? 'upstream_timeout' : /incompleta|intestazione/.test(reason) ? 'upstream_incomplete' : 'upstream_unavailable';
+    const code = /^upstream_[a-z_0-9]+$/.test(reason)
+      ? reason
+      : /timeout|abort/i.test(reason)
+        ? 'upstream_timeout'
+        : /incompleta|intestazione/.test(reason)
+          ? 'upstream_incomplete'
+          : typeof cause === 'string' && /^[A-Z_]+$/.test(cause)
+            ? `upstream_connection_${cause.toLowerCase()}`
+            : /fetch failed/i.test(reason)
+              ? 'upstream_connection_failed'
+              : 'upstream_unavailable';
     return { ok: false, error: code };
   }
 }

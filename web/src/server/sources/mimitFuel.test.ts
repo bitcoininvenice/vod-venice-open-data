@@ -56,6 +56,13 @@ describe('prezzi dei carburanti MIMIT', () => {
     expect(await fuelStations(denied as unknown as typeof fetch, Date.parse('2026-10-16T08:00:00Z'))).toEqual({ ok: false, error: 'upstream_http_403' });
   });
 
+  it('una connessione rifiutata dice la causa', async () => {
+    const refused = vi.fn(async () => {
+      throw Object.assign(new TypeError('fetch failed'), { cause: { code: 'ECONNRESET' } });
+    });
+    expect(await fuelStations(refused as unknown as typeof fetch, Date.parse('2026-10-16T08:00:00Z'))).toEqual({ ok: false, error: 'upstream_connection_econnreset' });
+  });
+
   it('legge i due file una volta sola e tiene l’ultima lettura valida se il Ministero non risponde', async () => {
     const big = STATIONS + '\n' + Array.from({ length: 15_000 }, (_, i) => `${100 + i}|G|B|Stradale|N|V|ROMA|RM|41.9|12.49`).join('\n');
     const ok = vi.fn(async (url: string) => new Response(String(url).includes('anagrafica') ? big : PRICES));
