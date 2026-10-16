@@ -47,6 +47,15 @@ describe('prezzi dei carburanti MIMIT', () => {
     expect(() => parseFuel(STATIONS, PRICES)).toThrow(/incompleta/);
   });
 
+  it('una pagina del firewall al posto del CSV è un errore esplicito', async () => {
+    const html = vi.fn(async () => new Response('<html><body>Request rejected</body></html>', { status: 200 }));
+    const r = await fuelStations(html as unknown as typeof fetch, Date.parse('2026-10-16T08:00:00Z'));
+    expect(r).toEqual({ ok: false, error: 'upstream_html_instead_of_csv' });
+    resetFuelCache();
+    const denied = vi.fn(async () => new Response('', { status: 403 }));
+    expect(await fuelStations(denied as unknown as typeof fetch, Date.parse('2026-10-16T08:00:00Z'))).toEqual({ ok: false, error: 'upstream_http_403' });
+  });
+
   it('legge i due file una volta sola e tiene l’ultima lettura valida se il Ministero non risponde', async () => {
     const big = STATIONS + '\n' + Array.from({ length: 15_000 }, (_, i) => `${100 + i}|G|B|Stradale|N|V|ROMA|RM|41.9|12.49`).join('\n');
     const ok = vi.fn(async (url: string) => new Response(String(url).includes('anagrafica') ? big : PRICES));

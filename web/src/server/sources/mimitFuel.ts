@@ -118,12 +118,16 @@ async function readText(url: string, fetchImpl: typeof fetch): Promise<string> {
   const res = await fetchImpl(url, {
     signal: AbortSignal.timeout(30_000),
     headers: { 'User-Agent': USER_AGENT },
-    // Next non salva in cache le risposte oltre 2 MB (lo segnala nei log): vale la cache in memoria qui sotto.
-    // revalidate, e non no-store, lascia statiche le route che leggono i carburanti (rigenerate a intervalli).
-    next: { revalidate: FUEL_REFRESH_S },
+    // la cache dei dati di Next non salva oltre 2 MB: valgono la cache in memoria qui sotto e quella del CDN sulla route
+    cache: 'no-store',
   });
   if (!res.ok) throw new Error(`upstream_http_${res.status}`);
-  return res.text();
+  const text = await res.text();
+  // un firewall può rispondere 200 con una pagina di verifica al posto del CSV: si dice, non si aggira
+  if (!/^\s*(Estrazione del|idImpianto)/.test(text.slice(0, 200))) {
+    throw new Error(/<html|<!doctype/i.test(text.slice(0, 500)) ? 'upstream_html_instead_of_csv' : 'upstream_invalid_payload');
+  }
+  return text;
 }
 
 async function load(fetchImpl: typeof fetch, now: number): Promise<FuelResult> {
@@ -133,10 +137,13 @@ async function load(fetchImpl: typeof fetch, now: number): Promise<FuelResult> {
     last = { data, at: now };
     return { ok: true, data, fetchedAt: new Date(now).toISOString() };
   } catch (err) {
-    console.warn(`[carburanti] ${err instanceof Error ? err.message : String(err)}`);
+    const reason = err instanceof Error ? err.message : String(err);
+    console.warn(`[carburanti] ${reason}`);
     // l'ultima lettura valida resta buona finché il Ministero non pubblica la successiva
     if (last) return { ok: true, data: last.data, fetchedAt: new Date(last.at).toISOString() };
-    return { ok: false, error: 'upstream_unavailable' };
+    // motivo esplicito nella risposta (codice HTTP, pagina al posto del CSV, timeout): solo codici, nessun dato
+    const code = /^upstream_[a-z_0-9]+$/.test(reason) ? reason : /timeout|abort/i.test(reason) ? 'upstream_timeout' : /incompleta|intestazione/.test(reason) ? 'upstream_incomplete' : 'upstream_unavailable';
+    return { ok: false, error: code };
   }
 }
 

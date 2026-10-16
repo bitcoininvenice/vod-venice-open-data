@@ -42,13 +42,18 @@ import lagoonProbeDataset from '@/data/arpav-lagoon.json';
 import cruscottoDataset from '@/data/cruscotto-comuni.json';
 import censusDataset from '@/data/istat-census-venezia.json';
 import bdapDataset from '@/data/bdap-opere-venezia.json';
-import { fuelStations } from '@/server/sources/mimitFuel';
+import { SITE_URL } from '@/lib/site';
 
 export const revalidate = 60;
-// la prima lettura dei prezzi dei carburanti scarica circa 7,5 MB dal Ministero
-export const maxDuration = 60;
 
 const DAY = 24 * 60;
+
+/** Data dell'estrazione dei prezzi dalla risposta di /api/carburanti; errore se la route non ha dati */
+function parseFuelStatus(raw: unknown): string {
+  const j = raw as { success?: boolean; meta?: { extractedAt?: unknown; error?: unknown } };
+  if (!j?.success || typeof j.meta?.extractedAt !== 'string') throw new Error(String(j?.meta?.error ?? 'senza dati'));
+  return j.meta.extractedAt;
+}
 const ACQUA_ALTA = OCEAN_STATIONS_DATA.find((s) => s.id === 'CNR-PLAT-01') ?? { lat: 45.3231, lon: 12.5147 };
 
 /**
@@ -65,7 +70,8 @@ export async function GET() {
     fetchUpstream(ACTV_GTFS_RT_FEEDS.automobilistico, (raw) => parseVehiclePositions(raw as ArrayBuffer), { revalidate: 20, responseType: 'arrayBuffer' }),
     fetchUpstream(CPSM_METEO_URLS.vento, parseCpsmFeed, { revalidate: 300 }),
     openSkyFlights(),
-    fuelStations(),
+    // i prezzi dei carburanti si leggono dalla nostra route (cache del CDN): un solo download dal Ministero
+    fetchUpstream(`${SITE_URL}/api/carburanti`, parseFuelStatus, { revalidate: 600, timeoutMs: 20000 }),
     fetchUpstream(openMeteoWindUrl(), parseOpenMeteoWind, { revalidate: 1800, timeoutMs: 8000 }),
     fetchUpstream(airQualityUrl(ARPAV_AIR_STATIONS), parseAirQuality, { revalidate: 1800, timeoutMs: 8000 }),
     fetchUpstream(marineUrl(ACQUA_ALTA.lat, ACQUA_ALTA.lon), parseMarine, { revalidate: 1800, timeoutMs: 8000 }),
@@ -132,7 +138,7 @@ export async function GET() {
     assess('bdap-mop', 'dataset', new Date(bdapDataset.generatedAt), 31 * DAY, now),
     assess('agcom-fiber', 'dataset', new Date(fiberDataset.generatedAt), 120 * DAY, now),
     // il Ministero pubblica ogni giorno i prezzi delle 8: oltre 3 giorni il dato è fermo
-    assess('mimit-carburanti', 'dataset', fuel.ok && fuel.data.extractedAt ? fromRomeLocal(`${fuel.data.extractedAt} 08:00:00`) : null, 3 * DAY, now,
+    assess('mimit-carburanti', 'dataset', fuel.ok && fuel.data ? fromRomeLocal(`${fuel.data} 08:00:00`) : null, 3 * DAY, now,
       fuel.ok ? undefined : 'fonte non raggiungibile o senza data'),
     assess('alilaguna-gtfs', 'dataset', new Date(ALILAGUNA_FEED_META.generatedAt), 31 * DAY, now,
       isAlilagunaTimetableValid(now) ? undefined : 'orario importato non più valido'),

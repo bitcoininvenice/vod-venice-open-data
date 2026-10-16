@@ -3,9 +3,13 @@ import { FUEL_REFRESH_S, fuelStations } from '@/server/sources/mimitFuel';
 import { FUEL_KINDS, FUEL_STALE_DAYS, fuelSummary } from '@/lib/fuel';
 import { providerMeta } from '@/lib/provenance/providers';
 
-// Il Ministero pubblica una volta al giorno: la risposta si rigenera al massimo ogni 6 ore
-export const revalidate = 21600;
+// Dinamica, non generata durante la build: un errore del Ministero in quel momento resterebbe in cache per ore.
+// Le risposte riuscite restano 6 ore nella cache del CDN (il Ministero pubblica una volta al giorno), gli errori mai.
+export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
+// Il sito del Ministero è dietro un firewall che può rifiutare le richieste dai data center fuori Europa:
+// la funzione gira a Francoforte (scelta della regione di Vercel, nessun aggiramento del filtro)
+export const preferredRegion = 'fra1';
 
 export async function GET() {
   const res = await fuelStations();
@@ -28,6 +32,9 @@ export async function GET() {
         note: `Prezzi comunicati dai gestori al Ministero (art. 51 L. 99/2009), in vigore alle 8 del giorno dell'estrazione: non sono prezzi in tempo reale. Solo i distributori nell'area della mappa; marchio e indirizzo, senza il nome del gestore. Un prezzo comunicato da oltre ${FUEL_STALE_DAYS} giorni non entra nel confronto della mappa. Gli impianti dell'anagrafica senza nessun prezzo comunicato (spesso doppioni, impianti non aperti al pubblico o forse non più attivi) non sono in data ma sono contati in meta.listedWithoutPrices e nel riepilogo.`,
       },
     },
-    { status: res.ok ? 200 : 503 },
+    {
+      status: res.ok ? 200 : 503,
+      headers: { 'Cache-Control': res.ok ? `public, s-maxage=${FUEL_REFRESH_S}, stale-while-revalidate=86400` : 'no-store' },
+    },
   );
 }
