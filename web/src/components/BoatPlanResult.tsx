@@ -7,6 +7,7 @@ import { clock } from '@/lib/tripView';
 import { ASSUMED_KMH, type BoatResult, type BoatRule } from '@/lib/boatRouting';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 import { PROVIDERS } from '@/lib/provenance/providers';
+import { BoatFuelEstimate } from '@/components/TripCost';
 
 /** Testo Unico della circolazione acquea: pagina del Comune con l'atto e le modifiche */
 const TESTO_UNICO_URL = PROVIDERS.testoUnico.url;
@@ -91,6 +92,7 @@ export const BoatPlanResult: React.FC<{ result: BoatResult; resident: boolean; o
         {p.assumedMeters >= 100 && <> {t('ui.planner.boat_assumed', { km: (p.assumedMeters / 1000).toFixed(1), kmh: ASSUMED_KMH })}</>}
         {(p.snapFromM >= 60 || p.snapToM >= 60) && <> {t('ui.planner.boat_snap')}</>}
       </p>
+      <BoatFuelEstimate seconds={p.arrive - p.depart} />
       <p className="flex items-start gap-1.5 text-[11px] text-[var(--ink-3)]">
         <ScrollText className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden />
         <span>

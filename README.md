@@ -122,7 +122,7 @@ Pubbliche e in sola lettura, con cache per ogni fonte e un limite di richieste p
 
 | Endpoint | Descrizione |
 | :--- | :--- |
-| `/api/come-arrivare?da=&a=[&data=&ora=&modo=piu_veloce\|a_piedi\|via_acqua\|barca&residente=1&marea=]` | come arrivare da A a B, con fonti usate e link alla mappa |
+| `/api/come-arrivare?da=&a=[&data=&ora=&modo=piu_veloce\|a_piedi\|via_acqua\|barca&residente=1&marea=&tariffa=ordinaria\|venezia_unica\|abbonamento&consumo_lh=]` | come arrivare da A a B, con costo stimato dei biglietti, opzione più economica, carburante in barca, fonti e link alla mappa |
 | `/api/partenze?fermata=[&data=&ora=&minuti=90]` | prossime partenze dall'orario ACTV e Alilaguna |
 | `/api/acqua-alta?marea=[&luogo=&da=&a=]` | simulatore di acqua alta: città allagata, un luogo, percorso a piedi più asciutto |
 | `/api/luoghi?q=` | come VOD riconosce un luogo (fermata, indirizzo, civico, aeroporto, coordinate) |

@@ -13,6 +13,9 @@ import { metersBetween, nearestNode } from '@/lib/walkGraph';
 import { isMainland } from '@/lib/streetElevation';
 import { findStops, resolvePlace, stopsNear, type ResolvedPlace } from './places';
 import { hhmm, serverBoatGraph, serverWalkGraph, SOURCES, tideToday, tripContext, VOD_BASE_URL, type SourceRef, type TripContext } from './context';
+import { tripCost, boatFuelCost, type FareProfile, type TicketKind } from '@/lib/fares';
+import { fuelStations } from '@/server/sources/mimitFuel';
+import { fuelSummary } from '@/lib/fuel';
 
 export type ServiceResult = { ok: true; body: Record<string, unknown> } | { ok: false; status: number; error: string; message: string };
 
@@ -38,7 +41,27 @@ function legOut(l: Leg) {
   };
 }
 
-function itineraryOut(it: Itinerary) {
+const TICKET_NAMES: Record<TicketKind, string> = {
+  reteUnica: 'biglietto ordinario rete unica 75 minuti (vaporetto, bus, tram, People Mover)',
+  bus: 'biglietto ordinario bus/tram 75 minuti',
+  aerobus: 'biglietto aerobus (da e per l\'aeroporto)',
+  veneziaUnica: 'biglietto rete unica 75 minuti con tessera Venezia Unica',
+  pass: 'corsa compresa nell\'abbonamento ACTV',
+  alilaguna: 'biglietto Alilaguna',
+};
+
+/** Costo stimato dell'itinerario per il tipo di biglietto indicato */
+function costOut(it: Itinerary, profile: FareProfile) {
+  const c = tripCost(it, profile);
+  return {
+    profile: FARE_PROFILE_NAMES[profile],
+    estimatedEur: c.total,
+    tickets: c.tickets.map((tk) => ({ ticket: TICKET_NAMES[tk.kind], eur: tk.price })),
+    ...(c.unpriced.length ? { unpricedLines: c.unpriced, warning: 'Linee extraurbane: tariffa a fasce non calcolata, il costo reale è più alto.' } : {}),
+  };
+}
+
+function itineraryOut(it: Itinerary, profile: FareProfile = 'ordinary') {
   const rides = it.legs.filter((l) => l.kind === 'ride');
   return {
     depart: hhmm(it.depart),
@@ -56,6 +79,7 @@ function itineraryOut(it: Itinerary) {
         }
       : {}),
     ...(it.ridesInHighWater ? { warning: 'Marea da +110 cm: ACTV può deviare o ridurre alcune linee rispetto all\'orario.' } : {}),
+    ...(it.rides > 0 ? { cost: costOut(it, profile) } : { cost: { profile: FARE_PROFILE_NAMES[profile], estimatedEur: 0, tickets: [] } }),
     legs: it.legs.map(legOut),
   };
 }
@@ -78,12 +102,47 @@ function plannerUrl(from: ResolvedPlace, to: ResolvedPlace, ctx: TripContext, mo
   return `${VOD_BASE_URL}/?${q.toString()}`;
 }
 
+const FARE_PROFILE_NAMES: Record<FareProfile, string> = { ordinary: 'biglietto ordinario', veneziaUnica: 'tessera Venezia Unica', pass: 'abbonamento ACTV' };
+
+/** Opzione più economica fra quelle proposte (indice in itineraries), se costa meno delle altre */
+function cheapestOut(its: Itinerary[], profile: FareProfile) {
+  const costs = its.map((it) => tripCost(it, profile));
+  const priced = costs.map((c, i) => ({ c, i })).filter((x) => x.c.unpriced.length === 0);
+  if (priced.length < 2) return {};
+  const min = Math.min(...priced.map((x) => x.c.total));
+  if (priced.every((x) => x.c.total === min)) return {};
+  return { cheapestItinerary: priced.find((x) => x.c.total === min)!.i };
+}
+
+/** Barca privata: carburante stimato dal consumo indicato e dal prezzo mediano della benzina (MIMIT) */
+async function boatFuelOut(seconds: number, litresPerHour: number | null) {
+  if (!litresPerHour || !(litresPerHour > 0)) {
+    return { fuel: { note: 'Indica il consumo del motore (litresPerHour / consumo_lh) per avere la stima del carburante.' } };
+  }
+  const fuel = await fuelStations();
+  const s = fuel.ok ? fuelSummary(fuel.data.stations, 'benzina', Date.now()) : null;
+  const price = s?.byZone.centro.median ?? s?.all.median ?? null;
+  if (price === null) return { fuel: { note: 'Prezzi dei carburanti non disponibili in questo momento.' } };
+  const est = boatFuelCost(seconds, litresPerHour, price);
+  return {
+    fuel: {
+      litresPerHour,
+      estimatedLitres: +est.litres.toFixed(1),
+      estimatedEur: +est.cost.toFixed(2),
+      petrolEurPerLitre: price,
+      priceBasis: s?.byZone.centro.median != null ? 'mediana dei distributori del centro storico e delle isole (MIMIT, prezzi alle 8)' : 'mediana dei distributori dell\'area (MIMIT, prezzi alle 8)',
+      caveat: 'Stima indicativa: il consumo reale dipende da motore, carico, corrente e manovre.',
+    },
+  };
+}
+
 /** Fonti usate davvero da un itinerario */
 function itinerarySources(its: Itinerary[], tideUsed: boolean): SourceRef[] {
   const out: SourceRef[] = [SOURCES.osm];
   const legs = its.flatMap((i) => i.legs);
   if (legs.some((l) => l.kind === 'ride' && l.operator !== 'alilaguna')) out.push(SOURCES.actv);
   if (legs.some((l) => l.kind === 'ride' && l.operator === 'alilaguna')) out.push(SOURCES.alilaguna);
+  if (legs.some((l) => l.kind === 'ride')) out.push(SOURCES.actvFares, SOURCES.alilagunaFares);
   if (tideUsed) out.push(SOURCES.cpsm, SOURCES.passerelle);
   out.push(SOURCES.vod);
   return out;
@@ -98,6 +157,10 @@ export interface PlanInput {
   resident?: boolean;
   /** livello di marea da simulare (cm): sostituisce misura e previsione */
   tideCm?: number | null;
+  /** tipo di biglietto per il costo stimato */
+  fare?: FareProfile;
+  /** barca privata: consumo del motore (litri/ora) per stimare il carburante */
+  litresPerHour?: number | null;
 }
 
 /** «Come arrivare» lato server: stesso motore della pagina, risposta con fonti e link a VOD. */
@@ -147,6 +210,7 @@ export async function planTripService(input: PlanInput): Promise<ServiceResult> 
         routeChangedFor: p.avoided.map((x) => `${x.label} (${x.ref})`),
         rulesOnRoute: p.onRoute.map((x) => `${x.label} (${x.ref})`),
         tideRule: p.tideRule,
+        ...(await boatFuelOut(p.arrive - p.depart, input.litresPerHour ?? null)),
         speedNote: `Tempo al limite di velocità di ogni canale; per ${(p.assumedMeters / 1000).toFixed(1)} km il limite non è noto (ipotizzati ${ASSUMED_KMH} km/h).`,
         caveat:
           'Percorso indicativo, non valido per la navigazione: fanno fede il Testo Unico della circolazione acquea, le ordinanze temporanee e la segnaletica. Non considera ponti, larghezza e pescaggio della barca, deroghe per categoria né i canali della Capitaneria di Porto.',
@@ -164,6 +228,7 @@ export async function planTripService(input: PlanInput): Promise<ServiceResult> 
   const tideAt = input.tideCm != null ? () => input.tideCm as number : tide?.at;
   const options = { mode, tideAt, passerelle: PASSERELLE_ROUTES, nextDay: ctx.nextDay, hurry: ctx.isNow, date: ctx.date };
 
+  const fare = input.fare ?? 'ordinary';
   const base = { from: placeOut(from), to: placeOut(to), date: ctx.dateLabel, time: ctx.timeLabel, mode: input.mode ?? 'fastest', caveat, vodUrl: plannerUrl(from, to, ctx, mode) };
 
   // Aeroporto: Alilaguna, ACTV con il bus 5, altri mezzi; di notte le prime soluzioni di domani
@@ -176,8 +241,9 @@ export async function planTripService(input: PlanInput): Promise<ServiceResult> 
         found: r.options.length > 0,
         tomorrowMorning: r.tomorrow,
         ...(r.tomorrow && r.lastBus !== null ? { note: `L'ultimo bus 5 della serata parte alle ${hhmm(r.lastBus)}, ma da questo punto non si arriva in tempo: soluzioni di domani mattina.` } : {}),
-        itineraries: r.options.map(itineraryOut),
-        ...(r.ifLate ? { ifYouMissIt: { tomorrowMorning: r.ifLateTomorrow, ...itineraryOut(r.ifLate) } } : {}),
+        itineraries: r.options.map((o) => itineraryOut(o, fare)),
+        ...(r.ifLate ? { ifYouMissIt: { tomorrowMorning: r.ifLateTomorrow, ...itineraryOut(r.ifLate, fare) } } : {}),
+        ...cheapestOut(r.options, fare),
         sources: itinerarySources(r.options, !!tideAt),
       },
     };
@@ -211,9 +277,10 @@ export async function planTripService(input: PlanInput): Promise<ServiceResult> 
       ...base,
       found: true,
       tomorrowMorning: tomorrow,
-      itineraries: alternatives.map(itineraryOut),
-      ...(plan.walkOnly && plan.best.rides > 0 ? { walkOnly: { minutes: minutes(plan.walkOnly.arrive - plan.walkOnly.depart), meters: Math.round(plan.walkOnly.walkMeters) } } : {}),
-      ...(plan.ifLate ? { ifYouMissIt: itineraryOut(plan.ifLate) } : {}),
+      itineraries: alternatives.map((o) => itineraryOut(o, fare)),
+      ...cheapestOut(alternatives, fare),
+      ...(plan.walkOnly && plan.best.rides > 0 ? { walkOnly: { minutes: minutes(plan.walkOnly.arrive - plan.walkOnly.depart), meters: Math.round(plan.walkOnly.walkMeters), estimatedEur: 0 } } : {}),
+      ...(plan.ifLate ? { ifYouMissIt: itineraryOut(plan.ifLate, fare) } : {}),
       ...(plan.floodLevelCm != null
         ? { highWater: { levelCm: plan.floodLevelCm, note: 'Percorso scelto per restare il più possibile all\'asciutto: quote delle calli stimate, tracciati delle passerelle indicativi.' } }
         : {}),

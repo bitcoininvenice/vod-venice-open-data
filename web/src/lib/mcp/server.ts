@@ -104,7 +104,7 @@ export function createVodMcpServer(): McpServer {
     {
       title: 'Come arrivare da A a B',
       description:
-        'Itinerario da un luogo a un altro di Venezia e dintorni (da Chioggia a Mestre, aeroporto e Treporti) con tutti i mezzi ACTV (vaporetti, bus, tram, People Mover) e Alilaguna, fino a 4 mezzi con cambi a piedi, più le alternative con meno cambi; oppure solo a piedi, solo via acqua o con la barca privata (regole del Testo Unico della circolazione acquea). Luoghi: fermata, indirizzo, civico (Cannaregio 3450), «aeroporto» o «lat,lon». Con l\'acqua alta i tratti a piedi preferiscono le calli asciutte. Se stasera non c\'è più niente restituisce la prima soluzione di domani mattina.',
+        'Itinerario da un luogo a un altro di Venezia e dintorni (da Chioggia a Mestre, aeroporto e Treporti) con tutti i mezzi ACTV (vaporetti, bus, tram, People Mover) e Alilaguna, fino a 4 mezzi con cambi a piedi, più le alternative con meno cambi; oppure solo a piedi, solo via acqua o con la barca privata (regole del Testo Unico della circolazione acquea). Luoghi: fermata, indirizzo, civico (Cannaregio 3450), «aeroporto» o «lat,lon». Con l\'acqua alta i tratti a piedi preferiscono le calli asciutte. Se stasera non c\'è più niente restituisce la prima soluzione di domani mattina. Ogni itinerario ha il costo stimato dei biglietti per il tipo indicato in fare (cost) e cheapestItinerary indica l\'opzione più economica; in barca privata, con litresPerHour, la stima del carburante (fuel). Sono stime: fanno fede le tariffe ACTV e Alilaguna.',
       inputSchema: z.object({
         from: placeText.describe('partenza'),
         to: placeText.describe('arrivo'),
@@ -113,10 +113,12 @@ export function createVodMcpServer(): McpServer {
         mode: z.enum(['fastest', 'walk', 'water', 'private']).default('fastest').describe('fastest: tutti i mezzi; walk: solo a piedi; water: solo mezzi d\'acqua; private: barca privata'),
         resident: z.boolean().default(false).describe('solo per private: residente in centro storico o isole, o concessionario di uno spazio acqueo (art. 18 Testo Unico)'),
         tideCm: z.number().min(-100).max(250).optional().describe('marea da simulare (cm sullo zero di Punta della Salute)'),
+        fare: z.enum(['ordinary', 'veneziaUnica', 'pass']).default('ordinary').describe('biglietto per il costo stimato: ordinary (turista), veneziaUnica (tessera Venezia Unica: residenti, studenti, pendolari), pass (abbonamento ACTV)'),
+        litresPerHour: z.number().min(0.5).max(200).optional().describe('solo per private: consumo del motore in litri/ora, per stimare il carburante'),
       }),
       annotations: { readOnlyHint: true, openWorldHint: false, idempotentHint: true },
     },
-    async ({ from, to, date, time, mode, resident, tideCm }) => run(() => planTripService({ from, to, date, time, mode, resident, tideCm })),
+    async ({ from, to, date, time, mode, resident, tideCm, fare, litresPerHour }) => run(() => planTripService({ from, to, date, time, mode, resident, tideCm, fare, litresPerHour })),
   );
 
   server.registerTool(

@@ -621,6 +621,20 @@ test('privacy raggiungibile dalla mappa e avvertenza del simulatore di marea', a
   await expect(page.locator('body')).toContainText('server MCP');
 });
 
+test('come arrivare: costo stimato del percorso per tipo di biglietto, con la fonte delle tariffe', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  await page.goto('/?open=planner&da=45.44120,12.32150&daNome=Ferrovia&a=45.45470,12.35040&aNome=Murano%20Colonna&ora=10:00');
+  const panel = page.locator('[data-info-panel]');
+  const cost = panel.getByTestId('planner-cost');
+  await expect(cost).toContainText('Costo stimato: ≈ 9,50 €', { timeout: 15000 });
+  await expect(cost).toContainText('rete unica 75′');
+  await expect(cost.getByRole('link', { name: 'ACTV' })).toHaveAttribute('href', /prezzi-vigore/);
+  await panel.getByTestId('planner-fare-profile').getByRole('radio', { name: 'Venezia Unica' }).click();
+  await expect(cost).toContainText('Costo stimato: ≈ 1,50 €');
+  await panel.getByTestId('planner-fare-profile').getByRole('radio', { name: 'Abbonamento ACTV' }).click();
+  await expect(cost).toContainText('Costo stimato: gratis');
+});
+
 test('i link delle risposte della skill aprono il planner già compilato e il simulatore al livello indicato', async ({ page, isMobile }) => {
   test.skip(isMobile, 'stesso comportamento, controllato su desktop');
   await page.goto('/?open=planner&da=45.44120,12.32150&daNome=Ferrovia&a=45.45470,12.35040&aNome=Murano%20Colonna&ora=10:00');
@@ -1533,6 +1547,21 @@ test.describe('API', () => {
     expect((await request.get('/api/come-arrivare?da=Ferrovia')).status()).toBe(400);
     expect((await request.get('/api/come-arrivare?da=Ferrovia&a=Xyzzzz%20Qwerty')).status()).toBe(404);
     expect((await request.get('/api/come-arrivare?da=Ferrovia&a=Rialto&ora=25:00')).status()).toBe(400);
+  });
+
+  test('come arrivare lato server: costo stimato per tipo di biglietto e opzione più economica', async ({ request }) => {
+    const q = '/api/come-arrivare?da=Ferrovia&a=Murano%20Colonna&data=2026-10-14&ora=10:00';
+    const ordinary = await (await request.get(q)).json();
+    expect(ordinary.itineraries[0].cost).toMatchObject({ profile: 'biglietto ordinario', estimatedEur: 9.5 });
+    expect(ordinary.sources.some((x: { url: string }) => /prezzi-vigore/.test(x.url))).toBe(true);
+    const vu = await (await request.get(`${q}&tariffa=venezia_unica`)).json();
+    expect(vu.itineraries[0].cost.estimatedEur).toBe(1.5);
+    const pass = await (await request.get(`${q}&fare=pass`)).json();
+    expect(pass.itineraries[0].cost.estimatedEur).toBe(0);
+    expect((await request.get(`${q}&tariffa=gratis`)).status()).toBe(400);
+    // barca privata: carburante dal consumo indicato (se il dato del Ministero risponde)
+    const boat = await (await request.get('/api/come-arrivare?da=45.4318,12.3283&a=45.4274,12.3287&modo=barca&residente=1&data=2026-10-14&ora=14:00&consumo_lh=8')).json();
+    expect(boat.fuel.estimatedLitres > 0 || /non disponibili/.test(boat.fuel.note)).toBe(true);
   });
 
   test('come arrivare in barca privata lato server: regole del Testo Unico e fonti degli atti', async ({ request }) => {

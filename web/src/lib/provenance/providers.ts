@@ -76,6 +76,14 @@ export const PROVIDERS = {
     portalName: 'actv.avmspa.it/rss.xml',
     license: 'actv-content',
   },
+  actvFares: {
+    name: 'AVM / ACTV – prezzi in vigore',
+    short: 'ACTV',
+    url: 'https://avm.avmspa.it/it/content/prezzi-vigore-0',
+    portalName: 'avm.avmspa.it',
+    license: 'actv-content',
+  },
+  alilagunaFares: { name: 'Alilaguna S.p.A. – tariffe', short: 'Alilaguna', url: 'https://www.alilaguna.it/biglietti/tariffe', portalName: 'alilaguna.it', license: 'undeclared' },
   alilaguna: { name: 'Alilaguna S.p.A. – orario GTFS', short: 'Alilaguna', url: 'https://www.alilaguna.it', portalName: 'alilaguna.it (GTFS)', license: 'undeclared' },
   flixbus: {
     name: 'FlixMobility – GTFS europeo FlixBus',

@@ -9,6 +9,7 @@ No dependencies (Python 3.9+). Same data and filters as the VOD MCP server.
   python vod.py place <name>
   python vod.py health
   python vod.py route <from> <to> [--date YYYY-MM-DD] [--time HH:MM] [--mode fastest|walk|water|private] [--resident] [--tide CM]
+                    [--fare ordinary|veneziaUnica|pass] [--litres-per-hour L]
   python vod.py departures <stop> [--date YYYY-MM-DD] [--time HH:MM] [--minutes N]
   python vod.py flood [--level CM] [--place NAME] [--from NAME --to NAME]
   python vod.py find <query>
@@ -87,7 +88,7 @@ CALC_ENDPOINTS = {"route": "/api/come-arrivare", "departures": "/api/partenze", 
 def calc_request(args: argparse.Namespace) -> tuple[str, dict]:
     """Endpoint e parametri per i comandi route, departures, flood, find e airport."""
     if args.cmd == "route":
-        params = {"from": args.origin, "to": args.destination, "date": args.date, "time": args.time, "mode": args.mode, "tideCm": args.tide}
+        params = {"from": args.origin, "to": args.destination, "date": args.date, "time": args.time, "mode": args.mode, "tideCm": args.tide, "fare": args.fare, "litresPerHour": args.litres_per_hour}
         if args.resident:
             params["resident"] = "1"
     elif args.cmd == "departures":
@@ -123,6 +124,8 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--mode", choices=["fastest", "walk", "water", "private"], default="fastest")
     r.add_argument("--resident", action="store_true", help="private boat: resident or water-space concession holder")
     r.add_argument("--tide", type=int, help="simulated tide level in cm")
+    r.add_argument("--fare", choices=["ordinary", "veneziaUnica", "pass"], help="ticket for the estimated cost (default ordinary): ordinary (visitor), veneziaUnica (card holders), pass (ACTV pass)")
+    r.add_argument("--litres-per-hour", type=float, help="private boat: engine consumption in l/h, for the fuel estimate")
     d = sub.add_parser("departures", help="next departures from a stop (ACTV and Alilaguna timetables)")
     d.add_argument("stop")
     d.add_argument("--date")

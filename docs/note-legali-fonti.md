@@ -15,6 +15,7 @@ titolare non conferma (bozze in [richieste-autorizzazione.md](richieste-autorizz
 | ACTV GTFS statico | CC BY (open data ACTV) | /sources, schede | sì | ok |
 | ACTV GTFS-Realtime | «Open Data Real Time» nel catalogo dati ACTV (art. 53 CAD); senza licenza esplicita: open by default (art. 52 CAD) | /sources, schede | sì, citando ACTV | ok (comunicazione di cortesia ad AVM in bozza) |
 | ACTV avvisi (RSS) | contenuti ACTV pubblici | titolo, testo breve e link all'avviso | sì, con link | ok |
+| Tariffe ACTV e Alilaguna (pagine «Prezzi in vigore» e «Tariffe») | informazioni pubbliche; i GTFS non contengono le tariffe | costo «stimato» con data della verifica e link alle due pagine | sì, solo i prezzi usati nel calcolo | ok; da ricontrollare a ogni cambio di tariffa (`web/src/lib/fares.ts`, `FARES_CHECKED_AT`) |
 | Alilaguna GTFS | nessuna licenza dichiarata nel feed | scheda, /sources | sì | **conferma in bozza** (richiesta 9) |
 | FlixBus GTFS (FlixMobility) | ODbL 1.0 | scheda "© FlixMobility · ODbL", /sources | sì, sotto ODbL | ok |
 | OpenStreetMap (base cartografica e livelli) | ODbL 1.0 | **attribuzione fissa sulla mappa** + schede | sì, sotto ODbL | ok |

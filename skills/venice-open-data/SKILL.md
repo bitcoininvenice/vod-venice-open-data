@@ -34,7 +34,7 @@ python scripts/vod.py find "calle minestra"                     # how VOD recogn
 
 | Question | Tool / CLI | Notes |
 |---|---|---|
-| How do I get from A to B? | `plan_trip` / `route` | All ACTV services (waterbuses, buses, tram, People Mover) and Alilaguna, up to 4 vehicles with walking changes; alternatives with fewer changes; `mode`: fastest, walk, water, private (own boat). Places: stop, address, house number, "aeroporto" or `lat,lon`. Area: Chioggia to Mestre, airport and Treporti |
+| How do I get from A to B? | `plan_trip` / `route` | All ACTV services (waterbuses, buses, tram, People Mover) and Alilaguna, up to 4 vehicles with walking changes; alternatives with fewer changes; `mode`: fastest, walk, water, private (own boat). Places: stop, address, house number, "aeroporto" or `lat,lon`. Area: Chioggia to Mestre, airport and Treporti. Each itinerary has `cost` (estimated tickets for `fare`: ordinary, veneziaUnica, pass; suburban lines not priced) and `cheapestItinerary`; with `private` and `litresPerHour`, `fuel` is a rough fuel estimate. Always say it is an estimate and that ACTV/Alilaguna fares prevail |
 | When is the next boat / bus? | `stop_departures` / `departures` | Official timetable, no delays; if nothing soon, `nextRun` (also tomorrow). For live delays use the `realtime_vehicles` dataset |
 | Acqua alta at +X cm? Will I get wet? | `flood_simulation` / `flood` | Flooded share of the historic centre (CPSM table), sirens, MOSE, passerelle; a place's estimated ground level; the driest walking route |
 | Airport buses and boats | `airport_connections` / `airport` | Next 90 minutes; flight times are not open data |

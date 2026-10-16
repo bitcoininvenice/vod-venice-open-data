@@ -121,6 +121,8 @@ export const SOURCES = {
   passerelle: providerCitation('passerelle'),
   testoUnico: providerCitation('testoUnico'),
   speedLimits: providerCitation('speedLimits'),
+  actvFares: providerCitation('actvFares'),
+  alilagunaFares: providerCitation('alilagunaFares'),
   vod: providerCitation('vod'),
 } satisfies Record<string, SourceRef>;
 

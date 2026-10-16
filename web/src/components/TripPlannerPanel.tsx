@@ -22,6 +22,8 @@ import { buildBoatGraph, ordinancesOnRoute, planBoat, type BoatGraph, type RawBo
 import { BOAT_URL } from '@/lib/boat-data';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
 import { BoatPlanResult } from '@/components/BoatPlanResult';
+import { FareProfilePicker, TripCostSummary, useCostLabel, useFareProfile } from '@/components/TripCost';
+import { tripCost } from '@/lib/fares';
 import { AIRPORT, FIRST_SERVICE_FROM_S, isAirport, matchesAirport, planAirportOrTomorrow } from '@/lib/airportPlanner';
 import { addressLabel, type AddressHit } from '@/lib/addresses';
 
@@ -309,6 +311,8 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
   const [boat, setBoat] = useState<BoatGraph | null>(null);
   const [boatError, setBoatError] = useState(false);
   const [resident, setResident] = useState(false);
+  const [fareProfile, setFareProfile] = useFareProfile();
+  const costLabel = useCostLabel();
   const isPrivate = mode === 'private';
   useEffect(() => {
     if (!open || walk) return;
@@ -364,6 +368,16 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
     return chosen ? { ...generalPlan, best: chosen } : generalPlan;
   }, [open, isPrivate, sim, walk, from, to, airportOptions, airportChoice, generalPlan, routeChoice]);
   const routeOptions = !airportOptions && (generalPlan?.alternatives?.length ?? 0) > 1 ? generalPlan!.alternatives! : null;
+  // Costo stimato di ogni opzione per il tipo di biglietto scelto; la più economica si segnala se costa meno delle altre
+  const optionCosts = useMemo(() => new Map((routeOptions ?? airportOptions ?? []).map((o) => [o, tripCost(o, fareProfile)])), [routeOptions, airportOptions, fareProfile]);
+  const cheapest = useMemo(() => {
+    const priced = [...optionCosts.entries()].filter(([, c]) => c.unpriced.length === 0);
+    if (priced.length < 2) return null;
+    const min = Math.min(...priced.map(([, c]) => c.total));
+    const max = Math.max(...priced.map(([, c]) => c.total));
+    if (min === max) return null;
+    return priced.filter(([, c]) => c.total === min).sort(([a], [b]) => a.arrive - b.arrive)[0][0];
+  }, [optionCosts]);
 
   // In barca propria: rete dei canali e regole del Testo Unico (lib/boatRouting)
   const boatResult = useMemo(() => {
@@ -459,6 +473,7 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
             </button>
           ))}
         </div>
+        {!isPrivate && mode !== 'walk' && <FareProfilePicker profile={fareProfile} onChange={setFareProfile} />}
         {isPrivate && (
           <div className="flex flex-col gap-1.5 p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/30 text-[11px] text-[var(--ink-2)]" data-testid="planner-boat-options">
             <label className="flex items-start gap-2 cursor-pointer">
@@ -503,9 +518,13 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
                     best === o ? 'bg-sky-500/15 border-sky-500/50 text-[var(--ink)]' : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)]'
                   }`}
                 >
-                  <span className="font-semibold">{t(`ui.planner.airport_${o.via}`)}</span>
+                  <span className="font-semibold">
+                    {t(`ui.planner.airport_${o.via}`)}
+                    {o === cheapest && <span className="ml-1 font-normal text-emerald-400" data-testid="planner-cheapest">· {t('ui.fares.cheapest')}</span>}
+                  </span>
                   <span className="font-mono shrink-0">
                     {clock(o.depart)} → {clock(o.arrive)} · {t('ui.planner.duration', { min: minutes(o.arrive - o.depart) })}
+                    {optionCosts.get(o) && ` · ${costLabel(optionCosts.get(o)!)}`}
                   </span>
                 </button>
               ))}
@@ -530,9 +549,11 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
                 >
                   <span className="font-semibold truncate">
                     {optionLines(o)} <span className="font-normal text-[var(--ink-3)]">· {o.rides <= 1 ? t('ui.planner.optionDirect') : t('ui.planner.optionChanges', { n: o.rides - 1 })}</span>
+                    {o === cheapest && <span className="font-normal text-emerald-400" data-testid="planner-cheapest"> · {t('ui.fares.cheapest')}</span>}
                   </span>
                   <span className="font-mono shrink-0">
                     {clock(o.depart)} → {clock(o.arrive)} · {t('ui.planner.duration', { min: minutes(o.arrive - o.depart) })}
+                    {optionCosts.get(o) && ` · ${costLabel(optionCosts.get(o)!)}`}
                   </span>
                 </button>
               ))}
@@ -591,6 +612,7 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
               ) : null,
             )}
           </ol>
+          {best.rides > 0 && <TripCostSummary cost={tripCost(best, fareProfile)} />}
           {result?.floodLevelCm != null && (
             <div className="flex flex-col gap-1 p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-[11px] text-[var(--ink-2)]" data-testid="planner-flood">
               <span className="flex items-center gap-1.5 font-semibold text-sky-300">
@@ -616,7 +638,9 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
             </p>
           )}
           {result?.walkOnly && best.rides > 0 && (
-            <p className="text-[11px] text-[var(--ink-3)]">{t('ui.planner.walkAlternative', { min: minutes(result.walkOnly.arrive - result.walkOnly.depart) })}</p>
+            <p className="text-[11px] text-[var(--ink-3)]">
+              {t('ui.planner.walkAlternative', { min: minutes(result.walkOnly.arrive - result.walkOnly.depart) })} · {t('ui.fares.free')}
+            </p>
           )}
           {liveArrival !== null && liveArrival > best.arrive + 59 && (
             <p className="text-[11px] text-[var(--ink-2)]" data-testid="planner-live-arrival">
