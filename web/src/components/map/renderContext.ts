@@ -4,6 +4,7 @@ import type { MapEngineProps } from '../MapEngine';
 import type { CityData } from '@/lib/cityData';
 import type { LayerVisibility } from '@/lib/layerState';
 import type { SportFilter } from '@/lib/sports';
+import type { FuelKind } from '@/lib/fuel';
 import type { SelectedTrip } from '@/lib/tripView';
 import type { Itinerary } from '@/lib/tripPlanner';
 import type { DynamicTideState } from '@/lib/tideCurve';
@@ -31,6 +32,8 @@ export interface RenderContext
   /** canali (id OSM) con ordinanze temporanee di traffico acqueo in vigore o in arrivo */
   canalOrdinances: Map<number, OrdinanceItem[]>;
   sportFilter: SportFilter;
+  /** carburante confrontato nel livello dei distributori */
+  fuelFilter: FuelKind;
   /** itinerario del planner */
   itinerary: Itinerary | null;
   /** segnaposto di un luogo cercato */

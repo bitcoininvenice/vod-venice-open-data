@@ -1041,5 +1041,21 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     technicalNotesIt: 'GTFS europeo ufficiale di FlixMobility (licenza ODbL 1.0), importato ogni settimana con pipeline/import_flixbus.py: solo le corse che toccano l\'area della mappa nei 10 giorni successivi, con il percorso stradale del feed ritagliato tra la fermata precedente e quella successiva. Orari del feed in UTC, convertiti in istanti assoluti per data. Il feed non ha dati in tempo reale: ritardi e soppressioni non sono visibili.',
     technicalNotesEn: 'Official FlixMobility European GTFS (ODbL 1.0 licence), imported weekly with pipeline/import_flixbus.py: only trips touching the map area in the next 10 days, with the feed road shape clipped between the previous and next stop. Feed times in UTC, converted to absolute instants per date. The feed has no real-time data: delays and cancellations are not visible.',
     endpointOrFile: '/api/flixbus (src/data/flixbus-venezia.json)'
+  },
+  {
+    id: 'carburanti',
+    nameIt: 'Distributori di carburante e prezzi',
+    nameEn: 'Fuel stations and prices',
+    group: 'city',
+    regime: 'static',
+    acquisition: 'api',
+    institution: 'Ministero delle Imprese e del Made in Italy (Osservatorio prezzi carburanti)',
+    portalUrl: PROVIDERS.mimitFuel.url,
+    portalName: 'mimit.gov.it (open data, IODL 2.0)',
+    descriptionIt: 'I distributori di carburante dell\'area della mappa, dalla terraferma al Lido e alle isole, colorati dal più economico (verde) al più caro (rosso) per il carburante scelto: benzina, gasolio, GPL o metano. Nella scheda tutti i prezzi, self e servito, con la data in cui il gestore li ha comunicati.',
+    descriptionEn: 'Fuel stations in the map area, from the mainland to the Lido and the islands, coloured from the cheapest (green) to the most expensive (red) for the chosen fuel: petrol, diesel, LPG or methane. The card lists every price, self-service and attended, with the date the operator reported it.',
+    technicalNotesIt: 'Dataset aperto del MIMIT «Prezzi praticati e anagrafica degli impianti» (IODL 2.0): due CSV pubblicati ogni giorno con i prezzi in vigore alle 8, comunicati dai gestori per l\'art. 51 L. 99/2009. Letti dal server al massimo ogni 6 ore e ritagliati all\'area della mappa. Il confronto usa per ogni distributore il prezzo più basso fra self e servito; i prezzi comunicati da oltre 7 giorni restano grigi e fuori dal confronto. Non sono prezzi in tempo reale. Si mostrano marchio e indirizzo, mai il nome del gestore.',
+    technicalNotesEn: 'MIMIT open dataset «Prices and registry of fuel stations» (IODL 2.0): two CSV files published daily with the prices valid at 8 a.m., reported by operators under art. 51 Law 99/2009. Read by the server at most every 6 hours and clipped to the map area. The comparison uses each station\'s lowest price between self-service and attended; prices reported more than 7 days ago stay grey and out of the comparison. Not real-time prices. Brand and address are shown, never the operator\'s name.',
+    endpointOrFile: '/api/carburanti'
   }
 ];

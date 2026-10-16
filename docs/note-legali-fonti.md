@@ -1,6 +1,6 @@
 # Note legali: fonti, licenze, privacy e sicurezza
 
-Revisione del 14/10/2026. Obiettivo: nessun dato usato fuori dalla sua licenza, attribuzioni sempre visibili,
+Revisione del 16/10/2026. Obiettivo: nessun dato usato fuori dalla sua licenza, attribuzioni sempre visibili,
 nessun dato personale ripubblicato senza necessità. Regola generale: **nel dubbio il dato non si integra,
 oppure si mostra solo nella mappa senza ridistribuirlo** (API pubbliche, server MCP, esportazioni), finché il
 titolare non conferma (bozze in [richieste-autorizzazione.md](richieste-autorizzazione.md)).
@@ -20,6 +20,7 @@ titolare non conferma (bozze in [richieste-autorizzazione.md](richieste-autorizz
 | OpenStreetMap (base cartografica e livelli) | ODbL 1.0 | **attribuzione fissa sulla mappa** + schede | sì, sotto ODbL | ok |
 | ARPAV, ISTAT, Camera di Commercio, AgID, AGCOM | CC BY 4.0 | schede, /sources | sì | ok |
 | BDAP (MEF) | CC BY | scheda, /sources | sì | ok |
+| MIMIT – prezzi dei carburanti (CSV quotidiani «prezzo alle 8» e anagrafica) | IODL 2.0 | scheda «Fonte: Ministero delle Imprese e del Made in Italy · IODL 2.0», /sources | sì, senza il nome del gestore né dell'impianto | ok |
 | Open-Meteo (vento, mare) | CC BY 4.0; API gratuita solo per uso non commerciale, entro i limiti di chiamate | schede "Open-Meteo (CC BY 4.0)" | sì | ok finché VOD resta senza fini di lucro |
 | Copernicus CAMS (aria, pollini) via Open-Meteo | licenza Copernicus | formula "Generato usando informazioni del Copernicus Atmosphere Monitoring Service…" nelle schede | sì | ok |
 | NOAA METAR | pubblico dominio | /sources | sì | ok |
@@ -41,6 +42,9 @@ titolare non conferma (bozze in [richieste-autorizzazione.md](richieste-autorizz
 | Rivenditori autorizzati ACTV (mappa Google) | dati vecchi (verifiche 2015–2022) e nomi di titolari di ditte individuali |
 | ViaggiaTreno (treni) | servizio non pubblicato come open data, senza licenza |
 | Anopticon | i termini vietano l'accesso automatico senza autorizzazione |
+| Osservaprezzi Carburanti (API interna del sito carburanti.mise.gov.it) | API non pubblicata come open data, senza licenza né condizioni d'uso: si usano solo i CSV ufficiali (16/10/2026) |
+| Busitalia Veneto (gtfs-biv.fsbusitalia.com) | orario e tempo reale dei bus protetti da autenticazione (HTTP 401), nessuna licenza dichiarata; libero solo il tram di Padova, fuori dall'area. Richiesta possibile (16/10/2026) |
+| Banda Ultra Larga – Infratel (bandaultralarga.italia.it) | la mappa usa una chiamata interna del sito; nessun dataset aperto con licenza, né sul sito né su dati.gov.it (16/10/2026) |
 | Starlink (file pubblici availability-cells, metrics_*, feed GeoIP) | nessuna licenza dichiarata; i poligoni di disponibilità non dicono lo stato di Venezia (solo eccezioni mondiali), le metriche sono per paese o per regioni con codici Mapbox proprietari, il feed GeoIP elenca punti di rete, non utenti. Valutato il 15/10/2026, non integrato |
 
 ## Planner in barca (mezzo privato)
@@ -59,10 +63,12 @@ titolare non conferma (bozze in [richieste-autorizzazione.md](richieste-autorizz
 - Nessun cookie e nessun account; statistiche d'uso aggregate senza cookie (Vercel Web Analytics).
 - Ordinanze: esclusi i titoli che possono riguardare persone (sig./sig.ra, "a carico di", residente, codice fiscale, trattamenti sanitari, minori…).
 - Gateway LoRa: nessun identificativo né nome del proprietario.
+- Distributori di carburante: solo marchio e indirizzo; il nome del gestore e quello dell'impianto (spesso il nome di una persona) non si leggono nemmeno nella risposta dell'API.
 - Mezzi ACTV: si mostra il numero o il nome del mezzo pubblicato nel feed, nessun dato del personale.
 - Registri tecnici di Vercel: contengono l'URL delle richieste, quindi anche i luoghi cercati con planner, indirizzi, civici, skill e MCP; dichiarato in `/privacy` (15/10/2026).
 - Mappa: link «Privacy» sempre visibile accanto all'attribuzione; simulatore di marea con avvertenza «divulgativo, non ufficiale».
-- **Da completare dal titolare:** nome ed email del titolare del trattamento in `/privacy` (art. 13 GDPR); licenza del codice e dei dati prodotti da VOD.
+- **Da completare dal titolare:** nome ed email del titolare del trattamento in `/privacy` (art. 13 GDPR).
+- Licenze di VOD: codice GNU AGPL-3.0, dati e testi creati da VOD CC BY-SA 4.0 (`LICENSE`, README).
 - Contatto per privacy, rimozioni e correzioni: messaggio diretto all'account Instagram [@veniceopendata](https://www.instagram.com/veniceopendata/), indicato in `/privacy`.
 
 ## Sicurezza

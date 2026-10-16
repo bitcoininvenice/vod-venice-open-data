@@ -922,6 +922,51 @@ test('flixbus: il bus simulato dall\'orario si clicca e mostra linea, prossima f
   await expect(info).toContainText('ODbL');
 });
 
+test('carburanti: distributori colorati per prezzo, scelta del carburante e scheda con la fonte', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  const RIALTO = { lat: 45.43727, lon: 12.335071 };
+  const recent = new Date(Date.now() - 3600_000).toISOString();
+  const station = (id: string, lat: number, lon: number, benzina: number, gasolio: number) => ({
+    id, lat, lon, brand: id === '1' ? 'Api-Ip' : 'Agip Eni', address: `Via di prova ${id}`, comune: 'VENEZIA', highway: false,
+    prices: [
+      { fuel: 'Benzina', self: true, price: benzina, communicatedAt: recent },
+      { fuel: 'Gasolio', self: true, price: gasolio, communicatedAt: recent },
+    ],
+  });
+  await page.route('**/api/carburanti', (route) =>
+    route.fulfill({
+      json: {
+        success: true, count: 2, meta: { license: 'IODL 2.0' },
+        // a Rialto il più economico per la benzina e il più caro per il gasolio
+        data: [station('1', RIALTO.lat, RIALTO.lon, 1.799, 1.999), station('2', RIALTO.lat + 0.02, RIALTO.lon, 1.899, 1.799)],
+      },
+    }),
+  );
+  await page.goto('/?layers=carburanti');
+  await page.locator('canvas').waitFor();
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder(/cerca fermate/i).fill('Rialto');
+  await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: /rialto/i }).first().click();
+  await page.keyboard.press('Escape');
+  const panel = page.locator('aside').filter({ visible: true }).first();
+  await panel.getByRole('searchbox', { name: /cerca tra i livelli/i }).fill('carburante');
+  await expect(panel.getByRole('group', { name: 'Carburante da confrontare' })).toBeVisible();
+  await expect(panel).toContainText('più economico');
+  const box = (await page.locator('canvas').boundingBox())!;
+  const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  await page.mouse.click(center.x, center.y);
+  const info = page.locator('[data-info-panel]');
+  await expect(info).toContainText('Api-Ip');
+  await expect(info).toContainText('Via di prova 1 · VENEZIA');
+  await expect(info).toContainText('Benzina: 1° più economico su 2 distributori');
+  await expect(info.getByTestId('fuel-prices').locator('tbody tr')).toHaveCount(2);
+  await expect(info).toContainText('IODL 2.0');
+  await page.keyboard.press('Escape');
+  await panel.getByRole('button', { name: 'Gasolio' }).click();
+  await page.mouse.click(center.x, center.y);
+  await expect(info).toContainText('Gasolio: 2° più economico su 2 distributori');
+});
+
 test('trasporto pubblico: livello "velocità da orario" e sezione in /metrics', async ({ page, isMobile }) => {
   test.skip(isMobile, 'pannello dei livelli controllato su desktop');
   await page.goto('/?layers=velocita_orario');
@@ -1542,6 +1587,21 @@ test.describe('API', () => {
       expect(w.source).toBe('OPENSTREETMAP');
     }
     expect(JSON.stringify(body.wifiVenues)).not.toMatch(/password/i);
+  });
+
+  test('carburanti: prezzi del Ministero nell\'area della mappa, senza il nome del gestore', async ({ request }) => {
+    const res = await request.get('/api/carburanti');
+    expect([200, 503]).toContain(res.status());
+    const body = await res.json();
+    expect(body.meta.license).toMatch(/IODL 2\.0/);
+    expect(body.meta.source).toMatch(/Made in Italy/);
+    if (res.status() !== 200) return;
+    expect(body.data.length).toBeGreaterThan(30);
+    for (const s of body.data as Array<Record<string, unknown>>) {
+      expect(Object.keys(s).sort()).toEqual(['address', 'brand', 'comune', 'highway', 'id', 'lat', 'lon', 'prices']);
+      expect((s.prices as unknown[]).length).toBeGreaterThan(0);
+    }
+    expect(body.meta.extractedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
   test('lora-gateways: solo gateway online e nessun identificativo del proprietario', async ({ request }) => {

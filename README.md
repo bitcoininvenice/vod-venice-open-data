@@ -144,6 +144,7 @@ Pubbliche e in sola lettura, con cache per ogni fonte e un limite di richieste p
 | `/api/environment`, `/api/regional-data` | qualità dell'aria ARPAV e previsione Copernicus; pollini e sonde della laguna |
 | `/api/parks`, `/api/sports`, `/api/fiber`, `/api/census`, `/api/lora-gateways` | verde, spazi sportivi (CAMPO e OSM), fibra AGCOM, censimento ISTAT, gateway LoRa |
 | `/api/lagoon-morphology`, `/api/urban-microclimate`, `/api/pedestrian-flows`, `/api/rail-logistics` | elenchi del progetto da verificare: barene e subsidenza, isole di calore, varchi, treni e battelli di esempio |
+| `/api/carburanti` | distributori di carburante nell'area della mappa con i prezzi comunicati al Ministero (MIMIT, IODL 2.0) |
 | `/api/stats`, `/api/health` | indicatori aggregati; stato ed età di ogni fonte |
 | `/api/datasets`, `/api/datasets/<id>`, `POST /api/mcp` | catalogo dei dataset, API REST equivalente e server MCP |
 
@@ -166,7 +167,7 @@ programma può usare il modulo «Proponi una fonte» negli issue. Sicurezza: [SE
 
 ACTV / AVM (GTFS, CC BY; GTFS-RT nel catalogo «Open Data Real Time»), Comune di Venezia e Centro Maree
 (dati.venezia.it; ai dati CPSM ridistribuiti VOD applica CC BY-SA 3.0), ARPAV, ISTAT, AGCOM (CC BY 4.0),
-MEF-RGS BDAP (CC BY), OpenStreetMap contributors e FlixMobility (ODbL), Alilaguna S.p.A., Copernicus e
+MEF-RGS BDAP (CC BY), MIMIT prezzi dei carburanti (IODL 2.0), OpenStreetMap contributors e FlixMobility (ODbL), Alilaguna S.p.A., Copernicus e
 Open-Meteo, NOAA, CelesTrak, CAMPO (CC BY 4.0), The Things Network. OpenSky Network e aisstream.io sono
 mostrati solo nella mappa e non ridistribuiti. L'elenco completo con licenze e stato è in `/sources` e in
 [docs/note-legali-fonti.md](docs/note-legali-fonti.md).
@@ -283,7 +284,7 @@ comments). If you do not code, use the "Proponi una fonte" (propose a source) is
 ### Main sources and licences
 
 ACTV / AVM (GTFS, CC BY; GTFS-RT listed as "Open Data Real Time"), City of Venice and Tide Centre (CPSM data
-redistributed by VOD under CC BY-SA 3.0), ARPAV, ISTAT, AGCOM (CC BY 4.0), MEF-RGS BDAP (CC BY),
+redistributed by VOD under CC BY-SA 3.0), ARPAV, ISTAT, AGCOM (CC BY 4.0), MEF-RGS BDAP (CC BY), MIMIT fuel prices (IODL 2.0),
 OpenStreetMap contributors and FlixMobility (ODbL), Alilaguna S.p.A., Copernicus and Open-Meteo, NOAA,
 CelesTrak, CAMPO (CC BY 4.0), The Things Network. OpenSky Network and aisstream.io data are shown on the map only
 and never redistributed. Full list with licences and status on `/sources`.

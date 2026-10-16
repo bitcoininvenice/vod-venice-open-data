@@ -74,6 +74,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
           e('showRecyclingCentres', 'ui.layerPanel.recyclingCentres', 'recycle', 'green'),
           e('showLibraries', 'ui.layerPanel.libraries', 'library', 'violet'),
           e('showEvCharging', 'layers.layerEvCharging', 'zap', 'amber'),
+          e('showFuel', 'ui.layerPanel.fuel', 'car', 'emerald'),
           e('showCameras', 'layers.layerCameras', 'camera', 'cyan'),
           e('showOrdinances', 'ui.layerPanel.ordinances', 'shieldAlert', 'amber'),
           e('showCantieri', 'layers.layerCantieri', 'construction', 'amber'),

@@ -7,7 +7,7 @@ import { PROVIDERS, type ProviderId } from './providers';
  * vengono dal fornitore; qui solo ciò che è proprio del flusso. La nota opzionale è la chiave di
  * traduzione ui.sourcesPage.meta_<id>.
  */
-type Refresh = 'r20s' | 'r30s' | 'r60s' | 'r5min' | 'r10min' | 'r15min' | 'r30min' | 'r60min' | 'weekly' | 'census';
+type Refresh = 'r6h' | 'r20s' | 'r30s' | 'r60s' | 'r5min' | 'r10min' | 'r15min' | 'r30min' | 'r60min' | 'weekly' | 'census';
 
 interface Feed {
   /** Nome del flusso in /api/health */
@@ -75,6 +75,7 @@ export const FEEDS = {
   'cruscotto-italia': { label: 'Profilo dei comuni da Cruscotto Italia (pipeline)', providers: ['cruscotto'], format: 'MCP (comune_kpi)', refresh: 'weekly', hasNote: true },
   'bdap-mop': { label: 'Opere pubbliche del Comune dal monitoraggio BDAP (pipeline)', providers: ['bdap'], format: 'CSV (CKAN)', refresh: 'weekly', hasNote: true },
   'agcom-fiber': { label: 'Copertura rete fissa AGCOM (pipeline)', providers: ['agcom'], format: 'ArcGIS REST (griglia 20 m)', refresh: 'weekly', hasNote: true },
+  'mimit-carburanti': { label: 'Prezzi dei carburanti MIMIT (prezzi alle 8)', providers: ['mimitFuel'], format: 'CSV', refresh: 'r6h', hasNote: true },
   'alilaguna-gtfs': { label: 'Orario Alilaguna GTFS (pipeline)', providers: ['alilaguna'], format: 'GTFS', refresh: 'weekly', hasNote: true },
 } as const satisfies Record<string, Feed>;
 

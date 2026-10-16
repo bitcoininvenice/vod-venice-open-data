@@ -48,6 +48,8 @@ import { resolveTrip } from '@/lib/tripView';
 import { romeSecondsOfDay } from '@/lib/time';
 import { PROVIDERS } from '@/lib/provenance/providers';
 import { SOURCE_CODE_URL } from '@/lib/site';
+import { drawFuelStations } from './map/fuelLayer';
+import { rankFuelStations, type FuelKind } from '@/lib/fuel';
 
 export interface MapEngineProps {
   /** Livelli accesi */
@@ -79,6 +81,8 @@ export interface MapEngineProps {
   onSelectMose?: () => void;
   focusedCoordinates?: { lat: number; lon: number } | null;
   sportFilter?: SportFilter;
+  /** Carburante confrontato nel livello dei distributori */
+  fuelFilter?: FuelKind;
   /** Fonte delle fontanelle mostrate */
   fountainFilter?: FountainFilter;
   simulatedTideLevel?: number | null;
@@ -123,6 +127,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   onSelectMose,
   focusedCoordinates,
   sportFilter = 'all',
+  fuelFilter = 'benzina',
   fountainFilter = 'all',
   simulatedTideLevel = null,
   isMoseProtected = true,
@@ -732,6 +737,11 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           }),
         // Sport: le segnalazioni CAMPO hanno la precedenza perché sono le prime dell'elenco
         L.showSports && target({ items: D.sportPlaces.filter((p) => matchesSportFilter(p, sportFilter)), radius: 12, select: feature('sportPlace') }),
+        L.showFuel && (() => {
+          const ranks = rankFuelStations(D.fuelStations, fuelFilter, Date.now());
+          // la punta del segnaposto è sul distributore, il corpo sta sopra
+          return target({ items: D.fuelStations, radius: 14, dy: -9, select: (s) => onSelectFeature?.({ type: 'fuelStation', data: { station: s, kind: fuelFilter, rank: ranks.get(s.id) ?? null } }) });
+        })(),
         L.showWifiVenues && target({ items: D.wifiVenues, radius: 11, select: feature('wifiVenue') }),
         L.showLoraGateways && target({ items: D.loraGateways, radius: 16, select: feature('loraGateway') }),
         L.showBdapWorks &&
@@ -921,6 +931,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         selectedDay,
         paletteTheme,
         sportFilter,
+        fuelFilter,
         fountains: visibleFountains,
         canalOrdinances,
         tideLevel: effectiveTideLevel,
@@ -984,6 +995,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         drawCivicPois(rc);
         drawBdapWorks(rc);
         drawLoraGateways(rc);
+        drawFuelStations(rc);
         drawWifiVenues(rc);
         drawSports(rc);
         drawNautical(rc);
@@ -1075,7 +1087,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     return () => cancelAnimationFrame(animId);
   }, [
     camera, KY, H, W, mx, my, tr, layers, data, cantieri, selectedDay, paletteTheme, bufferRadiusMeters, selectedCategory,
-    sportFilter, visibleFountains, canalOrdinances, simulatedTideLevel, isMoseProtected, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
+    sportFilter, fuelFilter, visibleFountains, canalOrdinances, simulatedTideLevel, isMoseProtected, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
     alilagunaBoats, is3DView, landHiReady, selectedTrip, selectedVehicle, pin, itinerary,
 ]);
 

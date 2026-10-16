@@ -37,6 +37,7 @@ import { track } from '@vercel/analytics';
 import { trackLayerToggle, trackLayerOpen, featureToLayerSlug, mapObjectToLayerSlug } from '@/lib/analytics';
 import { PASSERELLE_MIN_THRESHOLD_CM } from '@/lib/passerelle';
 import { resolveTideState } from '@/lib/tideCurve';
+import type { FuelKind } from '@/lib/fuel';
 
 // Finestre e schede meno frequenti: il loro codice si scarica solo quando si aprono
 const SpatialAnalysisModal = dynamic(() => import('@/components/SpatialAnalysisModal').then((m) => m.SpatialAnalysisModal));
@@ -108,6 +109,7 @@ export default function HomePage() {
 
   const [sportFilter, setSportFilter] = useState<SportFilter>('all');
   const [fountainFilter, setFountainFilter] = useState<FountainFilter>('all');
+  const [fuelFilter, setFuelFilter] = useState<FuelKind>('benzina');
   // Flotta Alilaguna dall'orario GTFS ufficiale, sincronizzata con l'ora della simulazione
   const alilagunaBoats = useMemo(() => getScheduledAlilagunaBoats(currentTimeSeconds), [currentTimeSeconds]);
 
@@ -678,6 +680,7 @@ export default function HomePage() {
           focusedCoordinates={focusedCoordinates}
           sportFilter={sportFilter}
           fountainFilter={fountainFilter}
+          fuelFilter={fuelFilter}
           simulatedTideLevel={simulatedTideLevel}
           isMoseProtected={isMoseProtected}
           isDesktopLayerPanelOpen={isDesktopLayerPanelOpen}
@@ -710,6 +713,8 @@ export default function HomePage() {
               onSportFilterChange={setSportFilter}
               fountainFilter={fountainFilter}
               onFountainFilterChange={setFountainFilter}
+              fuelFilter={fuelFilter}
+              onFuelFilterChange={setFuelFilter}
               liveWebcamsCount={liveWebcamsCount}
               unplacedOrdinances={unplacedOrdinances}
               unplacedActvNotices={unplacedActvNotices}
@@ -761,6 +766,8 @@ export default function HomePage() {
                 onSportFilterChange={setSportFilter}
                 fountainFilter={fountainFilter}
                 onFountainFilterChange={setFountainFilter}
+                fuelFilter={fuelFilter}
+                onFuelFilterChange={setFuelFilter}
                 liveWebcamsCount={liveWebcamsCount}
                 unplacedOrdinances={unplacedOrdinances}
                 unplacedActvNotices={unplacedActvNotices}

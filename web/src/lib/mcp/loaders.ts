@@ -40,6 +40,7 @@ import tourism from '@/data/turismo-comuni.json';
 import cruscotto from '@/data/cruscotto-comuni.json';
 import { canalLengthMeters } from '@/lib/lagoonNetwork';
 import { fiberCellBounds, fiberOperators } from '@/lib/fiber';
+import { GET as fuelGET } from '@/app/api/carburanti/route';
 
 /**
  * Per ogni dataset del catalogo MCP: richiama l'endpoint del sito (stessa cache, stessa logica)
@@ -226,6 +227,10 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   },
   city_orders: async () => {
     const j = await read(ordinancesGET());
+    return { items: asRows(j.data), meta: j.meta as Row };
+  },
+  fuel_prices: async () => {
+    const j = await read(fuelGET());
     return { items: asRows(j.data), meta: j.meta as Row };
   },
   lora_gateways: async () => {

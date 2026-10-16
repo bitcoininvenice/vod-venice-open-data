@@ -49,6 +49,7 @@ import { UnplacedOrdinances } from '@/components/OrdinanceList';
 import { UnplacedActvNotices } from '@/components/ActvNoticeList';
 import type { ActvNotice } from '@/lib/contracts/actvNotices';
 import { SPEED_VERDICT_COLORS, type SpeedVerdict } from '@/lib/scheduleSpeed';
+import { FUEL_KINDS, FUEL_NO_PRICE_COLOR, fuelRankColor, type FuelKind } from '@/lib/fuel';
 
 interface LayerPanelProps {
   layers: LayerVisibility;
@@ -68,6 +69,9 @@ interface LayerPanelProps {
   /** Fonte delle fontanelle (tutte, Venice Tap Water, OpenStreetMap) */
   fountainFilter?: FountainFilter;
   onFountainFilterChange?: (f: FountainFilter) => void;
+  /** Carburante confrontato nel livello dei distributori */
+  fuelFilter?: FuelKind;
+  onFuelFilterChange?: (f: FuelKind) => void;
   bufferRadiusMeters: number;
   onBufferRadiusChange: (radius: number) => void;
   /** apre l'analisi «fermate vicine ai cantieri» (dal livello Buffer spaziale cantieri) */
@@ -110,6 +114,8 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   onSportFilterChange,
   fountainFilter = 'all',
   onFountainFilterChange,
+  fuelFilter = 'benzina',
+  onFuelFilterChange,
   bufferRadiusMeters,
   onBufferRadiusChange,
   onOpenSpatialAnalysis,
@@ -219,6 +225,25 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
                 {t(`ui.layerPanel.fountainFilter_${f}`)}
               </button>
             ))}
+          </div>
+        )}
+        {entry.key === 'showFuel' && on && onFuelFilterChange && (
+          <div className="flex flex-col gap-1 px-2 pb-1">
+            <div className="flex flex-wrap gap-1" role="group" aria-label={t('ui.layerPanel.fuelFilter')}>
+              {FUEL_KINDS.map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => onFuelFilterChange(f)}
+                  aria-pressed={fuelFilter === f}
+                  className={`px-2 py-0.5 rounded-full border text-[10px] font-mono cursor-pointer ${fuelFilter === f ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-200' : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)]'
+                    }`}
+                >
+                  {t(`ui.fuel.kind_${f}`)}
+                </button>
+              ))}
+            </div>
+            <Legend items={[[fuelRankColor(0), t('ui.fuel.legendCheap')], [fuelRankColor(0.5), t('ui.fuel.legendMid')], [fuelRankColor(1), t('ui.fuel.legendExpensive')], [FUEL_NO_PRICE_COLOR, t('ui.fuel.legendNoPrice')]]} />
           </div>
         )}
         {entry.key === 'showSpatialBuffer' && on && (

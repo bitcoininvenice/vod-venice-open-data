@@ -42,6 +42,7 @@ import { isPlacedOrdinance } from './canalOrdinances';
 import type { ScheduleSpeedSegment } from './scheduleSpeed';
 import type { ActvNotice } from './contracts/actvNotices';
 import { flixbusPositions, type FlixbusData } from './flixbus';
+import type { FuelStation } from './fuel';
 
 interface TideInfo {
   observedAt: string | null;
@@ -115,6 +116,7 @@ export interface CityData {
   wifiHotspots: WifiHotspotItem[];
   fiberData: FiberDataset | null;
   loraGateways: LoraGateway[];
+  fuelStations: FuelStation[];
   evCharging: EvChargingItem[];
   cameras: VeniceCameraItem[];
   pedestrianFlows: PedestrianFlowItem[];
@@ -186,6 +188,7 @@ export const INITIAL_CITY_DATA: CityData = {
   wifiHotspots: [],
   fiberData: null,
   loraGateways: [],
+  fuelStations: [],
   evCharging: [],
   cameras: VENICE_CAMERAS,
   pedestrianFlows: [],
@@ -260,6 +263,7 @@ export const RESOURCES = {
   sports: { url: '/api/sports', pick: (j) => ({ sportPlaces: list(j.data) }) },
   parks: { url: '/api/parks', pick: (j) => (j.success ? { parkPlaces: list(j.data) } : undefined) },
   loraGateways: { url: '/api/lora-gateways', pick: (j) => ({ loraGateways: list(j.data) }) },
+  fuel: { url: '/api/carburanti', pick: (j) => (j.success ? { fuelStations: list(j.data) } : undefined) },
   cantieri: { url: '/api/cantieri', pick: (j) => (j.success ? { cantieri: nonEmpty(j.data) } : undefined) },
   flixbus: { url: '/api/flixbus', pick: (j) => (j.success && j.data ? { flixbus: j.data as FlixbusData } : undefined) },
   actvNotices: { url: '/api/avvisi-actv', refreshMs: 15 * 60_000, pick: (j) => (j.success ? { actvNotices: list(j.data) } : undefined) },
@@ -420,6 +424,7 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
     sports: l.showSports,
     parks: l.showParks,
     loraGateways: l.showLoraGateways,
+    fuel: l.showFuel,
     cantieri: l.showCantieri || l.showSpatialBuffer || ui.lists,
     stops: l.showStops || ui.lists,
     busStops: l.showBusStops,
@@ -471,6 +476,7 @@ export function layerCounts(d: CityData, extra: { scheduledVehicles: number; ali
     showLibraries: d.libraries.length,
     showBdapWorks: d.bdapWorks?.filter(isLocatedBdap).length ?? 0,
     showLoraGateways: d.loraGateways.length,
+    showFuel: d.fuelStations.length,
     showWifiVenues: d.wifiVenues.length,
     showSports: d.sportPlaces.length,
     showParks: d.parkPlaces.length,

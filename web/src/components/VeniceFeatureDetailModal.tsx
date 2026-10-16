@@ -2,7 +2,7 @@
 
 import { FIBER_CLASS_KEY, FIBER_COLORS, fiberOperators, type FiberCell } from '@/lib/fiber';
 import { MARKER_COLORS, MARKER_KEY, canalLengthMeters, type LagoonCanal, type MarkerKind } from '@/lib/lagoonNetwork';
-import React from 'react';
+import React, { useState } from 'react';
 import { PHARMACY_DUTY_URL } from '@/lib/pharmacies-data';
 import tourismData from '@/data/turismo-comuni.json';
 import cruscottoData from '@/data/cruscotto-comuni.json';
@@ -71,7 +71,8 @@ import {
   ParkingItem,
   CityAssetItem
 } from '@/lib/types';
-import { Droplet, Building2, Bike, Flower2, GitBranch, Car } from 'lucide-react';
+import { Droplet, Building2, Bike, Flower2, GitBranch, Car, Fuel } from 'lucide-react';
+import { FUEL_NO_PRICE_COLOR, formatFuelPrice, fuelKindOf, fuelRankColor, isStalePrice, type FuelKind, type FuelRank, type FuelStation } from '@/lib/fuel';
 import { useTranslation } from '@/lib/i18n';
 import { InfoClose, InfoPanel, KeyValues } from '@/components/ui/InfoPanel';
 import { BdapWorkDetails } from '@/components/BdapWorkDetails';
@@ -151,7 +152,8 @@ export type VeniceFeatureSelected =
   | { type: 'sportPlace'; data: SportPlace }
   | { type: 'nauticalPlace'; data: NauticalPlace }
   | { type: 'parkPlace'; data: ParkPlace }
-  | { type: 'civicNumber'; data: CivicMatch & { query: CivicQuery } };
+  | { type: 'civicNumber'; data: CivicMatch & { query: CivicQuery } }
+  | { type: 'fuelStation'; data: { station: FuelStation; kind: FuelKind; rank: FuelRank | null } };
 
 interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
@@ -311,6 +313,9 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             {feature.type === 'loraGateway' && (
               <div className="p-2 rounded-xl bg-violet-500/20 text-violet-400"><Radio className="w-5 h-5" /></div>
             )}
+            {feature.type === 'fuelStation' && (
+              <div className="p-2 rounded-xl text-white" style={{ background: feature.data.rank ? fuelRankColor(feature.data.rank.rank) : FUEL_NO_PRICE_COLOR }}><Fuel className="w-5 h-5" /></div>
+            )}
             {feature.type === 'actvNotice' && (
               <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400"><Megaphone className="w-5 h-5" /></div>
             )}
@@ -367,6 +372,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'canal' && (feature.data.name ?? t('ui.feature.canalUnnamed'))}
                 {feature.type === 'bdapWork' && feature.data.object}
                 {feature.type === 'loraGateway' && t('ui.lora.title')}
+                {feature.type === 'fuelStation' && feature.data.station.brand}
                 {feature.type === 'ordinance' && t(`ui.ordinance.kind_${feature.data.kind}`)}
                 {feature.type === 'scheduleSpeed' && `${feature.data.from} → ${feature.data.to}`}
                 {feature.type === 'actvNotice' && feature.data.title}
@@ -399,6 +405,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'fiberCell' && t('ui.feature.fiberSubtitle', { date: feature.data.dataDate.split('-').reverse().join('/') })}
                 {feature.type === 'bdapWork' && (feature.data.place ?? t('ui.bdap.publicWork'))}
                 {feature.type === 'loraGateway' && feature.data.network}
+                {feature.type === 'fuelStation' && [feature.data.station.address, feature.data.station.comune].filter(Boolean).join(' · ')}
                 {feature.type === 'actvNotice' && t('ui.actvNotice.subtitle', { date: feature.data.publishedAt ? new Date(feature.data.publishedAt).toLocaleDateString('it-IT', { timeZone: 'Europe/Rome' }) : '' })}
                 {feature.type === 'scheduleSpeed' && `${t('map.vehicleLine')} ${feature.data.line} · ${t('ui.scheduleSpeed.subtitle')}`}
                 {feature.type === 'ordinance' && [feature.data.placeName ?? feature.data.canalName, feature.data.luogo].filter(Boolean).join(' · ')}
@@ -416,6 +423,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
         {/* Body */}
         <div className="flex flex-col gap-4 text-xs leading-relaxed">
           {feature.type === 'loraGateway' && <LoraGatewayBody gateway={feature.data} />}
+          {feature.type === 'fuelStation' && <FuelStationBody {...feature.data} />}
           {feature.type === 'ordinance' && <OrdinanceBody ordinance={feature.data} />}
           {feature.type === 'scheduleSpeed' && <ScheduleSpeedBody segment={feature.data} />}
           {feature.type === 'actvNotice' && <ActvNoticeBody notice={feature.data} />}
@@ -1493,7 +1501,7 @@ const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
 ]);
 
 /** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
-const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['passerella', 'speedLimit', 'publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'lagoonCurrent', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace', 'parkPlace', 'civicNumber', 'ordinance', 'scheduleSpeed', 'actvNotice']);
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['passerella', 'speedLimit', 'publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'lagoonCurrent', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace', 'parkPlace', 'civicNumber', 'ordinance', 'scheduleSpeed', 'actvNotice', 'fuelStation']);
 
 /** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
 const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {
@@ -1659,6 +1667,55 @@ const PollenCalendar: React.FC<{ profile: PollenMeasuredProfile }> = ({ profile 
         ))}
       </div>
       <span className="text-[10px] text-[var(--ink-3)]">{t('ui.feature.pollenMeasuredNote', { days: profile.days })}</span>
+    </div>
+  );
+};
+
+/** Scheda di un distributore: prezzi comunicati al Ministero, posizione nel confronto dell'area, fonte. */
+const FuelStationBody: React.FC<{ station: FuelStation; kind: FuelKind; rank: FuelRank | null }> = ({ station: s, kind, rank }) => {
+  const { t, language } = useTranslation();
+  const f = (key: string, params?: Record<string, string | number>) => t(`ui.fuel.${key}`, params);
+  const locale = language === 'it' ? 'it-IT' : 'en-GB';
+  // istante di apertura della scheda: decide quali prezzi sono vecchi
+  const [now] = useState(() => Date.now());
+  const day = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleString(locale, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' }) : '–';
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="font-mono text-[11px]" style={{ color: rank ? fuelRankColor(rank.rank) : undefined }}>
+        {rank
+          ? f('rank', { fuel: f(`kind_${kind}`), position: rank.position, total: rank.total })
+          : f('noRank', { fuel: f(`kind_${kind}`) })}
+      </p>
+      <table className="w-full text-xs" data-testid="fuel-prices">
+        <thead>
+          <tr className="text-[10px] font-mono uppercase text-[var(--ink-3)] text-left">
+            <th className="font-normal pb-1">{f('fuel')}</th>
+            <th className="font-normal pb-1">{f('service')}</th>
+            <th className="font-normal pb-1 text-right">{f('price')}</th>
+            <th className="font-normal pb-1 text-right">{f('reported')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {s.prices.map((p, i) => {
+            const stale = isStalePrice(p, now);
+            const chosen = fuelKindOf(p.fuel) === kind;
+            return (
+              <tr key={`${p.fuel}-${p.self}-${i}`} className={`border-t border-[var(--rule)] ${stale ? 'text-[var(--ink-3)]' : chosen ? 'font-bold text-[var(--ink)]' : 'text-[var(--ink-2)]'}`}>
+                <td className="py-1">{p.fuel}</td>
+                <td className="py-1">{f(p.self ? 'self' : 'attended')}</td>
+                <td className="py-1 text-right font-mono tabular">{formatFuelPrice(p.price, locale)} €</td>
+                <td className="py-1 text-right font-mono tabular">{day(p.communicatedAt)}{stale ? ` · ${f('stale')}` : ''}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      {s.highway && <p className="text-[11px] text-[var(--ink-2)]">{f('highway')}</p>}
+      <p className="text-[11px] text-[var(--ink-2)]">{f('note')}</p>
+      <a href={PROVIDERS.mimitFuel.url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2">
+        {f('source')}
+      </a>
     </div>
   );
 };

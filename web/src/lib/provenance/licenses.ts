@@ -7,6 +7,7 @@ export const LICENSES = {
   /** La fonte dichiara CC BY senza indicare la versione */
   'cc-by': { label: 'CC BY', url: null },
   'cc-by-sa-3.0-it': { label: 'CC BY-SA 3.0', url: 'https://creativecommons.org/licenses/by-sa/3.0/it/' },
+  'iodl-2.0': { label: 'IODL 2.0', url: 'https://www.dati.gov.it/iodl/2.0/' },
   'odbl-1.0': { label: 'ODbL 1.0', url: 'https://opendatacommons.org/licenses/odbl/1-0/' },
   'public-domain-us': { label: 'Pubblico dominio (US Government)', url: null },
   'actv-realtime': { label: 'Open Data Real Time ACTV (catalogo dei dati ACTV)', url: null },
