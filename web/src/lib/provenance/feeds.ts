@@ -59,6 +59,7 @@ export const FEEDS = {
     refresh: 'weekly',
     hasNote: true,
   },
+  'osm-fuel': { label: 'Distributori di carburante OpenStreetMap (pipeline)', providers: ['osm'], format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
   'osm-curiosita': { label: 'Curiosità su calli e ponti da OpenStreetMap (pipeline)', providers: ['osm'], format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
   'osm-civici': { label: 'Numeri civici OpenStreetMap (pipeline)', providers: ['osm'], format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
   'osm-parks': { label: 'Parchi, giardini e aree giochi OpenStreetMap (pipeline)', providers: ['osm'], format: 'Overpass JSON', refresh: 'weekly', hasNote: true },

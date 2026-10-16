@@ -45,6 +45,7 @@ jobs:
           python import_osm_parks.py || echo "::warning::parchi e giardini OSM non aggiornati"
           python import_osm_toponyms.py || echo "::warning::toponimi OSM non aggiornati"
           python import_osm_curiosita.py || echo "::warning::curiosità su calli e ponti non aggiornate"
+          python import_osm_fuel.py || echo "::warning::distributori OSM non aggiornati"
           python import_flixbus.py || echo "::warning::corse FlixBus non aggiornate"
           python import_osm_civici.py || echo "::warning::numeri civici OSM non aggiornati"
           python import_osm_walk.py || echo "::warning::rete pedonale OSM non aggiornata"

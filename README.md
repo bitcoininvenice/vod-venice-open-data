@@ -114,6 +114,7 @@ risponde in modo incompleto. Dalla cartella `pipeline/`:
 | `import_osm_walk.py` | rete pedonale da Chioggia a Mestre, aeroporto e Treporti per il planner (OSM; anche `--file` da un estratto) |
 | `import_osm_boat.py` | canali con le regole del Testo Unico per la barca propria |
 | `import_osm_civici.py`, `import_osm_toponyms.py` | numeri civici e toponimi (calli, campi, ponti) per la ricerca e le ordinanze |
+| `import_osm_fuel.py` | distributori di carburante (OSM): riserva senza prezzi quando il dato del Ministero non è raggiungibile, e orari e barche accanto ai prezzi |
 | `import_osm_curiosita.py` | curiosità su calli e ponti del centro storico per /metrics: più strette, più lunghe, distanza fra ponti (OSM) |
 
 ### API

@@ -986,6 +986,33 @@ test('carburanti: distributori colorati per prezzo, scelta del carburante e sche
   await expect(page.locator('[data-info-panel]').getByTestId('planner-to')).toContainText('Api-Ip – Via di prova 1');
 });
 
+test('carburanti senza prezzi del Ministero: distributori OpenStreetMap in grigio, con carburanti, orari e barche', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stesso comportamento, controllato su desktop');
+  const RIALTO = { lat: 45.43727, lon: 12.335071 };
+  await page.route('**/api/carburanti', (route) =>
+    route.fulfill({
+      json: {
+        success: true, count: 1, summary: null, meta: { pricesAvailable: false, license: 'ODbL 1.0' },
+        data: [{ id: 'osm-node-1', lat: RIALTO.lat, lon: RIALTO.lon, brand: 'IP', address: '', comune: '', highway: false, prices: [],
+          osm: { url: 'https://www.openstreetmap.org/node/1', fuels: ['Benzina', 'Gasolio'], boat: true, openingHours: 'Mo-Sa 07:30-12:30' } }],
+      },
+    }),
+  );
+  await page.goto('/?layers=carburanti');
+  await page.locator('canvas').waitFor();
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder(/cerca fermate/i).fill('Rialto');
+  await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: /rialto/i }).first().click();
+  await page.keyboard.press('Escape');
+  const box = (await page.locator('canvas').boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  const info = page.locator('[data-info-panel]');
+  await expect(info.getByTestId('fuel-no-prices')).toContainText('Prezzi non disponibili');
+  await expect(info).toContainText('Benzina, Gasolio');
+  await expect(info).toContainText('distributore anche per barche');
+  await expect(info.getByRole('link', { name: /OpenStreetMap contributors/ })).toHaveAttribute('href', 'https://www.openstreetmap.org/node/1');
+});
+
 test('metrics: prezzi dei carburanti per zona, con il più economico e il più caro', async ({ page }) => {
   const recent = new Date(Date.now() - 3600_000).toISOString();
   const st = (id: string, comune: string, lat: number, lon: number, price: number) => ({
@@ -1679,19 +1706,22 @@ test.describe('API', () => {
     expect(JSON.stringify(body.wifiVenues)).not.toMatch(/password/i);
   });
 
-  test('carburanti: prezzi del Ministero nell\'area della mappa, senza il nome del gestore', async ({ request }) => {
+  test('carburanti: prezzi del Ministero o, se non raggiungibili, distributori OpenStreetMap senza prezzi', async ({ request }) => {
     const res = await request.get('/api/carburanti');
-    expect([200, 503]).toContain(res.status());
+    expect(res.status()).toBe(200);
     const body = await res.json();
-    expect(body.meta.license).toMatch(/IODL 2\.0/);
-    expect(body.meta.source).toMatch(/Made in Italy/);
-    if (res.status() !== 200) return;
     expect(body.data.length).toBeGreaterThan(30);
     for (const s of body.data as Array<Record<string, unknown>>) {
-      expect(Object.keys(s).sort()).toEqual(['address', 'brand', 'comune', 'highway', 'id', 'lat', 'lon', 'prices']);
-      expect(Array.isArray(s.prices)).toBe(true);
+      for (const k of ['address', 'brand', 'comune', 'highway', 'id', 'lat', 'lon', 'prices']) expect(s).toHaveProperty(k);
+      expect(JSON.stringify(s)).not.toMatch(/operator|gestore/i);
     }
-    expect(body.meta.extractedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    if (body.meta.pricesAvailable) {
+      expect(body.meta.license).toMatch(/IODL 2\.0/);
+      expect(body.meta.extractedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    } else {
+      expect(body.meta.license).toMatch(/ODbL/);
+      expect(body.data.every((s: { prices: unknown[] }) => s.prices.length === 0)).toBe(true);
+    }
   });
 
   test('lora-gateways: solo gateway online e nessun identificativo del proprietario', async ({ request }) => {

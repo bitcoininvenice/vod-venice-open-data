@@ -27,6 +27,49 @@ export interface FuelStation {
   comune: string;
   highway: boolean;
   prices: FuelPrice[];
+  /** dati da OpenStreetMap: tutta la scheda quando i prezzi del Ministero non sono raggiungibili, altrimenti i dettagli */
+  osm?: FuelStationOsm;
+}
+
+/** Dettagli del distributore su OpenStreetMap (ODbL), collegato al Ministero dal codice ref:mise */
+export interface FuelStationOsm {
+  url: string;
+  /** carburanti venduti (fuel:*=yes), con i nomi del Ministero */
+  fuels: string[];
+  /** distributore per barche (waterway=fuel o boat=yes) */
+  boat: boolean;
+  openingHours: string | null;
+}
+
+/** Distributore di OpenStreetMap come generato da pipeline/import_osm_fuel.py */
+export interface OsmFuelRecord {
+  id: string;
+  osmUrl: string;
+  lat: number;
+  lon: number;
+  brand: string | null;
+  address: string | null;
+  comune: string | null;
+  boat: boolean;
+  fuels: string[];
+  openingHours: string | null;
+  mimitId: string | null;
+}
+
+const osmDetails = (r: OsmFuelRecord): FuelStationOsm => ({ url: r.osmUrl, fuels: r.fuels, boat: r.boat, openingHours: r.openingHours });
+
+/** Distributore da OpenStreetMap senza prezzi (quando il dato del Ministero non è raggiungibile) */
+export function stationFromOsm(r: OsmFuelRecord): FuelStation {
+  return { id: r.id, lat: r.lat, lon: r.lon, brand: r.brand ?? '', address: r.address ?? '', comune: r.comune ?? '', highway: false, prices: [], osm: osmDetails(r) };
+}
+
+/** Aggiunge ai distributori del Ministero i dettagli di OpenStreetMap (orari, barche), collegati da ref:mise */
+export function withOsmDetails(stations: FuelStation[], osm: OsmFuelRecord[]): FuelStation[] {
+  const byMimit = new Map(osm.filter((r) => r.mimitId).map((r) => [r.mimitId as string, r]));
+  return stations.map((s) => {
+    const r = byMimit.get(s.id);
+    return r ? { ...s, osm: osmDetails(r) } : s;
+  });
 }
 
 /** Carburanti confrontabili sulla mappa: le versioni «premium» si vedono nella scheda ma non si confrontano. */

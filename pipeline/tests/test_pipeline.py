@@ -25,6 +25,7 @@ import import_arpav_lagoon as arpav_lagoon  # noqa: E402
 import import_cruscotto_italia as cruscotto  # noqa: E402
 import import_bdap_opere as bdap  # noqa: E402
 import import_osm_curiosita as curiosita  # noqa: E402
+import import_osm_fuel as osm_fuel  # noqa: E402
 from download_gtfs import safe_extract  # noqa: E402
 
 
@@ -914,6 +915,24 @@ def test_curiosita_distanza_fra_ponti():
 def test_curiosita_rifiuta_risposte_incomplete():
     try:
         curiosita.build({"elements": [_cway(1, [(45.43, 12.33), (45.43, 12.331)], highway="footway")]})
+    except ValueError as e:
+        assert "incompleta" in str(e)
+    else:
+        raise AssertionError("una risposta incompleta deve essere rifiutata")
+
+
+def test_distributori_osm_senza_gestore_e_con_carburanti():
+    el = {"type": "node", "id": 7, "lat": 45.4478, "lon": 12.3204, "tags": {
+        "amenity": "fuel", "brand": "IP", "operator": "Mario Rossi", "waterway": "fuel", "fuel:diesel": "yes",
+        "fuel:octane_95": "yes", "fuel:lpg": "no", "opening_hours": "Mo-Sa 07:30-12:30", "ref:mise": "12345"}}
+    s = osm_fuel.station(el)
+    assert s["brand"] == "IP" and s["boat"] is True and s["mimitId"] == "12345"
+    assert s["fuels"] == ["Benzina", "Gasolio"]
+    assert "Rossi" not in json.dumps(s)
+    way = {"type": "way", "id": 8, "center": {"lat": 45.49, "lon": 12.24}, "tags": {"amenity": "fuel", "name": "Distributore"}}
+    assert osm_fuel.station(way)["brand"] == "Distributore"
+    try:
+        osm_fuel.build({"elements": [el]})
     except ValueError as e:
         assert "incompleta" in str(e)
     else:

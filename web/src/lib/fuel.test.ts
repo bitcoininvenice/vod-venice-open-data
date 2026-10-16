@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fuelKindOf, fuelRankColor, fuelSummary, fuelZoneOf, rankFuelStations, stationPrice, type FuelStation } from './fuel';
+import { fuelKindOf, fuelRankColor, fuelSummary, fuelZoneOf, rankFuelStations, stationFromOsm, stationPrice, withOsmDetails, type FuelStation, type OsmFuelRecord } from './fuel';
 
 const NOW = Date.parse('2026-10-16T10:00:00Z');
 const recent = '2026-10-15T06:00:00.000Z';
@@ -87,6 +87,14 @@ describe('carburanti', () => {
     expect(sum.stale).toBe(1);
     expect(sum.attendedPremium).toBeCloseTo(0.15);
     expect(sum.highwayPremium).toBeCloseTo(2.0 - 2.15);
+  });
+
+  it('distributori di OpenStreetMap: senza prezzi da soli, oppure orari e barche accanto ai prezzi', () => {
+    const osm: OsmFuelRecord = { id: 'osm-node-1', osmUrl: 'https://www.openstreetmap.org/node/1', lat: 45.44, lon: 12.32, brand: null, address: null, comune: null, boat: true, fuels: ['Gasolio'], openingHours: 'Mo-Sa 07:30-12:30', mimitId: '42' };
+    expect(stationFromOsm(osm)).toMatchObject({ brand: '', prices: [], osm: { boat: true, fuels: ['Gasolio'] } });
+    const [linked, other] = withOsmDetails([station('42', [['Gasolio', true, 2.5, recent]]), station('7', [])], [osm]);
+    expect(linked.osm?.openingHours).toBe('Mo-Sa 07:30-12:30');
+    expect(other.osm).toBeUndefined();
   });
 
   it('colora dal verde al rosso', () => {

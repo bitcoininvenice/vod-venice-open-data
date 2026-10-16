@@ -372,7 +372,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'canal' && (feature.data.name ?? t('ui.feature.canalUnnamed'))}
                 {feature.type === 'bdapWork' && feature.data.object}
                 {feature.type === 'loraGateway' && t('ui.lora.title')}
-                {feature.type === 'fuelStation' && feature.data.station.brand}
+                {feature.type === 'fuelStation' && (feature.data.station.brand || t('ui.fuel.unbranded'))}
                 {feature.type === 'ordinance' && t(`ui.ordinance.kind_${feature.data.kind}`)}
                 {feature.type === 'scheduleSpeed' && `${feature.data.from} → ${feature.data.to}`}
                 {feature.type === 'actvNotice' && feature.data.title}
@@ -1514,7 +1514,7 @@ function planTarget(feature: VeniceFeatureSelected, t: (key: string, params?: Re
   const label = (() => {
     switch (feature.type) {
       case 'fuelStation':
-        return `${feature.data.station.brand} – ${feature.data.station.address}`;
+        return [feature.data.station.brand || t('ui.fuel.unbranded'), feature.data.station.address].filter(Boolean).join(' – ');
       case 'publicDae':
         return `${t('ui.feature.defibrillatoreDae')} ${feature.data.code}`;
       case 'urbanTree':
@@ -1722,14 +1722,29 @@ const FuelStationBody: React.FC<{ station: FuelStation; kind: FuelKind; rank: Fu
   const [now] = useState(() => Date.now());
   const day = (iso: string | null) =>
     iso ? new Date(iso).toLocaleString(locale, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' }) : '–';
+  // senza prezzi e con i dati di OpenStreetMap: il Ministero non è raggiungibile, si mostra il distributore OSM
+  const osmOnly = s.prices.length === 0 && !!s.osm;
   return (
     <div className="flex flex-col gap-3">
-      <p className="font-mono text-[11px]" style={{ color: rank ? fuelRankColor(rank.rank) : undefined }}>
-        {rank
-          ? f('rank', { fuel: f(`kind_${kind}`), position: rank.position, total: rank.total })
-          : f('noRank', { fuel: f(`kind_${kind}`) })}
-      </p>
-      {s.prices.length === 0 && <p className="text-[11px] text-[var(--ink-2)]">{f('noPrices')}</p>}
+      {osmOnly ? (
+        <p className="text-[11px] text-amber-400" data-testid="fuel-no-prices">{f('pricesUnavailable')}</p>
+      ) : (
+        <p className="font-mono text-[11px]" style={{ color: rank ? fuelRankColor(rank.rank) : undefined }}>
+          {rank
+            ? f('rank', { fuel: f(`kind_${kind}`), position: rank.position, total: rank.total })
+            : f('noRank', { fuel: f(`kind_${kind}`) })}
+        </p>
+      )}
+      {s.prices.length === 0 && !osmOnly && <p className="text-[11px] text-[var(--ink-2)]">{f('noPrices')}</p>}
+      {s.osm && (
+        <KeyValues
+          items={[
+            [f('fuelsSold'), s.osm.fuels.length ? s.osm.fuels.join(', ') : null],
+            [f('openingHours'), s.osm.openingHours],
+            [f('boat'), s.osm.boat ? f('boatYes') : null, 'text-sky-400'],
+          ]}
+        />
+      )}
       {s.prices.length > 0 && (
       <table className="w-full text-xs" data-testid="fuel-prices">
         <thead>
@@ -1757,10 +1772,19 @@ const FuelStationBody: React.FC<{ station: FuelStation; kind: FuelKind; rank: Fu
       </table>
       )}
       {s.highway && <p className="text-[11px] text-[var(--ink-2)]">{f('highway')}</p>}
-      <p className="text-[11px] text-[var(--ink-2)]">{f('note')}</p>
-      <a href={PROVIDERS.mimitFuel.url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2">
-        {f('source')}
-      </a>
+      {!osmOnly && <p className="text-[11px] text-[var(--ink-2)]">{f('note')}</p>}
+      <div className="flex flex-col gap-1 border-t border-[var(--rule)] pt-2">
+        {!osmOnly && (
+          <a href={PROVIDERS.mimitFuel.url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline">
+            {f('source')}
+          </a>
+        )}
+        {s.osm && (
+          <a href={s.osm.url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline">
+            © OpenStreetMap contributors (ODbL)
+          </a>
+        )}
+      </div>
     </div>
   );
 };
