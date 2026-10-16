@@ -1009,6 +1009,26 @@ test('metrics: prezzi dei carburanti per zona, con il più economico e il più c
   await expect(box).toContainText('1,884 €');
 });
 
+test('metrics: indicatori territoriali divisi per contesto, con sotto-schede e ricerca', async ({ page }) => {
+  await page.goto('/metrics');
+  // nella vista completa i quattro contesti compaiono in ordine, con il loro nome
+  for (const g of ['society', 'mobility', 'services', 'city']) await expect(page.getByTestId(`metrics-group-${g}`)).toBeVisible();
+  await expect(page.getByTestId('metrics-group-services')).toContainText('Servizi ed emergenze');
+  await page.getByRole('button', { name: '1. Indicatori territoriali' }).click();
+  const tabs = page.getByTestId('metrics-groups');
+  await tabs.getByRole('button', { name: 'Mobilità' }).click();
+  await expect(page.getByTestId('metrics-group-mobility')).toContainText('Trasporto pubblico adesso');
+  await expect(page.getByTestId('metrics-group-services')).toHaveCount(0);
+  await expect(page.getByTestId('metrics-group-city')).toHaveCount(0);
+  await tabs.getByRole('button', { name: 'Servizi ed emergenze' }).click();
+  await expect(page.getByTestId('fuel-prices-metrics')).toBeVisible();
+  await tabs.getByRole('button', { name: 'Tutti' }).click();
+  // la ricerca lascia solo i contesti che corrispondono
+  await page.getByRole('searchbox').fill('carburanti');
+  await expect(page.getByTestId('metrics-group-services')).toBeVisible();
+  await expect(page.getByTestId('metrics-group-society')).toHaveCount(0);
+});
+
 test('metrics: curiosità su calli e ponti con link per verificarle e per arrivarci', async ({ page }) => {
   await page.goto('/metrics');
   const box = page.getByTestId('calli-curiosities');

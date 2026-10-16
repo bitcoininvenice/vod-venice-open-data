@@ -65,6 +65,18 @@ import {
 import type { MetricBasis, CanalBottleneckForecast, MicroclimateThermalZone } from '@/lib/spatialAnalytics';
 
 type ViewSection = 'all' | 'kpi' | 'forecast' | 'platform';
+
+/** Contesti degli indicatori territoriali, nell'ordine della pagina */
+const KPI_GROUPS = ['society', 'mobility', 'services', 'city'] as const;
+type KpiGroup = (typeof KPI_GROUPS)[number];
+
+/** Parole chiave (italiano e inglese) per la ricerca dentro ogni contesto */
+const KPI_GROUP_KEYWORDS: Record<KpiGroup, string> = {
+  society: 'comune municipality profilo profile cruscotto residenti residents censimento census famiglie households abitazioni homes sestiere turismo tourism',
+  mobility: 'trasporti transport transit actv vaporetti waterbus bus servizio service ritardi delay velocita speed orario timetable puntualita punctuality',
+  services: 'emergenza emergency dae defibrillatori farmacie pharmacies idroambulanze ambulance carburanti fuel benzina petrol gasolio diesel distributori stations prezzi prices',
+  city: 'opere works bdap cantieri ponti bridges accessibilita accessibility calli calle fondamenta sotoporteghi curiosita curiosities',
+};
 type PlatformMetricSector = 'maree_aria' | 'laguna_scienza' | 'marittimo' | 'trasporti' | 'aeroporto' | 'satelliti' | 'pedoni_citta';
 type Translate = (path: string, params?: Record<string, string | number>) => string;
 
@@ -188,6 +200,7 @@ export default function MetricsPage() {
   const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [viewSection, setViewSection] = useState<ViewSection>('all');
+  const [kpiGroup, setKpiGroup] = useState<KpiGroup | 'all'>('all');
   const [platformSector, setPlatformSector] = useState<PlatformMetricSector | 'all'>('all');
 
   /** Valore formattato o segnaposto ("…" in caricamento, "n.d." se la fonte non lo fornisce). */
@@ -283,9 +296,12 @@ export default function MetricsPage() {
     (c) => (platformSector === 'all' || c.sector === platformSector) && matches(c.keywords, m(`card_${c.id}_title`))
   );
 
-  const showKpi =
-    (viewSection === 'all' || viewSection === 'kpi') &&
-    matches('emergenza emergency dae farmacie pharmacies turismo tourism sestiere trasporti transit actv ponti bridges accessibilita accessibility', m('section1Title'));
+  const showKpi = viewSection === 'all' || viewSection === 'kpi';
+  // un contesto si vede se è quello scelto (solo nella scheda degli indicatori) e se corrisponde alla ricerca
+  const showGroup = (g: KpiGroup) =>
+    (viewSection !== 'kpi' || kpiGroup === 'all' || kpiGroup === g) && matches(KPI_GROUP_KEYWORDS[g], m(`group_${g}`), m(`groupDesc_${g}`));
+  // il nome del contesto separa i blocchi quando se ne vedono più d'uno
+  const showGroupHeader = viewSection !== 'kpi' || kpiGroup === 'all';
   const showForecast =
     (viewSection === 'all' || viewSection === 'forecast') &&
     matches('marea tide mose passerelle allagamento flooding canali canals calore heat metar', m('section2Title'));
@@ -412,188 +428,212 @@ export default function MetricsPage() {
           </div>
         </div>
 
-        {/* ===================== PROFILO DEL COMUNE (Cruscotto Italia) ===================== */}
-        {showKpi && (
-          <section className="flex flex-col gap-5">
-            <SectionHeader icon={Landmark} iconCls="text-cyan-400" title={t('ui.municipalProfile.title')} aside={t('ui.municipalProfile.aside')} />
-            <MunicipalProfile />
-          </section>
+        {/* ===================== INDICATORI TERRITORIALI: contesti ===================== */}
+        {showKpi && viewSection === 'kpi' && (
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar" role="group" aria-label={m('groupsLabel')} data-testid="metrics-groups">
+            {(['all', ...KPI_GROUPS] as const).map((g) => (
+              <button key={g} type="button" aria-pressed={kpiGroup === g} onClick={() => setKpiGroup(g)} className={sectionBtnCls(kpiGroup === g, 'bg-cyan-600')}>
+                {m(`group_${g}`)}
+              </button>
+            ))}
+          </div>
         )}
 
-        {/* ===================== OPERE PUBBLICHE (BDAP - Monitoraggio Opere Pubbliche) ===================== */}
-        {showKpi && (
-          <section className="flex flex-col gap-5">
-            <SectionHeader icon={Construction} iconCls="text-orange-400" title={t('ui.bdap.metricsTitle')} aside={t('ui.bdap.metricsAside')} />
-            <PublicWorksMonitor />
-          </section>
+        {showKpi && showGroup('society') && (
+          <div className="flex flex-col gap-8" data-testid="metrics-group-society">
+            {showGroupHeader && <GroupHeader title={m('group_society')} description={m('groupDesc_society')} />}
+          {/* ===================== PROFILO DEL COMUNE (Cruscotto Italia) ===================== */}
+            <section className="flex flex-col gap-5">
+              <SectionHeader icon={Landmark} iconCls="text-cyan-400" title={t('ui.municipalProfile.title')} aside={t('ui.municipalProfile.aside')} />
+              <MunicipalProfile />
+            </section>
+
+            <section className="flex flex-col gap-5">
+              {/* 1.2 Residenti, famiglie e abitazioni (Censimento ISTAT 2021) */}
+              <ResidentsCensus badge={<BasisBadge basis="calcolato" note={m('note_census')} t={t} />} />
+            </section>
+          </div>
         )}
 
-        {/* ===================== TRASPORTO PUBBLICO ADESSO (nessuno storico) ===================== */}
-        {showKpi && (
-          <section className="flex flex-col gap-5">
-            <SectionHeader icon={Navigation} iconCls="text-emerald-400" title={t('ui.serviceNow.sectionTitle')} aside={t('ui.serviceNow.sectionAside')} />
-            <ServiceNowTable />
-            <SectionHeader icon={Timer} iconCls="text-red-400" title={t('ui.scheduleSpeed.sectionTitle')} aside={t('ui.scheduleSpeed.sectionAside')} />
-            <ScheduleSpeedTable />
-          </section>
-        )}
+        {showKpi && showGroup('mobility') && (
+          <div className="flex flex-col gap-8" data-testid="metrics-group-mobility">
+            {showGroupHeader && <GroupHeader title={m('group_mobility')} description={m('groupDesc_mobility')} />}
+          {/* ===================== TRASPORTO PUBBLICO ADESSO (nessuno storico) ===================== */}
+            <section className="flex flex-col gap-5">
+              <SectionHeader icon={Navigation} iconCls="text-emerald-400" title={t('ui.serviceNow.sectionTitle')} aside={t('ui.serviceNow.sectionAside')} />
+              <ServiceNowTable />
+              <SectionHeader icon={Timer} iconCls="text-red-400" title={t('ui.scheduleSpeed.sectionTitle')} aside={t('ui.scheduleSpeed.sectionAside')} />
+              <ScheduleSpeedTable />
+            </section>
 
-        {/* ===================== CARBURANTI (MIMIT, prezzi alle 8) ===================== */}
-        {showKpi && (
-          <section className="flex flex-col gap-5">
-            <SectionHeader icon={Fuel} iconCls="text-emerald-400" title={t('ui.fuel.metricsTitle')} aside={t('ui.fuel.metricsAside')} />
-            <FuelPrices />
-          </section>
-        )}
-
-        {/* ===================== CURIOSITÀ SULLE CALLI (OpenStreetMap) ===================== */}
-        {showKpi && (
-          <section className="flex flex-col gap-5">
-            <SectionHeader icon={WalkIcon} iconCls="text-amber-400" title={t('ui.calli.title')} aside={t('ui.calli.aside')} />
-            <CalliCuriosities />
-          </section>
-        )}
-
-        {/* ===================== SEZIONE 1: INDICATORI TERRITORIALI ===================== */}
-        {showKpi && (
-          <section className="flex flex-col gap-5">
-            <SectionHeader icon={HeartPulse} iconCls="text-rose-400" title={m('section1Title')} aside={m('section1Aside')} />
-
-            {/* 1.1 Presidi di emergenza */}
-            <div className="p-5 rounded-2xl bg-[var(--rule)]/20 border border-[var(--rule)] flex flex-col gap-4">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div>
-                  <h3 className="text-base font-bold text-[var(--ink)] flex items-center gap-2">
-                    <HeartPulse className="w-4 h-4 text-rose-400" />
-                    {m('emergencyTitle')}
-                    <BasisBadge basis={accessibility.basis} note={m('note_emergency')} t={t} />
-                  </h3>
-                  <p className="text-xs text-[var(--ink-3)] mt-0.5">{m('note_emergency')}</p>
-                </div>
-                <span className="text-[11px] font-mono px-2.5 py-1 rounded bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30">
-                  {m('emergencyRadius')}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <Stat label={m('daeLabel')} value={m('daeValue', { n: accessibility.totalDae })} valueCls="text-rose-400" note={m('daeNote')} />
-                <Stat
-                  label={m('daeCoverageLabel')}
-                  value={`${accessibility.daeCoverage200mPercent}%`}
-                  valueCls="text-emerald-400"
-                  note={m('daeCoverageNote', { n: accessibility.referencePointsCount })}
-                />
-                <Stat
-                  label={m('pharmLabel')}
-                  value={m('pharmValue', { n: accessibility.totalPharmacies })}
-                  valueCls="text-cyan-400"
-                  note={m('within', { m: 350, pct: accessibility.pharmacyCoverage350mPercent })}
-                />
-                <Stat
-                  label={m('docksLabel')}
-                  value={m('docksValue', { n: accessibility.totalEmergencyDocks })}
-                  valueCls="text-blue-400"
-                  note={m('within', { m: 400, pct: accessibility.emergencyDockPerimeterCoveragePercent })}
-                />
-              </div>
-
-              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col gap-2">
-                <span className="text-xs font-mono font-bold text-amber-400 flex items-center gap-1.5">
-                  <AlertTriangle className="w-4 h-4" />
-                  {m('farthestTitle')}
-                </span>
-                <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">{m('farthestNote')}</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1">
-                  {accessibility.underservedAreas.map((area) => (
-                    <div key={area.area} className="p-3 rounded-lg bg-[var(--ground)] border border-[var(--rule)] flex flex-col justify-between gap-1 text-xs">
-                      <div className="flex items-center justify-between mb-1 gap-2">
-                        <strong className="text-[var(--ink)] text-sm">{area.area}</strong>
-                        <span className="text-[11px] font-mono text-rose-400 font-bold">{area.distanceToNearestDaeMeters} m</span>
-                      </div>
-                      <p className="text-[11px] text-[var(--ink-3)]">{m('farthestAction')}</p>
+            <section className="flex flex-col gap-5">
+              <div className="grid grid-cols-1 gap-5">
+                <div className="p-5 rounded-2xl bg-[var(--rule)]/20 border border-[var(--rule)] flex flex-col justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Timer className="w-4 h-4 text-cyan-400" />
+                      <h3 className="text-base font-bold text-[var(--ink)]">{m('transitTitle')}</h3>
+                      <BasisBadge basis={transit.basis} note={m('note_transit')} t={t} />
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* 1.2 Residenti, famiglie e abitazioni (Censimento ISTAT 2021) */}
-            <ResidentsCensus badge={<BasisBadge basis="calcolato" note={m('note_census')} t={t} />} />
-
-            {/* 1.3 Puntualità & ponti */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <div className="p-5 rounded-2xl bg-[var(--rule)]/20 border border-[var(--rule)] flex flex-col justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Timer className="w-4 h-4 text-cyan-400" />
-                    <h3 className="text-base font-bold text-[var(--ink)]">{m('transitTitle')}</h3>
-                    <BasisBadge basis={transit.basis} note={m('note_transit')} t={t} />
+                    <p className="text-xs text-[var(--ink-3)]">{m('note_transit')}</p>
                   </div>
-                  <p className="text-xs text-[var(--ink-3)]">{m('note_transit')}</p>
-                </div>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <Stat label={m('onTime')} value={`${transit.onTimePercent}%`} valueCls="text-emerald-400 text-xl" boxCls="bg-emerald-500/10 border-emerald-500/30" />
-                  <Stat label={m('delayMinor')} value={`${transit.minorDelayPercent}%`} valueCls="text-amber-400 text-xl" boxCls="bg-amber-500/10 border-amber-500/30" />
-                  <Stat label={m('delayMajor')} value={`${transit.majorDelayPercent}%`} valueCls="text-rose-400 text-xl" boxCls="bg-rose-500/10 border-rose-500/30" />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <span className="text-[11px] font-mono text-[var(--ink-3)] uppercase font-semibold">{m('criticalLines')}</span>
-                  {transit.criticalLines.map((l) => (
-                    <div key={l.line} className="p-2.5 rounded-lg bg-[var(--ground)] border border-[var(--rule)] flex flex-col gap-0.5 text-xs">
-                      <div className="flex items-center justify-between gap-2">
-                        <strong className="text-[var(--ink)]">{l.line}</strong>
-                        <span className="font-mono text-amber-400 font-bold">{m('avgDelay', { n: l.avgDelayMinutes })}</span>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <Stat label={m('onTime')} value={`${transit.onTimePercent}%`} valueCls="text-emerald-400 text-xl" boxCls="bg-emerald-500/10 border-emerald-500/30" />
+                    <Stat label={m('delayMinor')} value={`${transit.minorDelayPercent}%`} valueCls="text-amber-400 text-xl" boxCls="bg-amber-500/10 border-amber-500/30" />
+                    <Stat label={m('delayMajor')} value={`${transit.majorDelayPercent}%`} valueCls="text-rose-400 text-xl" boxCls="bg-rose-500/10 border-rose-500/30" />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[11px] font-mono text-[var(--ink-3)] uppercase font-semibold">{m('criticalLines')}</span>
+                    {transit.criticalLines.map((l) => (
+                      <div key={l.line} className="p-2.5 rounded-lg bg-[var(--ground)] border border-[var(--rule)] flex flex-col gap-0.5 text-xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <strong className="text-[var(--ink)]">{l.line}</strong>
+                          <span className="font-mono text-amber-400 font-bold">{m('avgDelay', { n: l.avgDelayMinutes })}</span>
+                        </div>
+                        <span className="text-[11px] text-[var(--ink-3)]">{l.bottleneckCause}</span>
                       </div>
-                      <span className="text-[11px] text-[var(--ink-3)]">{l.bottleneckCause}</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
+            </section>
+          </div>
+        )}
 
-              <div className="p-5 rounded-2xl bg-[var(--rule)]/20 border border-[var(--rule)] flex flex-col justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Accessibility className="w-4 h-4 text-purple-400" />
-                    <h3 className="text-base font-bold text-[var(--ink)]">{m('bridgesTitle')}</h3>
-                    <BasisBadge basis={barrierFree.basis} note={m('note_bridges')} t={t} />
+        {showKpi && showGroup('services') && (
+          <div className="flex flex-col gap-8" data-testid="metrics-group-services">
+            {showGroupHeader && <GroupHeader title={m('group_services')} description={m('groupDesc_services')} />}
+            <section className="flex flex-col gap-5">
+              {/* 1.1 Presidi di emergenza */}
+              <div className="p-5 rounded-2xl bg-[var(--rule)]/20 border border-[var(--rule)] flex flex-col gap-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <h3 className="text-base font-bold text-[var(--ink)] flex items-center gap-2">
+                      <HeartPulse className="w-4 h-4 text-rose-400" />
+                      {m('emergencyTitle')}
+                      <BasisBadge basis={accessibility.basis} note={m('note_emergency')} t={t} />
+                    </h3>
+                    <p className="text-xs text-[var(--ink-3)] mt-0.5">{m('note_emergency')}</p>
                   </div>
-                  <p className="text-xs text-[var(--ink-3)]">{m('note_bridges')}</p>
+                  <span className="text-[11px] font-mono px-2.5 py-1 rounded bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30">
+                    {m('emergencyRadius')}
+                  </span>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <Stat label={m('daeLabel')} value={m('daeValue', { n: accessibility.totalDae })} valueCls="text-rose-400" note={m('daeNote')} />
                   <Stat
-                    label={m('bridgesEquipped')}
-                    value={`${barrierFree.accessibleBridgesCount} / ${barrierFree.totalHistoricBridges}`}
+                    label={m('daeCoverageLabel')}
+                    value={`${accessibility.daeCoverage200mPercent}%`}
                     valueCls="text-emerald-400"
-                    boxCls="bg-emerald-500/10 border-emerald-500/30"
-                    note={m('exampleValuePct', { pct: barrierFree.accessibilityPercentage })}
+                    note={m('daeCoverageNote', { n: accessibility.referencePointsCount })}
                   />
                   <Stat
-                    label={m('bridgesStepped')}
-                    value={m('bridgesValue', { n: barrierFree.steppedBridgesCount })}
-                    valueCls="text-rose-400"
-                    boxCls="bg-rose-500/10 border-rose-500/30"
-                    note={m('exampleValuePct', { pct: barrierFree.inaccessiblePercentage })}
+                    label={m('pharmLabel')}
+                    value={m('pharmValue', { n: accessibility.totalPharmacies })}
+                    valueCls="text-cyan-400"
+                    note={m('within', { m: 350, pct: accessibility.pharmacyCoverage350mPercent })}
+                  />
+                  <Stat
+                    label={m('docksLabel')}
+                    value={m('docksValue', { n: accessibility.totalEmergencyDocks })}
+                    valueCls="text-blue-400"
+                    note={m('within', { m: 400, pct: accessibility.emergencyDockPerimeterCoveragePercent })}
                   />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <span className="text-[11px] font-mono text-[var(--ink-3)] uppercase font-semibold">{m('bridgesRefsTitle')}</span>
-                  <p className="text-[11px] text-[var(--ink-3)]">{m('bridgesRefsNote')}</p>
-                  {barrierFree.officialReferences.map((r) => (
-                    <a
-                      key={r.url}
-                      href={r.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2.5 rounded-lg bg-[var(--ground)] border border-[var(--rule)] text-xs text-cyan-400 hover:underline"
-                    >
-                      {m(`ref_${r.id}`)}
-                    </a>
-                  ))}
+
+                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col gap-2">
+                  <span className="text-xs font-mono font-bold text-amber-400 flex items-center gap-1.5">
+                    <AlertTriangle className="w-4 h-4" />
+                    {m('farthestTitle')}
+                  </span>
+                  <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">{m('farthestNote')}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1">
+                    {accessibility.underservedAreas.map((area) => (
+                      <div key={area.area} className="p-3 rounded-lg bg-[var(--ground)] border border-[var(--rule)] flex flex-col justify-between gap-1 text-xs">
+                        <div className="flex items-center justify-between mb-1 gap-2">
+                          <strong className="text-[var(--ink)] text-sm">{area.area}</strong>
+                          <span className="text-[11px] font-mono text-rose-400 font-bold">{area.distanceToNearestDaeMeters} m</span>
+                        </div>
+                        <p className="text-[11px] text-[var(--ink-3)]">{m('farthestAction')}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
+
+          {/* ===================== CARBURANTI (MIMIT, prezzi alle 8) ===================== */}
+            <section className="flex flex-col gap-5">
+              <SectionHeader icon={Fuel} iconCls="text-emerald-400" title={t('ui.fuel.metricsTitle')} aside={t('ui.fuel.metricsAside')} />
+              <FuelPrices />
+            </section>
+          </div>
         )}
+
+        {showKpi && showGroup('city') && (
+          <div className="flex flex-col gap-8" data-testid="metrics-group-city">
+            {showGroupHeader && <GroupHeader title={m('group_city')} description={m('groupDesc_city')} />}
+          {/* ===================== OPERE PUBBLICHE (BDAP - Monitoraggio Opere Pubbliche) ===================== */}
+            <section className="flex flex-col gap-5">
+              <SectionHeader icon={Construction} iconCls="text-orange-400" title={t('ui.bdap.metricsTitle')} aside={t('ui.bdap.metricsAside')} />
+              <PublicWorksMonitor />
+            </section>
+
+            <section className="flex flex-col gap-5">
+              <div className="grid grid-cols-1 gap-5">
+                <div className="p-5 rounded-2xl bg-[var(--rule)]/20 border border-[var(--rule)] flex flex-col justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Accessibility className="w-4 h-4 text-purple-400" />
+                      <h3 className="text-base font-bold text-[var(--ink)]">{m('bridgesTitle')}</h3>
+                      <BasisBadge basis={barrierFree.basis} note={m('note_bridges')} t={t} />
+                    </div>
+                    <p className="text-xs text-[var(--ink-3)]">{m('note_bridges')}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Stat
+                      label={m('bridgesEquipped')}
+                      value={`${barrierFree.accessibleBridgesCount} / ${barrierFree.totalHistoricBridges}`}
+                      valueCls="text-emerald-400"
+                      boxCls="bg-emerald-500/10 border-emerald-500/30"
+                      note={m('exampleValuePct', { pct: barrierFree.accessibilityPercentage })}
+                    />
+                    <Stat
+                      label={m('bridgesStepped')}
+                      value={m('bridgesValue', { n: barrierFree.steppedBridgesCount })}
+                      valueCls="text-rose-400"
+                      boxCls="bg-rose-500/10 border-rose-500/30"
+                      note={m('exampleValuePct', { pct: barrierFree.inaccessiblePercentage })}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[11px] font-mono text-[var(--ink-3)] uppercase font-semibold">{m('bridgesRefsTitle')}</span>
+                    <p className="text-[11px] text-[var(--ink-3)]">{m('bridgesRefsNote')}</p>
+                    {barrierFree.officialReferences.map((r) => (
+                      <a
+                        key={r.url}
+                        href={r.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2.5 rounded-lg bg-[var(--ground)] border border-[var(--rule)] text-xs text-cyan-400 hover:underline"
+                      >
+                        {m(`ref_${r.id}`)}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+          {/* ===================== CURIOSITÀ SULLE CALLI (OpenStreetMap) ===================== */}
+            <section className="flex flex-col gap-5">
+              <SectionHeader icon={WalkIcon} iconCls="text-amber-400" title={t('ui.calli.title')} aside={t('ui.calli.aside')} />
+              <CalliCuriosities />
+            </section>
+          </div>
+        )}
+
 
         {/* ===================== SEZIONE 2: STIME A 72-96 ORE ===================== */}
         {showForecast && (
@@ -915,6 +955,16 @@ function Highlight({
       </div>
       <strong className={`text-2xl font-mono font-extrabold ${c.value} ${illustrative ? 'opacity-60' : ''}`}>{value}</strong>
       <span className={`text-[10px] mt-1 ${illustrative ? 'text-amber-400 font-mono' : 'text-[var(--ink-3)]'}`}>{note}</span>
+    </div>
+  );
+}
+
+/** Separatore di un contesto degli indicatori territoriali */
+function GroupHeader({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="flex flex-col gap-0.5 pt-2">
+      <span className="text-[11px] uppercase font-mono tracking-wider text-cyan-400 font-bold">{title}</span>
+      <span className="text-xs text-[var(--ink-3)]">{description}</span>
     </div>
   );
 }
