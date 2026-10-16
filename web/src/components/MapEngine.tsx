@@ -48,7 +48,7 @@ import { resolveTrip } from '@/lib/tripView';
 import { romeSecondsOfDay } from '@/lib/time';
 import { PROVIDERS } from '@/lib/provenance/providers';
 import { SOURCE_CODE_URL } from '@/lib/site';
-import { drawFuelStations } from './map/fuelLayer';
+import { drawFuelStations, MARKER_LIFT as FUEL_MARKER_LIFT } from './map/fuelLayer';
 import { rankFuelStations, type FuelKind } from '@/lib/fuel';
 
 export interface MapEngineProps {
@@ -739,8 +739,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         L.showSports && target({ items: D.sportPlaces.filter((p) => matchesSportFilter(p, sportFilter)), radius: 12, select: feature('sportPlace') }),
         L.showFuel && (() => {
           const ranks = rankFuelStations(D.fuelStations, fuelFilter, Date.now());
-          // la punta del segnaposto è sul distributore, il corpo sta sopra
-          return target({ items: D.fuelStations, radius: 14, dy: -9, select: (s) => onSelectFeature?.({ type: 'fuelStation', data: { station: s, kind: fuelFilter, rank: ranks.get(s.id) ?? null } }) });
+          // la punta del segnaposto è sul distributore, il cerchio con la pompa sta sopra
+          return target({ items: D.fuelStations, radius: 16, dy: -FUEL_MARKER_LIFT, select: (s) => onSelectFeature?.({ type: 'fuelStation', data: { station: s, kind: fuelFilter, rank: ranks.get(s.id) ?? null } }) });
         })(),
         L.showWifiVenues && target({ items: D.wifiVenues, radius: 11, select: feature('wifiVenue') }),
         L.showLoraGateways && target({ items: D.loraGateways, radius: 16, select: feature('loraGateway') }),

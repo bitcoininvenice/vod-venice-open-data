@@ -19,7 +19,7 @@ export type LayerIconName =
   | 'train' | 'trash' | 'car' | 'bike' | 'shieldAlert' | 'wind' | 'lifeBuoy' | 'trees' | 'layers'
   | 'droplets' | 'gitBranch' | 'flower' | 'thermometer' | 'pill' | 'heartPulse' | 'wifi' | 'cable'
   | 'recycle' | 'library' | 'zap' | 'construction' | 'sliders' | 'camera' | 'footprints' | 'landmark'
-  | 'bell' | 'satellite' | 'building' | 'dumbbell';
+  | 'bell' | 'satellite' | 'building' | 'dumbbell' | 'fuel';
 
 export interface LayerEntry {
   key: LayerKey;
@@ -74,7 +74,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
           e('showRecyclingCentres', 'ui.layerPanel.recyclingCentres', 'recycle', 'green'),
           e('showLibraries', 'ui.layerPanel.libraries', 'library', 'violet'),
           e('showEvCharging', 'layers.layerEvCharging', 'zap', 'amber'),
-          e('showFuel', 'ui.layerPanel.fuel', 'car', 'emerald'),
+          e('showFuel', 'ui.layerPanel.fuel', 'fuel', 'emerald'),
           e('showCameras', 'layers.layerCameras', 'camera', 'cyan'),
           e('showOrdinances', 'ui.layerPanel.ordinances', 'shieldAlert', 'amber'),
           e('showCantieri', 'layers.layerCantieri', 'construction', 'amber'),
