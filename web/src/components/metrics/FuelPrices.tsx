@@ -112,6 +112,16 @@ export const FuelPrices: React.FC = () => {
         </table>
       </div>
 
+      {s.all.withoutPrices > 0 && (
+        <p className="text-[11px] text-[var(--ink-2)]" data-testid="fuel-without-prices">
+          {f('withoutPrices', {
+            n: s.all.withoutPrices,
+            zones: FUEL_ZONES.filter((z) => s.byZone[z].withoutPrices > 0)
+              .map((z) => `${f(`zone_${z}`)} ${s.byZone[z].withoutPrices}`)
+              .join(', '),
+          })}
+        </p>
+      )}
       <ul className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px] text-[var(--ink-2)]">
         <li className="p-3 rounded-xl border border-[var(--rule)]">
           <span className="block font-mono text-[var(--ink)]">{signed(s.attendedPremium)}</span>

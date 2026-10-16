@@ -1755,6 +1755,7 @@ export const itUi = {
     kpiMedian: "Prezzo mediano",
     kpiMedianNote: "su {n} distributori con un prezzo aggiornato, {total} in tutto",
     countOfTotal: "{n} su {total}",
+    withoutPrices: "Altri {n} impianti sono nell'anagrafica del Ministero ma non hanno mai comunicato un prezzo: spesso doppioni di un distributore già contato, impianti non aperti al pubblico (bunkeraggio delle navi) o forse non più attivi. Non sono sulla mappa. Per zona: {zones}.",
     kpiSpread: "Differenza al litro",
     kpiSpreadNote: "su un pieno da {litres} litri: {eur}",
     zone: "Zona",

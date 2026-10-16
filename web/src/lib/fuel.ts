@@ -129,8 +129,10 @@ export interface FuelExtreme {
 export interface FuelStats {
   /** distributori con un prezzo aggiornato del carburante */
   count: number;
-  /** tutti i distributori della zona, anche senza prezzo aggiornato o senza questo carburante */
+  /** distributori della zona con almeno un prezzo comunicato, anche vecchio o di un altro carburante */
   total: number;
+  /** impianti dell'anagrafica della zona senza nessun prezzo comunicato (non sulla mappa) */
+  withoutPrices: number;
   min: FuelExtreme | null;
   max: FuelExtreme | null;
   mean: number | null;
@@ -151,8 +153,8 @@ export interface FuelSummary {
 
 const mean = (v: number[]) => (v.length ? v.reduce((a, b) => a + b, 0) / v.length : null);
 
-function stats(rows: { s: FuelStation; price: number }[], total: number): FuelStats {
-  if (rows.length === 0) return { count: 0, total, min: null, max: null, mean: null, median: null };
+function stats(rows: { s: FuelStation; price: number }[], total: number, withoutPrices: number): FuelStats {
+  if (rows.length === 0) return { count: 0, total, withoutPrices, min: null, max: null, mean: null, median: null };
   const sorted = [...rows].sort((a, b) => a.price - b.price);
   const pick = (r: { s: FuelStation; price: number }): FuelExtreme => ({
     price: r.price,
@@ -160,11 +162,16 @@ function stats(rows: { s: FuelStation; price: number }[], total: number): FuelSt
   });
   const mid = sorted.length / 2;
   const median = sorted.length % 2 ? sorted[Math.floor(mid)].price : (sorted[mid - 1].price + sorted[mid].price) / 2;
-  return { count: rows.length, total, min: pick(sorted[0]), max: pick(sorted[sorted.length - 1]), mean: mean(rows.map((r) => r.price)), median };
+  return { count: rows.length, total, withoutPrices, min: pick(sorted[0]), max: pick(sorted[sorted.length - 1]), mean: mean(rows.map((r) => r.price)), median };
 }
 
 /** Statistiche dell'area e per zona su un carburante, con lo stesso prezzo usato dai colori della mappa. */
-export function fuelSummary(stations: FuelStation[], kind: FuelKind, now: number): FuelSummary {
+export function fuelSummary(
+  stations: FuelStation[],
+  kind: FuelKind,
+  now: number,
+  listedWithoutPrices: Pick<FuelStation, 'comune' | 'lat' | 'lon'>[] = [],
+): FuelSummary {
   const rows: { s: FuelStation; price: number }[] = [];
   let stale = 0;
   const premiums: number[] = [];
@@ -178,13 +185,20 @@ export function fuelSummary(stations: FuelStation[], kind: FuelKind, now: number
     if (self && attended) premiums.push(attended.price - self.price);
   }
   const byZone = Object.fromEntries(
-    FUEL_ZONES.map((z) => [z, stats(rows.filter((r) => fuelZoneOf(r.s) === z), stations.filter((s) => fuelZoneOf(s) === z).length)]),
+    FUEL_ZONES.map((z) => [
+      z,
+      stats(
+        rows.filter((r) => fuelZoneOf(r.s) === z),
+        stations.filter((s) => fuelZoneOf(s) === z).length,
+        listedWithoutPrices.filter((s) => fuelZoneOf(s) === z).length,
+      ),
+    ]),
   ) as Record<FuelZone, FuelStats>;
   const hw = mean(rows.filter((r) => r.s.highway).map((r) => r.price));
   const road = mean(rows.filter((r) => !r.s.highway).map((r) => r.price));
   return {
     kind,
-    all: stats(rows, stations.length),
+    all: stats(rows, stations.length, listedWithoutPrices.length),
     byZone,
     stale,
     attendedPremium: mean(premiums),

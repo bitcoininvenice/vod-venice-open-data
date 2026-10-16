@@ -75,8 +75,10 @@ describe('carburanti', () => {
       ],
       'benzina',
       NOW,
+      [{ comune: 'VENEZIA', lat: 45.457, lon: 12.345 }],
     );
-    expect(sum.all).toMatchObject({ count: 3, median: 2.0 });
+    expect(sum.all).toMatchObject({ count: 3, total: 4, withoutPrices: 1, median: 2.0 });
+    expect(sum.byZone.centro.withoutPrices).toBe(1);
     expect(sum.all.min?.station.id).toBe('m1');
     expect(sum.all.max?.price).toBe(2.4);
     expect(sum.byZone.centro.count).toBe(1);

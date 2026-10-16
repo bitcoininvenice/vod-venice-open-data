@@ -60,7 +60,14 @@ export interface FuelDataset {
   /** data dell'estrazione del Ministero (prezzi in vigore alle 8 di quel giorno) */
   extractedAt: string | null;
   stationsItaly: number;
+  /** distributori con almeno un prezzo comunicato: quelli sulla mappa */
   stations: FuelStation[];
+  /**
+   * Impianti dell'anagrafica senza nessun prezzo comunicato: spesso doppioni di un distributore che i prezzi li
+   * comunica, impianti non aperti al pubblico (bunkeraggio delle navi) o forse non più attivi. Non vanno sulla
+   * mappa, si contano nelle statistiche.
+   */
+  listedWithoutPrices: FuelStation[];
 }
 
 /** Distributori dell'area della mappa con i loro prezzi. Mai il nome del gestore né quello dell'impianto. */
@@ -92,10 +99,14 @@ export function parseFuel(stationsCsv: string, pricesCsv: string, minStationsIta
     const p: FuelPrice = { fuel: r.descCarburante, self: r.isSelf === '1', price, communicatedAt: communicatedAt(r.dtComu ?? '') };
     s.prices.push(p);
   }
-  // anche i distributori senza prezzi comunicati: esistono, sulla mappa restano grigi
-  const list = [...stations.values()];
-  for (const s of list) s.prices.sort((a, b) => a.fuel.localeCompare(b.fuel) || Number(b.self) - Number(a.self));
-  return { extractedAt: extractionDate(pricesCsv) ?? extractionDate(stationsCsv), stationsItaly: anag.length, stations: list.sort((a, b) => b.lat - a.lat) };
+  const all = [...stations.values()].sort((a, b) => b.lat - a.lat);
+  for (const s of all) s.prices.sort((a, b) => a.fuel.localeCompare(b.fuel) || Number(b.self) - Number(a.self));
+  return {
+    extractedAt: extractionDate(pricesCsv) ?? extractionDate(stationsCsv),
+    stationsItaly: anag.length,
+    stations: all.filter((s) => s.prices.length > 0),
+    listedWithoutPrices: all.filter((s) => s.prices.length === 0),
+  };
 }
 
 export type FuelResult = { ok: true; data: FuelDataset; fetchedAt: string } | { ok: false; error: string };

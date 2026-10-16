@@ -1757,6 +1757,7 @@ export const enUi: UiTranslations = {
     kpiMedian: "Median price",
     kpiMedianNote: "across {n} stations with a recent price, {total} in total",
     countOfTotal: "{n} of {total}",
+    withoutPrices: "Another {n} sites are in the Ministry registry but have never reported a price: often duplicates of a station already counted, sites not open to the public (ship bunkering) or perhaps no longer active. They are not on the map. By area: {zones}.",
     kpiSpread: "Difference per litre",
     kpiSpreadNote: "on a {litres}-litre fill-up: {eur}",
     zone: "Area",
