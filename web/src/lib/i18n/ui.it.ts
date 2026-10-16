@@ -1396,6 +1396,8 @@ export const itUi = {
     "name_osm-poi": "POI OpenStreetMap: colonnine, parcheggi, pozzi, alberi (pipeline)",
     "name_alilaguna-gtfs": "Orario Alilaguna GTFS (pipeline)",
     "meta_osm-poi": "Sostituisce gli elenchi compilati a mano: le voci curate restano solo se non hanno un riscontro OSM vicino e sono segnate \"da verificare\". Include i luoghi con Wi-Fi (hotel, bar, biblioteche) con il tipo di accesso dichiarato.",
+    "name_osm-curiosita": "Curiosità su calli e ponti (OpenStreetMap)",
+    "meta_osm-curiosita": "Calli più strette fra quelle con la larghezza mappata, calli e fondamenta più lunghe, ponti e distanza fra un ponte e l'altro nel centro storico, calcolati ogni settimana dalle vie pedonali di OpenStreetMap.",
     "name_mimit-carburanti": "Prezzi dei carburanti (MIMIT, prezzi alle 8)",
     "meta_mimit-carburanti": "Prezzi comunicati dai gestori al Ministero, in vigore alle 8 del giorno dell'estrazione: non sono prezzi in tempo reale. Si mostrano marchio e indirizzo, mai il nome del gestore.",
     "meta_alilaguna-gtfs": "Il feed non dichiara una licenza: si cita la fonte. Le barche sono simulate dall'orario, che ha una validità stagionale.",
@@ -1677,6 +1679,24 @@ export const itUi = {
     topTitle: "Lavori in corso più costosi",
     endPlannedShort: "fine prevista {date}",
     metricsNote: "La fase deriva dalle date effettive dichiarate dall’ente nel monitoraggio; i finanziamenti sono quelli dichiarati, non i pagamenti. Le opere con un luogo preciso sono anche sulla mappa (livello «Opere in corso (BDAP)»)."
+  },
+  calli: {
+    title: "Curiosità su calli e ponti",
+    aside: "Centro storico, calcolato da OpenStreetMap",
+    kpiBridges: "Ponti pedonali",
+    kpiBridgesNote: "mappati su OpenStreetMap nel centro storico, Giudecca compresa",
+    kpiGap: "Da un ponte al più vicino",
+    kpiGapNote: "mediana a piedi lungo le calli (media {mean})",
+    kpiFarthest: "Il ponte più isolato",
+    kpiFarthestNote: "a piedi fino al ponte più vicino: {name}",
+    kpiSotoporteghi: "Sotoporteghi",
+    kpiSotoporteghiNote: "con nomi diversi, i passaggi coperti sotto le case",
+    narrowestTitle: "Le calli più strette (fra le {n} con la larghezza mappata)",
+    longestCalliTitle: "Le calli più lunghe da un capo all'altro",
+    longestFondamenteTitle: "Fondamenta e rive più lunghe senza attraversare un ponte",
+    longestBridgesTitle: "I ponti più lunghi (rampe comprese)",
+    planHere: "come arrivare",
+    note: "{area}, dati del {date}. La larghezza è mappata solo su alcune calli: la più stretta è la più stretta fra quelle misurate, non un record ufficiale. Lunghezze da un capo all'altro unendo i tratti contigui con lo stesso nome; ponti da un estremo all'altro; vie private e strade di servizio escluse. I due ponti più vicini: {closest}, a {closestM}."
   },
   fares: {
     profileTitle: "Biglietto",

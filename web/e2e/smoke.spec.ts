@@ -430,8 +430,9 @@ test('colori ufficiali delle linee ACTV nella scheda della fermata', async ({ pa
   await page.getByPlaceholder(/cerca fermate/i).fill('Rialto');
   await page.getByRole('dialog', { name: /ricerca/i }).getByRole('button').filter({ hasText: /^.*rialto/i }).first().click();
   const info = page.locator('[data-info-panel]');
-  // la linea 2 è rossa (#FF0000 nel GTFS di ACTV)
+  // la linea 2 è rossa (#FF0000 nel GTFS di ACTV); l'orario della fermata si carica dopo l'apertura della scheda
   const line2 = info.getByText(/^Linea 2$/).first();
+  await expect(line2).toBeVisible({ timeout: 15000 });
   await expect(line2).toHaveCSS('background-color', 'rgb(255, 0, 0)');
 });
 
@@ -1006,6 +1007,19 @@ test('metrics: prezzi dei carburanti per zona, con il più economico e il più c
   await expect(zones.locator('tbody tr').filter({ hasText: 'Centro storico e isole' })).toContainText('2,414 €');
   await box.getByRole('button', { name: 'Gasolio' }).click();
   await expect(box).toContainText('1,884 €');
+});
+
+test('metrics: curiosità su calli e ponti con link per verificarle e per arrivarci', async ({ page }) => {
+  await page.goto('/metrics');
+  const box = page.getByTestId('calli-curiosities');
+  await expect(box).toContainText('Ponti pedonali');
+  await expect(box.getByTestId('calli-narrowest').locator('li')).toHaveCount(5);
+  await expect(box.getByTestId('calli-narrowest')).toContainText('Calle Varisco');
+  await expect(box.getByTestId('calli-bridges')).toContainText('Ponte della Costituzione');
+  const first = box.getByTestId('calli-longest').locator('li').first();
+  await expect(first.getByRole('link', { name: 'OSM' })).toHaveAttribute('href', /openstreetmap\.org\/way\/\d+/);
+  await first.getByRole('link', { name: 'come arrivare' }).click();
+  await expect(page.locator('[data-info-panel]').getByTestId('planner-to')).toContainText('Calle', { timeout: 15000 });
 });
 
 test('trasporto pubblico: livello "velocità da orario" e sezione in /metrics', async ({ page, isMobile }) => {

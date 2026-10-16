@@ -24,6 +24,7 @@ import import_cciaa_turismo as cciaa  # noqa: E402
 import import_arpav_lagoon as arpav_lagoon  # noqa: E402
 import import_cruscotto_italia as cruscotto  # noqa: E402
 import import_bdap_opere as bdap  # noqa: E402
+import import_osm_curiosita as curiosita  # noqa: E402
 from download_gtfs import safe_extract  # noqa: E402
 
 
@@ -870,3 +871,50 @@ def test_guida_aggiungere_fonte_cita_solo_file_esistenti():
     assert found >= 20
     for tpl in ["proponi-una-fonte.yml", "segnala-un-errore.yml", "config.yml"]:
         assert os.path.exists(os.path.join(root, ".github", "ISSUE_TEMPLATE", tpl))
+
+
+def _cway(i, coords, **tags):
+    return {"type": "way", "id": i, "tags": tags, "geometry": [{"lat": la, "lon": lo} for la, lo in coords]}
+
+
+def test_curiosita_larghezza_e_lunghezze():
+    assert curiosita.parse_width("0.8") == 0.8
+    assert curiosita.parse_width("0,53 m") == 0.53
+    assert curiosita.parse_width("narrow") is None
+    # calle a T: il percorso più lungo da un capo all'altro non somma il ramo
+    a, b, c, d = (45.43, 12.33), (45.43, 12.331), (45.43, 12.332), (45.4305, 12.331)
+    calle = [_cway(1, [a, b], name="Calle X", highway="footway"), _cway(2, [b, c], name="Calle X", highway="footway"),
+             _cway(3, [b, d], name="Calle X", highway="footway")]
+    assert round(curiosita.walk_span(calle)) == round(curiosita.haversine(a, c))
+    # stesso nome ma lontane: due calli diverse
+    lontana = _cway(4, [(45.44, 12.34), (45.44, 12.341)], name="Calle X", highway="footway")
+    longest = curiosita.longest_named(calle + [lontana], ("Calle ",))
+    assert len(longest) == 2 and longest[0]["meters"] > longest[1]["meters"]
+    # le vie private e le strade di servizio non contano
+    privata = _cway(5, [(45.45, 12.30), (45.45, 12.32)], name="Calle Lunga Privata", highway="unclassified", access="private")
+    assert all(e["name"] != "Calle Lunga Privata" for e in curiosita.longest_named(calle + [privata], ("Calle ",)))
+    stretta = curiosita.narrowest([_cway(6, [a, b], name="Calle Varisco", highway="footway", width="0.8"),
+                                   _cway(7, [c, d], name="Calle Larga", highway="footway", width="5")])
+    assert [e["name"] for e in stretta] == ["Calle Varisco", "Calle Larga"]
+
+
+def test_curiosita_distanza_fra_ponti():
+    p = [(45.43, 12.33 + i * 0.001) for i in range(6)]
+    ways = [_cway(i, [p[i], p[i + 1]], highway="footway") for i in range(5)]
+    ways[1]["tags"].update(bridge="yes", name="Ponte A")
+    ways[4]["tags"].update(bridge="yes", name="Ponte B")
+    groups = curiosita.bridges(ways)
+    assert len(groups) == 2
+    gaps = curiosita.bridge_gaps(ways, groups)
+    # fra la fine del ponte A (p2) e l'inizio del ponte B (p4): due tratti
+    expected = curiosita.haversine(p[2], p[4])
+    assert all(abs(g - expected) < 1 for g in gaps)
+
+
+def test_curiosita_rifiuta_risposte_incomplete():
+    try:
+        curiosita.build({"elements": [_cway(1, [(45.43, 12.33), (45.43, 12.331)], highway="footway")]})
+    except ValueError as e:
+        assert "incompleta" in str(e)
+    else:
+        raise AssertionError("una risposta incompleta deve essere rifiutata")

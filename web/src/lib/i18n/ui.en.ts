@@ -1398,6 +1398,8 @@ export const enUi: UiTranslations = {
     "name_osm-poi": "OpenStreetMap POIs: chargers, car parks, wells, trees (pipeline)",
     "name_alilaguna-gtfs": "Alilaguna GTFS timetable (pipeline)",
     "meta_osm-poi": "Replaces hand-compiled lists: curated entries remain only if no nearby OSM match exists and are marked \"to be verified\". Includes places with Wi-Fi (hotels, bars, libraries) with the declared access type.",
+    "name_osm-curiosita": "Curiosities about calli and bridges (OpenStreetMap)",
+    "meta_osm-curiosita": "Narrowest calli among those with a mapped width, longest calli and fondamente, bridges and distance between one bridge and the next in the historic centre, computed weekly from OpenStreetMap footways.",
     "name_mimit-carburanti": "Fuel prices (MIMIT, 8 a.m. prices)",
     "meta_mimit-carburanti": "Prices reported by station operators to the Ministry, valid at 8 a.m. on the extraction day: not real-time prices. Brand and address are shown, never the operator's name.",
     "meta_alilaguna-gtfs": "The feed declares no licence: the source is credited. Boats are simulated from the timetable, which is valid for a season.",
@@ -1679,6 +1681,24 @@ export const enUi: UiTranslations = {
     topTitle: "Most expensive works in progress",
     endPlannedShort: "due {date}",
     metricsNote: "The stage derives from the actual dates declared by the body in the monitoring; funding is as declared, not payments. Works with a precise place are also on the map (“Works in progress (BDAP)” layer)."
+  },
+  calli: {
+    title: "Curiosities about calli and bridges",
+    aside: "Historic centre, computed from OpenStreetMap",
+    kpiBridges: "Footbridges",
+    kpiBridgesNote: "mapped on OpenStreetMap in the historic centre, Giudecca included",
+    kpiGap: "From a bridge to the nearest",
+    kpiGapNote: "median walking along the calli (mean {mean})",
+    kpiFarthest: "The most isolated bridge",
+    kpiFarthestNote: "walking to the nearest bridge: {name}",
+    kpiSotoporteghi: "Sotoporteghi",
+    kpiSotoporteghiNote: "with different names, the covered passages under houses",
+    narrowestTitle: "The narrowest calli (among the {n} with a mapped width)",
+    longestCalliTitle: "The longest calli from end to end",
+    longestFondamenteTitle: "Longest fondamente and rive without crossing a bridge",
+    longestBridgesTitle: "The longest bridges (ramps included)",
+    planHere: "get there",
+    note: "{area}, data of {date}. Width is mapped on a few calli only: the narrowest is the narrowest among those measured, not an official record. Lengths from end to end joining contiguous stretches with the same name; bridges from end to end; private ways and service roads excluded. The two closest bridges: {closest}, {closestM} apart."
   },
   fares: {
     profileTitle: "Ticket",

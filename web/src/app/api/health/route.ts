@@ -13,6 +13,7 @@ import { AMBITI, ORDINANCES_API, parseOrdinanceList } from '@/server/sources/com
 import { parseRss } from '@/server/sources/actvNotices';
 import { ACTV_RSS_URL } from '@/lib/contracts/actvNotices';
 import osmToponyms from '@/data/osm-toponyms.json';
+import calliCuriosita from '@/data/calli-curiosita.json';
 import flixbusData from '@/data/flixbus-venezia.json';
 import { openMeteoWindUrl, parseOpenMeteoWind } from '@/server/sources/openMeteoWind';
 import { airQualityUrl, parseAirQuality } from '@/server/sources/openMeteoAir';
@@ -114,6 +115,7 @@ export async function GET() {
     assess('osm-fountains', 'dataset', new Date(fountainsDataset.metadata.extractedAt), 31 * DAY, now),
     assess('flixbus', 'dataset', new Date(flixbusData.generatedAt), 14 * DAY, now),
     assess('osm-toponyms', 'dataset', new Date(osmToponyms.generatedAt), 31 * DAY, now),
+    assess('osm-curiosita', 'dataset', new Date(calliCuriosita.generatedAt), 31 * DAY, now),
     assess('venice-tap-water', 'dataset', new Date(veniceTapWater.metadata.generatedAt), 31 * DAY, now),
     assess('osm-poi', 'dataset', new Date(OSM_POI_META.generatedAt), 31 * DAY, now),
     assess('osm-waterways', 'dataset', new Date(lagoonDataset.generatedAt), 31 * DAY, now),

@@ -31,7 +31,8 @@ import {
   Users,
   Landmark,
   Construction,
-  Fuel
+  Fuel,
+  Footprints as WalkIcon
 } from 'lucide-react';
 import tourismData from '@/data/turismo-comuni.json';
 import { MunicipalProfile } from '@/components/metrics/MunicipalProfile';
@@ -39,6 +40,7 @@ import { PublicWorksMonitor } from '@/components/metrics/PublicWorksMonitor';
 import { ResidentsCensus } from '@/components/metrics/ResidentsCensus';
 import { ScheduleSpeedTable, ServiceNowTable } from '@/components/metrics/TransitNow';
 import { FuelPrices } from '@/components/metrics/FuelPrices';
+import { CalliCuriosities } from '@/components/metrics/CalliCuriosities';
 import { CENSUS, mostEmptiedSestiere } from '@/lib/census';
 import arpavLagoon from '@/data/arpav-lagoon.json';
 
@@ -441,6 +443,14 @@ export default function MetricsPage() {
           <section className="flex flex-col gap-5">
             <SectionHeader icon={Fuel} iconCls="text-emerald-400" title={t('ui.fuel.metricsTitle')} aside={t('ui.fuel.metricsAside')} />
             <FuelPrices />
+          </section>
+        )}
+
+        {/* ===================== CURIOSITÀ SULLE CALLI (OpenStreetMap) ===================== */}
+        {showKpi && (
+          <section className="flex flex-col gap-5">
+            <SectionHeader icon={WalkIcon} iconCls="text-amber-400" title={t('ui.calli.title')} aside={t('ui.calli.aside')} />
+            <CalliCuriosities />
           </section>
         )}
 

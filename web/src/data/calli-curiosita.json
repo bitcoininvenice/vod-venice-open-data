@@ -1,0 +1,182 @@
+{
+ "generatedAt": "2026-10-16T17:28:27+00:00",
+ "source": "OpenStreetMap contributors",
+ "sourceUrl": "https://www.openstreetmap.org/copyright",
+ "license": "ODbL 1.0",
+ "attribution": "© OpenStreetMap contributors",
+ "area": "Centro storico di Venezia con Giudecca, San Giorgio, Tronchetto e Sant'Elena",
+ "counts": {
+  "ways": 8834,
+  "named": 6147,
+  "withWidth": 42,
+  "bridges": 403,
+  "sotoporteghi": 260
+ },
+ "narrowest": [
+  {
+   "name": "Calesela de l'Ochio Grosso",
+   "widthM": 0.5,
+   "lat": 45.435435,
+   "lon": 12.348738,
+   "osmId": 488627565
+  },
+  {
+   "name": "Calle Varisco",
+   "widthM": 0.8,
+   "lat": 45.44123,
+   "lon": 12.338964,
+   "osmId": 153884551
+  },
+  {
+   "name": "Calle del Pin",
+   "widthM": 0.89,
+   "lat": 45.43958,
+   "lon": 12.332679,
+   "osmId": 588432907
+  },
+  {
+   "name": "Calle Stella",
+   "widthM": 0.97,
+   "lat": 45.441428,
+   "lon": 12.34059,
+   "osmId": 153965782
+  },
+  {
+   "name": "Ramo de Cà Zusto",
+   "widthM": 1.0,
+   "lat": 45.440579,
+   "lon": 12.326171,
+   "osmId": 244128423
+  }
+ ],
+ "longestCalli": [
+  {
+   "name": "Calle Michelangelo",
+   "meters": 341,
+   "lat": 45.425155,
+   "lon": 12.338347,
+   "osmId": 175509458
+  },
+  {
+   "name": "Calle de la Croce",
+   "meters": 295,
+   "lat": 45.423593,
+   "lon": 12.336447,
+   "osmId": 320407552
+  },
+  {
+   "name": "Calle Longa dell'Accademia dei Nobili",
+   "meters": 289,
+   "lat": 45.425194,
+   "lon": 12.324218,
+   "osmId": 575901913
+  },
+  {
+   "name": "Calle de la Misericordia",
+   "meters": 278,
+   "lat": 45.443061,
+   "lon": 12.321899,
+   "osmId": 181733334
+  },
+  {
+   "name": "Calle de la Saca",
+   "meters": 268,
+   "lat": 45.428141,
+   "lon": 12.316016,
+   "osmId": 23225095
+  }
+ ],
+ "longestFondamente": [
+  {
+   "name": "Fondamenta De Cannaregio",
+   "meters": 659,
+   "lat": 45.445129,
+   "lon": 12.32242,
+   "osmId": 172321024
+  },
+  {
+   "name": "Fondamenta de la Misericordia",
+   "meters": 478,
+   "lat": 45.444931,
+   "lon": 12.330659,
+   "osmId": 180048098
+  },
+  {
+   "name": "Riva dei Partigiani",
+   "meters": 444,
+   "lat": 45.428045,
+   "lon": 12.357188,
+   "osmId": 181732580
+  },
+  {
+   "name": "Fondamenta San Girolamo",
+   "meters": 422,
+   "lat": 45.446867,
+   "lon": 12.322434,
+   "osmId": 182985517
+  },
+  {
+   "name": "Fondamenta Zattere al Ponte Longo",
+   "meters": 412,
+   "lat": 45.429911,
+   "lon": 12.324976,
+   "osmId": 24993961
+  }
+ ],
+ "longestBridges": [
+  {
+   "name": "Ponte della Costituzione",
+   "meters": 102,
+   "lat": 45.439203,
+   "lon": 12.319835,
+   "osmId": 171875667
+  },
+  {
+   "name": "Ponte San Biasio delle Catene",
+   "meters": 80,
+   "lat": 45.43273,
+   "lon": 12.349277,
+   "osmId": 47292709
+  },
+  {
+   "name": "Ponte dell'Accademia",
+   "meters": 77,
+   "lat": 45.431856,
+   "lon": 12.329083,
+   "osmId": 171899882
+  },
+  {
+   "name": "Ponte di Rialto",
+   "meters": 69,
+   "lat": 45.438019,
+   "lon": 12.336307,
+   "osmId": 121674081
+  },
+  {
+   "name": "Ponte dei Lavraneri",
+   "meters": 69,
+   "lat": 45.427156,
+   "lon": 12.318203,
+   "osmId": 173855768
+  }
+ ],
+ "bridgeGap": {
+  "medianM": 59,
+  "meanM": 65,
+  "closest": {
+   "name": "Ponte dei Tre Ponti",
+   "lat": 45.437166,
+   "lon": 12.320237,
+   "osmId": 172989184,
+   "meters": 2
+  },
+  "farthest": {
+   "name": "ponte senza nome",
+   "lat": 45.423619,
+   "lon": 12.328751,
+   "osmId": 1487617240,
+   "meters": 376
+  }
+ },
+ "note": "Calcolato dalle vie pedonali pubbliche di OpenStreetMap. La larghezza è mappata solo su una parte delle calli: la più stretta è la più stretta fra quelle misurate. Lunghezza di calli e fondamenta: il percorso più lungo da un capo all'altro unendo i tratti contigui con lo stesso nome; dei ponti: da un estremo all'altro. Distanza fra ponti: a piedi lungo la rete, dal ponte al ponte diverso più vicino."
+}
