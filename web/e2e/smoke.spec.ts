@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { SIM_URL } from '../src/lib/simulation-data';
+import { FUEL_KINDS, fuelSummary } from '../src/lib/fuel';
 
 // Le fonti esterne sono reali: i test verificano struttura e comportamento, non i valori.
 
@@ -965,6 +966,29 @@ test('carburanti: distributori colorati per prezzo, scelta del carburante e sche
   await panel.getByRole('button', { name: 'Gasolio' }).click();
   await page.mouse.click(center.x, center.y);
   await expect(info).toContainText('Gasolio: 2° più economico su 2 distributori');
+});
+
+test('metrics: prezzi dei carburanti per zona, con il più economico e il più caro', async ({ page }) => {
+  const recent = new Date(Date.now() - 3600_000).toISOString();
+  const st = (id: string, comune: string, lat: number, lon: number, price: number) => ({
+    id, lat, lon, brand: `Marchio ${id}`, address: `Via ${id}`, comune, highway: false,
+    prices: [{ fuel: 'Benzina', self: true, price, communicatedAt: recent }, { fuel: 'Gasolio', self: true, price: price - 0.1, communicatedAt: recent }],
+  });
+  const stations = [st('centro', 'VENEZIA', 45.448, 12.321, 2.414), st('mestre', 'VENEZIA', 45.49, 12.24, 1.984), st('lido', 'VENEZIA', 45.4199, 12.3753, 2.181)];
+  const summary = Object.fromEntries(FUEL_KINDS.map((k) => [k, fuelSummary(stations, k, Date.now())]));
+  await page.route('**/api/carburanti', (route) => route.fulfill({ json: { success: true, data: stations, summary, meta: { extractedAt: '2026-10-15' } } }));
+  await page.goto('/metrics');
+  const box = page.getByTestId('fuel-prices-metrics');
+  await expect(box).toContainText('Il più economico');
+  await expect(box).toContainText('1,984 €');
+  await expect(box).toContainText('Marchio mestre · Via mestre, VENEZIA');
+  await expect(box).toContainText('2,414 €');
+  await expect(box).toContainText('su un pieno da 40 litri: 17,20 €');
+  const zones = box.getByTestId('fuel-zones');
+  await expect(zones.locator('tbody tr')).toHaveCount(5);
+  await expect(zones.locator('tbody tr').filter({ hasText: 'Centro storico e isole' })).toContainText('2,414 €');
+  await box.getByRole('button', { name: 'Gasolio' }).click();
+  await expect(box).toContainText('1,884 €');
 });
 
 test('trasporto pubblico: livello "velocità da orario" e sezione in /metrics', async ({ page, isMobile }) => {

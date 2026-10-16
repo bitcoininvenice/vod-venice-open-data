@@ -102,3 +102,88 @@ export function fuelRankColor(rank: number): string {
 export function formatFuelPrice(price: number, locale: string): string {
   return price.toLocaleString(locale, { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 }
+
+/** Zone per le statistiche: il Comune di Venezia diviso fra centro e isole, Lido e Pellestrina, terraferma. */
+export const FUEL_ZONES = ['centro', 'lido', 'terraferma', 'chioggia', 'altri'] as const;
+export type FuelZone = (typeof FUEL_ZONES)[number];
+
+/**
+ * Zona del distributore dal comune e da riquadri semplici: terraferma veneziana a nord del ponte della Libertà
+ * (escluse Burano e le isole a est) e a ovest di Tronchetto; Lido e Pellestrina a sud del bacino di San Marco
+ * (Fusina e Malcontenta, più a ovest, restano in terraferma).
+ */
+export function fuelZoneOf(s: Pick<FuelStation, 'comune' | 'lat' | 'lon'>): FuelZone {
+  const comune = s.comune.trim().toUpperCase();
+  if (comune === 'CHIOGGIA') return 'chioggia';
+  if (comune !== 'VENEZIA') return 'altri';
+  if ((s.lat > 45.465 && s.lon < 12.4) || (s.lon < 12.29 && s.lat > 45.4)) return 'terraferma';
+  if (s.lat < 45.42 && s.lon > 12.28) return 'lido';
+  return 'centro';
+}
+
+export interface FuelExtreme {
+  price: number;
+  station: Pick<FuelStation, 'id' | 'brand' | 'address' | 'comune'>;
+}
+
+export interface FuelStats {
+  /** distributori con un prezzo aggiornato del carburante */
+  count: number;
+  min: FuelExtreme | null;
+  max: FuelExtreme | null;
+  mean: number | null;
+  median: number | null;
+}
+
+export interface FuelSummary {
+  kind: FuelKind;
+  all: FuelStats;
+  byZone: Record<FuelZone, FuelStats>;
+  /** distributori che vendono il carburante ma con un prezzo comunicato da oltre FUEL_STALE_DAYS giorni */
+  stale: number;
+  /** quanto costa in media il servito rispetto al self nello stesso distributore (€/l) */
+  attendedPremium: number | null;
+  /** differenza fra la media autostradale e quella delle altre strade (€/l) */
+  highwayPremium: number | null;
+}
+
+const mean = (v: number[]) => (v.length ? v.reduce((a, b) => a + b, 0) / v.length : null);
+
+function stats(rows: { s: FuelStation; price: number }[]): FuelStats {
+  if (rows.length === 0) return { count: 0, min: null, max: null, mean: null, median: null };
+  const sorted = [...rows].sort((a, b) => a.price - b.price);
+  const pick = (r: { s: FuelStation; price: number }): FuelExtreme => ({
+    price: r.price,
+    station: { id: r.s.id, brand: r.s.brand, address: r.s.address, comune: r.s.comune },
+  });
+  const mid = sorted.length / 2;
+  const median = sorted.length % 2 ? sorted[Math.floor(mid)].price : (sorted[mid - 1].price + sorted[mid].price) / 2;
+  return { count: rows.length, min: pick(sorted[0]), max: pick(sorted[sorted.length - 1]), mean: mean(rows.map((r) => r.price)), median };
+}
+
+/** Statistiche dell'area e per zona su un carburante, con lo stesso prezzo usato dai colori della mappa. */
+export function fuelSummary(stations: FuelStation[], kind: FuelKind, now: number): FuelSummary {
+  const rows: { s: FuelStation; price: number }[] = [];
+  let stale = 0;
+  const premiums: number[] = [];
+  for (const s of stations) {
+    const p = stationPrice(s, kind, now);
+    if (p) rows.push({ s, price: p.price });
+    else if (s.prices.some((x) => fuelKindOf(x.fuel) === kind)) stale += 1;
+    const fresh = s.prices.filter((x) => fuelKindOf(x.fuel) === kind && !isStalePrice(x, now));
+    const self = fresh.find((x) => x.self);
+    const attended = fresh.find((x) => !x.self);
+    if (self && attended) premiums.push(attended.price - self.price);
+  }
+  const byZone = Object.fromEntries(FUEL_ZONES.map((z) => [z, stats(rows.filter((r) => fuelZoneOf(r.s) === z))])) as Record<FuelZone, FuelStats>;
+  const hw = mean(rows.filter((r) => r.s.highway).map((r) => r.price));
+  const road = mean(rows.filter((r) => !r.s.highway).map((r) => r.price));
+  return {
+    kind,
+    all: stats(rows),
+    byZone,
+    stale,
+    attendedPremium: mean(premiums),
+    highwayPremium: hw !== null && road !== null ? hw - road : null,
+  };
+}

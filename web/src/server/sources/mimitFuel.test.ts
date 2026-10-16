@@ -7,14 +7,16 @@ idImpianto|Gestore|Bandiera|Tipo Impianto|Nome Impianto|Indirizzo|Comune|Provinc
 1|MARIO ROSSI|Api-Ip|Stradale|IMPIANTO DI MARIO ROSSI|SERENELLA 16 30141|VENEZIA|VE|45.457724|12.345324
 2|SOCIETA SRL|Agip Eni|Autostradale|AREA SERVIZIO|A4 KM 380|MIRA|VE|45.43|12.14
 3|ALTRO|Shell|Stradale|ROMA|VIA ROMA 1|ROMA|RM|41.9|12.49
-4|SENZA PREZZI|Q8|Stradale|X|VIA X|VENEZIA|VE|45.48|12.24`;
+4|SENZA PREZZI|Q8|Stradale|X|VIA X|VENEZIA|VE|45.48|12.24
+5|ERRORE|Api-Ip|Stradale|X|VIALE BRIGATA TREVISO 3 31100|TREVISO|TV|45.4433|12.3315`;
 
 const PRICES = `Estrazione del 2026-10-15
 idImpianto|descCarburante|prezzo|isSelf|dtComu
 1|Benzina|1.789|1|15/10/2026 07:30:00
 1|Benzina|1.949|0|15/10/2026 07:30:00
 2|Gasolio|1.899|1|14/10/2026 20:00:07
-3|Benzina|1.700|1|15/10/2026 07:00:00`;
+3|Benzina|1.700|1|15/10/2026 07:00:00
+5|Benzina|1.500|1|15/10/2026 07:00:00`;
 
 describe('prezzi dei carburanti MIMIT', () => {
   afterEach(() => resetFuelCache());
@@ -28,6 +30,10 @@ describe('prezzi dei carburanti MIMIT', () => {
     expect(JSON.stringify(d)).not.toMatch(/ROSSI|SOCIETA/);
     expect(s.prices[0]).toEqual({ fuel: 'Benzina', self: true, price: 1.789, communicatedAt: '2026-10-15T05:30:00.000Z' });
     expect(d.stations[1].highway).toBe(true);
+  });
+
+  it('scarta gli impianti di comuni fuori dall’area collocati qui per errore', () => {
+    expect(parseFuel(STATIONS, PRICES, 1).stations.some((s) => s.comune === 'TREVISO')).toBe(false);
   });
 
   it('legge anche il vecchio separatore «;»', () => {

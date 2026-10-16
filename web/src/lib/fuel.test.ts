@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fuelKindOf, fuelRankColor, rankFuelStations, stationPrice, type FuelStation } from './fuel';
+import { fuelKindOf, fuelRankColor, fuelSummary, fuelZoneOf, rankFuelStations, stationPrice, type FuelStation } from './fuel';
 
 const NOW = Date.parse('2026-10-16T10:00:00Z');
 const recent = '2026-10-15T06:00:00.000Z';
@@ -49,6 +49,42 @@ describe('carburanti', () => {
     expect(ranks.get('c')?.position).toBe(2);
     expect(ranks.get('d')?.rank).toBe(1);
     expect(ranks.has('e')).toBe(false);
+  });
+
+  it('assegna le zone di Venezia', () => {
+    const z = (comune: string, lat: number, lon: number) => fuelZoneOf({ comune, lat, lon });
+    expect(z('VENEZIA', 45.448, 12.321)).toBe('centro'); // Sacca San Girolamo
+    expect(z('VENEZIA', 45.487, 12.416)).toBe('centro'); // Burano
+    expect(z('VENEZIA', 45.4199, 12.3753)).toBe('lido'); // Riviera San Nicolò
+    expect(z('VENEZIA', 45.264, 12.301)).toBe('lido'); // Pellestrina
+    expect(z('VENEZIA', 45.418, 12.258)).toBe('terraferma'); // Fusina
+    expect(z('VENEZIA', 45.49, 12.24)).toBe('terraferma'); // Mestre
+    expect(z('VENEZIA', 45.504, 12.336)).toBe('terraferma'); // Tessera
+    expect(z('CHIOGGIA', 45.22, 12.28)).toBe('chioggia');
+    expect(z('MIRA', 45.44, 12.14)).toBe('altri');
+  });
+
+  it('riassume prezzi per zona, servito e prezzi vecchi', () => {
+    const at = (s: FuelStation, lat: number, lon: number, highway = false) => ({ ...s, lat, lon, highway });
+    const sum = fuelSummary(
+      [
+        at(station('c', [['Benzina', true, 2.4, recent], ['Benzina', false, 2.5, recent]]), 45.44, 12.33),
+        at(station('m1', [['Benzina', true, 1.9, recent], ['Benzina', false, 2.1, recent]]), 45.49, 12.24),
+        at(station('m2', [['Benzina', true, 2.0, recent]]), 45.49, 12.24, true),
+        at(station('old', [['Benzina', true, 1.5, '2021-03-01T08:00:00.000Z']]), 45.49, 12.24),
+      ],
+      'benzina',
+      NOW,
+    );
+    expect(sum.all).toMatchObject({ count: 3, median: 2.0 });
+    expect(sum.all.min?.station.id).toBe('m1');
+    expect(sum.all.max?.price).toBe(2.4);
+    expect(sum.byZone.centro.count).toBe(1);
+    expect(sum.byZone.terraferma).toMatchObject({ count: 2, mean: 1.95 });
+    expect(sum.byZone.lido.count).toBe(0);
+    expect(sum.stale).toBe(1);
+    expect(sum.attendedPremium).toBeCloseTo(0.15);
+    expect(sum.highwayPremium).toBeCloseTo(2.0 - 2.15);
   });
 
   it('colora dal verde al rosso', () => {

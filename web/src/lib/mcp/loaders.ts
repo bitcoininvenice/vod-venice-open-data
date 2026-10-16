@@ -231,7 +231,7 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   },
   fuel_prices: async () => {
     const j = await read(fuelGET());
-    return { items: asRows(j.data), meta: j.meta as Row };
+    return { items: asRows(j.data), meta: { ...(j.meta as Row), summary: j.summary } };
   },
   lora_gateways: async () => {
     const j = await read(loraGET());

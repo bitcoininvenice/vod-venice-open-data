@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { FUEL_REFRESH_S, fuelStations } from '@/server/sources/mimitFuel';
-import { FUEL_STALE_DAYS } from '@/lib/fuel';
+import { FUEL_KINDS, FUEL_STALE_DAYS, fuelSummary } from '@/lib/fuel';
 import { providerMeta } from '@/lib/provenance/providers';
 
 // Il Ministero pubblica una volta al giorno: la risposta si rigenera al massimo ogni 6 ore
@@ -14,6 +14,8 @@ export async function GET() {
       success: res.ok,
       count: res.ok ? res.data.stations.length : 0,
       data: res.ok ? res.data.stations : [],
+      // statistiche dell'area e per zona per ogni carburante (stesso prezzo usato dai colori della mappa)
+      summary: res.ok ? Object.fromEntries(FUEL_KINDS.map((k) => [k, fuelSummary(res.data.stations, k, Date.now())])) : null,
       meta: {
         kind: res.ok ? 'static-reference' : 'unavailable',
         ...providerMeta('mimitFuel'),

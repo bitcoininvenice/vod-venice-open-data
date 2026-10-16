@@ -18,6 +18,14 @@ export const FUEL_REFRESH_S = 6 * 3600;
 const MIN_STATIONS_ITALY = 15_000;
 
 const [LON0, LON1, LAT0, LAT1] = GRID.frame;
+/**
+ * Comuni il cui territorio cade nell'area della mappa. Un impianto di un altro comune con coordinate qui è un
+ * errore del dato del Ministero (es. un distributore di Treviso o di Cossato collocato a Venezia): si scarta.
+ */
+const AREA_COMUNI = new Set([
+  'VENEZIA', 'CHIOGGIA', 'CAVALLINO-TREPORTI', 'MIRA', 'SPINEA', 'MIRANO', 'MARCON', 'MARTELLAGO', 'SALZANO', 'SCORZÈ',
+  'MOGLIANO VENETO', 'PREGANZIOL', "QUARTO D'ALTINO", 'CAMPAGNA LUPIA', 'CODEVIGO', 'DOLO', 'NOALE',
+]);
 
 /** Riga «Estrazione del YYYY-MM-DD» in testa ai file */
 function extractionDate(text: string): string | null {
@@ -65,6 +73,7 @@ export function parseFuel(stationsCsv: string, pricesCsv: string, minStationsIta
     const lon = Number(r.Longitudine);
     if (!r.idImpianto || !Number.isFinite(lat) || !Number.isFinite(lon)) continue;
     if (lat < LAT0 || lat > LAT1 || lon < LON0 || lon > LON1) continue;
+    if (!AREA_COMUNI.has((r.Comune ?? '').trim().toUpperCase())) continue;
     stations.set(r.idImpianto, {
       id: r.idImpianto,
       lat: Math.round(lat * 1e6) / 1e6,

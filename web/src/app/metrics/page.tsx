@@ -30,13 +30,15 @@ import {
   Info,
   Users,
   Landmark,
-  Construction
+  Construction,
+  Fuel
 } from 'lucide-react';
 import tourismData from '@/data/turismo-comuni.json';
 import { MunicipalProfile } from '@/components/metrics/MunicipalProfile';
 import { PublicWorksMonitor } from '@/components/metrics/PublicWorksMonitor';
 import { ResidentsCensus } from '@/components/metrics/ResidentsCensus';
 import { ScheduleSpeedTable, ServiceNowTable } from '@/components/metrics/TransitNow';
+import { FuelPrices } from '@/components/metrics/FuelPrices';
 import { CENSUS, mostEmptiedSestiere } from '@/lib/census';
 import arpavLagoon from '@/data/arpav-lagoon.json';
 
@@ -431,6 +433,14 @@ export default function MetricsPage() {
             <ServiceNowTable />
             <SectionHeader icon={Timer} iconCls="text-red-400" title={t('ui.scheduleSpeed.sectionTitle')} aside={t('ui.scheduleSpeed.sectionAside')} />
             <ScheduleSpeedTable />
+          </section>
+        )}
+
+        {/* ===================== CARBURANTI (MIMIT, prezzi alle 8) ===================== */}
+        {showKpi && (
+          <section className="flex flex-col gap-5">
+            <SectionHeader icon={Fuel} iconCls="text-emerald-400" title={t('ui.fuel.metricsTitle')} aside={t('ui.fuel.metricsAside')} />
+            <FuelPrices />
           </section>
         )}
 
