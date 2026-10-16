@@ -980,6 +980,9 @@ test('carburanti: distributori colorati per prezzo, scelta del carburante e sche
   await panel.getByRole('button', { name: 'Gasolio' }).click();
   await page.mouse.click(center.x, center.y);
   await expect(info).toContainText('Gasolio: 2° più economico su 2 distributori');
+  // dal distributore si apre il planner con il distributore come arrivo
+  await info.getByTestId('plan-here').click();
+  await expect(page.locator('[data-info-panel]').getByTestId('planner-to')).toContainText('Api-Ip – Via di prova 1');
 });
 
 test('metrics: prezzi dei carburanti per zona, con il più economico e il più caro', async ({ page }) => {

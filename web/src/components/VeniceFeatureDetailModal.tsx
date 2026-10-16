@@ -1486,11 +1486,53 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             </>
           )}
 
+          {onPlanTo && (() => {
+            const target = planTarget(feature, t);
+            return target ? <PlanHereButton onClick={() => onPlanTo(target)} /> : null;
+          })()}
           <FeatureProvenance feature={feature} />
         </div>
     </InfoPanel>
   );
 };
+
+/**
+ * Luoghi che si raggiungono a piedi o con i mezzi: la scheda offre «Come arrivare qui» verso la loro posizione.
+ * Esclusi i punti in mare o in laguna (piattaforme, briccole, sonde), le zone e i tracciati, le antenne private e
+ * le voci degli elenchi curati, la cui posizione è indicativa. Il civico ha già il suo pulsante.
+ */
+const REACHABLE_TYPES = new Set<VeniceFeatureSelected['type']>([
+  'fuelStation', 'fountain', 'pharmacy', 'publicDae', 'parking', 'evCharging', 'wifiHotspot', 'wifiVenue',
+  'sportPlace', 'parkPlace', 'nauticalPlace', 'civicPoi', 'urbanTree', 'veniceWell',
+]);
+
+/** Destinazione per il planner: posizione e nome dell'elemento, oppure null se non è un luogo da raggiungere. */
+function planTarget(feature: VeniceFeatureSelected, t: (key: string, params?: Record<string, string | number>) => string): { lon: number; lat: number; label: string } | null {
+  if (!REACHABLE_TYPES.has(feature.type)) return null;
+  const d = (feature.type === 'fuelStation' ? feature.data.station : feature.data) as { lat?: unknown; lon?: unknown; name?: string | null; source?: string };
+  if (typeof d.lat !== 'number' || typeof d.lon !== 'number' || d.source === 'ELENCO_CURATO') return null;
+  const label = (() => {
+    switch (feature.type) {
+      case 'fuelStation':
+        return `${feature.data.station.brand} – ${feature.data.station.address}`;
+      case 'publicDae':
+        return `${t('ui.feature.defibrillatoreDae')} ${feature.data.code}`;
+      case 'urbanTree':
+        return feature.data.commonName;
+      case 'wifiVenue':
+        return feature.data.name ?? t(`ui.wifiVenue.kind_${feature.data.kind}`);
+      case 'sportPlace':
+        return feature.data.name ?? t(`ui.sport.kind_${feature.data.kind}`);
+      case 'nauticalPlace':
+        return feature.data.name ?? t(`ui.nautical.kind_${feature.data.kind}`);
+      case 'parkPlace':
+        return feature.data.name ?? t(`ui.park.kind_${feature.data.kind}`);
+      default:
+        return d.name ?? t('ui.planner.mapPoint', { lat: (d.lat as number).toFixed(5), lon: (d.lon as number).toFixed(5) });
+    }
+  })();
+  return { lon: d.lon, lat: d.lat, label };
+}
 
 /** Layer da cui proviene ogni tipo di scheda (natura del dato e fonte nel piede della scheda). */
 /** Tipi che vengono da elenchi compilati nel progetto, senza un campo `source` per voce. */
