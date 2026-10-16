@@ -1129,7 +1129,7 @@ export const enUi: UiTranslations = {
     group_city: "City and public works",
     groupDesc_society: "Socio-economic profile of the municipality, residents, households and homes",
     groupDesc_mobility: "Public transport right now, speed required by the timetable, punctuality",
-    groupDesc_services: "Defibrillators, pharmacies and water ambulances; fuel prices",
+    groupDesc_services: "Fuel prices; defibrillators, pharmacies and water ambulances",
     groupDesc_city: "Public works, accessible bridges, curiosities about calli and bridges",
     emergencyTitle: "Proximity to emergency services",
     note_emergency: "Straight-line distances from historic-centre ACTV stops to OpenStreetMap AEDs and pharmacies and to curated water-ambulance docks. Real walking routes are longer: percentages are an upper bound.",

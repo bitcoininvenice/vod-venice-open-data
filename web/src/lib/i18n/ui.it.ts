@@ -1127,7 +1127,7 @@ export const itUi = {
     group_city: "Città e opere",
     groupDesc_society: "Profilo socio-economico del Comune, residenti, famiglie e abitazioni",
     groupDesc_mobility: "Trasporto pubblico in questo momento, velocità richiesta dall'orario, puntualità",
-    groupDesc_services: "Defibrillatori, farmacie e idroambulanze; prezzi dei carburanti",
+    groupDesc_services: "Prezzi dei carburanti; defibrillatori, farmacie e idroambulanze",
     groupDesc_city: "Opere pubbliche, ponti accessibili, curiosità su calli e ponti",
     emergencyTitle: "Prossimità ai presidi di emergenza",
     note_emergency: "Distanze in linea d'aria dalle fermate ACTV del centro storico ai DAE e alle farmacie OpenStreetMap e agli approdi idroambulanze dell'elenco curato. Il percorso a piedi reale è più lungo: le percentuali sono un limite superiore.",

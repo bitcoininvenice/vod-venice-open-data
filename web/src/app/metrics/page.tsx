@@ -503,6 +503,12 @@ export default function MetricsPage() {
         {showKpi && showGroup('services') && (
           <div className="flex flex-col gap-8" data-testid="metrics-group-services">
             {showGroupHeader && <GroupHeader title={m('group_services')} description={m('groupDesc_services')} />}
+            {/* ===================== CARBURANTI (MIMIT, prezzi alle 8) ===================== */}
+            <section className="flex flex-col gap-5">
+              <SectionHeader icon={Fuel} iconCls="text-emerald-400" title={t('ui.fuel.metricsTitle')} aside={t('ui.fuel.metricsAside')} />
+              <FuelPrices />
+            </section>
+
             <section className="flex flex-col gap-5">
               {/* 1.1 Presidi di emergenza */}
               <div className="p-5 rounded-2xl bg-[var(--rule)]/20 border border-[var(--rule)] flex flex-col gap-4">
@@ -561,12 +567,6 @@ export default function MetricsPage() {
                   </div>
                 </div>
               </div>
-            </section>
-
-          {/* ===================== CARBURANTI (MIMIT, prezzi alle 8) ===================== */}
-            <section className="flex flex-col gap-5">
-              <SectionHeader icon={Fuel} iconCls="text-emerald-400" title={t('ui.fuel.metricsTitle')} aside={t('ui.fuel.metricsAside')} />
-              <FuelPrices />
             </section>
           </div>
         )}
