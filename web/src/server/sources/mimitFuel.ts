@@ -92,7 +92,8 @@ export function parseFuel(stationsCsv: string, pricesCsv: string, minStationsIta
     const p: FuelPrice = { fuel: r.descCarburante, self: r.isSelf === '1', price, communicatedAt: communicatedAt(r.dtComu ?? '') };
     s.prices.push(p);
   }
-  const list = [...stations.values()].filter((s) => s.prices.length > 0);
+  // anche i distributori senza prezzi comunicati: esistono, sulla mappa restano grigi
+  const list = [...stations.values()];
   for (const s of list) s.prices.sort((a, b) => a.fuel.localeCompare(b.fuel) || Number(b.self) - Number(a.self));
   return { extractedAt: extractionDate(pricesCsv) ?? extractionDate(stationsCsv), stationsItaly: anag.length, stations: list.sort((a, b) => b.lat - a.lat) };
 }

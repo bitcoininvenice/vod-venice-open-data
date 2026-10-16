@@ -24,12 +24,14 @@ describe('prezzi dei carburanti MIMIT', () => {
   it('tiene solo l’area della mappa e mai il nome del gestore o dell’impianto', () => {
     const d = parseFuel(STATIONS, PRICES, 1);
     expect(d.extractedAt).toBe('2026-10-15');
-    expect(d.stations.map((s) => s.id)).toEqual(['1', '2']);
-    const s = d.stations[0];
+    // anche il distributore senza prezzi (4) resta: esiste, sulla mappa è grigio
+    expect(d.stations.map((s) => s.id)).toEqual(['4', '1', '2']);
+    expect(d.stations[0].prices).toEqual([]);
+    const s = d.stations[1];
     expect(s).toMatchObject({ brand: 'Api-Ip', address: 'SERENELLA 16', comune: 'VENEZIA', highway: false });
     expect(JSON.stringify(d)).not.toMatch(/ROSSI|SOCIETA/);
     expect(s.prices[0]).toEqual({ fuel: 'Benzina', self: true, price: 1.789, communicatedAt: '2026-10-15T05:30:00.000Z' });
-    expect(d.stations[1].highway).toBe(true);
+    expect(d.stations[2].highway).toBe(true);
   });
 
   it('scarta gli impianti di comuni fuori dall’area collocati qui per errore', () => {
@@ -38,7 +40,7 @@ describe('prezzi dei carburanti MIMIT', () => {
 
   it('legge anche il vecchio separatore «;»', () => {
     const d = parseFuel(STATIONS.replaceAll('|', ';'), PRICES.replaceAll('|', ';'), 1);
-    expect(d.stations).toHaveLength(2);
+    expect(d.stations).toHaveLength(3);
   });
 
   it('rifiuta un’anagrafica incompleta', () => {
@@ -51,7 +53,7 @@ describe('prezzi dei carburanti MIMIT', () => {
     const now = Date.parse('2026-10-16T08:00:00Z');
     const [a, b] = await Promise.all([fuelStations(ok as unknown as typeof fetch, now), fuelStations(ok as unknown as typeof fetch, now)]);
     expect(ok).toHaveBeenCalledTimes(2);
-    expect(a.ok && b.ok && a.data.stations.length).toBe(2);
+    expect(a.ok && b.ok && a.data.stations.length).toBe(3);
     const down = vi.fn(async () => new Response('', { status: 503 }));
     const later = await fuelStations(down as unknown as typeof fetch, now + 7 * 3600_000);
     expect(down).toHaveBeenCalled();

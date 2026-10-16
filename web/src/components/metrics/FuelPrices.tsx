@@ -47,7 +47,7 @@ export const FuelPrices: React.FC = () => {
   const kpis: Array<[string, string, string, string?]> = [
     [f('kpiCheapest'), eur(s.all.min?.price ?? null), where(s.all.min), fuelRankColor(0)],
     [f('kpiExpensive'), eur(s.all.max?.price ?? null), where(s.all.max), fuelRankColor(1)],
-    [f('kpiMedian'), eur(s.all.median), f('kpiMedianNote', { n: s.all.count })],
+    [f('kpiMedian'), eur(s.all.median), f('kpiMedianNote', { n: s.all.count, total: s.all.total })],
     [
       f('kpiSpread'),
       eur(spread),
@@ -100,7 +100,7 @@ export const FuelPrices: React.FC = () => {
               return (
                 <tr key={z} className="border-t border-[var(--rule)] text-[var(--ink-2)]">
                   <td className="py-1.5 text-[var(--ink)]">{f(`zone_${z}`)}</td>
-                  <td className="py-1.5 text-right font-mono tabular">{zs.count}</td>
+                  <td className="py-1.5 text-right font-mono tabular">{f('countOfTotal', { n: zs.count, total: zs.total })}</td>
                   <td className="py-1.5 text-right font-mono tabular" title={where(zs.min)}>{eur(zs.min?.price ?? null)}</td>
                   <td className="py-1.5 text-right font-mono tabular">{eur(zs.mean)}</td>
                   <td className="py-1.5 text-right font-mono tabular">{eur(zs.median)}</td>

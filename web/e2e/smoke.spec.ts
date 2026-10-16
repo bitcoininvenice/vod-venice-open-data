@@ -1655,7 +1655,7 @@ test.describe('API', () => {
     expect(body.data.length).toBeGreaterThan(30);
     for (const s of body.data as Array<Record<string, unknown>>) {
       expect(Object.keys(s).sort()).toEqual(['address', 'brand', 'comune', 'highway', 'id', 'lat', 'lon', 'prices']);
-      expect((s.prices as unknown[]).length).toBeGreaterThan(0);
+      expect(Array.isArray(s.prices)).toBe(true);
     }
     expect(body.meta.extractedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });

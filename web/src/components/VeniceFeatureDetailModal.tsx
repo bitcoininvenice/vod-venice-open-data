@@ -1729,6 +1729,8 @@ const FuelStationBody: React.FC<{ station: FuelStation; kind: FuelKind; rank: Fu
           ? f('rank', { fuel: f(`kind_${kind}`), position: rank.position, total: rank.total })
           : f('noRank', { fuel: f(`kind_${kind}`) })}
       </p>
+      {s.prices.length === 0 && <p className="text-[11px] text-[var(--ink-2)]">{f('noPrices')}</p>}
+      {s.prices.length > 0 && (
       <table className="w-full text-xs" data-testid="fuel-prices">
         <thead>
           <tr className="text-[10px] font-mono uppercase text-[var(--ink-3)] text-left">
@@ -1753,6 +1755,7 @@ const FuelStationBody: React.FC<{ station: FuelStation; kind: FuelKind; rank: Fu
           })}
         </tbody>
       </table>
+      )}
       {s.highway && <p className="text-[11px] text-[var(--ink-2)]">{f('highway')}</p>}
       <p className="text-[11px] text-[var(--ink-2)]">{f('note')}</p>
       <a href={PROVIDERS.mimitFuel.url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2">
