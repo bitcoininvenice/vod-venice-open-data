@@ -2,12 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { ExternalLink, Navigation, Plane, Radio, Ship } from 'lucide-react';
-import type { AlilagunaBoat, FlightItem, ShipItem } from '@/lib/types';
+import type { AlilagunaBoat, FlightItem, ShipItem, StopItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { InfoHeader, InfoPanel, KeyValues, MoreDetails } from '@/components/ui/InfoPanel';
 import { DELAY_COLORS, delayMinutes, type VehicleDelay } from '@/lib/realtimeDelay';
 import { lineTextColor } from '@/lib/actvLines';
-import { clock, resolveTrip, tripStops, type TripRef } from '@/lib/tripView';
+import { clock, resolveTrip, stopModesFor, tripStops, type TripRef } from '@/lib/tripView';
+import { ACTV_STOPS_REFERENCE } from '@/lib/stopsReference';
+import { GRID } from '@/lib/simulation-data';
 import { useSimulation } from '@/lib/simulationModel';
 import { romeSecondsOfDay } from '@/lib/time';
 import { useServiceNow } from '@/lib/useServiceNow';
@@ -309,12 +311,48 @@ function useNow(intervalMs: number): number {
  * Fermate della corsa del mezzo: già servite in grigio, successive con l'orario programmato e quello
  * previsto (ritardo attuale del mezzo applicato a tutte le fermate: è una stima semplice).
  */
+const [FRAME_LON0, FRAME_LON1, FRAME_LAT0, FRAME_LAT1] = GRID.frame;
+/** Le fermate fuori dall'area della mappa non hanno un nome nei nostri dati: lo si dice */
+const inMapFrame = (s: { lon: number; lat: number }) => s.lon >= FRAME_LON0 && s.lon <= FRAME_LON1 && s.lat >= FRAME_LAT0 && s.lat <= FRAME_LAT1;
+
+/** Elenco completo delle fermate bus (/api/fermate-bus), caricato una volta sola e solo per le corse dei bus */
+let busStopsPromise: Promise<StopItem[]> | null = null;
+function loadBusStops(): Promise<StopItem[]> {
+  busStopsPromise ??= fetch('/api/fermate-bus')
+    .then((r) => r.json())
+    .then((j) => (Array.isArray(j?.data) ? (j.data as StopItem[]) : []))
+    .catch(() => {
+      busStopsPromise = null;
+      return [];
+    });
+  return busStopsPromise;
+}
+
+function useBusStops(enabled: boolean): StopItem[] | null {
+  const [stops, setStops] = useState<StopItem[] | null>(null);
+  useEffect(() => {
+    if (!enabled) return;
+    let alive = true;
+    loadBusStops().then((s) => alive && setStops(s));
+    return () => {
+      alive = false;
+    };
+  }, [enabled]);
+  return enabled ? stops : null;
+}
+
 const TripStopsList: React.FC<{ vehicle: VehicleSelection; timeSeconds?: number }> = ({ vehicle: v, timeSeconds }) => {
   const { t } = useTranslation();
   const sim = useSimulation(true);
   const nowMs = useNow(15000);
   const trip = React.useMemo(() => resolveTrip(sim, v.trip), [sim, v.trip]);
-  const stops = React.useMemo(() => (trip ? tripStops(trip) : []), [trip]);
+  // per i bus servono tutte le fermate (la mappa ha solo i nodi principali); per gli altri mezzi bastano quelle della mappa
+  const isBus = !!trip && stopModesFor(trip.profile.route.c).modes.includes('bus');
+  const busStops = useBusStops(isBus);
+  const stops = React.useMemo(
+    () => (trip ? tripStops(trip, isBus && busStops ? [...ACTV_STOPS_REFERENCE, ...busStops] : ACTV_STOPS_REFERENCE) : []),
+    [trip, isBus, busStops],
+  );
   if (!sim) return <p className="text-[11px] text-[var(--ink-3)]">{t('ui.trip.loading')}</p>;
   if (!trip || stops.length === 0) return <p className="text-[11px] text-[var(--ink-3)]">{t('ui.trip.notFound')}</p>;
   const delay = v.delay?.seconds ?? 0;
@@ -335,7 +373,7 @@ const TripStopsList: React.FC<{ vehicle: VehicleSelection; timeSeconds?: number 
                 aria-hidden
               />
               <span className={`flex-1 min-w-0 truncate ${passed ? 'text-[var(--ink-3)]' : isNext ? 'font-bold text-[var(--ink)]' : 'text-[var(--ink-2)]'}`}>
-                {s.name ?? t('ui.trip.unnamedStop')}
+                {s.name ?? t(inMapFrame(s) ? 'ui.trip.unnamedStop' : 'ui.trip.unnamedStopOutside')}
               </span>
               <span className={`font-mono tabular ${passed ? 'text-[var(--ink-3)]' : 'text-[var(--ink)]'}`}>
                 {delay !== 0 && !passed ? (

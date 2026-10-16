@@ -1992,7 +1992,8 @@ export const enUi: UiTranslations = {
     title: "Stops of this trip",
     loading: "Loading the trip timetable…",
     notFound: "Trip not found in the official timetable: its route cannot be highlighted.",
-    unnamedStop: "Stop",
+    unnamedStop: "Stop (name not available)",
+    unnamedStopOutside: "Stop outside the map area",
     note: "Times from the official ACTV timetable (GTFS).",
     noteDelay: "Official time struck through and expected time with the vehicle's current delay applied to every stop: it is an estimate."
   },

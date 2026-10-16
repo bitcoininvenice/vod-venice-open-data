@@ -1990,7 +1990,8 @@ export const itUi = {
     title: "Fermate della corsa",
     loading: "Caricamento dell'orario della corsa…",
     notFound: "Corsa non trovata nell'orario ufficiale: il percorso non può essere evidenziato.",
-    unnamedStop: "Fermata",
+    unnamedStop: "Fermata (nome non disponibile)",
+    unnamedStopOutside: "Fermata fuori dall'area della mappa",
     note: "Orari dall'orario ufficiale ACTV (GTFS).",
     noteDelay: "Orario ufficiale barrato e orario previsto con il ritardo attuale del mezzo applicato a tutte le fermate: è una stima."
   },

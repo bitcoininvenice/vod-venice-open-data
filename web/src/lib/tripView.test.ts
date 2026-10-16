@@ -33,6 +33,15 @@ describe('corsa del mezzo selezionato', () => {
     expect(stops.map((s) => clock(s.scheduled))).toEqual(['10:00', '10:05', '10:10']);
   });
 
+  it('per i bus il nome viene dalle fermate bus, non dai pontili', () => {
+    const bus: SimProfile = { ...profile, route: { n: '4L', c: 'bus', ci: 1, cat: 'bus' } };
+    const busStop = (name: string, metersEast: number): StopItem => ({ ...stop(name, metersEast), mode: 'bus' });
+    const stops = tripStops({ profile: bus, departure: 36000 }, [stop('Pontile', 0), busStop('Piazzale Roma', 0), busStop('Mestre Centro', 1000), busStop('Via Piave', 2000)]);
+    expect(stops.map((s) => s.name)).toEqual(['Piazzale Roma', 'Mestre Centro', 'Via Piave']);
+    const tram: SimProfile = { ...profile, route: { n: 'T1', c: 'tram', ci: 2, cat: 'tram' } };
+    expect(tripStops({ profile: tram, departure: 36000 }, [stop('Pontile', 0)]).map((s) => s.name)).toEqual([null, null, null, null]);
+  });
+
   it('orario anche dopo mezzanotte', () => {
     expect(clock(25 * 3600 + 5 * 60)).toBe('01:05');
   });

@@ -59,27 +59,45 @@ export function resolveTrip(sim: SimModel | null, ref: TripRef | null | undefine
   return matchTrip(index, ref.line, departure, day, ref.network);
 }
 
-/** Fermata della mappa più vicina a un punto, entro `maxM` metri (solo navigazione e ferry). */
-function nearestStopName(lon: number, lat: number, stops: StopItem[], maxM = 150): string | null {
+const WATER_CATEGORIES = new Set(['vaporetto', 'motoscafo', 'motonave', 'ferry']);
+
+/**
+ * Tipi di fermata in cui cercare il nome per una categoria di mezzo: pontili per i battelli, fermate del tram,
+ * del People Mover o dei bus (terraferma, Lido e Pellestrina), e distanza massima dal punto della corsa.
+ * Le fermate bus con più corsie sono unite in un punto medio: per loro la distanza ammessa è più ampia.
+ */
+export function stopModesFor(category: string): { modes: string[]; maxM: number } {
+  if (WATER_CATEGORIES.has(category)) return { modes: ['navigazione', 'ferry'], maxM: 150 };
+  if (category === 'tram') return { modes: ['tram'], maxM: 80 };
+  if (category === 'peoplemover') return { modes: ['peoplemover'], maxM: 80 };
+  return { modes: ['bus'], maxM: 120 };
+}
+
+/** Fermata più vicina a un punto fra quelle dei tipi indicati, entro `maxM` metri. */
+function nearestStopName(lon: number, lat: number, stops: StopItem[], modes: string[], maxM: number): string | null {
   const k = Math.cos((lat * Math.PI) / 180) * 111320;
   let best: { d: number; name: string } | null = null;
   for (const s of stops) {
-    if (s.mode !== 'navigazione' && s.mode !== 'ferry') continue;
+    if (!modes.includes(s.mode)) continue;
     const d = Math.hypot((s.lon - lon) * k, (s.lat - lat) * 110540);
     if (d <= maxM && (!best || d < best.d)) best = { d, name: s.name };
   }
   return best?.name ?? null;
 }
 
-/** Fermate della corsa in ordine, con orario programmato e nome della fermata della mappa più vicina. */
+/**
+ * Fermate della corsa in ordine, con orario programmato e nome della fermata più vicina dello stesso tipo di mezzo.
+ * `stops`: fermate in cui cercare (di norma quelle della mappa più, per i bus, l'elenco completo delle fermate bus).
+ */
 export function tripStops(trip: SelectedTrip, stops: StopItem[] = ACTV_STOPS_REFERENCE): TripStop[] {
   const { profile: p, departure } = trip;
+  const { modes, maxM } = stopModesFor(p.route.c);
   const pt: [number, number] = [0, 0];
   const out: TripStop[] = [];
   for (let k = 0; k < p.Dd.length; k++) {
     pointAt(p.sh, p.Dd[k], pt);
     const [lon, lat] = fromGrid(pt[0], pt[1]);
-    const name = nearestStopName(lon, lat, stops);
+    const name = nearestStopName(lon, lat, stops, modes, maxM);
     const prev = out[out.length - 1];
     if (prev && prev.name !== null && prev.name === name) continue; // pontili consecutivi della stessa fermata
     out.push({ name, lon, lat, scheduled: departure + p.T[k] });
