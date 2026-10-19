@@ -41,6 +41,12 @@ describe('urlLayers utilities', () => {
     expect(res.activeLayers.showMose).toBeUndefined();
   });
 
+  it('il livello dei treni si chiama «treni»; il vecchio «treni_ponte» resta valido', () => {
+    expect(buildLayersParam({ showTrains: true })).toBe('treni');
+    expect(parseLayerParams('?layers=treni').activeLayers.showTrains).toBe(true);
+    expect(parseLayerParams('?layers=treni_ponte').activeLayers.showTrains).toBe(true);
+  });
+
   it('parses ?layer=wifi single layer query', () => {
     const res = parseLayerParams('?layer=wifi');
     expect(res.hasLayerParams).toBe(true);

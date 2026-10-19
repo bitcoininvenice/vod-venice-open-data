@@ -235,7 +235,7 @@ export const LAYER_CATALOG: LayerDocItem[] = [
     endpointOrFile: 'open-data-catalog.ts (OPEN_PUBLIC_DOCKS)'
   },
   {
-    id: 'treni_ponte',
+    id: 'treni',
     nameIt: 'Treni Santa Lucia – Mestre (orario ufficiale e tempo reale)',
     nameEn: 'Santa Lucia – Mestre trains (timetable and live)',
     group: 'mobility',

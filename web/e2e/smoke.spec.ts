@@ -1272,7 +1272,10 @@ test.describe('API', () => {
     // Mapillary: tile validato; senza chiave lo si dice
     expect((await request.get('/api/mapillary?tile=abc')).status()).toBe(400);
     const photos = await request.get('/api/mapillary?tile=3083:11358');
-    if (!process.env.MAPILLARY_TOKEN) expect((await photos.json()).error).toBe('mapillary_token_missing');
+    // con la chiave sul server: elenco delle foto; senza: errore esplicito
+    const pj = await photos.json();
+    if (pj.success) expect(Array.isArray(pj.data)).toBe(true);
+    else expect(['mapillary_token_missing', 'upstream_unavailable']).toContain(pj.error);
   });
 
   test('carburanti: prezzi del Ministero o del file giornaliero, altrimenti OpenStreetMap senza prezzi', async ({ request }) => {
