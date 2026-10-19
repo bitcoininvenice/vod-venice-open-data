@@ -34,10 +34,28 @@ export const ALILAGUNA_FARES = {
   veneziaUnica: { airportVenice: 10, airportMurano: 5, other: 5 },
 } as const;
 
+/** ATVO 35 Venezia Express (Piazzale Roma - aeroporto): corsa semplice dal PDF dell'orario ATVO, verificata il 19/10/2026 */
+export const ATVO_FARES = { line35: 12 } as const;
+export const ATVO_FARES_CHECKED_AT = '2026-10-19';
+
+/**
+ * Operatori con prezzo variabile (treni, FlixBus, Dolomiti Bus su prenotazione, ATVO 35B, Busitalia): il prezzo
+ * dipende da data, ora, posti o tratta e non è pubblicato come tariffa fissa. Non si stima: si rimanda all'acquisto.
+ */
+export const BOOKING_URLS = {
+  Trenitalia: 'https://www.trenitalia.com/it.html',
+  Italo: 'https://www.italotreno.com/it',
+  FlixBus: 'https://www.flixbus.it/',
+  'Dolomiti Bus': 'https://www.cortinaexpress.it/',
+  ATVO: 'https://www.atvo.it/it-biglietti.html',
+  'Busitalia Veneto': 'https://www.fsbusitalia.it/it/veneto.html',
+} as const;
+export type VariableOperator = keyof typeof BOOKING_URLS;
+
 /** Validità del biglietto ACTV a tempo */
 export const ACTV_TICKET_S = 75 * 60;
 
-export type TicketKind = 'reteUnica' | 'bus' | 'aerobus' | 'veneziaUnica' | 'pass' | 'alilaguna';
+export type TicketKind = 'reteUnica' | 'bus' | 'aerobus' | 'veneziaUnica' | 'pass' | 'alilaguna' | 'atvo';
 
 export interface FareTicket {
   kind: TicketKind;
@@ -53,6 +71,8 @@ export interface TripCost {
   tickets: FareTicket[];
   /** linee senza tariffa stimata (extraurbane): il totale le esclude */
   unpriced: string[];
+  /** tratte con prezzo variabile (treni, FlixBus…): il totale le esclude, si rimanda all'acquisto */
+  variable: { operator: VariableOperator; line: string; url: string }[];
 }
 
 type Ride = Extract<Leg, { kind: 'ride' }>;
@@ -78,12 +98,22 @@ function alilagunaPrice(r: Ride, profile: FareProfile): number {
 export function tripCost(it: Pick<Itinerary, 'legs'>, profile: FareProfile): TripCost {
   const tickets: FareTicket[] = [];
   const unpriced: string[] = [];
+  const variable: TripCost['variable'] = [];
   /** biglietto ACTV a tempo in uso: inizio della validità e indice in `tickets` */
   let open: { from: number; index: number } | null = null;
   it.legs.forEach((leg, i) => {
     if (leg.kind !== 'ride') return;
     if (leg.operator === 'alilaguna') {
       tickets.push({ kind: 'alilaguna', price: alilagunaPrice(leg, profile), legs: [i] });
+      return;
+    }
+    if (leg.operator === 'ATVO' && /\b35\b/.test(leg.line)) {
+      tickets.push({ kind: 'atvo', price: ATVO_FARES.line35, legs: [i] });
+      return;
+    }
+    if (leg.operator && leg.operator in BOOKING_URLS) {
+      const operator = leg.operator as VariableOperator;
+      variable.push({ operator, line: leg.line, url: BOOKING_URLS[operator] });
       return;
     }
     if (isExtraurbanLine(leg.line)) {
@@ -115,7 +145,7 @@ export function tripCost(it: Pick<Itinerary, 'legs'>, profile: FareProfile): Tri
     open = { from: leg.start, index: tickets.length - 1 };
   });
   const total = Math.round(tickets.reduce((s, t) => s + t.price, 0) * 100) / 100;
-  return { profile, total, tickets, unpriced };
+  return { profile, total, tickets, unpriced, variable };
 }
 
 /** Importo in euro con due decimali */

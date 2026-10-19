@@ -3,6 +3,9 @@ import { serverSimulation } from '@/server/sources/simulationServer';
 import { ACTV_STOPS_REFERENCE } from '@/lib/stopsReference';
 import { planTrip, type Itinerary, type Leg, type PlanMode } from '@/lib/tripPlanner';
 import { FIRST_SERVICE_FROM_S, isAirport, planAirportOrTomorrow } from '@/lib/airportPlanner';
+import { isMestreStation, planMestre } from '@/lib/mestrePlanner';
+import { setTrainSchedule, type TrainScheduleData } from '@/lib/trainSimulation';
+import trainsJson from '@/data/trains-venezia.json';
 import { planBoat, ASSUMED_KMH } from '@/lib/boatRouting';
 import { nextScheduledDeparture, scheduledDepartures } from '@/lib/scheduledDepartures';
 import { alilagunaTripsOn, ALILAGUNA_STOPS } from '@/lib/alilaguna-schedule';
@@ -16,6 +19,10 @@ import { hhmm, serverBoatGraph, serverWalkGraph, SOURCES, tideToday, tripContext
 import { tripCost, boatFuelCost, type FareProfile, type TicketKind } from '@/lib/fares';
 import { fuelStations } from '@/server/sources/mimitFuel';
 import { fuelSummary } from '@/lib/fuel';
+import { calculateItineraryEmissions, fossilScore } from '@/lib/mobilityEmissions';
+
+// orario dei treni Santa Lucia - Mestre per il planner lato server (nel browser si carica a richiesta)
+setTrainSchedule(trainsJson as unknown as TrainScheduleData);
 
 export type ServiceResult = { ok: true; body: Record<string, unknown> } | { ok: false; status: number; error: string; message: string };
 
@@ -29,7 +36,7 @@ function legOut(l: Leg) {
   if (l.kind === 'boat') return { type: 'barca_privata', from: l.from, to: l.to, start: hhmm(l.start), end: hhmm(l.end), minutes: minutes(l.seconds), meters: Math.round(l.meters) };
   return {
     type: 'mezzo',
-    operator: l.operator === 'alilaguna' ? 'Alilaguna' : 'ACTV',
+    operator: l.operator === 'alilaguna' ? 'Alilaguna' : (l.operator ?? (l.category === 'train' ? 'Ferrovia RFI' : 'ACTV')),
     line: l.line,
     category: l.category,
     direction: l.headsign,
@@ -48,6 +55,7 @@ const TICKET_NAMES: Record<TicketKind, string> = {
   veneziaUnica: 'biglietto rete unica 75 minuti con tessera Venezia Unica',
   pass: 'corsa compresa nell\'abbonamento ACTV',
   alilaguna: 'biglietto Alilaguna',
+  atvo: 'biglietto ATVO 35 Venezia Express (Piazzale Roma - aeroporto)',
 };
 
 /** Costo stimato dell'itinerario per il tipo di biglietto indicato */
@@ -58,20 +66,58 @@ function costOut(it: Itinerary, profile: FareProfile) {
     estimatedEur: c.total,
     tickets: c.tickets.map((tk) => ({ ticket: TICKET_NAMES[tk.kind], eur: tk.price })),
     ...(c.unpriced.length ? { unpricedLines: c.unpriced, warning: 'Linee extraurbane: tariffa a fasce non calcolata, il costo reale è più alto.' } : {}),
+    ...(c.variable.length
+      ? { variablePrice: c.variable.map((v) => ({ operator: v.operator, line: v.line, buyAt: v.url })), variableNote: 'Prezzo variabile (data, ora, posti): non stimato, vedi il sito per l\'acquisto.' }
+      : {}),
   };
 }
 
 function itineraryOut(it: Itinerary, profile: FareProfile = 'ordinary') {
   const rides = it.legs.filter((l) => l.kind === 'ride');
+  // tempo per alimentazione dei mezzi (dall'orario): nessuna stima di CO2, mancano fattori ufficiali per le barche
+  const e = calculateItineraryEmissions(it);
+  const emissions = {
+    walkMinutes: Math.round(e.walkSeconds / 60),
+    electricMinutes: Math.round(e.electricSeconds / 60),
+    fossilMinutes: Math.round(e.fossilSeconds / 60),
+    unknownPropulsionMinutes: Math.round(e.unknownSeconds / 60),
+    zeroTailpipe: e.isZeroEmission,
+  };
+
   return {
     depart: hhmm(it.depart),
     arrive: hhmm(it.arrive),
     minutes: minutes(it.arrive - it.depart),
     vehicles: it.rides,
     changes: Math.max(0, it.rides - 1),
-    lines: rides.map((l) => (l.kind === 'ride' ? `${l.operator === 'alilaguna' ? 'Alilaguna ' : ''}${l.line}` : '')),
+    lines: rides.map((l) => (l.kind === 'ride' ? `${l.operator && l.operator !== 'ACTV' ? `${l.operator} ` : ''}${l.line}` : '')),
     walkMeters: Math.round(it.walkMeters),
-    ...(it.via ? { option: it.via === 'alilaguna' ? 'Alilaguna via acqua' : it.via === 'actv' ? 'ACTV con il bus 5 da Piazzale Roma' : 'altri mezzi' } : {}),
+    emissions,
+    ...(it.via
+      ? {
+          option:
+            it.via === 'alilaguna'
+              ? 'Alilaguna via acqua'
+              : it.via === 'actv'
+                ? 'ACTV con il bus da Piazzale Roma'
+                : it.via === 'atvo'
+                  ? 'ATVO Express'
+                  : it.via === 'dolomitibus'
+                    ? 'Dolomiti Bus Linea 72 Cortina Express'
+                    : it.via === 'flixbus'
+                      ? 'FlixBus'
+                      : it.via === 'treno_regionale'
+                        ? 'Regionale Trenitalia da Santa Lucia'
+                        : it.via === 'treno_av'
+                          ? 'Frecciarossa / Italo Alta Velocità'
+                          : it.via === 'bus_actv'
+                            ? 'Bus ACTV Linea 2 da Piazzale Roma'
+                            : it.via === 'busitalia'
+                              ? 'Busitalia Veneto da Piazzale Roma'
+                              : 'altri mezzi',
+        }
+      : {}),
+    ...(it.note ? { note: it.note } : {}),
     ...(it.wetMeters >= 10 ? { wetMeters: Math.round(it.wetMeters), maxDepthCm: it.maxDepthCm } : {}),
     ...(it.hurry
       ? {
@@ -107,11 +153,37 @@ const FARE_PROFILE_NAMES: Record<FareProfile, string> = { ordinary: 'biglietto o
 /** Opzione più economica fra quelle proposte (indice in itineraries), se costa meno delle altre */
 function cheapestOut(its: Itinerary[], profile: FareProfile) {
   const costs = its.map((it) => tripCost(it, profile));
-  const priced = costs.map((c, i) => ({ c, i })).filter((x) => x.c.unpriced.length === 0);
+  const priced = costs.map((c, i) => ({ c, i })).filter((x) => x.c.unpriced.length === 0 && x.c.variable.length === 0);
   if (priced.length < 2) return {};
   const min = Math.min(...priced.map((x) => x.c.total));
   if (priced.every((x) => x.c.total === min)) return {};
   return { cheapestItinerary: priced.find((x) => x.c.total === min)!.i };
+}
+
+/** Opzione più ecologica fra quelle proposte (indice in itineraries): meno tempo su mezzi a motore termico */
+function greenestOut(its: Itinerary[]) {
+  if (its.length < 2) return {};
+  const emissions = its.map((it, i) => ({ g: fossilScore(calculateItineraryEmissions(it)), i }));
+  const min = Math.min(...emissions.map((x) => x.g));
+  if (emissions.every((x) => x.g === min)) return {};
+  return { greenestItinerary: emissions.find((x) => x.g === min)!.i };
+}
+
+function sortItineraries(list: Itinerary[], mode: PlanMode, profile: FareProfile): Itinerary[] {
+  return list.slice().sort((a, b) => {
+    if (mode === 'eco') {
+      const emA = fossilScore(calculateItineraryEmissions(a));
+      const emB = fossilScore(calculateItineraryEmissions(b));
+      if (emA !== emB) return emA - emB;
+      return a.arrive - b.arrive;
+    }
+    // più veloce: prima chi arriva prima (l'opzione più economica è indicata a parte)
+    if (a.arrive !== b.arrive) return a.arrive - b.arrive;
+    const costA = tripCost(a, profile).total;
+    const costB = tripCost(b, profile).total;
+    if (costA !== costB) return costA - costB;
+    return a.depart - b.depart;
+  });
 }
 
 /** Barca privata: carburante stimato dal consumo indicato e dal prezzo mediano della benzina (MIMIT) */
@@ -140,8 +212,12 @@ async function boatFuelOut(seconds: number, litresPerHour: number | null) {
 function itinerarySources(its: Itinerary[], tideUsed: boolean): SourceRef[] {
   const out: SourceRef[] = [SOURCES.osm];
   const legs = its.flatMap((i) => i.legs);
-  if (legs.some((l) => l.kind === 'ride' && l.operator !== 'alilaguna')) out.push(SOURCES.actv);
+  if (legs.some((l) => l.kind === 'ride' && (l.operator === 'ACTV' || !l.operator || l.operator === 'actv'))) out.push(SOURCES.actv);
   if (legs.some((l) => l.kind === 'ride' && l.operator === 'alilaguna')) out.push(SOURCES.alilaguna);
+  if (legs.some((l) => l.kind === 'ride' && (l.operator === 'Trenitalia' || l.operator === 'Italo' || l.operator === 'Busitalia Veneto'))) out.push(SOURCES.busone);
+  if (legs.some((l) => l.kind === 'ride' && l.operator === 'ATVO')) out.push(SOURCES.atvo);
+  if (legs.some((l) => l.kind === 'ride' && l.operator === 'Dolomiti Bus')) out.push(SOURCES.dolomitibus);
+  if (legs.some((l) => l.kind === 'ride' && l.operator === 'FlixBus')) out.push(SOURCES.flixbus);
   if (legs.some((l) => l.kind === 'ride')) out.push(SOURCES.actvFares, SOURCES.alilagunaFares);
   if (tideUsed) out.push(SOURCES.cpsm, SOURCES.passerelle);
   out.push(SOURCES.vod);
@@ -153,7 +229,7 @@ export interface PlanInput {
   to: string;
   date?: string | null;
   time?: string | null;
-  mode?: 'fastest' | 'walk' | 'water' | 'private';
+  mode?: 'fastest' | 'eco' | 'walk' | 'water' | 'private';
   resident?: boolean;
   /** livello di marea da simulare (cm): sostituisce misura e previsione */
   tideCm?: number | null;
@@ -171,7 +247,7 @@ export async function planTripService(input: PlanInput): Promise<ServiceResult> 
   if (!to) return fail(404, 'place_not_found', `Luogo di arrivo non trovato: «${input.to}».`);
   const ctx = tripContext(input.date, input.time);
   if ('error' in ctx) return fail(400, 'invalid_time', ctx.error);
-  const mode: PlanMode = input.mode === 'walk' ? 'walk' : input.mode === 'water' ? 'boat' : input.mode === 'private' ? 'private' : 'fastest';
+  const mode: PlanMode = input.mode === 'eco' ? 'eco' : input.mode === 'walk' ? 'walk' : input.mode === 'water' ? 'boat' : input.mode === 'private' ? 'private' : 'fastest';
 
   const caveat =
     'Orari teorici degli orari ufficiali, senza ritardi, affollamento né variazioni del servizio; biglietti ACTV e Alilaguna separati. Verifica sempre sul posto.';
@@ -226,7 +302,7 @@ export async function planTripService(input: PlanInput): Promise<ServiceResult> 
   const today = tripContext() as TripContext;
   const tide = input.tideCm == null && ctx.dateLabel === today.dateLabel ? await tideToday() : null;
   const tideAt = input.tideCm != null ? () => input.tideCm as number : tide?.at;
-  const options = { mode, tideAt, passerelle: PASSERELLE_ROUTES, nextDay: ctx.nextDay, hurry: ctx.isNow, date: ctx.date };
+  const options = { mode, tideAt, passerelle: PASSERELLE_ROUTES, nextDay: ctx.nextDay, hurry: ctx.isNow, date: ctx.date, includeCoaches: true };
 
   const fare = input.fare ?? 'ordinary';
   const base = { from: placeOut(from), to: placeOut(to), date: ctx.dateLabel, time: ctx.timeLabel, mode: input.mode ?? 'fastest', caveat, vodUrl: plannerUrl(from, to, ctx, mode) };
@@ -234,17 +310,43 @@ export async function planTripService(input: PlanInput): Promise<ServiceResult> 
   // Aeroporto: Alilaguna, ACTV con il bus 5, altri mezzi; di notte le prime soluzioni di domani
   if (mode !== 'walk' && isAirport(from) !== isAirport(to)) {
     const r = planAirportOrTomorrow(graph, sim.model, ACTV_STOPS_REFERENCE, from, to, ctx.seconds, ctx.day, { day: ctx.nextDay, date: ctx.nextDate }, options);
+    const sortedOptions = sortItineraries(r.options, mode, fare);
     return {
       ok: true,
       body: {
         ...base,
-        found: r.options.length > 0,
+        found: sortedOptions.length > 0,
         tomorrowMorning: r.tomorrow,
         ...(r.tomorrow && r.lastBus !== null ? { note: `L'ultimo bus 5 della serata parte alle ${hhmm(r.lastBus)}, ma da questo punto non si arriva in tempo: soluzioni di domani mattina.` } : {}),
-        itineraries: r.options.map((o) => itineraryOut(o, fare)),
+        itineraries: sortedOptions.map((o) => itineraryOut(o, fare)),
         ...(r.ifLate ? { ifYouMissIt: { tomorrowMorning: r.ifLateTomorrow, ...itineraryOut(r.ifLate, fare) } } : {}),
-        ...cheapestOut(r.options, fare),
-        sources: itinerarySources(r.options, !!tideAt),
+        ...cheapestOut(sortedOptions, fare),
+        ...greenestOut(sortedOptions),
+        sources: itinerarySources(sortedOptions, !!tideAt),
+      },
+    };
+  }
+
+  // Mestre Stazione: treni RFI/Trenitalia/Italo, bus ACTV Linea 2, Busitalia Veneto, Dolomiti Bus, Flixbus
+  if (mode !== 'walk' && isMestreStation(from) !== isMestreStation(to)) {
+    const its = planMestre(graph, sim.model, ACTV_STOPS_REFERENCE, from, to, ctx.seconds, ctx.day, options);
+    let tomorrow = false;
+    let results = its;
+    if (results.length === 0) {
+      results = planMestre(graph, sim.model, ACTV_STOPS_REFERENCE, from, to, FIRST_SERVICE_FROM_S, ctx.nextDay, { ...options, date: ctx.nextDate });
+      tomorrow = results.length > 0;
+    }
+    const sortedResults = sortItineraries(results, mode, fare);
+    return {
+      ok: true,
+      body: {
+        ...base,
+        found: sortedResults.length > 0,
+        tomorrowMorning: tomorrow,
+        itineraries: sortedResults.map((o) => itineraryOut(o, fare)),
+        ...cheapestOut(sortedResults, fare),
+        ...greenestOut(sortedResults),
+        sources: itinerarySources(sortedResults, !!tideAt),
       },
     };
   }
@@ -270,21 +372,23 @@ export async function planTripService(input: PlanInput): Promise<ServiceResult> 
       },
     };
   }
-  const alternatives = plan.alternatives && plan.alternatives.length > 0 ? plan.alternatives : [plan.best];
+  const rawAlternatives = plan.alternatives && plan.alternatives.length > 0 ? plan.alternatives : [plan.best];
+  const sortedAlternatives = sortItineraries(rawAlternatives, mode, fare);
   return {
     ok: true,
     body: {
       ...base,
       found: true,
       tomorrowMorning: tomorrow,
-      itineraries: alternatives.map((o) => itineraryOut(o, fare)),
-      ...cheapestOut(alternatives, fare),
+      itineraries: sortedAlternatives.map((o) => itineraryOut(o, fare)),
+      ...cheapestOut(sortedAlternatives, fare),
+      ...greenestOut(sortedAlternatives),
       ...(plan.walkOnly && plan.best.rides > 0 ? { walkOnly: { minutes: minutes(plan.walkOnly.arrive - plan.walkOnly.depart), meters: Math.round(plan.walkOnly.walkMeters), estimatedEur: 0 } } : {}),
       ...(plan.ifLate ? { ifYouMissIt: itineraryOut(plan.ifLate, fare) } : {}),
       ...(plan.floodLevelCm != null
         ? { highWater: { levelCm: plan.floodLevelCm, note: 'Percorso scelto per restare il più possibile all\'asciutto: quote delle calli stimate, tracciati delle passerelle indicativi.' } }
         : {}),
-      sources: itinerarySources(alternatives, plan.floodLevelCm != null),
+      sources: itinerarySources(sortedAlternatives, plan.floodLevelCm != null),
     },
   };
 }

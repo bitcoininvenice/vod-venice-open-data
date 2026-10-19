@@ -8,6 +8,9 @@ describe('luoghi riconosciuti dagli strumenti di calcolo', () => {
     expect(resolvePlace('40.0,12.3')).toBeNull(); // fuori area
     expect(resolvePlace('marco polo')?.kind).toBe('airport');
     expect(resolvePlace('VCE')?.kind).toBe('airport');
+    expect(resolvePlace('mestre')?.kind).toBe('station');
+    expect(resolvePlace('Mestre Stazione')?.kind).toBe('station');
+    expect(resolvePlace('stazione di mestre')?.kind).toBe('station');
     const civic = resolvePlace('CN 3450');
     expect(civic?.kind).toBe('civic');
     expect(civic?.label).toMatch(/^Cannaregio 3450/);

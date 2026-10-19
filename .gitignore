@@ -148,3 +148,7 @@ Desktop.ini
 *.swo
 *~
 
+
+# file grezzi scaricati a mano (BDSR del Ministero del Turismo, esportazioni GeoIDS): fuori dal repository
+data/bdsr/
+data/geoportale/

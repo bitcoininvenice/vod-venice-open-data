@@ -8,6 +8,7 @@ export const enTranslations: Translations = {
     coordinates: 'Coordinates',
     meters: 'm',
     knots: 'kt',
+    refresh: 'Refresh',
   },
   header: {
     title: 'Venice Open Data',
@@ -109,12 +110,17 @@ export const enTranslations: Translations = {
     layerPharmacies: 'Pharmacies',
     layerHeatIslands: 'Satellite Urban Heat Islands (LST)',
     layerLagoonWater: 'ARPAV Lagoon Water Quality Probes',
-    layerAccommodations: 'Tourism Pressure & Accommodations',
+    layerRegisteredStays: 'Registered accommodation (City of Venice, GeoIDS)',
+    layerStreetPhotos: 'Street-level photos (Mapillary)',
+    layerAccommodations: 'B&B & Short-Term Rentals (Inside Airbnb)',
+    layerTourismPressure: 'Tourism & Housing Pressure',
     layerBikeRoutes: 'Lagoon Island Cycle Paths',
     layerPollenStations: 'ARPAV Airborne Pollen Monitoring',
     layerTributaries: 'Lagoon Tributary Rivers',
     layerSatellites: 'Copernicus & ASI Satellite Orbits',
-    layerCameras: 'Cameras & Webcams (Live + CCTV)'
+    layerCameras: 'Cameras & Webcams (Live + CCTV)',
+    layerPublicLighting: 'Public Street Lighting & Lanterns',
+    layerSevesoPlants: 'Major Accident Hazard Plants (Seveso III / ARPAV)'
   },
   tutorial: {
     step1Badge: 'WELCOME',

@@ -4,8 +4,8 @@ import type { FareProfile } from '@/lib/fares';
 
 export const dynamic = 'force-dynamic';
 
-const MODES: Record<string, 'fastest' | 'walk' | 'water' | 'private'> = {
-  piu_veloce: 'fastest', fastest: 'fastest', a_piedi: 'walk', walk: 'walk', via_acqua: 'water', water: 'water', barca: 'private', private: 'private',
+const MODES: Record<string, 'fastest' | 'eco' | 'walk' | 'water' | 'private'> = {
+  piu_veloce: 'fastest', fastest: 'fastest', piu_ecologico: 'eco', eco: 'eco', ecologico: 'eco', a_piedi: 'walk', walk: 'walk', via_acqua: 'water', water: 'water', barca: 'private', private: 'private',
 };
 
 const FARES: Record<string, FareProfile> = {

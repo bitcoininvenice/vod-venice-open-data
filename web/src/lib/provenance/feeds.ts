@@ -77,8 +77,17 @@ export const FEEDS = {
   'cruscotto-italia': { label: 'Profilo dei comuni da Cruscotto Italia (pipeline)', providers: ['cruscotto'], format: 'MCP (comune_kpi)', refresh: 'weekly', hasNote: true },
   'bdap-mop': { label: 'Opere pubbliche del Comune dal monitoraggio BDAP (pipeline)', providers: ['bdap'], format: 'CSV (CKAN)', refresh: 'weekly', hasNote: true },
   'agcom-fiber': { label: 'Copertura rete fissa AGCOM (pipeline)', providers: ['agcom'], format: 'ArcGIS REST (griglia 20 m)', refresh: 'weekly', hasNote: true },
+  'inside-airbnb': { label: 'Locazioni brevi Inside Airbnb e abitazioni ISTAT (pipeline)', providers: ['insideAirbnb', 'istat'], format: 'CSV', refresh: 'weekly', hasNote: true },
   'mimit-carburanti': { label: 'Prezzi dei carburanti MIMIT (prezzi alle 8)', providers: ['mimitFuel'], format: 'CSV', refresh: 'r6h', hasNote: true },
   'alilaguna-gtfs': { label: 'Orario Alilaguna GTFS (pipeline)', providers: ['alilaguna'], format: 'GTFS', refresh: 'weekly', hasNote: true },
+  'busone-trains': { label: 'Treni in tempo reale (BusOne)', providers: ['busone'], format: 'GTFS-RT', refresh: 'r20s', hasNote: true },
+  'trains-timetable': { label: 'Orario dei treni Santa Lucia - Mestre (GTFS BusOne, pipeline)', providers: ['busone'], format: 'GTFS', refresh: 'weekly', hasNote: true },
+  'atvo-pdf': { label: 'Orari ATVO 35 e 35B (PDF, pipeline)', providers: ['atvo'], format: 'PDF', refresh: 'weekly', hasNote: true },
+  'dolomitibus-pdf': { label: 'Orario Dolomiti Bus linea 72 (PDF, pipeline)', providers: ['dolomitibus'], format: 'PDF', refresh: 'weekly', hasNote: true },
+  'osm-luggage': { label: 'Depositi bagagli OpenStreetMap (pipeline)', providers: ['osm'], format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
+  'osm-street-lamps': { label: 'Lampioni OpenStreetMap (pipeline)', providers: ['osm'], format: 'Overpass JSON', refresh: 'weekly', hasNote: true },
+  mapillary: { label: 'Foto a livello strada Mapillary (API, solo posizioni)', providers: ['mapillary'], format: 'Graph API JSON', refresh: 'weekly', hasNote: true },
+  'geoids-strutture': { label: 'Strutture ricettive registrate GeoIDS (esportazione CSV)', providers: ['geoids'], format: 'CSV', refresh: 'census', hasNote: true },
 } as const satisfies Record<string, Feed>;
 
 export type FeedId = keyof typeof FEEDS;

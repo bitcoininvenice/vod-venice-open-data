@@ -45,7 +45,16 @@ export const FareProfilePicker: React.FC<{ profile: FareProfile; onChange: (p: F
 export function useCostLabel(): (c: TripCost) => string {
   const { t, language } = useTranslation();
   const locale = language === 'it' ? 'it-IT' : 'en-GB';
-  return (c) => (c.unpriced.length > 0 ? t('ui.fares.partialShort', { eur: formatEuro(c.total, locale) }) : c.total === 0 ? t('ui.fares.free') : `≈ ${formatEuro(c.total, locale)}`);
+  return (c) =>
+    c.unpriced.length > 0
+      ? t('ui.fares.partialShort', { eur: formatEuro(c.total, locale) })
+      : c.variable.length > 0
+        ? c.total > 0
+          ? t('ui.fares.plusVariable', { eur: formatEuro(c.total, locale) })
+          : t('ui.fares.variableShort')
+        : c.total === 0
+          ? t('ui.fares.free')
+          : `≈ ${formatEuro(c.total, locale)}`;
 }
 
 /** Biglietti stimati del percorso scelto, con la fonte delle tariffe */
@@ -70,6 +79,14 @@ export const TripCostSummary: React.FC<{ cost: TripCost }> = ({ cost }) => {
         </ul>
       )}
       {cost.unpriced.length > 0 && <span className="text-amber-400">{t('ui.fares.unpriced', { lines: cost.unpriced.join(', ') })}</span>}
+      {cost.variable.map((v, i) => (
+        <span key={i} className="text-amber-300" data-testid="planner-cost-variable">
+          {t('ui.fares.variable', { line: v.line })}{' '}
+          <a href={v.url} target="_blank" rel="noopener noreferrer" className="underline">
+            {t('ui.fares.buyAt', { operator: v.operator })}
+          </a>
+        </span>
+      ))}
       <span className="text-[10px] text-[var(--ink-3)]">
         {t('ui.fares.note', { date })}{' '}
         <a href={PROVIDERS.actvFares.url} target="_blank" rel="noopener noreferrer" className="underline">ACTV</a>

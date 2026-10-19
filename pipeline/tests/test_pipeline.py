@@ -26,6 +26,9 @@ import import_cruscotto_italia as cruscotto  # noqa: E402
 import import_bdap_opere as bdap  # noqa: E402
 import import_osm_curiosita as curiosita  # noqa: E402
 import import_osm_fuel as osm_fuel  # noqa: E402
+import import_inside_airbnb as airbnb  # noqa: E402
+import import_bdsr_cin as bdsr  # noqa: E402
+import import_mimit_fuel as mimit_fuel  # noqa: E402
 from download_gtfs import safe_extract  # noqa: E402
 
 
@@ -937,3 +940,129 @@ def test_distributori_osm_senza_gestore_e_con_carburanti():
         assert "incompleta" in str(e)
     else:
         raise AssertionError("una risposta incompleta deve essere rifiutata")
+
+
+def test_inside_airbnb_anonymization_and_aggregation():
+    raw = {
+        "id": "999",
+        "name": "Appartamento Mario Rossi",
+        "host_id": "12345",
+        "host_profile_id": "88888",
+        "host_name": "Mario Rossi",
+        "neighbourhood_group": "Isole",
+        "neighbourhood": "San Marco",
+        "latitude": "45.4344",
+        "longitude": "12.3375",
+        "room_type": "Entire home/apt",
+        "price": "280",
+        "minimum_nights": "2",
+        "number_of_reviews": "40",
+        "last_review": "2026-09-01",
+        "reviews_per_month": "1.2",
+        "calculated_host_listings_count": "6",
+        "availability_365": "240",
+        "number_of_reviews_ltm": "12",
+        "license": "IT027042C2ABCDEFGH",
+    }
+    clean = airbnb.anonymize_row(raw)
+    assert clean is not None
+    serialized = json.dumps(clean)
+    assert "Mario Rossi" not in serialized
+    assert "12345" not in serialized
+    assert "IT027042C2ABCDEFGH" not in serialized
+    assert clean["has_license"] is True
+    assert clean["is_cin"] is True
+    assert clean["host_count"] == 6
+    assert clean["price"] == 280.0
+
+    # Coordinate fuori Venezia scartate
+    out_of_bounds = dict(raw, latitude="41.90", longitude="12.50")
+    assert airbnb.anonymize_row(out_of_bounds) is None
+
+    # Aggregazione statistiche e celle 100 m
+    stats = airbnb.summarize_listings([clean], census_pop=4000, census_dwellings=4000, census_empty=2000)
+    assert stats["totalStructures"] == 1
+    assert stats["entireHomeApt"] == 1
+    assert stats["multiHostListings"] == 1
+    assert stats["commercial5PlusListings"] == 1
+    assert stats["medianPriceEur"] == 280
+    cells = airbnb.aggregate_cells([clean])
+    assert len(cells) == 1
+    assert cells[0][2:] == [1, 1, 1, 280]
+
+
+def test_bdsr_data_processing():
+    sample_rows = [
+        {
+            "Comune": "Venezia",
+            "Provincia": "VENEZIA",
+            "Codice ISTAT Comune": "027042",
+            "Codice Macrocategoria ISTAT": "A",
+            "Macrocategoria ISTAT": "Esercizi alberghieri",
+            "Codice Categoria ISTAT": "A10",
+            "Categoria ISTAT": "Alberghi",
+            "Codice Sottocategoria ISTAT": "A104",
+            "Sottocategoria ISTAT": "Alberghi a 4 stelle",
+            "Totale strutture": "150",
+            "Totale strutture con CIN verificato": "145",
+            "Totale strutture con CIN non verificato": "1",
+            "Totale strutture senza CIN": "4",
+        },
+        {
+            "Comune": "Venezia",
+            "Provincia": "VENEZIA",
+            "Codice ISTAT Comune": "027042",
+            "Codice Macrocategoria ISTAT": "C",
+            "Macrocategoria ISTAT": "Alloggi privati in affitto",
+            "Codice Categoria ISTAT": "C20",
+            "Categoria ISTAT": "Locazioni turistiche",
+            "Codice Sottocategoria ISTAT": "C204",
+            "Sottocategoria ISTAT": "Locazioni turistiche",
+            "Totale strutture": "5000",
+            "Totale strutture con CIN verificato": "4800",
+            "Totale strutture con CIN non verificato": "0",
+            "Totale strutture senza CIN": "200",
+        },
+        {
+            "Comune": "Jesolo",
+            "Provincia": "VENEZIA",
+            "Codice ISTAT Comune": "027019",
+            "Codice Macrocategoria ISTAT": "A",
+            "Macrocategoria ISTAT": "Esercizi alberghieri",
+            "Codice Categoria ISTAT": "A10",
+            "Categoria ISTAT": "Alberghi",
+            "Codice Sottocategoria ISTAT": "A103",
+            "Sottocategoria ISTAT": "Alberghi a 3 stelle",
+            "Totale strutture": "300",
+            "Totale strutture con CIN verificato": "290",
+            "Totale strutture con CIN non verificato": "0",
+            "Totale strutture senza CIN": "10",
+        },
+    ]
+    res = bdsr.process_bdsr_rows(sample_rows, "17/10/2026")
+    ve = res["veneziaMunicipality"]
+    # regione e province calcolate dal CSV, non scritte a mano
+    assert res["venetoRegion"]["totalStructures"] == sum(int(r["Totale strutture"]) for r in sample_rows)
+    assert res["metadata"]["snapshotDate"] == "17/10/2026"
+    assert ve["totalStructures"] == 5150
+    assert ve["cinVerified"] == 4945
+    assert ve["cinMissing"] == 204
+    assert ve["pctCinVerified"] == round(4945 / 5150 * 100, 2)
+    assert len(res["metropolitanMunicipalities"]) == 2
+    assert res["metropolitanMunicipalities"][0]["name"] == "Venezia"
+    assert res["metropolitanMunicipalities"][1]["name"] == "Jesolo"
+
+
+def test_mimit_fuel_parse_csv_rows_and_date():
+    csv_text = "Estrazione del 2026-10-16\nidImpianto|descCarburante|prezzo|isSelf|dtComu\n1001|Benzina|1.759|1|16/10/2026 07:30:00\n1002|Gasolio|1.649|0|16/10/2026 07:35:00\n"
+    rows = mimit_fuel.rows(csv_text)
+    ext_date = mimit_fuel.extraction_date(csv_text)
+    assert ext_date == "2026-10-16"
+    assert len(rows) == 2
+    assert rows[0]["idImpianto"] == "1001"
+    assert rows[0]["descCarburante"] == "Benzina"
+    assert rows[1]["descCarburante"] == "Gasolio"
+    assert mimit_fuel.communicated_at("16/10/2026 07:30:00") == "2026-10-16T05:30:00.000Z"
+    assert mimit_fuel.clean_address("Via Torino 105   30172") == "Via Torino 105"
+
+

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { CheckCircle2, Compass, Layers, Pause, Play, Waves } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { formatSignedCm } from '@/lib/time';
@@ -8,6 +8,7 @@ import { getFloodedGroundPercentage } from '@/lib/flood';
 import { resolveTideState } from '@/lib/tideCurve';
 import { isPasserellaExpected } from '@/lib/passerelle';
 import { MOSE_GATES } from '@/lib/moseGates';
+import { CPSM_HISTORICAL_EXCEPTIONAL_TIDES, HISTORICAL_TIDES_SOURCE_URL } from '@/lib/historicalTides';
 import type { PasserellaItem } from '@/lib/types';
 
 interface SimulatorTabProps {
@@ -55,7 +56,8 @@ export const SimulatorTab: React.FC<SimulatorTabProps> = ({
   onToggleMoseProtection,
   onActivatePasserelle,
 }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   // Stesso modello usato dalla mappa: con il MOSE alzato il livello in città resta sotto +80 cm
   const state = resolveTideState({ simulatedTideLevel: simulatedCm, isMoseProtected });
   const cityCm = state.lagoonTideCm ?? simulatedCm;
@@ -64,6 +66,11 @@ export const SimulatorTab: React.FC<SimulatorTabProps> = ({
   const routes = [...passerelle]
     .sort((a, b) => a.activationThresholdCm - b.activationThresholdCm)
     .map((p) => ({ id: p.id, threshold: p.activationThresholdCm, name: p.name, active: isPasserellaExpected(p, cityCm) }));
+
+  const activeHistoricalEvent =
+    CPSM_HISTORICAL_EXCEPTIONAL_TIDES.find((e) => e.id === selectedEventId && e.peakCm === simulatedCm) ??
+    CPSM_HISTORICAL_EXCEPTIONAL_TIDES.find((e) => e.peakCm === simulatedCm) ??
+    null;
 
   const presets = [
     { cm: 65, label: t('ui.floodModal.presetNormal') },
@@ -139,7 +146,10 @@ export const SimulatorTab: React.FC<SimulatorTabProps> = ({
             max="200"
             step="1"
             value={simulatedCm}
-            onChange={(e) => onLevelChange(Number(e.target.value))}
+            onChange={(e) => {
+              setSelectedEventId(null);
+              onLevelChange(Number(e.target.value));
+            }}
             aria-label={t('ui.floodModal.simulatedTide')}
             className="w-full h-2 bg-[var(--rule)] rounded-lg appearance-none cursor-pointer accent-blue-500"
           />
@@ -157,7 +167,10 @@ export const SimulatorTab: React.FC<SimulatorTabProps> = ({
               <button
                 key={sc.cm}
                 type="button"
-                onClick={() => onLevelChange(sc.cm)}
+                onClick={() => {
+                  setSelectedEventId(null);
+                  onLevelChange(sc.cm);
+                }}
                 className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-all cursor-pointer ${
                   simulatedCm === sc.cm
                     ? 'bg-blue-500 text-white border-blue-400 font-bold shadow-sm'
@@ -167,6 +180,48 @@ export const SimulatorTab: React.FC<SimulatorTabProps> = ({
                 {sc.label}
               </button>
             ))}
+          </div>
+
+          {/* Serie storica ufficiale CPSM delle Acque Alte Eccezionali (>= +140 cm, 1936-oggi) */}
+          <div className="pt-2 border-t border-[var(--rule)] flex flex-col gap-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <span className="text-[10px] font-mono uppercase text-[var(--ink-3)] font-semibold">
+                {t('ui.floodModal.historicalSeriesLabel')}
+              </span>
+              <select
+                value={activeHistoricalEvent?.id ?? ''}
+                onChange={(e) => {
+                  const ev = CPSM_HISTORICAL_EXCEPTIONAL_TIDES.find((x) => x.id === e.target.value);
+                  if (ev) {
+                    setSelectedEventId(ev.id);
+                    onLevelChange(ev.peakCm);
+                  }
+                }}
+                aria-label={t('ui.floodModal.historicalSeriesLabel')}
+                className="px-2.5 py-1 rounded-lg bg-[var(--bg-elev)] border border-[var(--rule)] text-xs font-mono text-[var(--ink)] cursor-pointer"
+              >
+                <option value="">{t('ui.floodModal.historicalSelectPlaceholder')}</option>
+                {CPSM_HISTORICAL_EXCEPTIONAL_TIDES.map((ev) => (
+                  <option key={ev.id} value={ev.id}>
+                    +{ev.peakCm} cm — {language === 'en' ? ev.dateEn : ev.dateIt}{ev.timeLocal ? ` (${ev.timeLocal})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {activeHistoricalEvent && (
+              <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/30 text-xs flex flex-col gap-1">
+                <div className="flex items-center justify-between font-mono">
+                  <span className="font-bold text-purple-300">
+                    {language === 'en' ? activeHistoricalEvent.dateEn : activeHistoricalEvent.dateIt} · +{activeHistoricalEvent.peakCm} cm
+                    {activeHistoricalEvent.timeLocal ? ` (${activeHistoricalEvent.timeLocal})` : ''}
+                  </span>
+                  <a href={HISTORICAL_TIDES_SOURCE_URL} target="_blank" rel="noopener noreferrer" className="text-[10px] text-purple-300/80 underline">
+                    CPSM
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

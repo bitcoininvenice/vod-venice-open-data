@@ -1,11 +1,11 @@
 'use client';
 
 import { FIBER_CLASS_KEY, FIBER_COLORS, fiberOperators, type FiberCell } from '@/lib/fiber';
+import { AIRBNB_DATA, AIRBNB_ROOM_COLORS, type AirbnbListingPoint } from '@/lib/airbnb';
 import { MARKER_COLORS, MARKER_KEY, canalLengthMeters, type LagoonCanal, type MarkerKind } from '@/lib/lagoonNetwork';
 import React, { useState } from 'react';
 import { PHARMACY_DUTY_URL } from '@/lib/pharmacies-data';
 import tourismData from '@/data/turismo-comuni.json';
-import cruscottoData from '@/data/cruscotto-comuni.json';
 import {
   ShieldAlert,
   Anchor,
@@ -33,7 +33,10 @@ import {
   Info,
   Construction,
   Radio,
-  Dumbbell
+  Dumbbell,
+  Luggage,
+  Lightbulb,
+  ExternalLink,
 } from 'lucide-react';
 import {
   PollenMeasuredProfile,
@@ -69,9 +72,11 @@ import {
   PollenMonitoringStationItem,
   LagoonTributaryRiverItem,
   ParkingItem,
-  CityAssetItem
+  CityAssetItem,
+  LuggageStorageSpot,
+  PublicLightingPoint,
 } from '@/lib/types';
-import { Droplet, Building2, Bike, Flower2, GitBranch, Car, Fuel } from 'lucide-react';
+import { Droplet, Building2, Bike, Flower2, GitBranch, Car, Fuel, Camera } from 'lucide-react';
 import { FUEL_NO_PRICE_COLOR, formatFuelPrice, fuelKindOf, fuelRankColor, isStalePrice, type FuelKind, type FuelRank, type FuelStation } from '@/lib/fuel';
 import { useTranslation } from '@/lib/i18n';
 import { InfoClose, InfoPanel, KeyValues } from '@/components/ui/InfoPanel';
@@ -84,6 +89,7 @@ import { PlanHereButton } from '@/components/ui/PlanHereButton';
 import { sportColor } from '@/lib/sports';
 import { CAMPO_LICENSE_PAGE } from '@/server/sources/campo';
 import { featureLayer } from '@/lib/featureLayer';
+import { TrainStationBoard } from '@/components/TrainStationBoard';
 import { effectiveSpeedLimit } from '@/lib/waterSpeedLimits';
 import { ORDINANCE_COLORS, ordinancesForCanal } from '@/lib/canalOrdinances';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
@@ -133,6 +139,7 @@ export type VeniceFeatureSelected =
   | { type: 'lagoonWater'; data: LagoonWaterQualityItem }
   | { type: 'lagoonCurrent'; data: LagoonCurrentChannel }
   | { type: 'accommodation'; data: TouristAccommodationItem }
+  | { type: 'airbnbListing'; data: AirbnbListingPoint }
   | { type: 'bikeRoute'; data: RegionalBikeRouteItem }
   | { type: 'pollenStation'; data: PollenMonitoringStationItem }
   | { type: 'tributaryRiver'; data: LagoonTributaryRiverItem }
@@ -153,7 +160,24 @@ export type VeniceFeatureSelected =
   | { type: 'nauticalPlace'; data: NauticalPlace }
   | { type: 'parkPlace'; data: ParkPlace }
   | { type: 'civicNumber'; data: CivicMatch & { query: CivicQuery } }
-  | { type: 'fuelStation'; data: { station: FuelStation; kind: FuelKind; rank: FuelRank | null } };
+  | { type: 'fuelStation'; data: { station: FuelStation; kind: FuelKind; rank: FuelRank | null } }
+  | { type: 'historicBuilding'; data: HistoricBuildingFeature }
+  | { type: 'luggageStorage'; data: LuggageStorageSpot }
+  | { type: 'registeredStay'; data: RegisteredBusiness }
+  | { type: 'streetPhoto'; data: StreetPhoto }
+  | { type: 'publicLighting'; data: PublicLightingPoint }
+  | { type: 'sevesoPlant'; data: SevesoEstablishment };
+
+import type { SevesoEstablishment } from '@/lib/seveso';
+import type { RegisteredBusiness } from '@/lib/registeredStays';
+import { mapillaryPhotoUrl, type StreetPhoto } from '@/lib/mapillary';
+
+import {
+  CATEGORY_META,
+  EPOCH_META,
+  getBuildingsAuditStats,
+  type HistoricBuildingFeature,
+} from '@/components/map/buildingsLayer';
 
 interface VeniceFeatureDetailModalProps {
   feature: VeniceFeatureSelected | null;
@@ -176,7 +200,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
   tideForecast,
   onPlanTo
 }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   if (!feature) return null;
 
   return (
@@ -263,7 +287,10 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
               <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400"><Compass className="w-5 h-5" /></div>
             )}
             {feature.type === 'accommodation' && (
-              <div className="p-2 rounded-xl bg-fuchsia-500/20 text-fuchsia-400"><Building2 className="w-5 h-5" /></div>
+              <div className="p-2 rounded-xl bg-fuchsia-500/20 text-fuchsia-400"><Layers className="w-5 h-5" /></div>
+            )}
+            {feature.type === 'airbnbListing' && (
+              <div className="p-2 rounded-xl text-white" style={{ background: AIRBNB_ROOM_COLORS[feature.data.roomType] }}><Building2 className="w-5 h-5" /></div>
             )}
             {feature.type === 'bikeRoute' && (
               <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400"><Bike className="w-5 h-5" /></div>
@@ -330,6 +357,39 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.data.kind === 'recycling' ? <Trash2 className="w-5 h-5" /> : <Landmark className="w-5 h-5" />}
               </div>
             )}
+            {feature.type === 'historicBuilding' && (
+              <div
+                className="p-2 rounded-xl text-white"
+                style={{ background: EPOCH_META[feature.data.epoch].colorDark }}
+              >
+                <Building2 className="w-5 h-5" />
+              </div>
+            )}
+            {feature.type === 'streetPhoto' && (
+              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+                <Camera className="w-5 h-5" />
+              </div>
+            )}
+            {feature.type === 'registeredStay' && (
+              <div className="p-2 rounded-xl bg-rose-500/20 text-rose-400">
+                <Building2 className="w-5 h-5" />
+              </div>
+            )}
+            {feature.type === 'luggageStorage' && (
+              <div className="p-2 rounded-xl bg-sky-500/20 text-sky-400">
+                <Luggage className="w-5 h-5" />
+              </div>
+            )}
+            {feature.type === 'publicLighting' && (
+              <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400">
+                <Lightbulb className="w-5 h-5" />
+              </div>
+            )}
+            {feature.type === 'sevesoPlant' && (
+              <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400">
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+            )}
 
             <div>
               <h2 id="feature-modal-title" className="text-base font-bold leading-tight">
@@ -360,6 +420,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'lagoonWater' && `${t('ui.feature.acqueArpav')}: ${feature.data.stationName}`}
                 {feature.type === 'lagoonCurrent' && feature.data.name}
                 {feature.type === 'accommodation' && `${t('ui.feature.pressioneRicettiva')}: ${feature.data.zoneName}`}
+                {feature.type === 'airbnbListing' && `${t(`ui.feature.airbnbRoom_${feature.data.roomType}`)} · ${feature.data.sestiereOrLocation}`}
                 {feature.type === 'bikeRoute' && feature.data.routeName}
                 {feature.type === 'pollenStation' && feature.data.stationName}
                 {feature.type === 'tributaryRiver' && `${t('ui.feature.fiumeScolante')}: ${feature.data.riverName}`}
@@ -381,6 +442,12 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'nauticalPlace' && (feature.data.name ?? t(`ui.nautical.kind_${feature.data.kind}`))}
                 {feature.type === 'parkPlace' && (feature.data.name ?? t(`ui.park.kind_${feature.data.kind}`))}
                 {feature.type === 'civicNumber' && civicLabel(feature.data.query.sestiere, feature.data.query.number, feature.data.query.letter)}
+                {feature.type === 'historicBuilding' && feature.data.name}
+                {feature.type === 'luggageStorage' && (feature.data.name ?? t(`ui.luggage.type_${feature.data.type}`))}
+                {feature.type === 'registeredStay' && (feature.data.name ?? t(`ui.stays.kind_${feature.data.kind}`))}
+                {feature.type === 'streetPhoto' && t('ui.streetPhotos.title')}
+                {feature.type === 'publicLighting' && t('ui.lighting.title')}
+                {feature.type === 'sevesoPlant' && feature.data.name}
               </h2>
               <span className="text-[11px] font-mono text-[var(--ink-2)]">
                 {feature.type === 'speedLimit' && t(feature.data.authority === 'comune' ? 'ui.speedLimit.authorityComune' : 'ui.speedLimit.authorityProvveditorato')}
@@ -392,7 +459,8 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'heatIsland' && `${t('ui.feature.tempSuperficiale')}: ${feature.data.surfaceTempCelsius}°C`}
                 {feature.type === 'lagoonCurrent' && t('ui.lagoonHydro.subtitle')}
                 {feature.type === 'lagoonWater' && t('ui.feature.lagoonSampled', { date: feature.data.sampledAt.split('-').reverse().join('/'), depth: feature.data.depthMeters })}
-                {feature.type === 'accommodation' && `${t('ui.feature.densita')}: ${feature.data.densityCategory} · ${feature.data.bedsPerResidentRatio} ${t('ui.feature.postiLettoResidente')}`}
+                {feature.type === 'accommodation' && `${feature.data.totalStructures.toLocaleString('it-IT')} ${t('ui.feature.struttureCensite')} · ${feature.data.totalBeds.toLocaleString('it-IT')} ${t('ui.feature.postiLettoTotali')}`}
+                {feature.type === 'airbnbListing' && `${feature.data.zoneName} · Inside Airbnb (${feature.data.snapshotDate})`}
                 {feature.type === 'bikeRoute' && `${t('ui.feature.lunghezza')}: ${feature.data.lengthKm} km · ${feature.data.section}`}
                 {feature.type === 'pollenStation' && t('ui.feature.pollenSubtitle')}
                 {feature.type === 'airStation' && `${feature.data.location} · ${feature.data.stationType}`}
@@ -414,6 +482,12 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                 {feature.type === 'nauticalPlace' && `${t(`ui.nautical.kind_${feature.data.kind}`)} · ${feature.data.zone}`}
                 {feature.type === 'parkPlace' && (feature.data.name ? t(`ui.park.kind_${feature.data.kind}`) : t('ui.park.unnamed'))}
                 {feature.type === 'civicNumber' && t('ui.civic.category')}
+                {feature.type === 'historicBuilding' && CATEGORY_META[feature.data.category].labelIt}
+                {feature.type === 'luggageStorage' && [t(`ui.luggage.type_${feature.data.type}`), feature.data.address].filter(Boolean).join(' · ')}
+                {feature.type === 'registeredStay' && [t(`ui.stays.kind_${feature.data.kind}`), feature.data.classification, feature.data.municipality].filter(Boolean).join(' · ')}
+                {feature.type === 'streetPhoto' && (feature.data.capturedAt ? t('ui.streetPhotos.taken', { date: new Date(feature.data.capturedAt).toLocaleDateString(language === 'it' ? 'it-IT' : 'en-GB') }) : 'Mapillary')}
+                {feature.type === 'publicLighting' && [feature.data.support && t(`ui.lighting.support_${feature.data.support}`), feature.data.method && t(`ui.lighting.method_${feature.data.method}`)].filter(Boolean).join(' · ')}
+                {feature.type === 'sevesoPlant' && [feature.data.locality, feature.data.municipality, `Soglia ${feature.data.threshold}`].filter(Boolean).join(' · ')}
               </span>
             </div>
           </div>
@@ -432,6 +506,14 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
           {feature.type === 'nauticalPlace' && <NauticalBody place={feature.data} />}
           {feature.type === 'parkPlace' && <ParkBody place={feature.data} />}
           {feature.type === 'civicNumber' && <CivicBody civic={feature.data} onPlanTo={onPlanTo} />}
+          {feature.type === 'historicBuilding' && (
+            <HistoricBuildingBody building={feature.data} currentTideLevelCm={currentTideLevelCm} />
+          )}
+          {feature.type === 'luggageStorage' && <LuggageStorageBody spot={feature.data} />}
+          {feature.type === 'registeredStay' && <RegisteredStayBody stay={feature.data} />}
+          {feature.type === 'streetPhoto' && <StreetPhotoBody photo={feature.data} />}
+          {feature.type === 'publicLighting' && <PublicLightingBody point={feature.data} />}
+          {feature.type === 'sevesoPlant' && <SevesoPlantBody plant={feature.data} />}
           {/* SPEED LIMIT */}
           {feature.type === 'speedLimit' && (() => {
             const lim = feature.data;
@@ -691,7 +773,7 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
             </>
           )}
 
-          {/* RFI RAILWAY INFRASTRUCTURE */}
+          {/* RFI RAILWAY INFRASTRUCTURE & LIVE TRAINS */}
           {feature.type === 'trainLive' && (
             <>
               <div className="space-y-2">
@@ -699,6 +781,40 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                   <span className="text-[var(--ink-2)]">{t('ui.feature.infrastrutturaNodo')}</span>
                   <span className="font-semibold text-[var(--ink)]">{feature.data.trainNumber}</span>
                 </div>
+                {feature.data.operator && (
+                  <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
+                    <span className="text-[var(--ink-2)]">{t('ui.feature.gestore')}</span>
+                    <span className="font-semibold text-[var(--ink)]">{feature.data.operator}</span>
+                  </div>
+                )}
+                {feature.data.delayMinutes !== undefined && (
+                  <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
+                    <span className="text-[var(--ink-2)]">{t('ui.trains.statoCorsa')}</span>
+                    <span className={`font-semibold font-mono ${feature.data.delayMinutes > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                      {feature.data.delayMinutes > 0 ? `+${feature.data.delayMinutes} min` : t('ui.trains.inOrario')}
+                    </span>
+                  </div>
+                )}
+                {feature.data.speedKmh !== undefined && feature.data.speedKmh !== null && (
+                  <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
+                    <span className="text-[var(--ink-2)]">{t('ui.trains.velocita')}</span>
+                    <span className="font-semibold text-amber-400 font-mono">{feature.data.speedKmh} km/h</span>
+                  </div>
+                )}
+                {feature.data.status && (
+                  <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
+                    <span className="text-[var(--ink-2)]">{t('ui.trains.statoCorsa')}</span>
+                    <span className="font-semibold text-emerald-400">
+                      {feature.data.status === 'IN_TRANSITO'
+                        ? t('ui.trains.inTransito')
+                        : feature.data.status === 'IN_PARTENZA'
+                        ? t('ui.trains.inPartenza')
+                        : feature.data.status === 'ARRIVATO'
+                        ? t('ui.trains.arrivato')
+                        : feature.data.status}
+                    </span>
+                  </div>
+                )}
                 <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex justify-between items-center text-xs">
                   <span className="text-[var(--ink-2)]">{t('ui.feature.dotazioneBinariImpianto')}</span>
                   <span className="font-semibold text-cyan-400">{feature.data.platform}</span>
@@ -711,6 +827,14 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
                   <span className="text-[var(--ink-2)]">{t('ui.feature.ubicazione')}</span>
                   <span className="font-semibold text-[var(--ink)]">{feature.data.currentLocation}</span>
                 </div>
+              </div>
+
+              {/* Tabellone Arrivi e Partenze nei prossimi 90 minuti */}
+              <div className="mt-3">
+                <TrainStationBoard
+                  initialStation={feature.data.id === 'RFI_MESTRE' ? 'mestre' : 'santa_lucia'}
+                  showStationSelector={true}
+                />
               </div>
 
               <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-300 leading-relaxed flex items-start gap-2">
@@ -1178,68 +1302,177 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
 
           {feature.type === 'accommodation' && (
             <div className="flex flex-col gap-3">
+              {/* Quadro reale Inside Airbnb per la zona selezionata */}
+              <div className="p-3 rounded-xl border bg-rose-500/10 border-rose-500/30 text-rose-300">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-mono font-bold">{t('ui.feature.quadroLocazioniBrevi')}</span>
+                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-rose-500/20">Inside Airbnb {AIRBNB_DATA.snapshotDate}</span>
+                </div>
+                <p className="text-sm mt-1 text-[var(--ink)]">
+                  <b>{feature.data.totalStructures.toLocaleString('it-IT')}</b> {t('ui.feature.struttureCensite')} ({feature.data.totalBeds.toLocaleString('it-IT')} {t('ui.feature.postiLettoTotali')})
+                </p>
+                {feature.data.avgAvailabilityDays !== undefined && (
+                  <p className="text-xs mt-1 text-[var(--ink-2)]">
+                    Disponibilità media calendario: <b>{feature.data.avgAvailabilityDays} gg / 365</b> · Recensioni attive 12m: <b>{(feature.data.activeReviewsLtm ?? 0).toLocaleString('it-IT')}</b>
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.struttureCensite')}</span>
+                  <p className="text-lg font-bold font-mono text-purple-400">{feature.data.totalStructures.toLocaleString('it-IT')}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.postiLettoTotali')}</span>
+                  <p className="text-lg font-bold font-mono text-fuchsia-400">{feature.data.totalBeds.toLocaleString('it-IT')}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.airbnbMedianPrice')}</span>
+                  <p className="text-lg font-bold font-mono text-amber-400">
+                    {feature.data.medianPriceEur != null ? `${feature.data.medianPriceEur} EUR` : 'n.d.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Composizione tipologica e gestione host */}
+              <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex flex-col gap-1.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-[var(--ink-2)]">{t('ui.feature.airbnbEntireApt')}</span>
+                  <span className="font-bold font-mono text-fuchsia-400">
+                    {(feature.data.entireHomeApt ?? feature.data.starRatingBreakdown.holidayHomes).toLocaleString('it-IT')}
+                    {feature.data.totalStructures > 0 && feature.data.entireHomeApt !== undefined
+                      ? ` (${Math.round((feature.data.entireHomeApt / feature.data.totalStructures) * 100)}%)`
+                      : ''}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between border-t border-[var(--rule)] pt-1.5">
+                  <span className="text-[var(--ink-2)]">{t('ui.feature.airbnbPrivateHotel')}</span>
+                  <span className="font-bold font-mono text-[var(--ink)]">
+                    {t('ui.feature.airbnbPrivateHotelVal', {
+                      privateRoom: (feature.data.privateRoom ?? feature.data.starRatingBreakdown.bAndB).toLocaleString('it-IT'),
+                      hotelRoom: feature.data.hotelCount.toLocaleString('it-IT'),
+                    })}
+                  </span>
+                </div>
+                {feature.data.pctMultiHost !== undefined && (
+                  <div className="flex items-center justify-between border-t border-[var(--rule)] pt-1.5">
+                    <span className="text-[var(--ink-2)]">{t('ui.feature.airbnbMultiHost')}</span>
+                    <span className="font-bold font-mono text-rose-400">
+                      {feature.data.pctMultiHost}% ({t('ui.feature.airbnbCommercial5Plus', { pct: feature.data.pctCommercial5Plus ?? 0 })})
+                    </span>
+                  </div>
+                )}
+                {feature.data.pctWithLicense !== undefined && (
+                  <div className="flex items-center justify-between border-t border-[var(--rule)] pt-1.5">
+                    <span className="text-[var(--ink-2)]">{t('ui.feature.airbnbLicenseCin')}</span>
+                    <span className="font-bold font-mono text-emerald-400">
+                      {feature.data.pctWithLicense}% ({(feature.data.withLicense ?? 0).toLocaleString('it-IT')})
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Sintesi Centro Storico & Comune (Inside Airbnb + CCIAA) */}
               <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 flex flex-col gap-1">
-                <span className="text-[10px] uppercase font-mono text-sky-400 font-bold">{t('ui.feature.tourismRealTitle', { year: tourismData.tourismYear })}</span>
-                {tourismData.comuni.map((c) => (
-                  <span key={c.code} className="text-xs text-[var(--ink-2)]">
-                    <b className="text-[var(--ink)]">{c.name}</b>: {t('ui.feature.tourismRealRow', {
+                <span className="text-[10px] uppercase font-mono text-sky-400 font-bold">
+                  {t('ui.feature.airbnbCitySummaryTitle', { date: AIRBNB_DATA.snapshotDate })}
+                </span>
+                <span className="text-xs text-[var(--ink-2)]">
+                  {t('ui.feature.airbnbHistoricSummaryRow', {
+                    listings: AIRBNB_DATA.historicCentre.totalStructures.toLocaleString('it-IT'),
+                    beds: AIRBNB_DATA.historicCentre.totalBeds.toLocaleString('it-IT'),
+                    avail: AIRBNB_DATA.historicCentre.avgAvailabilityDays,
+                    multiPct: AIRBNB_DATA.historicCentre.pctMultiHost,
+                  })}
+                </span>
+                <span className="text-xs text-[var(--ink-2)]">
+                  {t('ui.feature.airbnbTotalCityRow', {
+                    listings: AIRBNB_DATA.totalListings.toLocaleString('it-IT'),
+                    beds: AIRBNB_DATA.city.totalBeds.toLocaleString('it-IT'),
+                    medianEur: AIRBNB_DATA.city.medianPriceEur ?? 'n.d.',
+                  })}
+                </span>
+                {tourismData.comuni.slice(0, 1).map((c) => (
+                  <span key={c.code} className="text-xs text-[var(--ink-2)] border-t border-sky-500/20 pt-1 mt-0.5">
+                    <b className="text-[var(--ink)]">{c.name} ({tourismData.tourismYear})</b>: {t('ui.feature.tourismRealRow', {
                       presences: (c.presences ?? 0).toLocaleString('it-IT'),
                       arrivals: (c.arrivals ?? 0).toLocaleString('it-IT'),
                       ratio: c.presencesPerResident ?? 'n.d.',
                     })}
                   </span>
                 ))}
-                {cruscottoData.comuni.map((c) => {
-                  const tur = (c.kpi as { turismo?: { anno?: number; totale_strutture?: number; totale_letti?: number } }).turismo;
-                  return tur?.totale_letti ? (
-                    <span key={`beds-${c.code}`} className="text-xs text-[var(--ink-2)]">
-                      <b className="text-[var(--ink)]">{c.name}</b>: {t('ui.feature.tourismBedsRow', {
-                        year: tur.anno ?? 'n.d.',
-                        structures: (tur.totale_strutture ?? 0).toLocaleString('it-IT'),
-                        beds: tur.totale_letti.toLocaleString('it-IT'),
-                      })}
-                    </span>
-                  ) : null;
-                })}
-                <span className="text-[10px] text-[var(--ink-3)]">{t('ui.feature.tourismRealNote')}</span>
-              </div>
-              <div className={`p-3 rounded-xl border ${feature.data.densityCategory === 'CRITICA' ? 'bg-rose-500/10 border-rose-500/40 text-rose-300' : 'bg-fuchsia-500/10 border-fuchsia-500/30 text-fuchsia-300'}`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase font-mono font-bold">{t('ui.feature.indiceOvertourism')}</span>
-                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-rose-500/20">{feature.data.densityCategory}</span>
-                </div>
-                <p className="text-sm mt-1 text-[var(--ink)]">
-                  {t('ui.feature.rapporto')} <b>{feature.data.bedsPerResidentRatio} {t('ui.feature.postiLettoTuristiciCiascunResidente')}</b>
-                </p>
+                <span className="text-[10px] text-[var(--ink-3)]">{t('ui.feature.airbnbPrivacyNote')}</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center justify-between border-t border-[var(--rule)] pt-2 text-[11px] text-[var(--ink-3)]">
+                <span>{t('ui.feature.riferimento')} <b>{feature.data.officialSource}</b></span>
+                <a
+                  href={PROVIDERS.insideAirbnb.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan-400 hover:underline font-mono"
+                >
+                  Inside Airbnb (CC BY 4.0)
+                </a>
+              </div>
+            </div>
+          )}
+
+          {feature.type === 'airbnbListing' && (
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.postiLettoTotali')}</span>
-                  <p className="text-xl font-bold font-mono text-fuchsia-400">{feature.data.totalBeds.toLocaleString()}</p>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.airbnbListingRate')}</span>
+                  <p className="text-lg font-bold font-mono text-amber-400">
+                    {feature.data.priceEur !== null ? `${feature.data.priceEur} €` : t('ui.feature.notAvailable')}
+                  </p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
-                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.struttureCensite')}</span>
-                  <p className="text-xl font-bold font-mono text-purple-400">{feature.data.totalStructures.toLocaleString()}</p>
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.airbnbListingAvail')}</span>
+                  <p className="text-lg font-bold font-mono text-cyan-400">{t('ui.feature.airbnbDaysOfYear', { days: feature.data.availabilityDays })}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-black/20 border border-[var(--rule)]">
+                  <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono">{t('ui.feature.airbnbListingReviewsLtm')}</span>
+                  <p className="text-lg font-bold font-mono text-fuchsia-400">{feature.data.reviewsLtm}</p>
                 </div>
               </div>
 
               <div className="p-3 rounded-xl bg-black/20 border border-[var(--rule)] flex flex-col gap-1.5 text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-[var(--ink-2)]">{t('ui.feature.settoreAlberghieroHotel')}</span>
-                  <span className="font-bold font-mono text-[var(--ink)]">
-                    {feature.data.hotelCount} hotel ({t('ui.feature.stelleHotel', { five: feature.data.starRatingBreakdown.fiveStar, four: feature.data.starRatingBreakdown.fourStar, three: feature.data.starRatingBreakdown.threeStar })})
-                  </span>
+                  <span className="text-[var(--ink-2)]">{t('ui.feature.airbnbListingType')}</span>
+                  <span className="font-bold font-mono text-[var(--ink)]">{t(`ui.feature.airbnbRoom_${feature.data.roomType}`)}</span>
                 </div>
                 <div className="flex items-center justify-between border-t border-[var(--rule)] pt-1.5">
-                  <span className="text-[var(--ink-2)]">{t('ui.feature.extraAlberghieroBBLocazioni')}</span>
-                  <span className="font-bold font-mono text-fuchsia-400">{feature.data.extraHotelCount} ({t('ui.feature.locazioni')}: {feature.data.starRatingBreakdown.holidayHomes}, B&B: {feature.data.starRatingBreakdown.bAndB})</span>
+                  <span className="text-[var(--ink-2)]">{t('ui.feature.airbnbListingHostPortfolio')}</span>
+                  <span className="font-bold font-mono text-rose-400">
+                    {feature.data.hostListingsCount === 1
+                      ? t('ui.feature.airbnbSingleHost')
+                      : t('ui.feature.airbnbMultiHostCount', { count: feature.data.hostListingsCount })}
+                  </span>
+                </div>
+                {/* nessun dato sul codice CIN del singolo annuncio: solo percentuali per zona nelle metriche */}
+                <div className="flex items-center justify-between border-t border-[var(--rule)] pt-1.5">
+                  <span className="text-[var(--ink-2)]">{t('ui.feature.airbnbZone')}</span>
+                  <span className="font-bold font-mono text-cyan-400">{feature.data.zoneName}</span>
                 </div>
               </div>
 
-              <span className="text-[11px] text-[var(--ink-3)] border-t border-[var(--rule)] pt-2">
-                {t('ui.feature.riferimento')} <b>{feature.data.officialSource}</b>
-              </span>
+              <p className="text-[10px] text-[var(--ink-3)] leading-relaxed">
+                {t('ui.feature.airbnbListingCoordCaveat')}
+              </p>
+
+              <div className="flex items-center justify-between border-t border-[var(--rule)] pt-2 text-[11px] text-[var(--ink-3)]">
+                <span>{t('ui.feature.riferimento')} <b>Inside Airbnb ({feature.data.snapshotDate})</b></span>
+                <a
+                  href={PROVIDERS.insideAirbnb.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan-400 hover:underline font-mono"
+                >
+                  Inside Airbnb (CC BY 4.0)
+                </a>
+              </div>
             </div>
           )}
 
@@ -1503,7 +1736,8 @@ export const VeniceFeatureDetailModal: React.FC<VeniceFeatureDetailModalProps> =
  */
 const REACHABLE_TYPES = new Set<VeniceFeatureSelected['type']>([
   'fuelStation', 'fountain', 'pharmacy', 'publicDae', 'parking', 'evCharging', 'wifiHotspot', 'wifiVenue',
-  'sportPlace', 'parkPlace', 'nauticalPlace', 'civicPoi', 'urbanTree', 'veniceWell',
+  'sportPlace', 'parkPlace', 'nauticalPlace', 'civicPoi', 'urbanTree', 'veniceWell', 'luggageStorage',
+  'registeredStay',
 ]);
 
 /** Destinazione per il planner: posizione e nome dell'elemento, oppure null se non è un luogo da raggiungere. */
@@ -1527,6 +1761,10 @@ function planTarget(feature: VeniceFeatureSelected, t: (key: string, params?: Re
         return feature.data.name ?? t(`ui.nautical.kind_${feature.data.kind}`);
       case 'parkPlace':
         return feature.data.name ?? t(`ui.park.kind_${feature.data.kind}`);
+      case 'luggageStorage':
+        return feature.data.name ?? t(`ui.luggage.type_${feature.data.type}`);
+      case 'registeredStay':
+        return feature.data.name ?? t(`ui.stays.kind_${feature.data.kind}`);
       default:
         return d.name ?? t('ui.planner.mapPoint', { lat: (d.lat as number).toFixed(5), lon: (d.lon as number).toFixed(5) });
     }
@@ -1539,11 +1777,11 @@ function planTarget(feature: VeniceFeatureSelected, t: (key: string, params?: Re
 const CURATED_TYPES = new Set<VeniceFeatureSelected['type']>([
   'briccola', 'bathingWater', 'bridgeClearance', 'gondolaStation', 'publicDock',
   'subsidence', 'lagoonMorphology', 'trainLive', 'wasteBoat', 'nizioleto', 'bellTower', 'fortressIsland',
-  'heatIsland', 'accommodation', 'bikeRoute', 'tributaryRiver',
+  'heatIsland', 'bikeRoute', 'tributaryRiver', 'sevesoPlant',
 ]);
 
 /** Tipi che mostrano già la propria nota di provenienza nel corpo della scheda. */
-const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['passerella', 'speedLimit', 'publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'lagoonCurrent', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace', 'parkPlace', 'civicNumber', 'ordinance', 'scheduleSpeed', 'actvNotice', 'fuelStation']);
+const OWN_PROVENANCE = new Set<VeniceFeatureSelected['type']>(['passerella', 'speedLimit', 'publicDae', 'pharmacy', 'emergencyDock', 'wifiHotspot', 'fiberCell', 'pollenStation', 'airStation', 'lagoonMarker', 'canal', 'lagoonWater', 'lagoonCurrent', 'bdapWork', 'loraGateway', 'wifiVenue', 'sportPlace', 'nauticalPlace', 'parkPlace', 'civicNumber', 'ordinance', 'scheduleSpeed', 'actvNotice', 'fuelStation', 'accommodation', 'airbnbListing', 'luggageStorage', 'registeredStay', 'streetPhoto', 'publicLighting']);
 
 /** Nota di provenienza in fondo alla scheda: link OSM, oppure "elenco curato, da verificare". */
 const FeatureProvenance: React.FC<{ feature: VeniceFeatureSelected }> = ({ feature }) => {
@@ -2014,3 +2252,198 @@ const CivicBody: React.FC<{ civic: CivicMatch & { query: CivicQuery }; onPlanTo?
     </div>
   );
 };
+
+const HistoricBuildingBody: React.FC<{
+  building: HistoricBuildingFeature;
+  currentTideLevelCm?: number;
+}> = ({ building: b, currentTideLevelCm }) => {
+  const { t, language } = useTranslation();
+  const isIt = language === 'it';
+  const locale = isIt ? 'it-IT' : 'en-GB';
+  const epMeta = EPOCH_META[b.epoch];
+  const catMeta = CATEGORY_META[b.category];
+  const stats = getBuildingsAuditStats();
+  const yearLabel = b.year
+    ? b.yearPrecision === 'century'
+      ? t('ui.buildings.century', { year: b.year })
+      : b.yearPrecision === 'circa'
+        ? t('ui.buildings.circa', { year: b.year })
+        : String(b.year)
+    : t('ui.buildings.undated');
+  const heightLabel =
+    b.heightM !== null
+      ? t('ui.buildings.heightDocumented', { m: b.heightM })
+      : b.levels !== null
+        ? t('ui.buildings.levelsDocumented', { levels: b.levels, m: b.estimatedHeightM })
+        : t('ui.buildings.heightEstimated', { m: b.estimatedHeightM });
+  const flooded = currentTideLevelCm !== undefined && currentTideLevelCm > b.groundElevationCm;
+  return (
+    <div className="flex flex-col gap-3">
+      <KeyValues
+        items={[
+          [t('ui.buildings.year'), yearLabel],
+          [t('ui.buildings.yearSource'), b.yearSource === 'none' ? null : t(`ui.buildings.source_${b.yearSource === 'osm' ? 'osm' : 'wikidata'}`)],
+          [t('ui.buildings.height'), heightLabel],
+          [t('ui.buildings.epoch'), isIt ? epMeta.labelIt : epMeta.labelEn],
+          [t('ui.buildings.typology'), isIt ? catMeta.labelIt : catMeta.labelEn],
+          [t('ui.buildings.architect'), b.architect],
+          [t('ui.buildings.style'), b.architecturalStyle],
+          [t('ui.buildings.ground'), t('ui.buildings.groundValue', { cm: b.groundElevationCm })],
+        ]}
+      />
+      {currentTideLevelCm !== undefined && (
+        <p className={`text-[11px] ${flooded ? 'text-cyan-300' : 'text-emerald-300'}`}>
+          {flooded
+            ? t('ui.buildings.tideOver', { tide: currentTideLevelCm, cm: currentTideLevelCm - b.groundElevationCm })
+            : t('ui.buildings.tideUnder', { tide: currentTideLevelCm, cm: b.groundElevationCm - currentTideLevelCm })}
+        </p>
+      )}
+      <p className="text-[11px] text-[var(--ink-3)] leading-relaxed">
+        {t('ui.buildings.note', { total: stats.total.toLocaleString(locale), dated: stats.withYear.toLocaleString(locale) })}
+      </p>
+      {b.wikidata && (
+        <a href={`https://www.wikidata.org/wiki/${b.wikidata}`} target="_blank" rel="noopener noreferrer" className="text-xs font-mono text-cyan-400 hover:underline">
+          Wikidata: {b.wikidata} (CC0 1.0)
+        </a>
+      )}
+    </div>
+  );
+};
+
+/** Scheda informativa di un deposito bagagli turistico (Radical Storage, KiPoint, Locker, Trasbagagli). */
+const LuggageStorageBody: React.FC<{ spot: LuggageStorageSpot }> = ({ spot: s }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex flex-col gap-3">
+      <KeyValues
+        items={[
+          [t('ui.luggage.type'), t(`ui.luggage.type_${s.type}`)],
+          [t('ui.luggage.address'), s.address],
+          [t('ui.luggage.openingHours'), s.openingHours],
+          [t('ui.luggage.payment'), s.payment.length ? s.payment.map((p) => t(`ui.luggage.pay_${p}`)).join(', ') : null],
+        ]}
+      />
+      {s.positionToCheck && <p className="text-[11px] text-amber-400">{t('ui.luggage.positionToCheck')}</p>}
+      <p className="text-[11px] text-[var(--ink-3)]">{t('ui.luggage.note')}</p>
+      <div className="flex gap-3 text-xs">
+        {s.website && safeUrl(s.website) && (
+          <a href={safeUrl(s.website) ?? undefined} target="_blank" rel="noopener noreferrer" className="text-sky-300 underline">
+            {t('ui.luggage.website')}
+          </a>
+        )}
+        <a href={s.osmUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">
+          OpenStreetMap
+        </a>
+      </div>
+    </div>
+  );
+};
+
+/** Scheda di una struttura ricettiva d'impresa registrata nel Comune (GeoIDS) */
+const RegisteredStayBody: React.FC<{ stay: RegisteredBusiness }> = ({ stay: s }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex flex-col gap-3">
+      <KeyValues
+        items={[
+          [t('ui.stays.category'), s.category],
+          [t('ui.stays.classification'), s.classification],
+          [t('ui.stays.rooms'), s.rooms ? String(s.rooms) : null],
+          [t('ui.stays.beds'), s.beds ? String(s.beds) : null],
+          [t('ui.stays.company'), s.company],
+          [t('ui.stays.address'), s.address],
+          [t('ui.stays.municipality'), s.municipality],
+        ]}
+      />
+      <p className="text-[11px] text-[var(--ink-3)]">{t('ui.stays.note')}</p>
+    </div>
+  );
+};
+
+/** Foto Mapillary: l'immagine si apre su Mapillary, il browser la chiede a Mapillary solo con il clic */
+const StreetPhotoBody: React.FC<{ photo: StreetPhoto }> = ({ photo }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex flex-col gap-3">
+      <a href={mapillaryPhotoUrl(photo.id)} target="_blank" rel="noopener noreferrer" className="inline-flex self-start items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 text-xs border border-emerald-500/30">
+        {t('ui.streetPhotos.open')}
+      </a>
+      <p className="text-[11px] text-[var(--ink-3)]">{t('ui.streetPhotos.note')}</p>
+    </div>
+  );
+};
+
+/** Scheda di un lampione mappato su OpenStreetMap */
+const PublicLightingBody: React.FC<{ point: PublicLightingPoint }> = ({ point: p }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex flex-col gap-3">
+      <KeyValues
+        items={[
+          [t('ui.lighting.support'), p.support ? t(`ui.lighting.support_${p.support}`) : t('ui.lighting.unmapped')],
+          [t('ui.lighting.method'), p.method ? t(`ui.lighting.method_${p.method}`) : t('ui.lighting.unmapped')],
+        ]}
+      />
+      <p className="text-[11px] text-[var(--ink-3)]">{t('ui.lighting.note')}</p>
+      <a href={p.osmUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-400 underline">
+        OpenStreetMap
+      </a>
+    </div>
+  );
+};
+
+const SevesoPlantBody: React.FC<{ plant: SevesoEstablishment }> = ({ plant }) => {
+  const { t } = useTranslation();
+  const isUpper = plant.threshold === 'SS';
+  const thresholdLabel = isUpper ? t('ui.sevesoPlant.thresholdUpper') : t('ui.sevesoPlant.thresholdLower');
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div
+        className={`flex items-center gap-2.5 p-2.5 rounded-xl border ${
+          isUpper ? 'bg-orange-500/10 border-orange-500/25' : 'bg-amber-500/10 border-amber-500/25'
+        }`}
+      >
+        <ShieldAlert className={`w-4 h-4 shrink-0 ${isUpper ? 'text-orange-400' : 'text-amber-400'}`} />
+        <div className="flex flex-col">
+          <span className="text-xs font-bold text-[var(--ink)]">
+            {plant.threshold === 'SS' ? 'Soglia Superiore (SS)' : 'Soglia Inferiore (SI)'}
+          </span>
+          <span className="text-[10px] text-[var(--ink-3)] font-mono">
+            {thresholdLabel}
+          </span>
+        </div>
+      </div>
+
+      <KeyValues
+        items={[
+          [t('ui.sevesoPlant.colMunicipality'), plant.municipality],
+          [t('ui.sevesoPlant.colLocality'), `${plant.locality} · ${plant.address}`],
+          [t('ui.sevesoPlant.colActivityCode'), `${plant.activityCode} – ${plant.activityDescription}`],
+          [t('ui.sevesoPlant.colSafetyMeasures'), plant.safetyMeasures],
+          [
+            t('ui.sevesoPlant.colLagoonBasin'),
+            plant.inLagoonBasin ? t('ui.sevesoPlant.inLagoonYes') : t('ui.sevesoPlant.inLagoonNo'),
+            plant.inLagoonBasin ? 'text-cyan-400 font-semibold' : 'text-[var(--ink-3)]'
+          ],
+        ]}
+      />
+
+      <div className="pt-2 border-t border-[var(--rule)] flex items-center justify-between text-[10px] font-mono text-[var(--ink-3)]">
+        <span>{t('ui.sevesoPlant.regulatoryBasis')}</span>
+        <a
+          href={PROVIDERS.arpav.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-cyan-400 hover:underline flex items-center gap-1"
+        >
+          <span>{t('ui.sevesoPlant.openRegionalRegister')}</span>
+          <ExternalLink className="w-3 h-3" />
+        </a>
+      </div>
+    </div>
+  );
+};
+
+
+

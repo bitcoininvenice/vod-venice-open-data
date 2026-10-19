@@ -3,6 +3,8 @@
 export interface McpQueryArgs {
   text?: string;
   near?: { lat: number; lon: number; radiusMeters: number };
+  minYear?: number;
+  maxYear?: number;
   limit: number;
   offset: number;
 }
@@ -38,6 +40,7 @@ function matchesText(item: Record<string, unknown>, needle: string): boolean {
   const n = needle.toLowerCase();
   for (const v of Object.values(item)) {
     if (typeof v === 'string' && v.toLowerCase().includes(n)) return true;
+    if (typeof v === 'number' && String(v) === n) return true;
     if (v && typeof v === 'object' && !Array.isArray(v)) {
       for (const w of Object.values(v as Record<string, unknown>)) if (typeof w === 'string' && w.toLowerCase().includes(n)) return true;
     }
@@ -45,9 +48,27 @@ function matchesText(item: Record<string, unknown>, needle: string): boolean {
   return false;
 }
 
+/** Anno di riferimento di una voce per i filtri cronologici minYear / maxYear. */
+function matchingYear(item: Record<string, unknown>, minYear?: number, maxYear?: number): number | null {
+  const candidates: number[] = [];
+  if (typeof item.year === 'number' && item.year > 0) candidates.push(item.year);
+  if (typeof item.contemporaryYear === 'number' && item.contemporaryYear > 0) candidates.push(item.contemporaryYear);
+  for (const y of candidates) {
+    if ((minYear === undefined || y >= minYear) && (maxYear === undefined || y <= maxYear)) {
+      return y;
+    }
+  }
+  return null;
+}
+
 export function applyQuery(items: Record<string, unknown>[], args: McpQueryArgs): McpQueryResult {
   let rows = items;
   if (args.text) rows = rows.filter((it) => matchesText(it, args.text!));
+  if (args.minYear !== undefined || args.maxYear !== undefined) {
+    rows = rows
+      .filter((it) => matchingYear(it, args.minYear, args.maxYear) !== null)
+      .sort((a, b) => (matchingYear(a, args.minYear, args.maxYear) ?? 0) - (matchingYear(b, args.minYear, args.maxYear) ?? 0));
+  }
   if (args.near) {
     const { lat, lon, radiusMeters } = args.near;
     rows = rows

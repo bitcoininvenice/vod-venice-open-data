@@ -7,7 +7,8 @@ import { MapEngine } from '@/components/MapEngine';
 import { TimelineControls } from '@/components/TimelineControls';
 import { LayerPanel } from '@/components/LayerPanel';
 import { buildLayersParam, buildShareUrl, type LayerKey } from '@/lib/urlLayers';
-import { allLayers, countActiveLayers, DEFAULT_PRESET, hasActiveTemporalLayers, initialLayersFromSearch, makeLayerSetters, presetLayers, type LayerVisibility, type MapPreset } from '@/lib/layerState';
+import { allLayers, countActiveLayers, DEFAULT_PRESET, hasActiveTemporalLayers, hasActiveTransportLayers, initialLayersFromSearch, makeLayerSetters, presetLayers, type LayerVisibility, type MapPreset } from '@/lib/layerState';
+import type { BuildingColorMode, BuildingEpochFilter } from '@/components/map/buildingsLayer';
 import { copyToClipboard } from '@/lib/dataExport';
 import { layerCounts as countLayerItems, neededResources } from '@/lib/cityData';
 import { useCityData } from '@/lib/useCityData';
@@ -37,7 +38,8 @@ import { track } from '@vercel/analytics';
 import { trackLayerToggle, trackLayerOpen, featureToLayerSlug, mapObjectToLayerSlug } from '@/lib/analytics';
 import { PASSERELLE_MIN_THRESHOLD_CM } from '@/lib/passerelle';
 import { resolveTideState } from '@/lib/tideCurve';
-import type { FuelKind } from '@/lib/fuel';
+import type { FuelKind, FuelStation } from '@/lib/fuel';
+import { loadClientFuelCache, clearClientFuelCache } from '@/lib/fuelClient';
 
 // Finestre e schede meno frequenti: il loro codice si scarica solo quando si aprono
 const SpatialAnalysisModal = dynamic(() => import('@/components/SpatialAnalysisModal').then((m) => m.SpatialAnalysisModal));
@@ -153,6 +155,16 @@ export default function HomePage() {
     [layers, isSearchOpen, isExportModalOpen, isAlilagunaModalOpen, isAirportModalOpen, isTideModalOpen, simulatedTideLevel, tideReachesPasserelle, isPlannerOpen]
   );
   const data = useCityData(needs);
+
+  // Prezzi carburanti aggiornati dal browser (per aggirare il blocco MIMIT sui datacenter)
+  const [clientFuel, setClientFuel] = useState<{ stations: FuelStation[]; extractedAt: string | null } | null>(() => {
+    return loadClientFuelCache();
+  });
+
+  const effectiveData = useMemo(() => {
+    if (!clientFuel?.stations) return data;
+    return { ...data, fuelStations: clientFuel.stations };
+  }, [data, clientFuel]);
 
   // Global Keyboard Shortcut: Cmd+K / Ctrl+K for Global Search
   useEffect(() => {
@@ -484,8 +496,8 @@ export default function HomePage() {
 
   // Elementi caricati per layer, mostrati nel pannello accanto ai layer accesi
   const layerCounts = useMemo(
-    () => countLayerItems(data, { scheduledVehicles: Object.values(categoryCounts).reduce((a, b) => a + b, 0), alilagunaBoats: alilagunaBoats.length }),
-    [data, categoryCounts, alilagunaBoats]
+    () => countLayerItems(effectiveData, { scheduledVehicles: Object.values(categoryCounts).reduce((a, b) => a + b, 0), alilagunaBoats: alilagunaBoats.length }),
+    [effectiveData, categoryCounts, alilagunaBoats]
   );
   const liveWebcamsCount = useMemo(() => data.cameras.filter((c) => c.hasLiveFeed).length, [data.cameras]);
   const unplacedActvNotices = useMemo(() => data.actvNotices.filter((n) => n.stops.length === 0), [data.actvNotices]);
@@ -565,6 +577,31 @@ export default function HomePage() {
     return hasActiveTemporalLayers(layers, simulatedTideLevel !== null);
   }, [layers, simulatedTideLevel]);
 
+  // True esclusivamente quando c'è almeno un layer trasporti attivo (slider 24h + velocità)
+  const isTransportActive = useMemo(() => {
+    return hasActiveTransportLayers(layers);
+  }, [layers]);
+
+  // Stato vista 3D e filtri Edifici & Storia Urbana condivisi tra MapEngine e TimelineControls
+  const [is3DView, setIs3DView] = useState<boolean>(false);
+  const [buildingColorMode, setBuildingColorMode] = useState<BuildingColorMode>('period');
+  const [buildingEpochFilter, setBuildingEpochFilter] = useState<BuildingEpochFilter>('all');
+  const [buildingMaxYear, setBuildingMaxYear] = useState<number | null>(null);
+
+  const buildingsControls = useMemo(() => {
+    if (!layers.showBuildings) return null;
+    return {
+      colorMode: buildingColorMode,
+      onColorModeChange: setBuildingColorMode,
+      epochFilter: buildingEpochFilter,
+      onEpochFilterChange: setBuildingEpochFilter,
+      maxYear: buildingMaxYear,
+      onMaxYearChange: setBuildingMaxYear,
+      is3DView,
+      onToggle3DView: () => setIs3DView((v) => !v),
+    };
+  }, [layers.showBuildings, buildingColorMode, buildingEpochFilter, buildingMaxYear, is3DView]);
+
   // Controlli simulatore marea/MOSE integrati direttamente nel bottom dock
   const simulatorControls = useMemo(() => {
     if (simulatedTideLevel === null) return null;
@@ -630,7 +667,7 @@ export default function HomePage() {
       <div className="relative flex-1 w-full h-full overflow-hidden">
         <MapEngine
           layers={layers}
-          data={data}
+          data={effectiveData}
           selectedDay={selectedDay}
           paletteTheme={paletteTheme}
           currentView={currentView}
@@ -684,7 +721,16 @@ export default function HomePage() {
           simulatedTideLevel={simulatedTideLevel}
           isMoseProtected={isMoseProtected}
           isDesktopLayerPanelOpen={isDesktopLayerPanelOpen}
-          hideFloatingWindLegend={isTemporalActive && layers.showMarineWind}
+          hideFloatingWindLegend={false}
+          hideFloatingBuildingsPanel={true}
+          is3DView={is3DView}
+          onToggle3DView={() => setIs3DView((v) => !v)}
+          buildingColorMode={buildingColorMode}
+          onBuildingColorModeChange={setBuildingColorMode}
+          buildingEpochFilter={buildingEpochFilter}
+          onBuildingEpochFilterChange={setBuildingEpochFilter}
+          buildingMaxYear={buildingMaxYear}
+          onBuildingMaxYearChange={setBuildingMaxYear}
           pickMode={pickTarget !== null}
           onPickPoint={(lon, lat) => {
             if (!pickTarget) return;
@@ -715,6 +761,15 @@ export default function HomePage() {
               onFountainFilterChange={setFountainFilter}
               fuelFilter={fuelFilter}
               onFuelFilterChange={setFuelFilter}
+              fuelStations={effectiveData.fuelStations}
+              onUpdateFuelStations={(stations, extractedAt) => {
+                setClientFuel({ stations, extractedAt: extractedAt ?? null });
+              }}
+              onClearFuelStations={() => {
+                clearClientFuelCache();
+                setClientFuel(null);
+              }}
+              clientFuelExtractedAt={clientFuel?.extractedAt}
               liveWebcamsCount={liveWebcamsCount}
               unplacedOrdinances={unplacedOrdinances}
               unplacedActvNotices={unplacedActvNotices}
@@ -768,6 +823,15 @@ export default function HomePage() {
                 onFountainFilterChange={setFountainFilter}
                 fuelFilter={fuelFilter}
                 onFuelFilterChange={setFuelFilter}
+                fuelStations={effectiveData.fuelStations}
+                onUpdateFuelStations={(stations, extractedAt) => {
+                  setClientFuel({ stations, extractedAt: extractedAt ?? null });
+                }}
+                onClearFuelStations={() => {
+                  clearClientFuelCache();
+                  setClientFuel(null);
+                }}
+                clientFuelExtractedAt={clientFuel?.extractedAt}
                 liveWebcamsCount={liveWebcamsCount}
                 unplacedOrdinances={unplacedOrdinances}
                 unplacedActvNotices={unplacedActvNotices}
@@ -812,6 +876,8 @@ export default function HomePage() {
             onDayChange={setSelectedDay}
             showVehicles={showVehicles}
             showAlilaguna={showAlilaguna}
+            hasTransportLayers={isTransportActive}
+            showPublicLighting={layers.showPublicLighting}
             actvTripsCount={simulation ? activeTripsAt(selectedDay, currentTimeSeconds) : undefined}
             alilagunaBoatsCount={alilagunaBoats.length}
             peakCount={simulation ? dayActivity(selectedDay).peakCount : undefined}
@@ -820,6 +886,7 @@ export default function HomePage() {
             tideLevel={currentDynamicTide.lagoonTideCm}
             tideStatus={currentDynamicTide}
             airTemp={data.cityTemp}
+            metarData={data.metarData}
             showWind={layers.showMarineWind}
             windField={data.windField}
             onSyncLiveTime={handleSyncLiveTime}
@@ -837,6 +904,7 @@ export default function HomePage() {
             }}
             hasTemporalLayers={isTemporalActive}
             simulator={simulatorControls}
+            buildings={buildingsControls}
           />
         </div>
           {/* Scheda informativa unica (agganciata a destra su desktop, cassetto su mobile) */}

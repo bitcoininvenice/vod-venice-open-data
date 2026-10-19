@@ -19,6 +19,8 @@ con cache. Basta un progetto Next.js su Vercel.
    - `OPENSKY_CLIENT_ID`, `OPENSKY_CLIENT_SECRET`: quota OpenSky più alta (l'IP condiviso di Vercel esaurisce in
      fretta la quota anonima);
    - `AISSTREAM_API_KEY` (e `AISSTREAM_LISTEN_MS`): navi in tempo reale nella mappa;
+   - `MAPILLARY_TOKEN`: foto a livello strada di Mapillary (chiave gratuita «client token» del tuo account
+     Mapillary, resta sul server);
    - `API_RATE_LIMIT_PER_MINUTE`, `MCP_RATE_LIMIT_PER_MINUTE`: limite di richieste per IP.
 4. **Deploy**. Se una fonte non risponde, l'interfaccia mostra «n.d.» invece di valori sostitutivi.
 
@@ -55,7 +57,8 @@ plain Next.js project on Vercel is enough.
 3. **Environment Variables**: none required. Optional ones are described in `web/.env.example`:
    `NEXT_PUBLIC_SITE_URL` (public URL for canonical links and sitemap), `OPENSKY_CLIENT_ID` and
    `OPENSKY_CLIENT_SECRET` (higher OpenSky quota; Vercel's shared IP quickly uses up the anonymous one),
-   `AISSTREAM_API_KEY` and `AISSTREAM_LISTEN_MS` (live ships on the map), `API_RATE_LIMIT_PER_MINUTE` and
+   `AISSTREAM_API_KEY` and `AISSTREAM_LISTEN_MS` (live ships on the map), `MAPILLARY_TOKEN` (Mapillary
+   street-level photos: free client token from your Mapillary account, kept on the server), `API_RATE_LIMIT_PER_MINUTE` and
    `MCP_RATE_LIMIT_PER_MINUTE` (per-IP request limits).
 4. **Deploy**. When a source does not answer, the interface shows "n/a" instead of made-up values.
 

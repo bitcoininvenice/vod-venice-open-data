@@ -733,6 +733,7 @@ export const OPEN_LIVE_TRAINS: TrainLiveItem[] = [
     currentLocation: "Fondamenta Santa Lucia, Cannaregio",
     lat: 45.4412,
     lon: 12.3210,
+    bearing: 118,
     platform: "23 binari di testa elettrificati (3 kV CC)",
   },
   {
@@ -742,8 +743,9 @@ export const OPEN_LIVE_TRAINS: TrainLiveItem[] = [
     origin: "Nodo Centrale di Terraferma",
     destination: "Interscambio Linee Milano-Venezia, Bologna-Venezia, Udine/Trieste",
     currentLocation: "Piazzale Favretti, Mestre",
-    lat: 45.4825,
-    lon: 12.2320,
+    lat: 45.4828,
+    lon: 12.2318,
+    bearing: 300,
     platform: "13 binari passanti con banchine rialzate e ascensori PRM",
   },
   {
@@ -753,8 +755,9 @@ export const OPEN_LIVE_TRAINS: TrainLiveItem[] = [
     origin: "Km 262.0 (Bivio Marghera)",
     destination: "Km 266.5 (Scalo Santa Lucia)",
     currentLocation: "Viadotto lagunare storico a 4 binari (Km 262-267)",
-    lat: 45.4470,
-    lon: 12.2845,
+    lat: 45.4647,
+    lon: 12.2795,
+    bearing: 128,
     platform: "4 binari di corsa banalizzati (Quadruplicamento RFI)",
   },
   {
@@ -764,8 +767,9 @@ export const OPEN_LIVE_TRAINS: TrainLiveItem[] = [
     origin: "Fermata Suburbana e Polo Universitario/Scientifico VEGA",
     destination: "Raccordo Urbano Linea Storica Milano-Venezia",
     currentLocation: "Via Torino / Parco VEGA",
-    lat: 45.4640,
-    lon: 12.2560,
+    lat: 45.4784,
+    lon: 12.2462,
+    bearing: 300,
     platform: "4 binari viaggiatori con sottopasso pedonale",
   },
   {
@@ -777,6 +781,7 @@ export const OPEN_LIVE_TRAINS: TrainLiveItem[] = [
     currentLocation: "Raccordo Ferroviario Portuale, Porto Marghera",
     lat: 45.4710,
     lon: 12.2380,
+    bearing: 240,
     platform: "Fascio binari smistamento merci pesanti e raccordi chimici",
   },
   {
@@ -788,6 +793,7 @@ export const OPEN_LIVE_TRAINS: TrainLiveItem[] = [
     currentLocation: "Area Impianti RFI Mestre Sud",
     lat: 45.4760,
     lon: 12.2420,
+    bearing: 320,
     platform: "Impianto primario di trasformazione e soccorso TE lagunare",
   },
   {

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ExternalLink, Navigation, Plane, Radio, Ship } from 'lucide-react';
+import { Bus, ExternalLink, Navigation, Plane, Radio, Ship } from 'lucide-react';
 import type { AlilagunaBoat, FlightItem, ShipItem, StopItem } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { InfoHeader, InfoPanel, KeyValues, MoreDetails } from '@/components/ui/InfoPanel';
@@ -14,6 +14,8 @@ import { useSimulation } from '@/lib/simulationModel';
 import { romeSecondsOfDay } from '@/lib/time';
 import { useServiceNow } from '@/lib/useServiceNow';
 import { FLIXBUS_COLOR, flixTime, type FlixBusPosition } from '@/lib/flixbus';
+import { ATVO_COLOR, type AtvoBusPosition } from '@/lib/atvo';
+import type { DolomitiBusPosition } from '@/lib/dolomitibus';
 import { noticesForStop, useActvNotices } from '@/lib/useActvNotices';
 import { ActvNoticeBox } from '@/components/ActvNoticeList';
 import { PROVIDERS } from '@/lib/provenance/providers';
@@ -40,6 +42,8 @@ interface VehicleSelection {
   vehicleName?: string | null;
   /** rete del mezzo: distingue linee omonime (es. bus 15 e vaporetto 15) */
   network?: 'navigazione' | 'automobilistico';
+  /** Gestore del servizio (es. ACTV o Busitalia Veneto) */
+  operator?: string;
 }
 
 /** Oggetti in movimento cliccati sulla mappa (le schede dei punti fissi sono in VeniceFeatureDetailModal). */
@@ -48,7 +52,9 @@ export type MapObjectSelected =
   | { type: 'flight'; data: FlightItem }
   | { type: 'vehicle'; data: VehicleSelection }
   | { type: 'alilagunaBoat'; data: AlilagunaBoat }
-  | { type: 'flixbus'; data: FlixBusPosition };
+  | { type: 'flixbus'; data: FlixBusPosition }
+  | { type: 'atvo'; data: AtvoBusPosition }
+  | { type: 'dolomitibus'; data: DolomitiBusPosition };
 
 interface MapObjectPanelProps {
   object: MapObjectSelected | null;
@@ -206,7 +212,8 @@ export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose,
           items={[
             [t('map.estimatedSpeed'), !gps && v.speedKmh !== null ? `${v.speedKmh} km/h` : null, 'text-emerald-400'],
             [t('ui.map.vehicleName'), v.vehicleName ? (/^\d+$/.test(v.vehicleName) ? t('ui.map.vehicleNumber', { n: v.vehicleName }) : v.vehicleName) : null],
-            [t('ui.map.fonte'), gps ? t('ui.map.posizioneGpsRealeGtfsRt') : t('ui.map.simulatoOrario'), gps ? 'text-emerald-400' : 'text-sky-400'],
+            [t('ui.feature.gestore'), v.operator ?? null, 'text-[var(--ink)] font-semibold'],
+            [t('ui.map.fonte'), v.operator === 'Busitalia Veneto' ? 'BusOne (proxy.busone.app)' : gps ? t('ui.map.posizioneGpsRealeGtfsRt') : t('ui.map.simulatoOrario'), gps ? 'text-emerald-400' : 'text-sky-400'],
           ]}
         />
         {gps && !v.delay && <p className="text-[11px] text-[var(--ink-3)]">{t(v.delayConflict ? 'ui.delay.conflict' : 'ui.delay.noDelay')}</p>}
@@ -218,6 +225,8 @@ export const MapObjectPanel: React.FC<MapObjectPanelProps> = ({ object, onClose,
   }
 
   if (object.type === 'flixbus') return <FlixbusCard bus={object.data} onClose={onClose} />;
+  if (object.type === 'atvo') return <AtvoCard bus={object.data} onClose={onClose} />;
+  if (object.type === 'dolomitibus') return <DolomitiCard bus={object.data} onClose={onClose} />;
 
   const b = object.data;
   return (
@@ -496,6 +505,138 @@ const FlixbusCard: React.FC<{ bus: FlixBusPosition; onClose: () => void }> = ({ 
         className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2"
       >
         © FlixMobility (FlixBus) · ODbL
+      </a>
+    </InfoPanel>
+  );
+};
+
+/** Scheda di un bus ATVO: posizione simulata dall'orario ufficiale, linea, fermate e note. */
+const AtvoCard: React.FC<{ bus: AtvoBusPosition; onClose: () => void }> = ({ bus: b, onClose }) => {
+  const { t, language } = useTranslation();
+  const f = (key: string, params?: Record<string, string | number>) => t(`ui.atvo.${key}`, params);
+  const locale = language === 'it' ? 'it-IT' : 'en-GB';
+  const hhmm = (ms: number) =>
+    new Date(ms).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
+  return (
+    <InfoPanel open onClose={onClose} labelledBy="map-object-title" layer="showAtvo" accent="border-sky-500/40">
+      <InfoHeader
+        id="map-object-title"
+        icon={<Navigation className="w-5 h-5" style={{ color: ATVO_COLOR }} />}
+        category={f('category')}
+        title={
+          <span className="px-2 py-0.5 rounded-lg text-sm font-mono font-bold text-white" style={{ backgroundColor: ATVO_COLOR }}>
+            ATVO {b.trip.line}
+          </span>
+        }
+        subtitle={`${b.trip.from} → ${b.trip.to}`}
+        onClose={onClose}
+      />
+      <KeyValues
+        items={[
+          [f('route'), b.trip.name || null],
+          [f('departure', { stop: b.trip.from }), b.trip.start !== undefined ? hhmm(b.base + b.trip.start * 1000) : null],
+          [f('arrival', { stop: b.trip.to }), b.trip.end !== undefined ? hhmm(b.base + b.trip.end * 1000) : null],
+          [f('atStop'), b.atStop],
+          [f('next'), b.next ? `${b.next.name} · ${hhmm(b.next.at)}` : null, 'text-sky-400'],
+        ]}
+      />
+      <div className="flex flex-col gap-1" data-testid="atvo-stops">
+        <span className="text-[11px] font-mono uppercase text-[var(--ink-3)]">{f('stopsTitle')}</span>
+        <ol className="flex flex-col">
+          {b.trip.stops.map(([, arr, dep, name, venice], i) => {
+            const passed = b.stopIndex !== null && i < b.stopIndex;
+            const current = i === b.stopIndex;
+            return (
+              <li key={`${i}-${name}`} className="flex items-center gap-2 text-xs py-0.5">
+                <span
+                  className="w-2.5 h-2.5 rounded-full shrink-0 border-2"
+                  style={{ borderColor: passed ? '#64748b' : ATVO_COLOR, background: passed ? '#94a3b8' : current ? ATVO_COLOR : 'transparent' }}
+                  aria-hidden
+                />
+                <span className={`flex-1 min-w-0 truncate ${passed ? 'text-[var(--ink-3)]' : current ? 'font-bold text-[var(--ink)]' : 'text-[var(--ink-2)]'}`}>
+                  {name}
+                  {venice && <span className="ml-1 text-[10px] text-sky-400">· {f('venice')}</span>}
+                </span>
+                <span className={`font-mono tabular ${passed ? 'text-[var(--ink-3)]' : 'text-[var(--ink)]'}`}>
+                  {arr === dep ? hhmm(b.base + arr * 1000) : `${hhmm(b.base + arr * 1000)}–${hhmm(b.base + dep * 1000)}`}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+      <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">{f('note')}</p>
+      <a
+        href={PROVIDERS.atvo.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2"
+      >
+        © ATVO S.p.A. · Orari Ufficiali di Esercizio
+      </a>
+    </InfoPanel>
+  );
+};
+
+/** Scheda di un bus Dolomiti Bus: posizione simulata dall'orario ufficiale, linea, fermate e note. */
+const DolomitiCard: React.FC<{ bus: DolomitiBusPosition; onClose: () => void }> = ({ bus: b, onClose }) => {
+  const { t, language } = useTranslation();
+  const f = (key: string, params?: Record<string, string | number>) => t(`ui.dolomitibus.${key}`, params);
+  const locale = language === 'it' ? 'it-IT' : 'en-GB';
+  const hhmm = (ms: number) =>
+    new Date(ms).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
+  return (
+    <InfoPanel open onClose={onClose} labelledBy="map-object-title" layer="showDolomitibus" accent="border-emerald-500/40">
+      <InfoHeader
+        id="map-object-title"
+        icon={<Bus className="w-5 h-5 text-emerald-400" />}
+        category={f('category')}
+        title={`Dolomiti Bus ${b.trip.line}`}
+        subtitle={b.trip.name}
+        onClose={onClose}
+      />
+      <KeyValues
+        items={[
+          [f('route'), `${b.trip.from} → ${b.trip.to}`],
+          [f('departure', { stop: b.trip.from }), b.trip.start !== undefined ? hhmm(b.base + b.trip.start * 1000) : null],
+          [f('arrival', { stop: b.trip.to }), b.trip.end !== undefined ? hhmm(b.base + b.trip.end * 1000) : null],
+          [f('atStop'), b.atStop],
+          [f('next'), b.next ? `${b.next.name} · ${hhmm(b.next.at)}` : null, 'text-emerald-400'],
+        ]}
+      />
+      <div className="flex flex-col gap-1" data-testid="dolomitibus-stops">
+        <span className="text-[11px] font-mono uppercase text-[var(--ink-3)]">{f('stopsTitle')}</span>
+        <ol className="flex flex-col">
+          {b.trip.stops.map(([, arr, dep, name, venice], i) => {
+            const passed = b.stopIndex !== null && i < b.stopIndex;
+            const current = i === b.stopIndex;
+            return (
+              <li
+                key={`${name}-${arr}`}
+                className={`flex items-baseline justify-between py-1 text-xs border-b border-[var(--rule)]/50 last:border-none ${
+                  current ? 'font-semibold text-emerald-400' : passed ? 'text-[var(--ink-3)] line-through' : 'text-[var(--ink)]'
+                }`}
+              >
+                <span className="flex items-center gap-1.5 min-w-0 pr-2">
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${current ? 'bg-emerald-400' : venice ? 'bg-emerald-400/60' : 'bg-[var(--ink-3)]'}`} />
+                  <span className="truncate">{name}</span>
+                </span>
+                <span className="font-mono text-[11px] shrink-0 text-[var(--ink-2)]">
+                  {arr === dep ? hhmm(b.base + arr * 1000) : `${hhmm(b.base + arr * 1000)}–${hhmm(b.base + dep * 1000)}`}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+      <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">{f('note')}</p>
+      <a
+        href={PROVIDERS.dolomitibus.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[11px] font-mono text-cyan-400 hover:underline border-t border-[var(--rule)] pt-2"
+      >
+        © Dolomiti Bus S.p.A. · Orari Ufficiali di Esercizio
       </a>
     </InfoPanel>
   );

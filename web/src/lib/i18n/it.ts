@@ -8,6 +8,7 @@ export const itTranslations: Translations = {
     coordinates: 'Coordinate',
     meters: 'm',
     knots: 'kt',
+    refresh: 'Aggiorna',
   },
   header: {
     title: 'Venice Open Data',
@@ -109,12 +110,17 @@ export const itTranslations: Translations = {
     layerPharmacies: 'Farmacie',
     layerHeatIslands: 'Isole di Calore Satellitari (LST)',
     layerLagoonWater: 'Sonde Qualità Acque Lagunari ARPAV',
-    layerAccommodations: 'Pressione Turistica & Alloggi',
+    layerRegisteredStays: 'Strutture ricettive registrate (Comune, GeoIDS)',
+    layerStreetPhotos: 'Foto a livello strada (Mapillary)',
+    layerAccommodations: 'Alloggi & Locazioni Brevi (Inside Airbnb)',
+    layerTourismPressure: 'Pressione Turistica & Abitativa',
     layerBikeRoutes: 'Ciclovie Isole del Veneto',
     layerPollenStations: 'Monitoraggio Pollini ARPAV',
     layerTributaries: 'Fiumi Immissari in Laguna',
     layerSatellites: 'Orbita Satelliti Copernicus & ASI',
-    layerCameras: 'Telecamere & Webcam (Live + CCTV)'
+    layerCameras: 'Telecamere & Webcam (Live + CCTV)',
+    layerPublicLighting: 'Illuminazione Pubblica & Lanterne',
+    layerSevesoPlants: 'Stabilimenti RIR Seveso III (ARPAV)'
   },
   tutorial: {
     step1Badge: 'BENVENUTO',

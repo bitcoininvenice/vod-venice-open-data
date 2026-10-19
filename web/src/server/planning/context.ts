@@ -124,6 +124,10 @@ export const SOURCES = {
   actvFares: providerCitation('actvFares'),
   alilagunaFares: providerCitation('alilagunaFares'),
   vod: providerCitation('vod'),
+  busone: providerCitation('busone'),
+  atvo: providerCitation('atvo'),
+  dolomitibus: providerCitation('dolomitibus'),
+  flixbus: providerCitation('flixbus'),
 } satisfies Record<string, SourceRef>;
 
 export const VOD_BASE_URL = PROVIDERS.vod.url;

@@ -97,4 +97,16 @@ describe('urlLayers utilities', () => {
     expect(res.activeLayers.showAccessibleBridges).toBe(true);
     expect(res.activeLayers.showCityAssets).toBeFalsy();
   });
+
+  it('riconosce il layer atvo e i suoi alias', () => {
+    expect(parseLayerParams('?layers=atvo').activeLayers.showAtvo).toBe(true);
+    expect(parseLayerParams('?layers=bus_atvo').activeLayers.showAtvo).toBe(true);
+    expect(parseLayerParams('?layers=venezia_express').activeLayers.showAtvo).toBe(true);
+  });
+
+  it('riconosce il layer dolomitibus e i suoi alias', () => {
+    expect(parseLayerParams('?layers=dolomitibus').activeLayers.showDolomitibus).toBe(true);
+    expect(parseLayerParams('?layers=dolomiti').activeLayers.showDolomitibus).toBe(true);
+    expect(parseLayerParams('?layers=cortina_express').activeLayers.showDolomitibus).toBe(true);
+  });
 });

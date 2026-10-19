@@ -15,6 +15,9 @@ Regola del progetto: finché una richiesta è aperta, il dato non viene integrat
 | Regione del Veneto – treni regionali | Non esiste un GTFS aperto dei treni regionali del Veneto (Trenitalia pubblica GTFS aperti solo per altre regioni, es. Toscana CC BY). Senza orario aperto VOD non può simulare i treni. | Regione del Veneto – Direzione Mobilità e Trasporti |
 | aisstream.io – navi AIS | I termini d'uso del servizio non sono pubblicati in modo consultabile. VOD mostra le navi nella mappa ma non le ridistribuisce (API pubblica limitata alla mappa, niente MCP né esportazioni). | Contatto indicato su aisstream.io |
 | Alilaguna – GTFS | Il feed GTFS pubblicato da Alilaguna non dichiara una licenza. VOD lo usa citando la fonte; serve una conferma scritta dell'uso e dell'attribuzione. | Alilaguna S.p.A. – contatti aziendali |
+| BusOne – feed GTFS e GTFS-RT | Condizioni pubbliche: gratuito per uso non commerciale e non profit, citando BusOne e la fonte; il titolare di VOD ha ricevuto conferma dell'uso (19/10/2026). **Salvare qui il testo o la data del messaggio di conferma.** | BusOne (proxy.busone.app) |
+| Mapillary – chiave dell'API | Serve una chiave «client token» gratuita legata a un account Mapillary: la crea il titolare di VOD e la imposta come `MAPILLARY_TOKEN` su Vercel. | mapillary.com/dashboard/developers |
+| Venice Project Center (WPI) – dataset open data (`veniceprojectcenter.org/opendata`) | Il portale raccoglie rilievi accademici su ponti (luce utile sul medio mare e gradini), vere da pozzo, patere/formelle, campanili e batimetria dei rii, ma non indica una licenza aperta su ogni dataset. | Venice Project Center / Worcester Polytechnic Institute (vpc@wpi.edu) |
 
 ---
 
@@ -174,4 +177,26 @@ Il feed non indica una licenza: vi chiediamo di confermare che questo uso è con
 
 Grazie,
 [Nome e cognome] – [email] – [sito]
+
+---
+
+## 10. Venice Project Center (WPI) – dataset su patrimonio, ponti e canali
+
+**Subject:** Open data license confirmation for Venice Project Center datasets – VOD Venice Open Data
+
+Hello,
+
+I am writing on behalf of VOD – Venice Open Data (https://venice-open-data.vercel.app), an open-source, non-commercial civic map collecting open datasets about Venice (public transport, tides, environment, architecture and historical heritage).
+
+We would love to integrate and cross-reference the datasets published on your portal (https://veniceprojectcenter.org/opendata), in particular:
+- bridge clearances above mean sea level and step counts (to enrich accessibility and high-tide boat routing);
+- historical wellheads (*vere da pozzo*), *patere* and *formelle*;
+- inner canal bathymetry and bell towers.
+
+Since individual datasets on the portal do not display an explicit machine-readable license tag, could you confirm:
+1. whether non-commercial reuse and redistribution within VOD (with full attribution to Venice Project Center / Worcester Polytechnic Institute and a link to https://veniceprojectcenter.org) is permitted, ideally under Creative Commons Attribution (CC BY 4.0);
+2. the preferred citation format for your datasets and student research teams.
+
+Thank you for your work on Venice,
+[Name] – [email] – [website]
 

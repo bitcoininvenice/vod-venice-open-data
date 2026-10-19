@@ -58,8 +58,8 @@ export type Leg =
       tripDeparture: number;
       /** colore della linea quando non è una linea ACTV di navigazione (Alilaguna, bus) */
       color?: string;
-      /** operatore, se non ACTV */
-      operator?: 'alilaguna';
+      /** operatore, se non ACTV (Alilaguna, Trenitalia, Italo, Busitalia Veneto, ATVO, Dolomiti Bus, FlixBus) */
+      operator?: 'alilaguna' | 'ACTV' | 'Trenitalia' | 'Italo' | 'Busitalia Veneto' | 'ATVO' | 'Dolomiti Bus' | 'FlixBus' | string;
     }
   /** in barca con un mezzo privato (planner «In barca», lib/boatRouting) */
   | { kind: 'boat'; from: string; to: string; meters: number; seconds: number; start: number; end: number; coords: [number, number][] };
@@ -73,8 +73,20 @@ export interface Itinerary extends WetSummary {
   rides: number;
   /** almeno una corsa con marea da MOSE (≥ +110 cm): ACTV può deviare o ridurre il servizio */
   ridesInHighWater: boolean;
-  /** opzioni per l'aeroporto (lib/airportPlanner): Alilaguna via acqua o ACTV con il bus da Piazzale Roma */
-  via?: 'alilaguna' | 'actv' | 'mixed';
+  /** opzioni di collegamento intermodale o aeroporto */
+  via?:
+    | 'alilaguna'
+    | 'actv'
+    | 'mixed'
+    | 'atvo'
+    | 'dolomitibus'
+    | 'flixbus'
+    | 'treno_regionale'
+    | 'treno_av'
+    | 'bus_actv'
+    | 'busitalia';
+  /** nota descrittiva o tariffaria opzionale */
+  note?: string;
   /** il primo mezzo parte prima di quanto serve ad arrivare a piedi alla fermata: si fa solo sbrigandosi */
   hurry?: HurryInfo;
 }
@@ -90,8 +102,8 @@ export interface HurryInfo {
   walkSeconds: number;
 }
 
-/** Più veloce (a piedi o in vaporetto), solo a piedi, con meno strada a piedi possibile; `private`: in barca propria (lib/boatRouting) */
-export type PlanMode = 'fastest' | 'walk' | 'boat' | 'private';
+/** Più veloce (a piedi o in vaporetto), più ecologico (meno tempo su mezzi a motore termico), solo a piedi, con meno strada a piedi possibile; `private`: in barca propria (lib/boatRouting) */
+export type PlanMode = 'fastest' | 'eco' | 'walk' | 'boat' | 'private';
 
 export interface PlanOptions {
   mode?: PlanMode;
@@ -110,6 +122,8 @@ export interface PlanOptions {
   hurry?: boolean;
   /** data del viaggio per l'orario Alilaguna (null: senza Alilaguna) */
   date?: Date | null;
+  /** include autolinee extraurbane e a lunga percorrenza (ATVO, Dolomiti Bus, FlixBus) */
+  includeCoaches?: boolean;
 }
 
 export interface PlanResult {

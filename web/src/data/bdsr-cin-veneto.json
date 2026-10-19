@@ -1,0 +1,382 @@
+{
+  "metadata": {
+    "source": "Ministero del Turismo – BDSR (Banca Dati Strutture Ricettive)",
+    "sourceUrl": "https://bdsr.ministeroturismo.gov.it/mappa-italia",
+    "snapshotDate": "17/10/2026",
+    "license": "Dati pubblicati dalla PA senza licenza espressa: art. 52 c. 2 D.Lgs. 82/2005 (riuso citando la fonte)",
+    "attribution": "Ministero del Turismo – BDSR in numeri, estrazione del 17/10/2026"
+  },
+  "venetoRegion": {
+    "totalStructures": 65926,
+    "cinVerified": 63324,
+    "cinNotVerified": 6,
+    "pctCinVerified": 96.05,
+    "provinces": [
+      {
+        "code": "027",
+        "name": "Venezia",
+        "totalStructures": 32726,
+        "cinVerified": 31812,
+        "cinNotVerified": 3,
+        "pctCinVerified": 97.21
+      },
+      {
+        "code": "023",
+        "name": "Verona",
+        "totalStructures": 14089,
+        "cinVerified": 13437,
+        "cinNotVerified": 2,
+        "pctCinVerified": 95.37
+      },
+      {
+        "code": "025",
+        "name": "Belluno",
+        "totalStructures": 7517,
+        "cinVerified": 7102,
+        "cinNotVerified": 0,
+        "pctCinVerified": 94.48
+      },
+      {
+        "code": "024",
+        "name": "Vicenza",
+        "totalStructures": 3809,
+        "cinVerified": 3549,
+        "cinNotVerified": 0,
+        "pctCinVerified": 93.17
+      },
+      {
+        "code": "026",
+        "name": "Treviso",
+        "totalStructures": 2857,
+        "cinVerified": 2692,
+        "cinNotVerified": 1,
+        "pctCinVerified": 94.22
+      },
+      {
+        "code": "028",
+        "name": "Padova",
+        "totalStructures": 2607,
+        "cinVerified": 2510,
+        "cinNotVerified": 0,
+        "pctCinVerified": 96.28
+      },
+      {
+        "code": "029",
+        "name": "Rovigo",
+        "totalStructures": 2321,
+        "cinVerified": 2222,
+        "cinNotVerified": 0,
+        "pctCinVerified": 95.73
+      }
+    ]
+  },
+  "veneziaMunicipality": {
+    "istatCode": "027042",
+    "name": "Venezia",
+    "totalStructures": 10266,
+    "cinVerified": 9884,
+    "cinInVerification": 2,
+    "cinMissing": 380,
+    "pctCinVerified": 96.28,
+    "macroCategories": [
+      {
+        "code": "A",
+        "name": "Esercizi alberghieri",
+        "total": 470,
+        "cinVerified": 460,
+        "cinMissing": 10,
+        "pctCinVerified": 97.87,
+        "categoriesList": [
+          {
+            "subCode": "A101",
+            "categoryCode": "A1",
+            "categoryName": "Esercizi alberghieri",
+            "description": "Strutture ricettive, a gestione unitaria, aperte al pubblico che, ubicate in uno o più stabili o parti di stabili, forniscono alloggio, servizi accessori ed eventualmente ristorazione, in camere, suite o unità abitative fornite o meno di servizio autonomo di cucina, destinate alla ricettività.",
+            "total": 465,
+            "cinVerified": 455,
+            "cinMissing": 10,
+            "pctCinVerified": 97.85
+          },
+          {
+            "subCode": "A103",
+            "categoryCode": "A1",
+            "categoryName": "Esercizi alberghieri",
+            "description": "Strutture che forniscono alloggio, servizi accessori ed eventualmente ristorazione, in unità abitative costituite da uno o più locali, fornite di servizio autonomo di cucina e con eventuale capacità ricettiva residuale in camere o suite non dotate di cucina o posto-cottura.",
+            "total": 5,
+            "cinVerified": 5,
+            "cinMissing": 0,
+            "pctCinVerified": 100.0
+          }
+        ]
+      },
+      {
+        "code": "B",
+        "name": "Esercizi extralberghieri complementari",
+        "total": 4595,
+        "cinVerified": 4543,
+        "cinMissing": 52,
+        "pctCinVerified": 98.87,
+        "categoriesList": [
+          {
+            "subCode": "B101",
+            "categoryCode": "B1",
+            "categoryName": "Campeggi e aree attrezzate per camper e roulotte",
+            "description": "Esercizi ricettivi che espletano attività di fornitura, a persone che soggiornano per brevi periodi, di spazi e servizi per camper, roulotte in aree di sosta attrezzate e campeggi. I campeggi, nello specifico, sono esercizi ricettivi aperti al pubblico, a gestione unitaria, attrezzati su aree recintate per la sosta ed il soggiorno di turisti provvisti, di norma, di tende o di altri mezzi autonomi di pernottamento.",
+            "total": 6,
+            "cinVerified": 6,
+            "cinMissing": 0,
+            "pctCinVerified": 100.0
+          },
+          {
+            "subCode": "B403",
+            "categoryCode": "B4",
+            "categoryName": "Alloggi in affitto gestiti in forma imprenditoriale",
+            "description": "Strutture ricettive atte a fornire alloggio ed eventuali servizi complementari, ivi compresa la somministrazione di cibi e bevande, in unità abitative costituite da camere ammobiliate.",
+            "total": 310,
+            "cinVerified": 301,
+            "cinMissing": 9,
+            "pctCinVerified": 97.1
+          },
+          {
+            "subCode": "B405",
+            "categoryCode": "B4",
+            "categoryName": "Alloggi in affitto gestiti in forma imprenditoriale",
+            "description": "Unità immobiliari composte da uno o più locali arredati e dotati di servizi igienici e di cucina autonoma. Nelle unità abitative ammobiliate a uso turistico sono assicurati servizi essenziali quali l'erogazione di energia elettrica, acqua, gas, la sostituzione di arredi, corredi e dotazioni deteriorati, la pulizia a ogni cambio di cliente e il riscaldamento.",
+            "total": 4090,
+            "cinVerified": 4049,
+            "cinMissing": 41,
+            "pctCinVerified": 99.0
+          },
+          {
+            "subCode": "B407",
+            "categoryCode": "B4",
+            "categoryName": "Alloggi in affitto gestiti in forma imprenditoriale",
+            "description": "Strutture ricettive che offrono un servizio di alloggio e prima colazione per un numero limitato di camere e/o di posti letto gestite in forma imprenditoriale.",
+            "total": 129,
+            "cinVerified": 129,
+            "cinMissing": 0,
+            "pctCinVerified": 100.0
+          },
+          {
+            "subCode": "B501",
+            "categoryCode": "B5",
+            "categoryName": "Agriturismi",
+            "description": "Attività di ricezione ed ospitalità esercitate dagli imprenditori agricoli, singoli od associati e dai loro familiari, attraverso l'utilizzazione della propria azienda, in rapporto di connessione e complementarità rispetto alle attività di coltivazione del fondo, silvicoltura ed allevamento del bestiame che, comunque, rimangono principali.",
+            "total": 15,
+            "cinVerified": 15,
+            "cinMissing": 0,
+            "pctCinVerified": 100.0
+          },
+          {
+            "subCode": "B601",
+            "categoryCode": "B6",
+            "categoryName": "Ostelli per la gioventù",
+            "description": "Strutture ricettive attrezzate prevalentemente per il soggiorno e il pernottamento dei giovani e dei loro accompagnatori o anche per gruppi di turisti. Possono essere gestite sia da soggetti pubblici, enti o associazioni riconosciute senza scopo di lucro che da operatori privati con finalità di carattere ecoomico.",
+            "total": 8,
+            "cinVerified": 7,
+            "cinMissing": 1,
+            "pctCinVerified": 87.5
+          },
+          {
+            "subCode": "B701",
+            "categoryCode": "B7",
+            "categoryName": "Case per ferie",
+            "description": "Strutture ricettive attrezzate per il soggiorno di persone o gruppi e gestite, al di fuori di normali canali commerciali, da enti pubblici, associazioni o enti religiosi operanti senza fine di lucro per il conseguimento di finalità sociali, culturali, assistenziali, religiose o sportive, nonché da enti o aziende per il soggiorno dei propri dipendenti e dei loro familiari.",
+            "total": 34,
+            "cinVerified": 33,
+            "cinMissing": 1,
+            "pctCinVerified": 97.06
+          },
+          {
+            "subCode": "B903",
+            "categoryCode": "B9",
+            "categoryName": "Altri esercizi ricettivi n.a.c.",
+            "description": "Strutture ricettive organizzate per la sosta e il pernottamento di turisti all’interno delle proprie unità da diporto ormeggiate in uno specchio acqueo appositamente attrezzato. Tali strutture possono, altresì, essere dotate anche di piazzole appositamente attrezzate per la sosta di imbarcazioni.",
+            "total": 3,
+            "cinVerified": 3,
+            "cinMissing": 0,
+            "pctCinVerified": 100.0
+          }
+        ]
+      },
+      {
+        "code": "C",
+        "name": "Alloggi privati in affitto in forma non imprenditoriale",
+        "total": 5201,
+        "cinVerified": 4881,
+        "cinMissing": 318,
+        "pctCinVerified": 93.85,
+        "categoriesList": [
+          {
+            "subCode": "C101",
+            "categoryCode": "C1",
+            "categoryName": "Bed and breakfast",
+            "description": "Strutture ricettive che offrono un servizio di alloggio e prima colazione per un numero limitato di camere e/o di posti letto gestite in forma non imprenditoriale",
+            "total": 76,
+            "cinVerified": 69,
+            "cinMissing": 7,
+            "pctCinVerified": 90.79
+          },
+          {
+            "subCode": "C202",
+            "categoryCode": "C2",
+            "categoryName": "Altri alloggi privati",
+            "description": "Unità immobiliari di civile abitazione ubicate in immobili esistenti, composte ciascuna da uno o più locali, arredate e dotate di servizi igienici e cucina autonomi.",
+            "total": 18,
+            "cinVerified": 17,
+            "cinMissing": 0,
+            "pctCinVerified": 94.44
+          },
+          {
+            "subCode": "C204",
+            "categoryCode": "C2",
+            "categoryName": "Altri alloggi privati",
+            "description": "Tutte altre locazioni non assimilabili alle precedenti sotto-categorie della categoria C.2 Altri alloggi privati",
+            "total": 5107,
+            "cinVerified": 4795,
+            "cinMissing": 311,
+            "pctCinVerified": 93.89
+          }
+        ]
+      }
+    ],
+    "entrepreneurialRentals": 4090,
+    "privateNonEntrepreneurialRentals": 5107,
+    "totalTouristRentals": 9197,
+    "totalHotels": 470
+  },
+  "metropolitanMunicipalities": [
+    {
+      "istatCode": "027042",
+      "name": "Venezia",
+      "totalStructures": 10266,
+      "cinVerified": 9884,
+      "cinMissing": 380,
+      "hotels": 470,
+      "extraHotel": 4595,
+      "privateRentals": 5201,
+      "pctCinVerified": 96.28
+    },
+    {
+      "istatCode": "027034",
+      "name": "San Michele al Tagliamento",
+      "totalStructures": 8824,
+      "cinVerified": 8718,
+      "cinMissing": 105,
+      "hotels": 104,
+      "extraHotel": 4807,
+      "privateRentals": 3913,
+      "pctCinVerified": 98.8
+    },
+    {
+      "istatCode": "027019",
+      "name": "Jesolo",
+      "totalStructures": 5312,
+      "cinVerified": 5130,
+      "cinMissing": 182,
+      "hotels": 343,
+      "extraHotel": 3266,
+      "privateRentals": 1703,
+      "pctCinVerified": 96.57
+    },
+    {
+      "istatCode": "027005",
+      "name": "Caorle",
+      "totalStructures": 4012,
+      "cinVerified": 3931,
+      "cinMissing": 81,
+      "hotels": 152,
+      "extraHotel": 1856,
+      "privateRentals": 2004,
+      "pctCinVerified": 97.98
+    },
+    {
+      "istatCode": "027008",
+      "name": "Chioggia",
+      "totalStructures": 1787,
+      "cinVerified": 1735,
+      "cinMissing": 52,
+      "hotels": 58,
+      "extraHotel": 729,
+      "privateRentals": 1000,
+      "pctCinVerified": 97.09
+    },
+    {
+      "istatCode": "027044",
+      "name": "Cavallino-Treporti",
+      "totalStructures": 874,
+      "cinVerified": 852,
+      "cinMissing": 22,
+      "hotels": 23,
+      "extraHotel": 569,
+      "privateRentals": 282,
+      "pctCinVerified": 97.48
+    },
+    {
+      "istatCode": "027013",
+      "name": "Eraclea",
+      "totalStructures": 670,
+      "cinVerified": 652,
+      "cinMissing": 18,
+      "hotels": 14,
+      "extraHotel": 518,
+      "privateRentals": 138,
+      "pctCinVerified": 97.31
+    },
+    {
+      "istatCode": "027023",
+      "name": "Mira",
+      "totalStructures": 191,
+      "cinVerified": 180,
+      "cinMissing": 11,
+      "hotels": 17,
+      "extraHotel": 75,
+      "privateRentals": 99,
+      "pctCinVerified": 94.24
+    },
+    {
+      "istatCode": "027024",
+      "name": "Mirano",
+      "totalStructures": 72,
+      "cinVerified": 63,
+      "cinMissing": 9,
+      "hotels": 9,
+      "extraHotel": 27,
+      "privateRentals": 36,
+      "pctCinVerified": 87.5
+    },
+    {
+      "istatCode": "027012",
+      "name": "Dolo",
+      "totalStructures": 71,
+      "cinVerified": 67,
+      "cinMissing": 4,
+      "hotels": 11,
+      "extraHotel": 32,
+      "privateRentals": 28,
+      "pctCinVerified": 94.37
+    },
+    {
+      "istatCode": "027033",
+      "name": "San Donà di Piave",
+      "totalStructures": 64,
+      "cinVerified": 56,
+      "cinMissing": 8,
+      "hotels": 4,
+      "extraHotel": 23,
+      "privateRentals": 37,
+      "pctCinVerified": 87.5
+    },
+    {
+      "istatCode": "027026",
+      "name": "Noale",
+      "totalStructures": 61,
+      "cinVerified": 58,
+      "cinMissing": 3,
+      "hotels": 5,
+      "extraHotel": 23,
+      "privateRentals": 33,
+      "pctCinVerified": 95.08
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import type { RenderContext } from './renderContext';
 import { PARK_COLORS } from '@/lib/parks';
 import { ORDINANCE_COLORS, isPlacedOrdinance } from '@/lib/canalOrdinances';
 import { matchesSportFilter, sportColor } from '@/lib/sports';
+import { VENICE_RAILWAY_MAINLINE, VENICE_RAILWAY_BRANCH_TREVISO } from '@/lib/railwayTracks';
 
 /** Colore di una fontanella: blu aperta, rosso chiusa, grigio non indicato; OSM azzurro (stato non verificato) */
 function fountainColor(status: 'open' | 'closed' | 'unknown' | undefined, fromVtw: boolean, isDark: boolean): string {
@@ -454,43 +455,156 @@ export function drawWifiHotspots(rc: RenderContext): void {
 
 export function drawTrains(rc: RenderContext): void {
   const { ctx, isDark, sx, sy, mx, my, camera, showTrains, liveTrains } = rc;
-  // 32. Render Treni Live su Ponte della Libertà & RFI
-  if (showTrains && liveTrains && liveTrains.length > 0) {
+  if (!showTrains) return;
+
+  // 1. Tracciamento infrastruttura ferroviaria RFI (massicciata e rotaie sul Ponte della Liberta)
+  const tracks = [VENICE_RAILWAY_MAINLINE, VENICE_RAILWAY_BRANCH_TREVISO];
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  for (const track of tracks) {
+    if (track.length < 2) continue;
+
+    // Sede della massicciata / ballast
+    ctx.beginPath();
+    ctx.moveTo(sx(mx(track[0].lon)), sy(my(track[0].lat)));
+    for (let i = 1; i < track.length; i++) {
+      ctx.lineTo(sx(mx(track[i].lon)), sy(my(track[i].lat)));
+    }
+    ctx.strokeStyle = isDark ? '#334155' : '#cbd5e1';
+    ctx.lineWidth = camera.s > 0.04 ? 7 : 4;
+    ctx.stroke();
+
+    // Rotaie binarie interne (acciaio)
+    ctx.strokeStyle = isDark ? '#94a3b8' : '#64748b';
+    ctx.lineWidth = camera.s > 0.04 ? 3 : 1.8;
+    ctx.stroke();
+
+    // Linea di mezzeria elettrificazione
+    if (camera.s > 0.03) {
+      ctx.strokeStyle = isDark ? '#0284c7' : '#0ea5e9';
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash([4, 6]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+  ctx.restore();
+
+  // 2. Render Treni Live orientati lungo i binari
+  if (liveTrains && liveTrains.length > 0) {
     for (const tr of liveTrains) {
       const tx = sx(mx(tr.lon));
       const ty = sy(my(tr.lat));
-      ctx.save();
+      if (tx < -80 || tx > rc.cw + 80 || ty < -80 || ty > rc.ch + 80) continue;
 
-      // Sleek high-speed / regional / cargo train body
+      ctx.save();
+      ctx.translate(tx, ty);
+
+      // Angolo di rotta del convoglio (0 deg = Nord) -> rotazione canvas (0 rad = asse +X Est)
+      const bearing = tr.bearing ?? 120;
+      const angleRad = ((bearing - 90) * Math.PI) / 180;
+      ctx.rotate(angleRad);
+
+      const isHighSpeed = tr.trainType === 'FRECCIAROSSA' || tr.trainType === 'ITALO';
+      const len = isHighSpeed ? 32 : 26;
+      const wid = 10;
+      const halfL = len / 2;
+      const halfW = wid / 2;
+
+      // Sagoma convoglio aerodinamica
       ctx.fillStyle =
         tr.trainType === 'FRECCIAROSSA'
           ? '#dc2626'
           : tr.trainType === 'ITALO'
-          ? '#991b1b'
+          ? '#881337'
           : tr.trainType === 'MERCITALIA_CARGO'
           ? '#15803d'
           : tr.trainType === 'EUROCITY' || tr.trainType === 'RAILJET'
           ? '#7c3aed'
-          : '#2563eb';
+          : '#0284c7';
+
       ctx.beginPath();
-      ctx.roundRect(tx - 13, ty - 5, 26, 10, 4);
+      // Muso aerodinamico rivolto in avanti verso +X (direzione di marcia)
+      ctx.moveTo(-halfL, -halfW + 2);
+      ctx.lineTo(halfL - 4, -halfW + 1);
+      ctx.quadraticCurveTo(halfL + 2, 0, halfL - 4, halfW - 1);
+      ctx.lineTo(-halfL, halfW - 2);
+      ctx.closePath();
       ctx.fill();
+
       ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
       ctx.lineWidth = 1.2;
       ctx.stroke();
 
-      // Headlight glow
+      // Livrea / striscia longitudinale
+      ctx.strokeStyle = tr.trainType === 'ITALO' ? '#f59e0b' : '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(-halfL + 3, 0);
+      ctx.lineTo(halfL - 5, 0);
+      ctx.stroke();
+
+      // Doppi fari anteriori
       ctx.fillStyle = '#fef08a';
       ctx.beginPath();
-      ctx.arc(tx + 13, ty, 2.5, 0, Math.PI * 2);
+      ctx.arc(halfL - 2, -2.2, 1.4, 0, Math.PI * 2);
+      ctx.arc(halfL - 2, 2.2, 1.4, 0, Math.PI * 2);
       ctx.fill();
 
-      if (camera.s > 0.02) {
-        ctx.font = 'bold 8px "DM Mono", monospace';
-        ctx.fillStyle = isDark ? '#f87171' : '#b91c1c';
-        ctx.fillText(tr.trainNumber, tx - 14, ty - 8);
+      // Cono di luce anteriore
+      if (isDark || camera.s > 0.03) {
+        ctx.fillStyle = 'rgba(254, 240, 138, 0.18)';
+        ctx.beginPath();
+        ctx.moveTo(halfL, 0);
+        ctx.lineTo(halfL + 18, -8);
+        ctx.lineTo(halfL + 18, 8);
+        ctx.closePath();
+        ctx.fill();
       }
+
+      // Fanali di coda rossi posteriori
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(-halfL + 1, -2, 1.2, 0, Math.PI * 2);
+      ctx.arc(-halfL + 1, 2, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+
       ctx.restore();
+
+      // Etichetta treno con numero e ritardo (non ruotata, leggibile)
+      if (camera.s > 0.02) {
+        ctx.save();
+        ctx.font = 'bold 8.5px "DM Mono", monospace';
+        const delayStr = tr.delayMinutes && tr.delayMinutes > 0 ? ` +${tr.delayMinutes}'` : '';
+        const speedStr = tr.speedKmh && tr.speedKmh > 0 ? ` · ${tr.speedKmh} km/h` : '';
+        const label = `${tr.trainNumber}${delayStr}${camera.s > 0.03 ? speedStr : ''}`;
+        const tw = ctx.measureText(label).width;
+
+        // Badge pill
+        ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.92)';
+        ctx.beginPath();
+        ctx.roundRect(tx - tw / 2 - 4, ty - 18, tw + 8, 12, 3);
+        ctx.fill();
+
+        ctx.strokeStyle =
+          tr.trainType === 'FRECCIAROSSA'
+            ? '#dc2626'
+            : tr.trainType === 'ITALO'
+            ? '#881337'
+            : tr.trainType === 'MERCITALIA_CARGO'
+            ? '#15803d'
+            : '#0284c7';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, tx, ty - 12);
+        ctx.restore();
+      }
     }
   }
 }
@@ -1211,4 +1325,69 @@ export function drawOrdinances(rc: RenderContext): void {
     }
     ctx.restore();
   }
+}
+
+/** Depositi bagagli mappati su OpenStreetMap: custoditi e armadietti. */
+export function drawLuggageStorage(rc: RenderContext): void {
+  const { ctx, isDark, sx, sy, mx, my, camera, showLuggages, luggages } = rc;
+  if (!showLuggages || !luggages || luggages.length === 0) return;
+
+  for (const s of luggages) {
+    const lx = sx(mx(s.lon));
+    const ly = sy(my(s.lat));
+    ctx.save();
+
+    const bgCol = s.type === 'locker' ? '#6366f1' : '#0284c7';
+    ctx.fillStyle = bgCol;
+    ctx.beginPath();
+    ctx.arc(lx, ly, 5.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+
+    ctx.font = 'bold 7px "DM Sans", sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('L', lx, ly);
+    ctx.textAlign = 'start';
+    ctx.textBaseline = 'alphabetic';
+
+    if (camera.s > 0.035 && s.name) {
+      const label = s.name;
+      ctx.font = '600 8.5px "DM Mono", monospace';
+      ctx.fillStyle = isDark ? '#7dd3fc' : '#0369a1';
+      ctx.fillText(label, lx + 9, ly + 3);
+    }
+    ctx.restore();
+  }
+}
+
+
+/** Foto Mapillary: un punto per foto con la direzione dello scatto, solo con la mappa ingrandita */
+export function drawStreetPhotos(rc: RenderContext): void {
+  const { ctx, isDark, sx, sy, mx, my, camera, cw, ch, showStreetPhotos, streetPhotos } = rc;
+  if (!showStreetPhotos || camera.s < 0.3 || streetPhotos.length === 0) return;
+  ctx.save();
+  ctx.fillStyle = '#05cb63';
+  ctx.strokeStyle = isDark ? '#ffffff' : '#064e3b';
+  ctx.lineWidth = 1;
+  for (const p of streetPhotos) {
+    const x = sx(mx(p.lon));
+    const y = sy(my(p.lat));
+    if (x < -8 || x > cw + 8 || y < -8 || y > ch + 8) continue;
+    if (p.compass !== null && camera.s >= 0.8) {
+      const a = ((p.compass - 90) * Math.PI) / 180;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + Math.cos(a) * 9, y + Math.sin(a) * 9);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+  ctx.restore();
 }

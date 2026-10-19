@@ -23,4 +23,5 @@ export interface RealtimeVehicleDto {
   delay?: VehicleDelay | null;
   /** posizione e dato ACTV non coerenti: il ritardo non viene mostrato */
   delayConflict?: boolean;
+  operator?: string;
 }

@@ -1056,6 +1056,20 @@ test('metrics: indicatori territoriali divisi per contesto, con sotto-schede e r
   await expect(page.getByTestId('metrics-group-society')).toHaveCount(0);
 });
 
+test('metrics: tab Turismo con statistiche Inside Airbnb, prezzi medi e mediani per sestiere e pressione ISTAT', async ({ page }) => {
+  await page.goto('/metrics');
+  const tourismBtn = page.getByRole('button', { name: 'Turismo' }).first();
+  await expect(tourismBtn).toBeVisible();
+  await tourismBtn.click();
+  const section = page.getByTestId('tourism-airbnb-metrics');
+  await expect(section).toBeVisible();
+  await expect(section).toContainText('Prezzo medio · Centro storico');
+  await expect(section).toContainText('San Marco');
+  await expect(section).toContainText('Mestre');
+  await expect(section).toContainText('Intero appartamento');
+  await expect(section).toContainText('Inside Airbnb');
+});
+
 test('metrics: curiosità su calli e ponti con link per verificarle e per arrivarci', async ({ page }) => {
   await page.goto('/metrics');
   const box = page.getByTestId('calli-curiosities');
@@ -1161,6 +1175,16 @@ test('il catalogo dei layer dichiara la natura dei dati', async ({ page }) => {
   await expect(page.getByText(/opere pubbliche 2026/i).first()).toBeVisible();
 });
 
+test('metriche: strutture registrate al Comune e corse per alimentazione, senza CO2 inventata', async ({ page }) => {
+  await page.goto('/metrics');
+  // il componente si ridisegna quando arrivano i dati: niente scroll su un elemento che può cambiare
+  const stays = page.getByTestId('registered-stays-metrics');
+  await expect(stays.getByText(/strutture registrate al comune \(geoids\)/i)).toBeVisible({ timeout: 15000 });
+  await expect(stays.getByText(/non indicano strutture irregolari/i)).toBeVisible();
+  const mob = page.getByTestId('mobility-emissions-metrics');
+  await expect(mob.getByText(/nessuna stima di co2/i)).toBeVisible({ timeout: 15000 });
+});
+
 test('layers, metriche e fonti mostrano lo stesso numero di layer', async ({ page }) => {
   const labels: string[] = [];
   for (const path of ['/layers', '/metrics', '/sources']) {
@@ -1224,6 +1248,40 @@ test('SEO: titolo, descrizione e canonico propri per ogni pagina, anteprima soci
 });
 
 test.describe('API', () => {
+  test('fonti del 19/10: niente dati inventati, privacy degli alloggi, foto Mapillary senza chiave', async ({ request }) => {
+    // strutture registrate: imprese come punti, alloggi privati solo in celle; nessun contatto
+    const stays = await (await request.get('/api/strutture-registrate')).json();
+    expect(stays.success).toBe(true);
+    expect(stays.data.businesses.length).toBeGreaterThan(100);
+    expect(stays.data.privateCells.length).toBeGreaterThan(100);
+    expect(JSON.stringify(stays.data)).not.toMatch(/@[a-z0-9-]+\.[a-z]{2,}|TELEFONO|INDIRIZZO_EMAIL/i);
+    // depositi bagagli da OpenStreetMap, senza prezzi né recensioni
+    const lug = await (await request.get('/api/luggages')).json();
+    expect(lug.data.every((s: { osmUrl: string }) => s.osmUrl.startsWith('https://www.openstreetmap.org/'))).toBe(true);
+    expect(JSON.stringify(lug.data)).not.toMatch(/pricePerDay|rating|reviewCount/);
+    // corse per alimentazione dagli orari, nessuna CO2 stimata
+    const em = await (await request.get('/api/emissions')).json();
+    expect(em.data.total).toBe(em.data.totals.electric + em.data.totals.fossil + em.data.totals.unknown);
+    expect(JSON.stringify(em)).not.toMatch(/Co2Tons|co2Kg/);
+    // treni: solo dall'orario ufficiale o dal feed, mai tabelloni di esempio
+    const board = await (await request.get('/api/trains?station=santa_lucia')).json();
+    for (const r of [...board.data.departures, ...board.data.arrivals]) {
+      expect(r.place).not.toBe('Direttrice Ferroviaria RFI');
+      expect(r).not.toHaveProperty('status');
+    }
+    // Mapillary: tile validato; senza chiave lo si dice
+    expect((await request.get('/api/mapillary?tile=abc')).status()).toBe(400);
+    const photos = await request.get('/api/mapillary?tile=3083:11358');
+    if (!process.env.MAPILLARY_TOKEN) expect((await photos.json()).error).toBe('mapillary_token_missing');
+  });
+
+  test('carburanti: prezzi del Ministero o del file giornaliero, altrimenti OpenStreetMap senza prezzi', async ({ request }) => {
+    const body = await (await request.get('/api/carburanti')).json();
+    expect(body.success).toBe(true);
+    if (body.meta.pricesAvailable) expect(['live', 'daily-file']).toContain(body.meta.pricesFrom);
+    else expect(body.data.every((s: { prices: unknown[] }) => s.prices.length === 0)).toBe(true);
+  });
+
   test('ships restituisce navi AIS reali o dichiara che il feed non è configurato', async ({ request }) => {
     const body = await (await request.get('/api/ships')).json();
     expect(body.success).toBe(true);
@@ -1584,12 +1642,13 @@ test.describe('API', () => {
     expect(Array.isArray(body.arrivals)).toBe(true);
     const now = Date.now();
     for (const r of [...body.departures, ...body.arrivals]) {
-      expect(['bus', 'alilaguna', 'flixbus']).toContain(r.kind);
+      expect(['bus', 'alilaguna', 'flixbus', 'atvo', 'dolomitibus']).toContain(r.kind);
       expect(r.at).toBeGreaterThan(now - 5 * 60_000);
       expect(r.at).toBeLessThan(now + 100 * 60_000);
     }
     expect(body.meta.note).toMatch(/voli/);
-    expect(body.meta.sources.length).toBe(3);
+    // ACTV, Alilaguna, FlixBus, ATVO e Dolomiti Bus
+    expect(body.meta.sources.length).toBe(5);
   });
 
   test('come arrivare lato server: itinerario con fonti, link a VOD ed errori espliciti', async ({ request }) => {

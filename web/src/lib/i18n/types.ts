@@ -9,6 +9,7 @@ export interface Translations {
     coordinates: string;
     meters: string;
     knots: string;
+    refresh: string;
   };
   header: {
     title: string;
@@ -110,12 +111,17 @@ export interface Translations {
     layerPharmacies: string;
     layerHeatIslands: string;
     layerLagoonWater: string;
+    layerRegisteredStays: string;
+    layerStreetPhotos: string;
     layerAccommodations: string;
+    layerTourismPressure: string;
     layerBikeRoutes: string;
     layerPollenStations: string;
     layerTributaries: string;
     layerSatellites: string;
     layerCameras: string;
+    layerPublicLighting: string;
+    layerSevesoPlants: string;
   };
   tutorial: {
     step1Badge: string;

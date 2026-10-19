@@ -99,6 +99,8 @@ risponde in modo incompleto. Dalla cartella `pipeline/`:
 | `download_gtfs.py` + `export_simulation_data.py` | orario ACTV (GTFS, CC BY): simulazione dei mezzi, indice delle corse, fermate bus |
 | `import_alilaguna_gtfs.py` | orario Alilaguna (GTFS dell'operatore) |
 | `import_flixbus.py` | corse FlixBus che passano per l'area di Venezia (GTFS FlixMobility, ODbL) |
+| `import_busone_trains.py` | treni fra Santa Lucia e Mestre dai GTFS Trenitalia (NeTEx del Punto di Accesso Nazionale) e Italo pubblicati da BusOne (uso non commerciale, citando BusOne e la fonte) |
+| `import_atvo.py`, `import_dolomitibus.py`, `coach_common.py` | orari ATVO 35/35B e Dolomiti Bus 72 dai PDF ufficiali (ogni giorno, solo se il PDF cambia), percorso stradale OSRM (OSM) |
 | `import_opere_pubbliche.py` | Elenco Annuale dei Lavori del Comune (dati.venezia.it), con geocodifica approssimata |
 | `import_bdap_opere.py` | Monitoraggio Opere Pubbliche BDAP (MEF-RGS), da lanciare dopo il precedente |
 | `import_wifi_hotspots.py` | hotspot Wi-Fi del Comune |
@@ -115,7 +117,15 @@ risponde in modo incompleto. Dalla cartella `pipeline/`:
 | `import_osm_boat.py` | canali con le regole del Testo Unico per la barca propria |
 | `import_osm_civici.py`, `import_osm_toponyms.py` | numeri civici e toponimi (calli, campi, ponti) per la ricerca e le ordinanze |
 | `import_osm_fuel.py` | distributori di carburante (OSM): riserva senza prezzi quando il dato del Ministero non è raggiungibile, e orari e barche accanto ai prezzi |
+| `import_mimit_fuel.py` | prezzi dei carburanti alle 8 del MIMIT (IODL 2.0) per l'area della mappa: lo lancia ogni mattina il Mac del progetto (`pipeline/fuel_auto/`), perché il Ministero rifiuta le richieste dai data center |
+| `import_osm_luggage.py`, `import_osm_street_lamps.py` | depositi bagagli e lampioni mappati su OpenStreetMap (copertura parziale, senza prezzi né dati stimati) |
 | `import_osm_curiosita.py` | curiosità su calli e ponti del centro storico per /metrics: più strette, più lunghe, distanza fra ponti (OSM) |
+| `import_osm_buildings.py` | edifici del centro storico e delle isole in 2D/3D: sagome OpenStreetMap, date, stile e architetti solo se documentati in OSM o Wikidata (CC0) |
+| `import_inside_airbnb.py` | locazioni brevi Inside Airbnb (CC BY 4.0) incrociate con alloggi e residenti ISTAT 2021 per sestiere, isola e su griglia da ~100 m |
+| `import_bdsr_cin.py` | strutture ricettive e codici CIN dal CSV «BDSR in numeri» del Ministero del Turismo, scaricato a mano in `data/bdsr/` (art. 52 CAD) |
+| `import_geoids.py` | strutture ricettive registrate al Comune dalle esportazioni CSV del servizio GeoIDS (art. 52 CAD): imprese come punti, alloggi privati solo aggregati |
+| `import_arpav_seveso.py` | stabilimenti a rischio di incidente rilevante (Seveso III, ARPA Veneto) con georeferenziazione impianti Porto Marghera e terraferma |
+| `import_arpav_waste.py` | statistiche ufficiali produzione rifiuti e raccolta differenziata ARPAV (D.M. 26/05/2016), serie storica e benchmark metropolitano |
 
 ### API
 
@@ -134,19 +144,21 @@ Pubbliche e in sola lettura, con cache per ogni fonte e un limite di richieste p
 | `/api/realtime/vehicles`, `/api/realtime/arrivals` | posizioni GPS dei mezzi ACTV con ritardo, arrivi previsti a una fermata |
 | `/api/servizio`, `/api/velocita-orario` | servizio ACTV adesso per linea; tempi da orario contro limiti di velocità |
 | `/api/stops`, `/api/fermate-bus`, `/api/avvisi-actv` | fermate ACTV, fermate bus, avvisi di servizio |
-| `/api/alilaguna`, `/api/flixbus` | linee e corse Alilaguna e FlixBus (dall'orario) |
+| `/api/alilaguna`, `/api/flixbus`, `/api/atvo`, `/api/dolomitibus` | linee e corse Alilaguna, FlixBus, ATVO e Dolomiti Bus (dall'orario) |
 | `/api/flights`, `/api/ships` | voli (OpenSky) e navi (AIS): solo per la mappa, non ridistribuiti |
 | `/api/satellites` | satelliti con orbite da CelesTrak |
 | `/api/ordinanze` | ordinanze del Comune in vigore o in arrivo, con posizione e link all'atto |
 | `/api/cantieri`, `/api/opere-bdap`, `/api/spatial/stops-near-cantieri?radius=` | opere pubbliche, Monitoraggio Opere Pubbliche, fermate vicine alle opere |
-| `/api/emergency-health`, `/api/city-assets`, `/api/venice-assets`, `/api/heritage` | salute (farmacie, DAE, idroambulanze), servizi, colonnine e balneazione, patrimonio |
+| `/api/emergency-health`, `/api/city-assets`, `/api/venice-assets`, `/api/heritage`, `/api/luggages`, `/api/strutture-registrate` | salute (farmacie, DAE, idroambulanze), servizi, colonnine e balneazione, patrimonio, depositi bagagli (OSM), strutture ricettive registrate (GeoIDS) |
 | `/api/cameras` | webcam ufficiali (solo link) e telecamere mappate su OpenStreetMap |
+| `/api/mapillary?tile=x:y` | posizioni delle foto a livello strada di Mapillary per riquadri da ~400 m (serve `MAPILLARY_TOKEN`) |
 | `/api/passerelle` | percorsi su passerelle del piano del Comune |
 | `/api/lagoon-network`, `/api/waterways`, `/api/nautical` | segnalamenti e canali OSM, limiti di velocità e ponti, servizi nautici |
-| `/api/environment`, `/api/regional-data` | qualità dell'aria ARPAV e previsione Copernicus; pollini e sonde della laguna |
+| `/api/environment`, `/api/regional-data` | qualità dell'aria ARPAV e previsione Copernicus; pollini, sonde della laguna e locazioni brevi Inside Airbnb |
 | `/api/parks`, `/api/sports`, `/api/fiber`, `/api/census`, `/api/lora-gateways` | verde, spazi sportivi (CAMPO e OSM), fibra AGCOM, censimento ISTAT, gateway LoRa |
-| `/api/lagoon-morphology`, `/api/urban-microclimate`, `/api/pedestrian-flows`, `/api/rail-logistics` | elenchi del progetto da verificare: barene e subsidenza, isole di calore, varchi, treni e battelli di esempio |
-| `/api/carburanti` | distributori di carburante nell'area della mappa con i prezzi comunicati al Ministero (MIMIT, IODL 2.0) |
+| `/api/lagoon-morphology`, `/api/urban-microclimate`, `/api/pedestrian-flows`, `/api/rail-logistics`, `/api/trains` | elenchi del progetto; treni Santa Lucia – Mestre dall'orario ufficiale e in tempo reale (BusOne, solo mappa) con partenze e arrivi a 90 minuti |
+| `/api/carburanti`, `/api/emissions` | distributori di carburante e prezzi MIMIT (dal Ministero o dal file giornaliero); emissioni stimate dei mezzi (ISPRA / EEA) |
+| `/api/seveso`, `/api/waste` | stabilimenti Seveso III a rischio incidente rilevante ARPAV; statistiche rifiuti e raccolta differenziata |
 | `/api/stats`, `/api/health` | indicatori aggregati; stato ed età di ogni fonte |
 | `/api/datasets`, `/api/datasets/<id>`, `POST /api/mcp` | catalogo dei dataset, API REST equivalente e server MCP |
 
@@ -168,7 +180,7 @@ programma può usare il modulo «Proponi una fonte» negli issue. Sicurezza: [SE
 ### Fonti principali e licenze
 
 ACTV / AVM (GTFS, CC BY; GTFS-RT nel catalogo «Open Data Real Time»), Comune di Venezia e Centro Maree
-(dati.venezia.it; ai dati CPSM ridistribuiti VOD applica CC BY-SA 3.0), ARPAV, ISTAT, AGCOM (CC BY 4.0),
+(dati.venezia.it; ai dati CPSM ridistribuiti VOD applica CC BY-SA 3.0), ARPAV, ISTAT, AGCOM, Inside Airbnb (CC BY 4.0),
 MEF-RGS BDAP (CC BY), MIMIT prezzi dei carburanti (IODL 2.0), OpenStreetMap contributors e FlixMobility (ODbL), Alilaguna S.p.A., Copernicus e
 Open-Meteo, NOAA, CelesTrak, CAMPO (CC BY 4.0), The Things Network. OpenSky Network e aisstream.io sono
 mostrati solo nella mappa e non ridistribuiti. L'elenco completo con licenze e stato è in `/sources` e in

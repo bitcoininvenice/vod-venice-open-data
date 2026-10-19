@@ -1,10 +1,23 @@
 import { NextResponse } from 'next/server';
-import { FUEL_REFRESH_S, fuelStations } from '@/server/sources/mimitFuel';
+import { FUEL_REFRESH_S, fuelStations, type FuelDataset } from '@/server/sources/mimitFuel';
 import { FUEL_KINDS, FUEL_STALE_DAYS, fuelSummary, stationFromOsm, withOsmDetails, type OsmFuelRecord } from '@/lib/fuel';
 import { providerMeta } from '@/lib/provenance/providers';
 import osmFuel from '@/data/osm-fuel.json';
+import dailyFuel from '@/data/mimit-fuel-venezia.json';
 
 const OSM_STATIONS = osmFuel.stations as OsmFuelRecord[];
+/**
+ * Prezzi del Ministero salvati ogni mattina da pipeline/import_mimit_fuel.py (da una connessione italiana, con lo
+ * User-Agent di VOD): si usano quando il Ministero non risponde ai server di Vercel, finché non sono più vecchi di
+ * FUEL_STALE_DAYS giorni.
+ */
+const DAILY: FuelDataset = dailyFuel as unknown as FuelDataset;
+const DAY_MS = 86_400_000;
+
+function dailyFileUsable(now: number): boolean {
+  if (!DAILY.extractedAt || DAILY.stations.length === 0) return false;
+  return now - Date.parse(`${DAILY.extractedAt}T00:00:00Z`) <= (FUEL_STALE_DAYS + 1) * DAY_MS;
+}
 /** Senza i prezzi del Ministero la risposta di riserva resta poco in cache: appena tornano disponibili si vedono */
 const FALLBACK_CACHE_S = 900;
 
@@ -17,8 +30,12 @@ export const maxDuration = 60;
 export const preferredRegion = 'fra1';
 
 export async function GET() {
-  const res = await fuelStations();
-  // Prezzi del Ministero non raggiungibili: i distributori di OpenStreetMap, senza prezzi e dichiarati come tali
+  const live = await fuelStations();
+  const now = Date.now();
+  // Ministero non raggiungibile dal server: i prezzi dell'ultimo file giornaliero, se recente
+  const res = live.ok || !dailyFileUsable(now) ? live : ({ ok: true, data: DAILY, fetchedAt: dailyFuel.generatedAt } as const);
+  const fromDailyFile = !live.ok && res.ok;
+  // Prezzi del Ministero non disponibili: i distributori di OpenStreetMap, senza prezzi e dichiarati come tali
   if (!res.ok) {
     return NextResponse.json(
       {
@@ -46,12 +63,15 @@ export async function GET() {
       count: stations.length,
       data: stations,
       // statistiche dell'area e per zona per ogni carburante (stesso prezzo usato dai colori della mappa)
-      summary: Object.fromEntries(FUEL_KINDS.map((k) => [k, fuelSummary(stations, k, Date.now(), res.data.listedWithoutPrices)])),
+      summary: Object.fromEntries(FUEL_KINDS.map((k) => [k, fuelSummary(stations, k, now, res.data.listedWithoutPrices)])),
       meta: {
         kind: 'static-reference',
         pricesAvailable: true,
         ...providerMeta('mimitFuel'),
         extractedAt: res.data.extractedAt,
+        // 'live': letti ora dal Ministero; 'daily-file': file salvato ogni mattina perché il Ministero non risponde ai server
+        pricesFrom: fromDailyFile ? 'daily-file' : 'live',
+        ...(fromDailyFile ? { liveError: live.ok ? null : live.error } : {}),
         // impianti dell'anagrafica senza nessun prezzo: non in data, contati nel riepilogo
         listedWithoutPrices: res.data.listedWithoutPrices.length,
         fetchedAt: res.fetchedAt,
@@ -59,6 +79,6 @@ export async function GET() {
         note: `Prezzi comunicati dai gestori al Ministero (art. 51 L. 99/2009), in vigore alle 8 del giorno dell'estrazione: non sono prezzi in tempo reale. Solo i distributori nell'area della mappa; marchio e indirizzo, senza il nome del gestore. Un prezzo comunicato da oltre ${FUEL_STALE_DAYS} giorni non entra nel confronto della mappa. Gli impianti dell'anagrafica senza nessun prezzo comunicato (spesso doppioni, impianti non aperti al pubblico o forse non più attivi) non sono in data ma sono contati in meta.listedWithoutPrices e nel riepilogo.`,
       },
     },
-    { headers: { 'Cache-Control': `public, s-maxage=${FUEL_REFRESH_S}, stale-while-revalidate=86400` } },
+    { headers: { 'Cache-Control': `public, s-maxage=${fromDailyFile ? FALLBACK_CACHE_S * 4 : FUEL_REFRESH_S}, stale-while-revalidate=86400` } },
   );
 }

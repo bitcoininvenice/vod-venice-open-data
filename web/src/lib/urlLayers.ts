@@ -43,6 +43,7 @@ export type LayerKey =
   | 'showHeatIslands'
   | 'showLagoonWater'
   | 'showAccommodations'
+  | 'showTourismPressure'
   | 'showBikeRoutes'
   | 'showPollenStations'
   | 'showTributaries'
@@ -62,7 +63,16 @@ export type LayerKey =
   | 'showBusStops'
   | 'showActvNotices'
   | 'showFlixbus'
-  | 'showFuel';
+  | 'showFuel'
+  | 'showBuildings'
+  | 'showBusitalia'
+  | 'showAtvo'
+  | 'showDolomitibus'
+  | 'showLuggages'
+  | 'showRegisteredStays'
+  | 'showStreetPhotos'
+  | 'showPublicLighting'
+  | 'showSevesoPlants';
 
 /**
  * Mapping from LayerKey to canonical Open Data catalog slug (matching /layers page IDs)
@@ -112,6 +122,7 @@ export const LAYER_SLUG_BY_KEY: Record<LayerKey, string> = {
   showHeatIslands: 'isole_calore',
   showLagoonWater: 'sonde_arpav',
   showAccommodations: 'strutture_ricettive',
+  showTourismPressure: 'pressione_turistica',
   showBikeRoutes: 'ciclovie_veneto',
   showPollenStations: 'pollini_arpav',
   showTributaries: 'fiumi_tributari',
@@ -132,6 +143,15 @@ export const LAYER_SLUG_BY_KEY: Record<LayerKey, string> = {
   showActvNotices: 'avvisi_actv',
   showFlixbus: 'flixbus',
   showFuel: 'carburanti',
+  showBuildings: 'edifici_storici',
+  showBusitalia: 'busitalia',
+  showAtvo: 'atvo',
+  showDolomitibus: 'dolomitibus',
+  showLuggages: 'depositi_bagagli',
+  showRegisteredStays: 'strutture_registrate',
+  showStreetPhotos: 'foto_strada',
+  showPublicLighting: 'illuminazione_pubblica',
+  showSevesoPlants: 'aziende_seveso',
 };
 
 /**
@@ -139,6 +159,24 @@ export const LAYER_SLUG_BY_KEY: Record<LayerKey, string> = {
  */
 export const SLUG_TO_LAYER_KEY: Record<string, LayerKey> = {
   // Canonical IDs
+  aziende_seveso: 'showSevesoPlants',
+  seveso: 'showSevesoPlants',
+  rir: 'showSevesoPlants',
+  rischio_rilevante: 'showSevesoPlants',
+  marghera_rischio: 'showSevesoPlants',
+  depositi_bagagli: 'showLuggages',
+  strutture_registrate: 'showRegisteredStays',
+  foto_strada: 'showStreetPhotos',
+  mapillary: 'showStreetPhotos',
+  street_view: 'showStreetPhotos',
+  geoids: 'showRegisteredStays',
+  imposta_soggiorno: 'showRegisteredStays',
+  alberghi: 'showRegisteredStays',
+  hotel: 'showRegisteredStays',
+  luggages: 'showLuggages',
+  luggage: 'showLuggages',
+  bagagli: 'showLuggages',
+  deposito_bagagli: 'showLuggages',
   rotte_actv: 'showRoutes',
   fermate_actv: 'showStops',
   vaporetti_live: 'showVehicles',
@@ -187,6 +225,7 @@ export const SLUG_TO_LAYER_KEY: Record<string, LayerKey> = {
   isole_calore: 'showHeatIslands',
   sonde_arpav: 'showLagoonWater',
   strutture_ricettive: 'showAccommodations',
+  pressione_turistica: 'showTourismPressure',
   ciclovie_veneto: 'showBikeRoutes',
   pollini_arpav: 'showPollenStations',
   fiumi_tributari: 'showTributaries',
@@ -207,8 +246,36 @@ export const SLUG_TO_LAYER_KEY: Record<string, LayerKey> = {
   avvisi_actv: 'showActvNotices',
   flixbus: 'showFlixbus',
   carburanti: 'showFuel',
+  edifici_storici: 'showBuildings',
+  busitalia: 'showBusitalia',
+  atvo: 'showAtvo',
+  dolomitibus: 'showDolomitibus',
+  illuminazione_pubblica: 'showPublicLighting',
 
   // Convenient aliases
+  illuminazione: 'showPublicLighting',
+  lampioni: 'showPublicLighting',
+  luci_pubbliche: 'showPublicLighting',
+  luci: 'showPublicLighting',
+  public_lighting: 'showPublicLighting',
+  lighting: 'showPublicLighting',
+  busitalia_veneto: 'showBusitalia',
+  bus_italia: 'showBusitalia',
+  atvo_bus: 'showAtvo',
+  bus_atvo: 'showAtvo',
+  venezia_express: 'showAtvo',
+  dolomiti: 'showDolomitibus',
+  dolomiti_bus: 'showDolomitibus',
+  cortina_express: 'showDolomitibus',
+  alloggi: 'showAccommodations',
+  airbnb: 'showAccommodations',
+  bnb: 'showAccommodations',
+  pressione: 'showTourismPressure',
+  overtourism: 'showTourismPressure',
+  turismo: 'showTourismPressure',
+  edifici: 'showBuildings',
+  buildings: 'showBuildings',
+  edifici_3d: 'showBuildings',
   ordinanze: 'showOrdinances',
   velocita_linee: 'showScheduleSpeed',
   bus_stops: 'showBusStops',

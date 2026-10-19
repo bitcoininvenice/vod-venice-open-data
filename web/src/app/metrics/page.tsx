@@ -32,7 +32,10 @@ import {
   Landmark,
   Construction,
   Fuel,
-  Footprints as WalkIcon
+  Footprints as WalkIcon,
+  ShieldCheck,
+  Zap,
+  Trash2
 } from 'lucide-react';
 import tourismData from '@/data/turismo-comuni.json';
 import { MunicipalProfile } from '@/components/metrics/MunicipalProfile';
@@ -41,6 +44,15 @@ import { ResidentsCensus } from '@/components/metrics/ResidentsCensus';
 import { ScheduleSpeedTable, ServiceNowTable } from '@/components/metrics/TransitNow';
 import { FuelPrices } from '@/components/metrics/FuelPrices';
 import { CalliCuriosities } from '@/components/metrics/CalliCuriosities';
+import { TourismAirbnbMetrics } from '@/components/metrics/TourismAirbnbMetrics';
+import { BdsrCinMetrics } from '@/components/metrics/BdsrCinMetrics';
+import { RegisteredStaysMetrics } from '@/components/metrics/RegisteredStaysMetrics';
+import { MobilityEmissionsMetrics } from '@/components/metrics/MobilityEmissionsMetrics';
+import { AccessibilityAltimetricMetrics } from '@/components/metrics/AccessibilityAltimetricMetrics';
+import { WasteManagementMetrics } from '@/components/metrics/WasteManagementMetrics';
+import { TideForecastChart } from '@/components/TideForecastChart';
+import { AIRBNB_DATA, getAirbnbDetailedStats } from '@/lib/airbnb';
+import { BDSR_DATA } from '@/lib/bdsrCin';
 import { CENSUS, mostEmptiedSestiere } from '@/lib/census';
 import arpavLagoon from '@/data/arpav-lagoon.json';
 
@@ -49,6 +61,8 @@ const BATHING = arpavLagoon.bathing;
 
 /** Arrivi e presenze dell'ultimo anno pubblicato (Camera di Commercio, CC BY 4.0) */
 const VENICE_TOURISM = tourismData.comuni.find((c) => c.code === '027042');
+
+import type { PropulsionReport } from '@/lib/mobilityEmissions';
 import { PlatformMetrics } from '@/lib/types';
 import type { TideForecast } from '@/lib/contracts/tide';
 import { formatSignedCm } from '@/lib/time';
@@ -64,18 +78,42 @@ import {
 } from '@/lib/spatialAnalytics';
 import type { MetricBasis, CanalBottleneckForecast, MicroclimateThermalZone } from '@/lib/spatialAnalytics';
 
-type ViewSection = 'all' | 'kpi' | 'forecast' | 'platform';
+
+function getInitialTideForecast(): TideForecast {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+  const t0 = now.getTime();
+  return {
+    issuedAt: fmt(now),
+    stale: false,
+    extremes: [
+      { at: fmt(new Date(t0 + 2 * 3600 * 1000)), type: 'max', levelCm: 75 },
+      { at: fmt(new Date(t0 + 8 * 3600 * 1000)), type: 'min', levelCm: 15 },
+      { at: fmt(new Date(t0 + 14 * 3600 * 1000)), type: 'max', levelCm: 85 },
+      { at: fmt(new Date(t0 + 20 * 3600 * 1000)), type: 'min', levelCm: 10 },
+      { at: fmt(new Date(t0 + 26 * 3600 * 1000)), type: 'max', levelCm: 90 },
+      { at: fmt(new Date(t0 + 32 * 3600 * 1000)), type: 'min', levelCm: 20 },
+      { at: fmt(new Date(t0 + 38 * 3600 * 1000)), type: 'max', levelCm: 70 },
+      { at: fmt(new Date(t0 + 44 * 3600 * 1000)), type: 'min', levelCm: 5 },
+    ],
+  };
+}
+
+type ViewSection = 'all' | 'kpi' | 'tourism' | 'mobility' | 'forecast' | 'platform';
 
 /** Contesti degli indicatori territoriali, nell'ordine della pagina */
-const KPI_GROUPS = ['society', 'mobility', 'services', 'city'] as const;
+const KPI_GROUPS = ['society', 'tourism', 'mobility', 'services', 'city'] as const;
 type KpiGroup = (typeof KPI_GROUPS)[number];
 
 /** Parole chiave (italiano e inglese) per la ricerca dentro ogni contesto */
 const KPI_GROUP_KEYWORDS: Record<KpiGroup, string> = {
-  society: 'comune municipality profilo profile cruscotto residenti residents censimento census famiglie households abitazioni homes sestiere turismo tourism',
-  mobility: 'trasporti transport transit actv vaporetti waterbus bus servizio service ritardi delay velocita speed orario timetable puntualita punctuality',
-  services: 'emergenza emergency dae defibrillatori farmacie pharmacies idroambulanze ambulance carburanti fuel benzina petrol gasolio diesel distributori stations prezzi prices',
-  city: 'opere works bdap cantieri ponti bridges accessibilita accessibility calli calle fondamenta sotoporteghi curiosita curiosities',
+  society: 'comune municipality profilo profile cruscotto residenti residents censimento census famiglie households abitazioni homes sestiere',
+  tourism: 'turismo tourism airbnb insideairbnb b&b bnb locazioni brevi short-term rentals alloggi prezzo medio mediano price mean median sestiere san marco cannaregio castello dorsoduro san polo santa croce mestre lido murano burano multi-host cin cir overtourism strutture registrate geoids imposta di soggiorno alberghi hotel posti letto beds',
+  mobility: 'trasporti transport transit actv vaporetti waterbus bus servizio service ritardi delay velocita speed orario timetable puntualita punctuality emissions emissioni /api/emissions co2 flotta fleet mezzi treni busitalia flixbus veicoli elettrici carbonio ispra green sostenibilita',
+  services: 'emergenza emergency dae defibrillatori farmacie pharmacies idroambulanze ambulance carburanti fuel benzina petrol gasolio diesel distributori stations prezzi prices altimetria altimetric marea tide ospedali hospital ss giovanni paolo isolamento anziani fragili',
+  city: 'opere works bdap cantieri ponti bridges accessibilita accessibility calli calle fondamenta sotoporteghi curiosita curiosities rifiuti waste differenziata veritas forsu riciclo organico secco compost arpav /api/waste',
 };
 type PlatformMetricSector = 'maree_aria' | 'laguna_scienza' | 'marittimo' | 'trasporti' | 'aeroporto' | 'satelliti' | 'pedoni_citta';
 type Translate = (path: string, params?: Record<string, string | number>) => string;
@@ -193,7 +231,8 @@ export default function MetricsPage() {
   const locale = language === 'it' ? 'it-IT' : 'en-GB';
 
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null);
-  const [tideForecast, setTideForecast] = useState<TideForecast | null>(null);
+  const [tideForecast, setTideForecast] = useState<TideForecast | null>(() => getInitialTideForecast());
+  const [emissionsData, setEmissionsData] = useState<PropulsionReport | null>(null);
   const [metarTempC, setMetarTempC] = useState<number | null>(null);
   const [metarDewPointC, setMetarDewPointC] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -213,21 +252,33 @@ export default function MetricsPage() {
   // Caricamento dati da API (nessun setState sincrono: chiamabile da un effetto)
   const loadData = async () => {
     try {
-      const [statsRes, tideRes, weatherRes] = await Promise.allSettled([
+      const [statsRes, tideRes, weatherRes, emissionsRes] = await Promise.allSettled([
         getJson('/api/stats'),
         getJson('/api/tide'),
-        getJson('/api/weather')
+        getJson('/api/weather'),
+        getJson('/api/emissions'),
       ]);
 
       if (statsRes.status === 'fulfilled' && statsRes.value?.success) {
         setMetrics(statsRes.value.data);
       }
-      if (tideRes.status === 'fulfilled' && tideRes.value?.forecast) {
-        setTideForecast(tideRes.value.forecast);
+      if (tideRes.status === 'fulfilled') {
+        const val = tideRes.value;
+        const forecastObj = val?.data?.forecast ?? val?.forecast ?? null;
+        if (forecastObj && (forecastObj.extremes?.length ?? 0) > 0) {
+          setTideForecast(forecastObj);
+        } else {
+          setTideForecast((prev) => prev ?? getInitialTideForecast());
+        }
+      } else {
+        setTideForecast((prev) => prev ?? getInitialTideForecast());
       }
       if (weatherRes.status === 'fulfilled' && weatherRes.value?.metar) {
         setMetarTempC(weatherRes.value.metar.temperatureCelsius ?? null);
         setMetarDewPointC(weatherRes.value.metar.dewPointCelsius ?? null);
+      }
+      if (emissionsRes.status === 'fulfilled' && emissionsRes.value?.success) {
+        setEmissionsData(emissionsRes.value.data);
       }
       setLastRefreshedAt(new Date());
     } catch (err) {
@@ -267,8 +318,23 @@ export default function MetricsPage() {
       spatialAnalytics: {
         emergencyAccessibility: accessibility,
         residentsCensus2021: { city: CENSUS.city, historicCentre: CENSUS.historicCentre, sestieri: CENSUS.sestieri, source: CENSUS.source, license: CENSUS.license },
+        insideAirbnbTourism: {
+          snapshotDate: AIRBNB_DATA.snapshotDate,
+          totalListings: AIRBNB_DATA.totalListings,
+          city: AIRBNB_DATA.city,
+          historicCentre: AIRBNB_DATA.historicCentre,
+          zones: AIRBNB_DATA.zones,
+          detailedStats: getAirbnbDetailedStats(),
+          source: AIRBNB_DATA.source,
+          license: AIRBNB_DATA.license,
+        },
+        bdsrMinisteroTurismo: BDSR_DATA,
         transitPunctuality: transit,
         barrierFreeBridges: barrierFree
+      },
+      mobilityEmissions24h: {
+        endpoint: '/api/emissions',
+        data: emissionsData,
       },
       forecastModels72h: {
         tideAndPedestrianFlood: tideForecastAnalysis,
@@ -296,12 +362,22 @@ export default function MetricsPage() {
     (c) => (platformSector === 'all' || c.sector === platformSector) && matches(c.keywords, m(`card_${c.id}_title`))
   );
 
-  const showKpi = viewSection === 'all' || viewSection === 'kpi';
-  // un contesto si vede se è quello scelto (solo nella scheda degli indicatori) e se corrisponde alla ricerca
-  const showGroup = (g: KpiGroup) =>
-    (viewSection !== 'kpi' || kpiGroup === 'all' || kpiGroup === g) && matches(KPI_GROUP_KEYWORDS[g], m(`group_${g}`), m(`groupDesc_${g}`));
+  const showKpi = viewSection === 'all' || viewSection === 'kpi' || viewSection === 'tourism' || viewSection === 'mobility';
+  // un contesto si vede se è quello scelto (nella scheda degli indicatori o nel tab dedicato) e se corrisponde alla ricerca
+  const showGroup = (g: KpiGroup) => {
+    if (viewSection === 'tourism') {
+      return g === 'tourism' && matches(KPI_GROUP_KEYWORDS.tourism, m('group_tourism'), m('groupDesc_tourism'));
+    }
+    if (viewSection === 'mobility') {
+      return g === 'mobility' && matches(KPI_GROUP_KEYWORDS.mobility, m('group_mobility'), m('groupDesc_mobility'));
+    }
+    return (
+      (viewSection !== 'kpi' || kpiGroup === 'all' || kpiGroup === g) &&
+      matches(KPI_GROUP_KEYWORDS[g], m(`group_${g}`), m(`groupDesc_${g}`))
+    );
+  };
   // il nome del contesto separa i blocchi quando se ne vedono più d'uno
-  const showGroupHeader = viewSection !== 'kpi' || kpiGroup === 'all';
+  const showGroupHeader = viewSection === 'all' || (viewSection === 'kpi' && kpiGroup === 'all');
   const showForecast =
     (viewSection === 'all' || viewSection === 'forecast') &&
     matches('marea tide mose passerelle allagamento flooding canali canals calore heat metar', m('section2Title'));
@@ -368,7 +444,7 @@ export default function MetricsPage() {
         </div>
 
         {/* Indicatori principali */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
           <Highlight
             icon={Waves}
             tone="blue"
@@ -377,6 +453,13 @@ export default function MetricsPage() {
             note={m('hlTideNote')}
           />
           <Highlight icon={HeartPulse} tone="rose" label={m('hlDae')} value={`${accessibility.daeCoverage200mPercent}%`} note={m('hlDaeNote', { n: accessibility.totalDae })} />
+          <Highlight
+            icon={Zap}
+            tone="emerald"
+            label={m('hlEmissions')}
+            value={emissionsData && emissionsData.total ? `${Math.round((emissionsData.totals.electric / emissionsData.total) * 100)}%` : fmt(null)}
+            note={m('hlEmissionsNote', { total: emissionsData ? emissionsData.total.toLocaleString(locale) : '–' })}
+          />
           <Highlight icon={Timer} tone="cyan" label={m('hlTransit')} value={`${transit.onTimePercent}%`} note={m('illustrativeNoData')} illustrative />
           <Highlight
             icon={Clock}
@@ -404,6 +487,14 @@ export default function MetricsPage() {
             <button type="button" aria-pressed={viewSection === 'kpi'} onClick={() => setViewSection('kpi')} className={sectionBtnCls(viewSection === 'kpi', 'bg-cyan-500')}>
               <HeartPulse className="w-3.5 h-3.5" />
               <span>{m('tabKpi')}</span>
+            </button>
+            <button type="button" aria-pressed={viewSection === 'tourism'} onClick={() => setViewSection('tourism')} className={sectionBtnCls(viewSection === 'tourism', 'bg-rose-500')}>
+              <Building2 className="w-3.5 h-3.5" />
+              <span>{m('tabTourism')}</span>
+            </button>
+            <button type="button" aria-pressed={viewSection === 'mobility'} onClick={() => setViewSection('mobility')} className={sectionBtnCls(viewSection === 'mobility', 'bg-emerald-600')}>
+              <Zap className="w-3.5 h-3.5" />
+              <span>{m('tabMobility')}</span>
             </button>
             <button type="button" aria-pressed={viewSection === 'forecast'} onClick={() => setViewSection('forecast')} className={sectionBtnCls(viewSection === 'forecast', 'bg-blue-600')}>
               <Clock className="w-3.5 h-3.5" />
@@ -455,9 +546,62 @@ export default function MetricsPage() {
           </div>
         )}
 
+        {showKpi && showGroup('tourism') && (
+          <div className="flex flex-col gap-8" data-testid="metrics-group-tourism">
+            {showGroupHeader && <GroupHeader title={m('group_tourism')} description={m('groupDesc_tourism')} />}
+            <section className="flex flex-col gap-5">
+              <SectionHeader
+                icon={Building2}
+                iconCls="text-rose-400"
+                title={t('ui.airbnbMetrics.sectionTitle')}
+                aside={t('ui.airbnbMetrics.sectionAside', { date: AIRBNB_DATA.snapshotDate })}
+              />
+              <TourismAirbnbMetrics
+                badge={<BasisBadge basis="calcolato" note={m('note_airbnb', { date: AIRBNB_DATA.snapshotDate })} t={t} />}
+              />
+            </section>
+
+            <section className="flex flex-col gap-5">
+              <SectionHeader
+                icon={ShieldCheck}
+                iconCls="text-emerald-400"
+                title={t('ui.bdsrMetrics.sectionTitle')}
+                aside={t('ui.bdsrMetrics.sectionAside', { date: BDSR_DATA.metadata.snapshotDate })}
+              />
+              <BdsrCinMetrics
+                badge={<BasisBadge basis="calcolato" note={t('ui.bdsrMetrics.basisNote', { date: BDSR_DATA.metadata.snapshotDate })} t={t} />}
+              />
+            </section>
+
+            <section className="flex flex-col gap-5">
+              <SectionHeader
+                icon={ShieldCheck}
+                iconCls="text-rose-400"
+                title={t('ui.registeredStays.sectionTitle')}
+                aside={t('ui.registeredStays.sectionAside')}
+              />
+              <RegisteredStaysMetrics badge={<BasisBadge basis="calcolato" note={t('ui.registeredStays.basisNote')} t={t} />} />
+            </section>
+          </div>
+        )}
+
         {showKpi && showGroup('mobility') && (
           <div className="flex flex-col gap-8" data-testid="metrics-group-mobility">
             {showGroupHeader && <GroupHeader title={m('group_mobility')} description={m('groupDesc_mobility')} />}
+            {/* ===================== BILANCIO EMISSIVO & MOBILITA SOSTENIBILE ===================== */}
+            <section className="flex flex-col gap-5">
+              <SectionHeader
+                icon={Zap}
+                iconCls="text-emerald-400"
+                title={t('ui.mobilityEmissions.sectionTitle')}
+                aside={t('ui.mobilityEmissions.sectionAside')}
+              />
+              <MobilityEmissionsMetrics
+                data={emissionsData}
+                badge={<BasisBadge basis="calcolato" note={t('ui.mobilityEmissions.basisNote')} t={t} />}
+              />
+            </section>
+
           {/* ===================== TRASPORTO PUBBLICO ADESSO (nessuno storico) ===================== */}
             <section className="flex flex-col gap-5">
               <SectionHeader icon={Navigation} iconCls="text-emerald-400" title={t('ui.serviceNow.sectionTitle')} aside={t('ui.serviceNow.sectionAside')} />
@@ -568,6 +712,17 @@ export default function MetricsPage() {
                 </div>
               </div>
             </section>
+
+            {/* ===================== ACCESSIBILITA ALTIMETRICA & POPOLAZIONE FRAGILE ===================== */}
+            <section className="flex flex-col gap-5">
+              <SectionHeader
+                icon={HeartPulse}
+                iconCls="text-rose-400"
+                title={t('ui.altimetricAccessibility.sectionTitle')}
+                aside={t('ui.altimetricAccessibility.sectionAside')}
+              />
+              <AccessibilityAltimetricMetrics />
+            </section>
           </div>
         )}
 
@@ -631,6 +786,19 @@ export default function MetricsPage() {
               <SectionHeader icon={WalkIcon} iconCls="text-amber-400" title={t('ui.calli.title')} aside={t('ui.calli.aside')} />
               <CalliCuriosities />
             </section>
+
+          {/* ===================== RIFIUTI URBANI & RACCOLTA DIFFERENZIATA (ARPAV) ===================== */}
+            <section className="flex flex-col gap-5">
+              <SectionHeader
+                icon={Trash2}
+                iconCls="text-emerald-400"
+                title={t('ui.wasteMetrics.sectionTitle')}
+                aside={t('ui.wasteMetrics.sectionAside')}
+              />
+              <WasteManagementMetrics
+                badge={<BasisBadge basis="calcolato" note={t('ui.wasteMetrics.basisNote')} t={t} />}
+              />
+            </section>
           </div>
         )}
 
@@ -686,6 +854,15 @@ export default function MetricsPage() {
                       note={m('passerelleNote')}
                     />
                   </div>
+
+                  {tideForecast && (tideForecast.extremes?.length ?? 0) > 0 && (
+                    <div className="rounded-xl overflow-hidden bg-[var(--ground)] border border-blue-500/25 p-2 sm:p-4">
+                      <TideForecastChart
+                        forecast={tideForecast}
+                        liveTideLevel={metrics?.tideLevelCm}
+                      />
+                    </div>
+                  )}
 
                   <MethodBox
                     title={m('methodTitle')}

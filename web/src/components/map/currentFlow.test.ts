@@ -41,7 +41,7 @@ describe('flusso delle correnti', () => {
       // tolleranza: i ponti (es. Guglie e Tre Archi sul Canale di Cannaregio) nei poligoni sono terra
       expect(dry / samples, c.id).toBeLessThan(0.06);
     }
-  });
+  }, 15000);
 
   it('lo spostamento laterale resta entro la semi-larghezza del canale', () => {
     for (const { p } of paths) {

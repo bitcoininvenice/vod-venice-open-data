@@ -4,9 +4,9 @@
 import React from 'react';
 import {
   Anchor, Bell, Bike, Building2, Cable, Camera, Car, CircleDot, Compass, Construction, Droplets, Flower2,
-  Footprints, Fuel, Gauge, GitBranch, HeartPulse, Landmark, Layers, Library, LifeBuoy, Navigation, Pill, Plane,
+  Footprints, Fuel, Gauge, GitBranch, HeartPulse, Landmark, Layers, Library, LifeBuoy, Luggage, Navigation, Pill, Plane,
   Radio, Recycle, Satellite, ShieldAlert, Ship, SlidersHorizontal, ThermometerSun, Train, Trash2, Trees,
-  Waves, Wifi, Wind, Zap, Dumbbell, type LucideIcon,
+  Waves, Wifi, Wind, Zap, Dumbbell, Lightbulb, type LucideIcon,
 } from 'lucide-react';
 import type { LayerIconName, LayerRegime, LayerTone } from '@/lib/layerGroups';
 import { useTranslation } from '@/lib/i18n';
@@ -18,7 +18,8 @@ const LAYER_ICONS: Record<LayerIconName, LucideIcon> = {
   gitBranch: GitBranch, flower: Flower2, thermometer: ThermometerSun, pill: Pill, heartPulse: HeartPulse,
   wifi: Wifi, cable: Cable, recycle: Recycle, library: Library, zap: Zap, construction: Construction,
   sliders: SlidersHorizontal, camera: Camera, footprints: Footprints, landmark: Landmark, bell: Bell,
-  satellite: Satellite, building: Building2, dumbbell: Dumbbell, fuel: Fuel,
+  satellite: Satellite, building: Building2, dumbbell: Dumbbell, fuel: Fuel, luggage: Luggage,
+  lightbulb: Lightbulb,
 };
 
 /** Classi complete per ogni colore (Tailwind genera solo classi scritte per intero). */

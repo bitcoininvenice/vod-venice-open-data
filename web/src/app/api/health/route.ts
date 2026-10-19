@@ -15,6 +15,12 @@ import { ACTV_RSS_URL } from '@/lib/contracts/actvNotices';
 import osmToponyms from '@/data/osm-toponyms.json';
 import calliCuriosita from '@/data/calli-curiosita.json';
 import osmFuel from '@/data/osm-fuel.json';
+import trainsTimetable from '@/data/trains-venezia.json';
+import atvoTimetable from '@/data/atvo-venezia.json';
+import dolomitiTimetable from '@/data/dolomitibus-venezia.json';
+import luggageDataset from '@/data/luggage-storage-venezia.json';
+import lampsDataset from '@/data/public-lighting-venezia.json';
+import geoidsDataset from '@/data/geoids-strutture.json';
 import flixbusData from '@/data/flixbus-venezia.json';
 import { openMeteoWindUrl, parseOpenMeteoWind } from '@/server/sources/openMeteoWind';
 import { airQualityUrl, parseAirQuality } from '@/server/sources/openMeteoAir';
@@ -22,6 +28,7 @@ import { marineUrl, parseMarine } from '@/server/sources/openMeteoMarine';
 import { ARPAV_AIR_META, ARPAV_AIR_STATIONS } from '@/lib/airQuality';
 import { OCEAN_STATIONS_DATA } from '@/lib/marineSensorsData';
 import { GTFS_INDEX_GENERATED_AT } from '@/server/sources/gtfsIndex';
+import { fetchLiveTrainsInVenice } from '@/server/sources/busoneTrains';
 import { OPERE_PUBBLICHE_META } from '@/lib/db';
 import { WIFI_HOTSPOTS_META } from '@/lib/urbanAssetsVeniceData';
 import { OSM_SURVEILLANCE_META } from '@/lib/cameras-data';
@@ -43,6 +50,7 @@ import lagoonProbeDataset from '@/data/arpav-lagoon.json';
 import cruscottoDataset from '@/data/cruscotto-comuni.json';
 import censusDataset from '@/data/istat-census-venezia.json';
 import bdapDataset from '@/data/bdap-opere-venezia.json';
+import airbnbDataset from '@/data/inside-airbnb-venezia.json';
 import { SITE_URL } from '@/lib/site';
 
 export const revalidate = 60;
@@ -63,7 +71,7 @@ const ACQUA_ALTA = OCEAN_STATIONS_DATA.find((s) => s.id === 'CNR-PLAT-01') ?? { 
  */
 export async function GET() {
   const now = new Date();
-  const [levels, forecast, metar, rtNav, rtAut, wind, flights, fuel, windField, cams, marine, ais, lora, campo, ordinances, actvRss] = await Promise.all([
+  const [levels, forecast, metar, rtNav, rtAut, wind, flights, fuel, windField, cams, marine, ais, lora, campo, ordinances, actvRss, trains] = await Promise.all([
     fetchUpstream(TIDE_LEVELS_URL, parseTideLevels, { revalidate: 60 }),
     fetchUpstream(TIDE_FORECAST_URL, (raw) => parseTideForecast(raw, now), { revalidate: 600 }),
     fetchUpstream(LIPZ_METAR_URL, parseLipzMetar, { revalidate: 300 }),
@@ -81,6 +89,7 @@ export async function GET() {
     fetchUpstream(CAMPO_API_URL, parseCampo, { revalidate: 3600, timeoutMs: 8000 }),
     fetchUpstream(`${ORDINANCES_API}/filtra?numeroPagina=0&elementiPerPagina=20&idAmbito=${AMBITI.trafficoAcqueo}`, parseOrdinanceList, { revalidate: 3600, timeoutMs: 8000 }),
     fetchUpstream(ACTV_RSS_URL, (raw) => parseRss(String(raw)), { responseType: 'text', revalidate: 900, timeoutMs: 8000 }),
+    fetchLiveTrainsInVenice(),
   ]);
 
   const newestVehicle = (r: typeof rtNav) =>
@@ -139,11 +148,26 @@ export async function GET() {
     assess('cruscotto-italia', 'dataset', new Date(cruscottoDataset.generatedAt), 31 * DAY, now),
     assess('bdap-mop', 'dataset', new Date(bdapDataset.generatedAt), 31 * DAY, now),
     assess('agcom-fiber', 'dataset', new Date(fiberDataset.generatedAt), 120 * DAY, now),
+    assess('inside-airbnb', 'dataset', new Date(airbnbDataset.generatedAt), 120 * DAY, now),
     // il Ministero pubblica ogni giorno i prezzi delle 8: oltre 3 giorni il dato è fermo
     assess('mimit-carburanti', 'dataset', fuel.ok && fuel.data ? fromRomeLocal(`${fuel.data} 08:00:00`) : null, 3 * DAY, now,
       fuel.ok ? undefined : 'fonte non raggiungibile o senza data'),
     assess('alilaguna-gtfs', 'dataset', new Date(ALILAGUNA_FEED_META.generatedAt), 31 * DAY, now,
       isAlilagunaTimetableValid(now) ? undefined : 'orario importato non più valido'),
+    assess('busone-trains', 'live', trains.ok ? new Date() : null, 15, now,
+      trains.ok ? undefined : 'proxy BusOne non raggiungibile o fuori servizio'),
+    // il file copre 21 giorni dalla generazione: oltre 14 giorni restano meno di 7 giorni di orario
+    assess('trains-timetable', 'dataset', new Date(trainsTimetable.generatedAt), 14 * DAY, now),
+    // controllati ogni giorno, riscritti solo quando il PDF cambia o le date coperte finiscono
+    assess('atvo-pdf', 'dataset', new Date(atvoTimetable.generatedAt), 21 * DAY, now),
+    assess('dolomitibus-pdf', 'dataset', new Date(dolomitiTimetable.generatedAt), 60 * DAY, now),
+    assess('osm-luggage', 'dataset', new Date(luggageDataset.generatedAt), 31 * DAY, now),
+    assess('osm-street-lamps', 'dataset', new Date(lampsDataset.generatedAt), 31 * DAY, now),
+    // la chiave dell'API di Mapillary è una variabile d'ambiente: senza, il livello delle foto è spento
+    assess('mapillary', 'live', process.env.MAPILLARY_TOKEN ? now : null, 15, now,
+      process.env.MAPILLARY_TOKEN ? undefined : 'chiave MAPILLARY_TOKEN non configurata'),
+    // esportazione manuale dal geoportale: da rifare ogni anno
+    assess('geoids-strutture', 'dataset', new Date(geoidsDataset.generatedAt), 400 * DAY, now),
   ];
 
   const status = sources.some((s) => s.status === 'down') ? 'degraded' : sources.some((s) => s.status === 'stale') ? 'stale' : 'ok';

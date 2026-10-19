@@ -29,6 +29,8 @@ export interface FuelStation {
   prices: FuelPrice[];
   /** dati da OpenStreetMap: tutta la scheda quando i prezzi del Ministero non sono raggiungibili, altrimenti i dettagli */
   osm?: FuelStationOsm;
+  /** Codice identificativo impianto MIMIT / ref:mise */
+  mimitId?: string;
 }
 
 /** Dettagli del distributore su OpenStreetMap (ODbL), collegato al Ministero dal codice ref:mise */
@@ -60,7 +62,7 @@ const osmDetails = (r: OsmFuelRecord): FuelStationOsm => ({ url: r.osmUrl, fuels
 
 /** Distributore da OpenStreetMap senza prezzi (quando il dato del Ministero non è raggiungibile) */
 export function stationFromOsm(r: OsmFuelRecord): FuelStation {
-  return { id: r.id, lat: r.lat, lon: r.lon, brand: r.brand ?? '', address: r.address ?? '', comune: r.comune ?? '', highway: false, prices: [], osm: osmDetails(r) };
+  return { id: r.id, lat: r.lat, lon: r.lon, brand: r.brand ?? '', address: r.address ?? '', comune: r.comune ?? '', highway: false, prices: [], osm: osmDetails(r), mimitId: r.mimitId ?? undefined };
 }
 
 /** Aggiunge ai distributori del Ministero i dettagli di OpenStreetMap (orari, barche), collegati da ref:mise */

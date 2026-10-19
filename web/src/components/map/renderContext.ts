@@ -9,6 +9,7 @@ import type { SelectedTrip } from '@/lib/tripView';
 import type { Itinerary } from '@/lib/tripPlanner';
 import type { DynamicTideState } from '@/lib/tideCurve';
 import type { OrdinanceItem } from '@/lib/contracts/ordinances';
+import type { StreetPhoto } from '@/lib/mapillary';
 
 interface HighlightTrip extends SelectedTrip {
   color: string;
@@ -34,6 +35,8 @@ export interface RenderContext
   sportFilter: SportFilter;
   /** carburante confrontato nel livello dei distributori */
   fuelFilter: FuelKind;
+  /** foto Mapillary dei riquadri già caricati */
+  streetPhotos: StreetPhoto[];
   /** itinerario del planner */
   itinerary: Itinerary | null;
   /** segnaposto di un luogo cercato */

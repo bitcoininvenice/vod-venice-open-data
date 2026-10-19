@@ -6,6 +6,8 @@ import { buildSimulation, type RawSimulation } from './simulationCore';
 import { airportBoard, FLIX_AIRPORT_STOP, prettyPlace } from './airportBoard';
 import { alilagunaTripsOn } from './alilaguna-schedule';
 import type { FlixbusData } from './flixbus';
+import type { AtvoData } from './atvo';
+import type { DolomitiData } from './dolomitibus';
 
 const publicDir = existsSync(path.join(process.cwd(), 'public')) ? path.join(process.cwd(), 'public') : path.join(process.cwd(), 'web', 'public');
 const sim = buildSimulation(JSON.parse(readFileSync(path.join(publicDir, SIM_URL), 'utf8')) as RawSimulation);
@@ -51,5 +53,28 @@ describe('tabellone aeroporto', () => {
   it('dopo mezzanotte: il bus 5 delle 00:10 da Piazzale Roma arriva all\'aeroporto', () => {
     const late = airportBoard({ sim, day: 'weekday', nextDay: 'weekday', nowMs: Date.UTC(2026, 9, 14, 21, 50), nowS: 23 * 3600 + 50 * 60, alilaguna: [], flixbus: null });
     expect(late.arrivals.some((r) => r.line === '5' && r.at > Date.UTC(2026, 9, 14, 22, 0))).toBe(true);
+  });
+
+  it('include partenze e arrivi di bus ATVO e Dolomiti Bus nelle loro date (orari UTC come FlixBus)', () => {
+    const atvoData = {
+      shapes: [],
+      trips: [
+        { id: 'a1', line: '35', name: '', from: 'Venezia (Piazzale Roma)', to: 'Aeroporto Marco Polo', dates: ['20261014'], shape: 0, stops: [[0, 28800, 28800, 'Venezia', true], [12000, 30000, 30000, 'Aeroporto Marco Polo', true]] },
+        { id: 'a2', line: '35', name: '', from: 'Aeroporto Marco Polo', to: 'Venezia (Piazzale Roma)', dates: ['20261014'], shape: 1, stops: [[0, 30600, 30600, 'Aeroporto Marco Polo', true], [12000, 31800, 31800, 'Venezia', true]] },
+      ],
+    } as unknown as AtvoData;
+    const dolomitiData = {
+      shapes: [],
+      trips: [
+        { id: 'd1', line: '72', name: '', from: 'Venezia', to: 'Cortina', dates: ['20261014'], shape: 0, stops: [[0, 28800, 28800, 'Venezia', true], [12000, 30500, 30500, 'Aeroporto Marco Polo', true], [30000, 42000, 42000, 'Cortina', true]] },
+      ],
+    } as unknown as DolomitiData;
+    const b = airportBoard({ sim: null, day: 'weekday', nextDay: 'weekday', nowMs, nowS, alilaguna: [], flixbus: null, atvo: atvoData, dolomitibus: dolomitiData });
+    expect(b.departures.some((r) => r.kind === 'atvo' && r.line === 'ATVO 35')).toBe(true);
+    expect(b.arrivals.some((r) => r.kind === 'atvo' && r.line === 'ATVO 35')).toBe(true);
+    expect(b.departures.some((r) => r.kind === 'dolomitibus' && r.line === 'Dolomiti Bus 72')).toBe(true);
+    // un altro giorno: nessuna corsa
+    const other = airportBoard({ sim: null, day: 'weekday', nextDay: 'weekday', nowMs: nowMs + 86_400_000, nowS, alilaguna: [], flixbus: null, atvo: atvoData, dolomitibus: dolomitiData });
+    expect(other.departures.filter((r) => r.kind === 'atvo' || r.kind === 'dolomitibus')).toEqual([]);
   });
 });

@@ -756,6 +756,12 @@ export interface TrainLiveItem {
   lat: number;
   lon: number;
   platform: string;
+  bearing?: number;
+  snappedToTrack?: boolean;
+  delayMinutes?: number;
+  operator?: 'Trenitalia' | 'Italo';
+  speedKmh?: number | null;
+  status?: string;
 }
 
 export interface VeritasWasteBoatItem {
@@ -934,6 +940,27 @@ export interface TouristAccommodationItem {
     holidayHomes: number;
   };
   officialSource: string;
+  macroArea?: 'historic_centre' | 'islands' | 'terraferma';
+  /** Campi reali da Inside Airbnb (CC BY 4.0) incrociati con Censimento ISTAT 2021 */
+  airbnbSnapshotDate?: string;
+  entireHomeApt?: number;
+  privateRoom?: number;
+  sharedRoom?: number;
+  multiHostListings?: number;
+  pctMultiHost?: number;
+  commercial5PlusListings?: number;
+  pctCommercial5Plus?: number;
+  withLicense?: number;
+  pctWithLicense?: number;
+  activeReviewsLtm?: number;
+  medianPriceEur?: number | null;
+  meanPriceEur?: number | null;
+  avgAvailabilityDays?: number;
+  listingsPer100Dwellings?: number;
+  istatPopulation?: number;
+  istatDwellingsTotal?: number;
+  istatDwellingsEmpty?: number;
+  istatPctEmpty?: number;
 }
 
 export interface RegionalBikeRouteItem {
@@ -1109,3 +1136,5 @@ export interface CityAirTemperature {
   observedAt: string;
 }
 
+export type { LuggageStorageSpot, LuggageStorageType } from './luggages';
+export type { PublicLightingPoint, LampSupport, LampMethod } from './publicLighting';

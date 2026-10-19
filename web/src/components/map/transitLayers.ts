@@ -8,6 +8,8 @@ import { SHUTTLE_LAYOVER_S, type SimModel, type SimProfile } from '@/lib/simulat
 import { clock, tripStops, type TripStop } from '@/lib/tripView';
 import { SPEED_VERDICT_COLORS } from '@/lib/scheduleSpeed';
 import { FLIXBUS_COLOR, flixbusPositions, type FlixBusPosition } from '@/lib/flixbus';
+import { ATVO_COLOR, atvoPositions, type AtvoBusPosition } from '@/lib/atvo';
+import { DOLOMITI_COLOR, dolomitiPositions, type DolomitiBusPosition } from '@/lib/dolomitibus';
 import { dateAtRomeSeconds } from '@/lib/time';
 import { freshDelay, inService, isLiveView, networkOfSimCategory, liveDistance, MAX_EARLY_S, MAX_LATE_S, mergedThisFrame, pruneShown, realtimeByTrip, tripKey } from './liveFleet';
 
@@ -211,20 +213,26 @@ export function drawVehicles(rc: RenderContext): void {
 }
 
 export function drawRealtimeVehicles(rc: RenderContext): void {
-  const { ctx, cw, ch, pal, isDark, sx, sy, mx, my, camera, showRealtimeVehicles, realtimeVehicles, selectedCategory } = rc;
-  // 5b. Posizioni reali GTFS-RT: stessa icona dei mezzi da orario ma con bordo marcato e punto «live»
-  if (showRealtimeVehicles && realtimeVehicles.length > 0) {
+  const { ctx, cw, ch, pal, isDark, sx, sy, mx, my, camera, showRealtimeVehicles, showBusitalia, realtimeVehicles, selectedCategory } = rc;
+  // 5b. Posizioni reali GTFS-RT: ACTV (showRealtimeVehicles) e Busitalia Veneto (showBusitalia)
+  if ((showRealtimeVehicles || showBusitalia) && realtimeVehicles.length > 0) {
     for (const v of realtimeVehicles) {
-      // già disegnato come corsa dell'orario spostata del ritardo reale
-      if (rc.showVehicles && mergedThisFrame.has(v.id)) continue;
+      const isBusitalia = v.operator === 'Busitalia Veneto';
+      if (isBusitalia && !showBusitalia) continue;
+      if (!isBusitalia && !showRealtimeVehicles) continue;
+
+      // già disegnato come corsa dell'orario spostata del ritardo reale (solo per ACTV)
+      if (!isBusitalia && rc.showVehicles && mergedThisFrame.has(v.id)) continue;
       // senza corsa né linea (fermo, in deposito o fuori servizio): in grigio, senza anello
       const assigned = inService(v);
-      const cat = v.category || 'vaporetto';
+      const cat = isBusitalia ? 'bus' : (v.category || 'vaporetto');
       if (selectedCategory !== 'all' && cat !== selectedCategory) continue;
       const vx = sx(mx(v.lon));
       const vy = sy(my(v.lat));
       if (vx < -20 || vx > cw + 20 || vy < -20 || vy > ch + 20) continue;
-      const col = assigned ? (lineColor(v.line, cat) ?? pal.cats[cat] ?? '#34d399') : isDark ? '#64748b' : '#94a3b8';
+      const col = assigned
+        ? (isBusitalia ? '#10b981' : (lineColor(v.line, cat) ?? pal.cats[cat] ?? '#34d399'))
+        : isDark ? '#64748b' : '#94a3b8';
       // direzione dal GPS (gradi da nord, in senso orario); senza direzione l'icona punta a nord
       const heading = ((v.bearing ?? 0) * Math.PI) / 180;
       drawVehicleGlyph(ctx, cat, vx, vy, heading, {
@@ -238,12 +246,12 @@ export function drawRealtimeVehicles(rc: RenderContext): void {
       // punto «live»: distingue la posizione reale da quella calcolata dall'orario
       ctx.beginPath();
       ctx.arc(vx + 6, vy - 6, 2.2, 0, Math.PI * 2);
-      ctx.fillStyle = '#22c55e';
+      ctx.fillStyle = isBusitalia ? '#10b981' : '#22c55e';
       ctx.fill();
       ctx.strokeStyle = isDark ? '#0f172a' : '#ffffff';
       ctx.lineWidth = 1;
       ctx.stroke();
-      // Anello del ritardo stimato da ACTV (solo se recente): verde in orario, giallo 3-5 min, rosso oltre
+      // Anello del ritardo stimato (solo se recente): verde in orario, giallo 3-5 min, rosso oltre
       if (v.delay && isFresh(v.delay.updatedAt)) {
         ctx.beginPath();
         ctx.arc(vx, vy, 10, 0, Math.PI * 2);
@@ -251,10 +259,10 @@ export function drawRealtimeVehicles(rc: RenderContext): void {
         ctx.lineWidth = 2.2;
         ctx.stroke();
       }
-      if (camera.s > 0.03 && v.line) {
+      if (camera.s > 0.02 && v.line) {
         ctx.font = '700 9px "DM Mono", monospace';
         ctx.fillStyle = isDark ? '#ffffff' : '#0f172a';
-        ctx.fillText(v.line, vx + 8, vy + 3);
+        ctx.fillText(isBusitalia ? `BIV ${v.line}` : v.line, vx + 8, vy + 3);
       }
     }
   }
@@ -372,6 +380,70 @@ export function drawFlixbus(rc: RenderContext): void {
       ctx.fillStyle = isDark ? '#d9f99d' : '#365314';
       ctx.textAlign = 'start';
       ctx.fillText(`FlixBus ${b.trip.line}`, px + 10, py + 3);
+    }
+  }
+}
+
+/** Bus ATVO nell'ultimo frame (per il clic): posizioni simulate dall'orario */
+export let atvoThisFrame: AtvoBusPosition[] = [];
+
+/** ATVO: autolinee strategiche (Venezia Express 35, Mestre Express 35B, 10A Jesolo) simulate dall'orario. */
+export function drawAtvo(rc: RenderContext): void {
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showAtvo, atvo, currentTimeSeconds } = rc;
+  if (!showAtvo || !atvo) {
+    atvoThisFrame = [];
+    return;
+  }
+  atvoThisFrame = atvoPositions(atvo, dateAtRomeSeconds(currentTimeSeconds).getTime());
+  const scale = Math.max(0.8, Math.min(1.3, 0.6 + 12 * camera.s));
+  for (const b of atvoThisFrame) {
+    const px = sx(mx(b.lon));
+    const py = sy(my(b.lat));
+    if (px < -30 || px > cw + 30 || py < -30 || py > ch + 30) continue;
+    drawVehicleGlyph(ctx, 'bus', px, py, b.heading, {
+      fill: ATVO_COLOR,
+      stroke: isDark ? '#ffffff' : '#0369a1',
+      lineWidth: 1.4,
+      scale,
+      roof: '#ffffff',
+    });
+    if (camera.s > 0.02) {
+      ctx.font = '700 9px "DM Mono", monospace';
+      ctx.fillStyle = isDark ? '#7dd3fc' : '#0369a1';
+      ctx.textAlign = 'start';
+      ctx.fillText(`ATVO ${b.trip.line}`, px + 10, py + 3);
+    }
+  }
+}
+
+/** Bus Dolomiti Bus nell'ultimo frame (per il clic): posizioni simulate dall'orario */
+export let dolomitiThisFrame: DolomitiBusPosition[] = [];
+
+/** Dolomiti Bus: autolinea strategica (Linea 72 Cortina Express) simulata dall'orario. */
+export function drawDolomitibus(rc: RenderContext): void {
+  const { ctx, cw, ch, isDark, sx, sy, mx, my, camera, showDolomitibus, dolomitibus, currentTimeSeconds } = rc;
+  if (!showDolomitibus || !dolomitibus) {
+    dolomitiThisFrame = [];
+    return;
+  }
+  dolomitiThisFrame = dolomitiPositions(dolomitibus, dateAtRomeSeconds(currentTimeSeconds).getTime());
+  const scale = Math.max(0.8, Math.min(1.3, 0.6 + 12 * camera.s));
+  for (const b of dolomitiThisFrame) {
+    const px = sx(mx(b.lon));
+    const py = sy(my(b.lat));
+    if (px < -30 || px > cw + 30 || py < -30 || py > ch + 30) continue;
+    drawVehicleGlyph(ctx, 'bus', px, py, b.heading, {
+      fill: DOLOMITI_COLOR,
+      stroke: isDark ? '#ffffff' : '#064e3b',
+      lineWidth: 1.4,
+      scale,
+      roof: '#ffffff',
+    });
+    if (camera.s > 0.02) {
+      ctx.font = '700 9px "DM Mono", monospace';
+      ctx.fillStyle = isDark ? '#a7f3d0' : '#064e3b';
+      ctx.textAlign = 'start';
+      ctx.fillText(`DolomitiBus ${b.trip.line}`, px + 10, py + 3);
     }
   }
 }

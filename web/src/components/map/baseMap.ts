@@ -1,7 +1,6 @@
 import { LAND_HI_URL } from '@/lib/simulation-data';
 import type { ColorScheme } from '@/lib/solar';
 import { isStreetsLoaded, paintStreets, requestStreets } from './streetsLayer';
-
 export { isStreetsLoaded, requestStreets };
 
 /** Poligoni (anelli di coordinate x,y alternate) nella griglia virtuale della mappa. */

@@ -30,6 +30,10 @@ export function mapObjectToLayerSlug(object: MapObjectSelected): string {
       return 'alilaguna';
     case 'flixbus':
       return 'flixbus';
+    case 'atvo':
+      return 'atvo';
+    case 'dolomitibus':
+      return 'dolomitibus';
   }
 }
 

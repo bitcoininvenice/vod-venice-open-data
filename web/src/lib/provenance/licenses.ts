@@ -14,6 +14,11 @@ export const LICENSES = {
   'actv-content': { label: 'Contenuti ACTV, citati con link alla fonte', url: null },
   'public-acts': { label: 'Atti pubblici', url: null },
   'attribution-required': { label: 'Uso con citazione della fonte', url: null },
+  /** Feed BusOne: gratuiti per privati ed enti senza scopo di lucro, solo uso non commerciale, citando BusOne e la fonte */
+  'busone-noncommercial': { label: 'Condizioni BusOne: uso non commerciale e non profit, citando BusOne e la fonte originale', url: 'https://proxy.busone.app/#data-terms' },
+  /** Dati pubblicati da una PA senza licenza espressa: aperti per l'art. 52, comma 2, del CAD, citando la fonte */
+  'cad-art52': { label: 'Dati pubblicati dalla PA senza licenza espressa: art. 52 c. 2 CAD (riuso citando la fonte)', url: 'https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-03-07;82~art52' },
+  'cc-by-sa-4.0': { label: 'CC BY-SA 4.0', url: 'https://creativecommons.org/licenses/by-sa/4.0/' },
   'opensky-terms': { label: 'Termini d’uso OpenSky Network (uso non commerciale e di ricerca)', url: null },
   'ais-public': { label: 'Messaggi AIS trasmessi pubblicamente dalle navi', url: null },
   'owner-published': { label: 'Dati pubblicati dai proprietari', url: null },

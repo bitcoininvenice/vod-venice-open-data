@@ -14,6 +14,11 @@ import { floodWeights, NO_WATER, summarizeEdges } from './dryRouting';
 import { BOARD_BUFFER_S, HORIZON_S, MAX_ACCESS_M, MAX_SNAP_M, planTrip, WALK_SPEED, type HurryInfo, type Itinerary, type Leg, type PlannerPoint, type PlanOptions } from './tripPlanner';
 import { ALILAGUNA_STOPS, alilagunaShapeBetween, alilagunaTripsOn, type AlilagunaTripTimes } from './alilaguna-schedule';
 import type { DayType, StopItem } from './types';
+import atvoJson from '@/data/atvo-venezia.json';
+import dolomitiJson from '@/data/dolomitibus-venezia.json';
+import flixJson from '@/data/flixbus-venezia.json';
+import { nextCoachLeg, type CoachData, type CoachLegStyle } from './coachSchedule';
+import { isMestreStation, MESTRE_STATION as MESTRE_POINT } from './mestrePlanner';
 
 /** Terminal passeggeri dell'aeroporto Marco Polo */
 export const AIRPORT: PlannerPoint = { lon: 12.3385, lat: 45.505, label: 'Aeroporto Marco Polo (VCE)' };
@@ -232,6 +237,87 @@ function viaAlilaguna(graph: WalkGraph, trips: AlilagunaTripTimes[], venice: Pla
   return { depart: Math.max(now, legs[0].start), arrive: legs[legs.length - 1].end, legs, walkMeters, rides: 1, ridesInHighWater: false, via: 'alilaguna', ...(hurry ? { hurry } : {}), ...wet };
 }
 
+/** Terminal del bus in città: Mestre se il punto è la stazione, altrimenti Piazzale Roma (Tronchetto per FlixBus) */
+const TRONCHETTO: PlannerPoint = { lon: 12.305, lat: 45.442, label: 'Tronchetto' };
+const AIRPORT_STOP = /aeroporto|airport|marco polo/i;
+
+interface CoachSpec {
+  data: CoachData;
+  via: NonNullable<Itinerary['via']>;
+  style: CoachLegStyle;
+  /** fermata in città: quella di Mestre o quella di Venezia */
+  cityStop: (mestre: boolean) => RegExp;
+  /** linea da usare (ATVO: 35 da Piazzale Roma, 35B da Mestre) */
+  line?: (mestre: boolean) => string | undefined;
+  terminal: (mestre: boolean) => PlannerPoint;
+}
+
+const COACHES: CoachSpec[] = [
+  {
+    data: atvoJson as unknown as CoachData,
+    via: 'atvo',
+    style: { label: (l) => `ATVO ${l}`, color: '#0284c7', operator: 'ATVO' },
+    cityStop: (m) => (m ? /mestre/i : /piazzale roma/i),
+    line: (m) => (m ? '35B' : '35'),
+    terminal: (m) => (m ? MESTRE_POINT : PIAZZALE_ROMA),
+  },
+  {
+    data: dolomitiJson as unknown as CoachData,
+    via: 'dolomitibus',
+    style: { label: (l) => `Dolomiti Bus ${l}`, color: '#059669', operator: 'Dolomiti Bus' },
+    cityStop: (m) => (m ? /mestre/i : /piazzale roma/i),
+    terminal: (m) => (m ? MESTRE_POINT : PIAZZALE_ROMA),
+  },
+  {
+    data: flixJson as unknown as CoachData,
+    via: 'flixbus',
+    style: { label: (l) => `FlixBus ${l}`, color: '#84cc16', operator: 'FlixBus' },
+    cityStop: (m) => (m ? /mestre/i : /tronchetto/i),
+    terminal: (m) => (m ? MESTRE_POINT : TRONCHETTO),
+  },
+];
+
+/** Bus a orario fra la città e l'aeroporto (ATVO, Dolomiti Bus, FlixBus), con il tratto in città se serve. */
+function viaCoach(
+  spec: CoachSpec,
+  graph: WalkGraph,
+  sim: SimModel,
+  stops: StopItem[],
+  venice: PlannerPoint,
+  toAirport: boolean,
+  now: number,
+  day: DayType,
+  options: PlanOptions,
+): Itinerary | null {
+  const mestre = isMestreStation(venice);
+  const terminal = spec.terminal(mestre);
+  const atTerminal = mestre || metersBetween(venice.lon, venice.lat, terminal.lon, terminal.lat) < 600;
+  const date = options.date ?? new Date();
+  const span = options.includeCoaches ? 12 * 3600 : HORIZON_S;
+  const match = toAirport
+    ? { from: spec.cityStop(mestre), to: AIRPORT_STOP, line: spec.line?.(mestre) }
+    : { from: AIRPORT_STOP, to: spec.cityStop(mestre), line: spec.line?.(mestre) };
+
+  if (toAirport) {
+    const connect = atTerminal ? null : toRoma(graph, sim, stops, venice, terminal, now, day, options);
+    if (!atTerminal && !connect) return null;
+    const ready = (connect ? connect.arrive : now) + BOARD_BUFFER_S;
+    const leg = nextCoachLeg(spec.data, match, ready, ready + span, date, spec.style);
+    if (!leg) return null;
+    if (connect) return { ...connect, arrive: leg.end, legs: [...connect.legs, leg], rides: connect.rides + 1, via: spec.via };
+    return { depart: leg.start, arrive: leg.end, legs: [leg], rides: 1, walkMeters: 0, ridesInHighWater: false, via: spec.via, ...NO_WATER };
+  }
+  const ready = now + BOARD_BUFFER_S;
+  const leg = nextCoachLeg(spec.data, match, ready, ready + span, date, spec.style);
+  if (!leg) return null;
+  if (!atTerminal) {
+    const rest = toRoma(graph, sim, stops, terminal, venice, leg.end, day, { ...options, hurry: false });
+    if (!rest) return null;
+    return { ...rest, depart: leg.start, legs: [leg, ...rest.legs], rides: rest.rides + 1, via: spec.via };
+  }
+  return { depart: leg.start, arrive: leg.end, legs: [leg], rides: 1, walkMeters: 0, ridesInHighWater: false, via: spec.via, ...NO_WATER };
+}
+
 /**
  * Opzioni per andare all'aeroporto o tornare in città, dalla più veloce. Vuoto se nessuno dei due punti è
  * l'aeroporto, se lo sono entrambi o se l'altro punto è fuori dalla rete pedonale di Venezia.
@@ -254,9 +340,20 @@ export function planAirport(
   if (water) out.push(water);
   const land = viaActv(graph, sim, stops, venice, toAirport, now, day, options);
   if (land) out.push(land);
+
+  const isTerminal = metersBetween(venice.lon, venice.lat, PIAZZALE_ROMA.lon, PIAZZALE_ROMA.lat) < 600 || isMestreStation(venice);
+  if (isTerminal || options.includeCoaches) {
+    for (const spec of COACHES) {
+      const it = viaCoach(spec, graph, sim, stops, venice, toAirport, now, day, options);
+      if (it) out.push(it);
+    }
+  }
+
   // Tutti i mezzi insieme (es. bus 15 da Mestre, Alilaguna con un cambio): solo se arriva prima delle altre
   const mixed = planTrip(graph, sim, stops, from, to, now, day, { ...options, mode: 'fastest', date: options.date ?? new Date() }).best;
   if (mixed && mixed.rides > 0 && out.every((o) => mixed.arrive < o.arrive - 120)) out.push({ ...mixed, via: 'mixed' });
+
+
   return out.sort((a, b) => a.arrive - b.arrive);
 }
 

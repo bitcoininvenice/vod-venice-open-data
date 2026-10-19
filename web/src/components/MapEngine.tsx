@@ -13,20 +13,27 @@ import { GRID, LAND_LO } from '@/lib/simulation-data';
 import { drawBaseMap, isLandHiLoaded, requestLandHi, isStreetsLoaded, requestStreets } from './map/baseMap';
 import { getDynamicPalette, NOTTE, CARTA, ColorScheme } from '@/lib/solar';
 import { getScheduledAlilagunaBoats } from '@/lib/alilaguna-schedule';
+import { dateForDayType, getSimulatedTrainsAtTime, loadTrainSchedule, trainSchedule } from '@/lib/trainSimulation';
+import { tilesFor, type StreetPhoto } from '@/lib/mapillary';
+
+/** Le foto si chiedono solo da questo ingrandimento (quartiere): a scala di città sarebbero troppe */
+const STREET_PHOTOS_MIN_SCALE = 0.3;
 import { useTranslation } from '@/lib/i18n';
 import { simClock } from '@/lib/simClock';
 import { getLiveFlight, getLiveSatellite } from './map/mapHelpers';
 import type { RenderContext } from './map/renderContext';
 import { freshDelay, inService, isLiveView, networkOfSimCategory, MAX_EARLY_S, MAX_LATE_S, mergedThisFrame, realtimeByTrip, shownDistance, tripKey } from './map/liveFleet';
-import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri, drawScheduleSpeed, drawBusStops, drawActvNotices, drawFlixbus, flixbusThisFrame, SHUTTLE_LAYOVER_S } from './map/transitLayers';
+import { drawItinerary, drawRoutes, drawSelectedTrip, drawSpatialBuffer, drawVehicles, drawRealtimeVehicles, drawStops, drawCantieri, drawScheduleSpeed, drawBusStops, drawActvNotices, drawFlixbus, flixbusThisFrame, drawAtvo, atvoThisFrame, drawDolomitibus, dolomitiThisFrame, SHUTTLE_LAYOVER_S } from './map/transitLayers';
 import { drawFlights } from './map/airLayers';
 import { drawMose, drawPasserelle } from './map/tideLayers';
 import { drawCurrentFlow } from './map/currentFlow';
 import { drawShipRoutes, drawShips, drawAlilaguna } from './map/vesselLayers';
 import { drawMarineSignals, drawCanalLimits, drawBridges, drawGondolas, drawDocks } from './map/waterwayLayers';
 import { drawOceanStations, drawMarineWind } from './map/marineLayers';
-import { bdapRadius, drawPin, drawParks, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawAccessibleBridges, drawVeritasServices, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies, drawOrdinances } from './map/cityLayers';
-import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawBikeRoutes, drawPollenStations, drawTributaries } from './map/environmentLayers';
+import { bdapRadius, drawPin, drawParks, drawBdapWorks, drawLoraGateways, drawWifiVenues, drawSports, drawNautical, MOORINGS_MIN_SCALE, drawCivicPois, drawCityAssets, drawAccessibleBridges, drawVeritasServices, drawParkings, drawAirQuality, drawPedestrianFlows, drawCameras, drawBathingWaters, drawTrees, drawEvCharging, drawWifiHotspots, drawTrains, drawWasteBoats, drawNizioleti, drawWells, drawBellTowers, drawFortresses, drawEmergencyDocks, drawDae, drawPharmacies, drawOrdinances, drawLuggageStorage, drawStreetPhotos } from './map/cityLayers';
+import { drawSatellites, drawSubsidence, drawMorphology, drawHeatIslands, drawLagoonWater, drawAccommodations, drawRegisteredStays, drawTourismPressure, drawBikeRoutes, drawPollenStations, drawTributaries, drawSevesoPlants } from './map/environmentLayers';
+import { AIRBNB_LISTING_POINTS } from '@/lib/airbnb';
+import { SEVESO_ESTABLISHMENTS } from '@/lib/seveso';
 import { drawFloodLayer } from './map/floodLayer';
 import { resolveTideState } from '@/lib/tideCurve';
 import { drawWindFlow, WIND_COLOR_STOPS } from './map/windLayer';
@@ -50,6 +57,21 @@ import { PROVIDERS } from '@/lib/provenance/providers';
 import { SOURCE_CODE_URL } from '@/lib/site';
 import { drawFuelStations, MARKER_LIFT as FUEL_MARKER_LIFT } from './map/fuelLayer';
 import { rankFuelStations, type FuelKind } from '@/lib/fuel';
+import {
+  buildingAt,
+  CATEGORY_META,
+  CATEGORY_ORDER,
+  drawBuildings,
+  EPOCH_META,
+  EPOCH_ORDER,
+  getBuildingsAuditStats,
+  isBuildingsLoaded,
+  requestBuildings,
+  type BuildingColorMode,
+  type BuildingEpochFilter,
+} from './map/buildingsLayer';
+import { drawTopographyOverlay } from './map/topographyLayer';
+import { drawPublicLighting } from './map/lightingLayer';
 
 export interface MapEngineProps {
   /** Livelli accesi */
@@ -73,7 +95,7 @@ export interface MapEngineProps {
   onSelectObject?: (object: MapObjectSelected) => void;
   /** Clic su un punto vuoto della mappa */
   onClearSelection?: () => void;
-  /** Legenda dei livelli attivi, in cima alla pila delle legende */
+  /** Legenda dei livelli attivi, evidenziati sulla mappa */
   legend?: React.ReactNode;
   /** Oggetto e satellite selezionati, evidenziati sulla mappa */
   selectedObject?: MapObjectSelected | null;
@@ -98,10 +120,23 @@ export interface MapEngineProps {
   pin?: { lat: number; lon: number; approximate: boolean } | null;
   /** Se true, nasconde la legenda fluttuante del vento in alto perché ospitata nella dashboard in basso */
   hideFloatingWindLegend?: boolean;
+  /** Se true, nasconde il pannello fluttuante Edifici in alto perché innestato nella dashboard/timeline in basso */
+  hideFloatingBuildingsPanel?: boolean;
+  /** Controlli opzionali controllati dall'esterno per vista 3D e filtro Edifici */
+  is3DView?: boolean;
+  onToggle3DView?: () => void;
+  buildingColorMode?: BuildingColorMode;
+  onBuildingColorModeChange?: (mode: BuildingColorMode) => void;
+  buildingEpochFilter?: BuildingEpochFilter;
+  onBuildingEpochFilterChange?: (filter: BuildingEpochFilter) => void;
+  buildingMaxYear?: number | null;
+  onBuildingMaxYearChange?: (year: number | null) => void;
 }
 
 /** Livello in città oltre il quale l'allagamento compare anche senza layer marea attivi */
 const AUTO_FLOOD_CM = 90;
+/** Zoom massimo della camera (8.0 px/m permette l'ispezione ravvicinata di singoli edifici e calli) */
+const MAX_CAMERA_SCALE = 8.0;
 
 export const MapEngine: React.FC<MapEngineProps> = ({
   layers,
@@ -131,12 +166,20 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   fountainFilter = 'all',
   simulatedTideLevel = null,
   isMoseProtected = true,
-  isDesktopLayerPanelOpen = true,
   pin = null,
   pickMode = false,
   onPickPoint,
   itinerary = null,
-  hideFloatingWindLegend = false
+  hideFloatingWindLegend = false,
+  hideFloatingBuildingsPanel = false,
+  is3DView: controlledIs3DView,
+  onToggle3DView,
+  buildingColorMode: controlledBuildingColorMode,
+  onBuildingColorModeChange,
+  buildingEpochFilter: controlledBuildingEpochFilter,
+  onBuildingEpochFilterChange,
+  buildingMaxYear: controlledBuildingMaxYear,
+  onBuildingMaxYearChange,
 }) => {
   const { t } = useTranslation();
   // fontanelle della fonte scelta (con "tutte", senza i doppioni OSM di Venice Tap Water)
@@ -168,9 +211,67 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
   // View Camera State (x0, y0, scale)
   const [camera, setCamera] = useState({ x0: 0, y0: 0, s: 0.02 });
-  const [is3DView, setIs3DView] = useState(false);
+  const [internalIs3DView, setInternalIs3DView] = useState(false);
   // Ridisegno quando arrivano le isole dettagliate
   const [landHiReady, setLandHiReady] = useState(false);
+  const [buildingsReady, setBuildingsReady] = useState(false);
+  // foto Mapillary: posizioni per riquadri da ~400 m, chieste solo con il layer acceso e la mappa ingrandita
+  const [streetPhotos, setStreetPhotos] = useState<Map<string, StreetPhoto[]>>(() => new Map());
+  const [streetPhotosError, setStreetPhotosError] = useState<string | null>(null);
+  const photoTilesAsked = useRef(new Set<string>());
+  useEffect(() => {
+    if (!layers.showStreetPhotos || camera.s < STREET_PHOTOS_MIN_SCALE || !containerRef.current) return;
+    const timer = setTimeout(() => {
+      const w = containerRef.current?.clientWidth ?? 0;
+      const h = containerRef.current?.clientHeight ?? 0;
+      const lonAt = (px: number) => LON0 + (camera.x0 + px / camera.s) / KX;
+      const latAt = (py: number) => LAT1 - (camera.y0 + py / camera.s) / KY;
+      const todo = tilesFor(lonAt(0), latAt(h), lonAt(w), latAt(0)).filter((k) => !photoTilesAsked.current.has(k));
+      for (const key of todo) {
+        photoTilesAsked.current.add(key);
+        fetch(`/api/mapillary?tile=${key}`)
+          .then((r) => r.json())
+          .then((j) => {
+            if (j.success) setStreetPhotos((prev) => new Map(prev).set(key, j.data as StreetPhoto[]));
+            else setStreetPhotosError(j.error ?? 'error');
+          })
+          .catch(() => photoTilesAsked.current.delete(key));
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [layers.showStreetPhotos, camera, LON0, LAT1, KX, KY]);
+  const streetPhotoList = useMemo(() => [...streetPhotos.values()].flat(), [streetPhotos]);
+
+  // orario dei treni (circa 230 KB) caricato solo con il layer acceso
+  const [trainsReady, setTrainsReady] = useState(() => trainSchedule() !== null);
+  useEffect(() => {
+    if (!layers.showTrains || trainsReady) return;
+    let alive = true;
+    loadTrainSchedule()
+      .then(() => alive && setTrainsReady(true))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [layers.showTrains, trainsReady]);
+  const [internalBuildingColorMode, setInternalBuildingColorMode] = useState<BuildingColorMode>('period');
+  const [internalBuildingEpochFilter, setInternalBuildingEpochFilter] = useState<BuildingEpochFilter>('all');
+  const [internalBuildingMaxYear, setInternalBuildingMaxYear] = useState<number | null>(null);
+
+  const is3DView = controlledIs3DView ?? internalIs3DView;
+  const toggle3DView = useCallback(() => {
+    if (onToggle3DView) onToggle3DView();
+    else setInternalIs3DView((v) => !v);
+  }, [onToggle3DView]);
+  const buildingColorMode = controlledBuildingColorMode ?? internalBuildingColorMode;
+  const setBuildingColorMode = onBuildingColorModeChange ?? setInternalBuildingColorMode;
+  const buildingEpochFilter = controlledBuildingEpochFilter ?? internalBuildingEpochFilter;
+  const setBuildingEpochFilter = onBuildingEpochFilterChange ?? setInternalBuildingEpochFilter;
+  const buildingMaxYear = controlledBuildingMaxYear !== undefined ? controlledBuildingMaxYear : internalBuildingMaxYear;
+  const setBuildingMaxYear = onBuildingMaxYearChange ?? setInternalBuildingMaxYear;
+
+  const { language } = useTranslation();
+  const isIt = language === 'it';
 
   /** Coordinate dello schermo -> piano della mappa (in 3D il canvas è inclinato via CSS). */
   const toMapPlane = (x: number, y: number, rect: DOMRect) =>
@@ -202,9 +303,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     if (preset === 'lagoon') {
       // Entire Venetian Lagoon / Central Basin view
       // Mobile: increased by 1 zoom level (+1 zoom click / 1.35x, s = Math.min(cw / 14400, chEffective / 16300)), centered at 45.4265
-      // Desktop: increased by 2 zoom levels (+2 zoom clicks / 2x scale, s = Math.min(cw / 7500, ch / 9000)), centered at 12.3280 / 45.4380 with space for LayerPanel
+      // Desktop: increased by 2 zoom levels (+2 zoom clicks / 2x scale, s = Math.min(cw / 7500, ch / 9000)), centered at 12.3320 / 45.4380
       const s = isMobile ? Math.min(cw / 14400, chEffective / 16300) : Math.min(cw / 7500, ch / 9000);
-      const centerLon = isMobile ? 12.3380 : (isDesktopLayerPanelOpen ? 12.3280 : 12.3380);
+      const centerLon = isMobile ? 12.3380 : 12.3320;
       const centerLat = isMobile ? 45.4265 : 45.4380;
       target = {
         s,
@@ -250,7 +351,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     }
 
     setCamera(target);
-  }, [mx, my, isDesktopLayerPanelOpen]);
+  }, [mx, my]);
 
   // Handle focused coordinates (e.g. from spatial modal)
   useEffect(() => {
@@ -267,6 +368,9 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     }
   }, [focusedCoordinates, mx, my]);
 
+  const isInitializedRef = useRef(false);
+  const prevViewRef = useRef<CameraViewPreset>(currentView);
+
   // Resize handler with ResizeObserver for immediate initial container measurement
   useEffect(() => {
     const handleResize = () => {
@@ -275,10 +379,17 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       const h = containerRef.current.clientHeight || (window.innerHeight - 56);
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-      canvasRef.current.width = w * dpr;
-      canvasRef.current.height = h * dpr;
+      const targetW = Math.round(w * dpr);
+      const targetH = Math.round(h * dpr);
+      if (canvasRef.current.width !== targetW || canvasRef.current.height !== targetH) {
+        canvasRef.current.width = targetW;
+        canvasRef.current.height = targetH;
+      }
 
-      updateCameraToPreset(currentView, w, h);
+      if (!isInitializedRef.current) {
+        updateCameraToPreset(currentView, w, h);
+        isInitializedRef.current = true;
+      }
     };
 
     handleResize();
@@ -296,6 +407,18 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       if (ro) ro.disconnect();
       window.removeEventListener('resize', handleResize);
     };
+  }, [currentView, updateCameraToPreset]);
+
+  // Handle preset view changes (e.g. clicking Laguna, Venezia, Mestre, Lido, Aeroporto in Header)
+  useEffect(() => {
+    if (prevViewRef.current !== currentView) {
+      prevViewRef.current = currentView;
+      if (containerRef.current) {
+        const w = containerRef.current.clientWidth || window.innerWidth;
+        const h = containerRef.current.clientHeight || (window.innerHeight - 56);
+        updateCameraToPreset(currentView, w, h);
+      }
+    }
   }, [currentView, updateCameraToPreset]);
 
   // Manual Zoom & Centering handlers (+ / - / Reset)
@@ -318,7 +441,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     const h = containerRef.current.clientHeight || (window.innerHeight - 56);
     const factor = 1.35;
     setCamera((prev) => {
-      const newS = Math.min(1.25, prev.s * factor);
+      const newS = Math.min(MAX_CAMERA_SCALE, prev.s * factor);
       const centerMapX = prev.x0 + w / (2 * prev.s);
       const centerMapY = prev.y0 + h / (2 * prev.s);
       return {
@@ -389,7 +512,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
     const { x: mouseX, y: mouseY } = toMapPlane(e.clientX - rect.left, e.clientY - rect.top, rect);
 
     const zoomFactor = e.deltaY < 0 ? 1.15 : 0.87;
-    const newScale = Math.max(containerRef.current.clientWidth / W, Math.min(1.25, camera.s * zoomFactor));
+    const newScale = Math.max(containerRef.current.clientWidth / W, Math.min(MAX_CAMERA_SCALE, camera.s * zoomFactor));
 
     // Anchor zoom at mouse pointer
     const newX0 = camera.x0 + mouseX / camera.s - mouseX / newScale;
@@ -488,7 +611,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       const newDist = Math.hypot(x2 - x1, y2 - y1);
       const ratio = newDist / (st.dist || 1);
 
-      const newScale = Math.max(containerRef.current.clientWidth / W, Math.min(1.25, st.startScale * ratio));
+      const newScale = Math.max(containerRef.current.clientWidth / W, Math.min(MAX_CAMERA_SCALE, st.startScale * ratio));
       const midX = (x1 + x2) / 2;
       const midY = (y1 + y2) / 2;
 
@@ -667,6 +790,14 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       return cell ? () => feature('fiberCell')({ cell, dataDate }) : null;
     };
 
+    // Edifici storici e tessuto 3D: impronte e volumi estrusi
+    const buildingsHit: Hit = (x, y) => {
+      const gx = x / camera.s + camera.x0;
+      const gy = y / camera.s + camera.y0;
+      const b = buildingAt(gx, gy, camera.s, is3DView, buildingEpochFilter, buildingMaxYear);
+      return b ? () => feature('historicBuilding')(b) : null;
+    };
+
     // Ordine = priorità: oggetti in movimento, poi punti, poi tracciati e aree
     const action = firstHit(
       [
@@ -706,7 +837,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         L.showSubsidence && target({ items: D.subsidencePoints, radius: 22, select: feature('subsidence') }),
         L.showMorphology && target({ items: D.lagoonMorphology, at: (m) => [m.center[0], m.center[1]], radius: 26, select: feature('lagoonMorphology') }),
         L.showMarineWind && target({ items: D.marineWindStations, radius: 24, select: feature('marineWind') }),
-        L.showTrains && target({ items: D.liveTrains, radius: 24, select: feature('trainLive') }),
+        L.showTrains && target({ items: getSimulatedTrainsAtTime(currentTimeSeconds, D.liveTrains, dateForDayType(selectedDay)), radius: 24, select: feature('trainLive') }),
         L.showParkings && target({ items: D.parkings, radius: 28, dy: -10, select: feature('parking') }),
         L.showWasteBoats && target({ items: D.wasteBoats, radius: 20, select: feature('wasteBoat') }),
         L.showNizioleti && target({ items: D.nizioleti, radius: 20, select: feature('nizioleto') }),
@@ -716,9 +847,15 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         L.showEmergencyDocks && target({ items: D.emergencyDocks, radius: 22, select: feature('emergencyDock') }),
         L.showDae && target({ items: D.daeList, radius: 20, select: feature('publicDae') }),
         L.showPharmacies && target({ items: D.pharmacies, radius: 20, select: feature('pharmacy') }),
+        L.showLuggages && target({ items: D.luggages, radius: 20, select: feature('luggageStorage') }),
+        L.showStreetPhotos && camera.s >= STREET_PHOTOS_MIN_SCALE && target({ items: streetPhotoList, radius: 12, select: feature('streetPhoto') }),
+        L.showRegisteredStays && target({ items: D.registeredStays?.businesses ?? [], radius: 14, select: feature('registeredStay') }),
+        L.showPublicLighting && target({ items: D.publicLighting, radius: 20, select: feature('publicLighting') }),
+        L.showSevesoPlants && target({ items: SEVESO_ESTABLISHMENTS, radius: 22, select: feature('sevesoPlant') }),
         L.showHeatIslands && target({ items: D.heatIslands, radius: 26, select: feature('heatIsland') }),
         L.showLagoonWater && target({ items: D.lagoonWaterQuality, radius: 24, select: feature('lagoonWater') }),
-        L.showAccommodations && target({ items: D.touristAccommodations, radius: 28, select: feature('accommodation') }),
+        L.showTourismPressure && target({ items: D.touristAccommodations, radius: 28, select: feature('accommodation') }),
+        L.showAccommodations && target({ items: AIRBNB_LISTING_POINTS, radius: camera.s >= 0.08 ? 10 : 7, select: feature('airbnbListing') }),
         L.showBikeRoutes && target({ items: D.regionalBikeRoutes, at: noPoint, path, radius: 20, select: feature('bikeRoute') }),
         L.showPollenStations && target({ items: D.pollenMonitoringStations, radius: 24, select: feature('pollenStation') }),
         // Fiumi: il punto della foce con raggio più ampio, poi i vertici del corso
@@ -765,13 +902,15 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         L.showOrdinances && target({ items: D.ordinances.filter(isPlacedOrdinance), radius: 16, select: feature('ordinance') }),
         L.showCantieri && target({ items: cantieri, radius: 18, select: onSelectCantiere }),
         L.showFlixbus && target({ items: flixbusThisFrame, radius: 14, select: (b) => onSelectObject?.({ type: 'flixbus', data: b }) }),
+        L.showAtvo && target({ items: atvoThisFrame, radius: 14, select: (b) => onSelectObject?.({ type: 'atvo', data: b }) }),
+        L.showDolomitibus && target({ items: dolomitiThisFrame, radius: 14, select: (b) => onSelectObject?.({ type: 'dolomitibus', data: b }) }),
         L.showStops && target({ items: D.stops, radius: 15, select: onSelectStop }),
         L.showBusStops && target({ items: D.busStops, radius: 10, select: onSelectStop }),
         L.showVehicles && scheduledVehicles,
         L.showRealtimeVehicles &&
           target({
             // i mezzi già disegnati come corsa dell'orario si cliccano lì
-            items: D.realtimeVehicles.filter((v) => !(L.showVehicles && mergedThisFrame.has(v.id))),
+            items: D.realtimeVehicles.filter((v) => v.operator !== 'Busitalia Veneto' && !(L.showVehicles && mergedThisFrame.has(v.id))),
             radius: 14,
             select: (v) => {
               const cat = v.category || 'vaporetto';
@@ -793,6 +932,35 @@ export const MapEngine: React.FC<MapEngineProps> = ({
                   vehicleId: v.id,
                   vehicleName: v.label,
                   network: v.network,
+                  operator: v.operator,
+                },
+              });
+            },
+          }),
+        L.showBusitalia &&
+          target({
+            items: D.realtimeVehicles.filter((v) => v.operator === 'Busitalia Veneto'),
+            radius: 14,
+            select: (v) => {
+              onSelectObject?.({
+                type: 'vehicle',
+                data: {
+                  line: v.line || '–',
+                  category: 'BUSITALIA · GPS',
+                  speedKmh: null,
+                  color: '#10b981',
+                  headsign: v.line
+                    ? `Busitalia Veneto · Linea ${v.line}`
+                    : `Busitalia Veneto · ${v.label || v.id}`,
+                  source: 'gps',
+                  updatedAt: v.timestamp,
+                  delay: v.delay ?? null,
+                  delayConflict: v.delayConflict ?? false,
+                  trip: v.line ? { line: v.line, startTime: v.startTime, startDate: v.startDate, network: v.network } : undefined,
+                  vehicleId: v.id,
+                  vehicleName: v.label,
+                  network: v.network,
+                  operator: 'Busitalia Veneto',
                 },
               });
             },
@@ -801,6 +969,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         airport,
         L.showMarineSignals && lagoonMarkers,
         L.showCanals && canals,
+        L.showBuildings && buildingsHit,
         // Aree verdi: dopo punti e linee, perché coprono superfici ampie
         L.showParks && parks,
         // Copertura fibra: ultima priorità
@@ -838,6 +1007,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       layers.showVehicles || layers.showFlights || layers.showAlilaguna || layers.showSatellites ||
       (layers.showShips && data.ships.length > 0) ||
       layers.showCameras || layers.showMarineSignals || layers.showOceanStations || layers.showLagoonWater || layers.showLagoonCurrents ||
+      layers.showPublicLighting ||
       (layers.showMarineWind && data.windField !== null);
     let lastDraw = -Infinity;
     // Con layer animati al massimo 30 fotogrammi al secondo: a velocità reale i mezzi si spostano di
@@ -898,12 +1068,41 @@ export const MapEngine: React.FC<MapEngineProps> = ({
       if ((zoomed || shouldRenderFlood) && !isStreetsLoaded()) {
         requestStreets(() => setLandHiReady((prev) => !prev));
       }
-      drawBaseMap(ctx, { cw, ch, dpr, camera, pal, is3DView, zoomed: zoomed && isLandHiLoaded(), landLo: LAND_LO, zoomFactor });
+      if (layers.showBuildings && !isBuildingsLoaded()) {
+        requestBuildings(() => setBuildingsReady((prev) => !prev));
+      }
+      drawBaseMap(ctx, {
+        cw,
+        ch,
+        dpr,
+        camera,
+        pal,
+        is3DView,
+        zoomed: zoomed && isLandHiLoaded(),
+        landLo: LAND_LO,
+        zoomFactor,
+      });
+
+      // Reticolo tecnico a croci '+' (in metri sulla griglia)
+      drawTopographyOverlay(ctx, {
+        cw,
+        ch,
+        camera,
+        pal,
+        is3DView,
+        // niente curve di livello: non esiste un rilievo altimetrico aperto delle pavimentazioni, solo stime
+        showContours: false,
+        tideLevelCm: effectiveTideLevel,
+        landPolys: LAND_LO,
+      });
 
       // Contesto del frame condiviso dai layer di disegno (components/map/*)
+      const activeTrains = layers.showTrains ? getSimulatedTrainsAtTime(currentTimeSeconds, data.liveTrains, dateForDayType(selectedDay)) : [];
       const rc: RenderContext = {
         ...layers,
         ...data,
+        liveTrains: activeTrains,
+        streetPhotos: streetPhotoList,
         cantieri,
         t: tr,
         ctx,
@@ -957,6 +1156,22 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         // Aree verdi per prime: sotto canali, linee e simboli
         drawParks(rc);
         drawLagoonNetwork(rc);
+        if (layers.showBuildings) {
+          unguarded(() =>
+            drawBuildings(ctx, {
+              cw,
+              ch,
+              camera,
+              pal,
+              zoomFactor,
+              colorMode: buildingColorMode,
+              epochFilter: buildingEpochFilter,
+              maxYear: buildingMaxYear,
+              extrude3D: is3DView,
+              tideLevelCm: effectiveTideLevel,
+            }),
+          );
+        }
         drawRoutes(rc);
         drawSelectedTrip(rc);
 
@@ -970,6 +1185,10 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         drawRealtimeVehicles(rc);
 
         drawFlixbus(rc);
+
+        drawAtvo(rc);
+
+        drawDolomitibus(rc);
 
         drawScheduleSpeed(rc);
 
@@ -1058,11 +1277,17 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         drawDae(rc);
 
         drawPharmacies(rc);
+        drawLuggageStorage(rc);
+        drawStreetPhotos(rc);
+        drawPublicLighting(rc);
+        drawSevesoPlants(rc);
 
         drawHeatIslands(rc);
 
         drawLagoonWater(rc);
 
+        drawTourismPressure(rc);
+        drawRegisteredStays(rc);
         drawAccommodations(rc);
 
         drawBikeRoutes(rc);
@@ -1088,8 +1313,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
   }, [
     camera, KY, H, W, mx, my, tr, layers, data, cantieri, selectedDay, paletteTheme, bufferRadiusMeters, selectedCategory,
     sportFilter, fuelFilter, visibleFountains, canalOrdinances, simulatedTideLevel, isMoseProtected, selectedFlight, selectedShipOnMap, selectedAlilagunaBoat, selectedSatellite,
-    alilagunaBoats, is3DView, landHiReady, selectedTrip, selectedVehicle, pin, itinerary,
-]);
+    alilagunaBoats, is3DView, landHiReady, buildingsReady, trainsReady, streetPhotoList, buildingColorMode, buildingEpochFilter, buildingMaxYear, selectedTrip, selectedVehicle, pin, itinerary,
+  ]);
 
   return (
     <div
@@ -1115,11 +1340,214 @@ export const MapEngine: React.FC<MapEngineProps> = ({
         }}
       />
 
-      {/* Legende impilate in alto al centro: livelli attivi, poi i layer a campo (vento, fibra) */}
-      {(legend || (!hideFloatingWindLegend && showMarineWind && windField) || (showFiber && fiberData)) && (
-      <div {...stopMapGestures} className="absolute left-1/2 -translate-x-1/2 top-3 z-20 flex flex-col gap-2 w-[min(20rem,calc(100vw-7rem))]">
+      {/* Legende impilate in alto al centro: livelli attivi, poi i layer a campo (vento, fibra, edifici 3D) */}
+      {(legend || (!hideFloatingWindLegend && showMarineWind && windField) || (showFiber && fiberData) || (!hideFloatingBuildingsPanel && layers.showBuildings)) && (
+      <div {...stopMapGestures} className="absolute left-1/2 -translate-x-1/2 top-3 z-20 flex flex-col gap-2 w-[min(22rem,calc(100vw-7rem))]">
       {/* Legenda unica dei livelli accesi */}
       {legend}
+      {/* Pannello interattivo Edifici Storici & Volumi 3D */}
+      {!hideFloatingBuildingsPanel && layers.showBuildings && (() => {
+        const bStats = getBuildingsAuditStats();
+        return (
+          <div className="glass-panel rounded-xl border border-[var(--rule)] px-3 py-2.5 flex flex-col gap-2 shadow-xl" data-testid="buildings-panel">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400">
+                  {tr('ui.buildings.panelTitle')}
+                </span>
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  {bStats.withYear} {tr('ui.buildings.dated')} / {bStats.total.toLocaleString(language === 'it' ? 'it-IT' : 'en-GB')}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={toggle3DView}
+                className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold border transition-colors cursor-pointer ${
+                  is3DView
+                    ? 'bg-cyan-500 text-white border-cyan-400'
+                    : 'bg-[var(--rule)]/40 text-[var(--ink-2)] border-[var(--rule)] hover:border-cyan-400/50'
+                }`}
+              >
+                {is3DView ? '3D ON' : '2D / 3D'}
+              </button>
+            </div>
+
+            {/* Tab selector (Period / Contemporary / Floors / Context) */}
+            <div className="grid grid-cols-4 gap-1 p-0.5 rounded-lg bg-black/25 border border-[var(--rule)] text-[10px] font-mono">
+              {([
+                ['period', tr('ui.buildings.mode_period')],
+                ['contemporary', tr('ui.buildings.mode_contemporary')],
+                ['floors', tr('ui.buildings.mode_floors')],
+                ['category', tr('ui.buildings.mode_category')],
+              ] as const).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setBuildingColorMode(mode)}
+                  className={`py-1 rounded-md font-semibold transition-colors cursor-pointer ${
+                    buildingColorMode === mode
+                      ? mode === 'contemporary'
+                        ? 'bg-fuchsia-500 text-white'
+                        : 'bg-amber-500 text-slate-950'
+                      : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {buildingColorMode === 'period' && (
+              <div className="flex flex-col gap-1.5">
+                <div className="flex flex-wrap gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setBuildingEpochFilter('all')}
+                    className={`px-1.5 py-0.5 rounded text-[9px] font-mono border cursor-pointer ${
+                      buildingEpochFilter === 'all'
+                        ? 'bg-white/15 text-[var(--ink)] border-white/40 font-bold'
+                        : 'text-[var(--ink-3)] border-[var(--rule)] hover:text-[var(--ink-2)]'
+                    }`}
+                  >
+                    {tr('ui.buildings.filterAll')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBuildingEpochFilter('dated_only')}
+                    className={`px-1.5 py-0.5 rounded text-[9px] font-mono border cursor-pointer ${
+                      buildingEpochFilter === 'dated_only'
+                        ? 'bg-amber-500/25 text-amber-300 border-amber-400/50 font-bold'
+                        : 'text-[var(--ink-3)] border-[var(--rule)] hover:text-[var(--ink-2)]'
+                    }`}
+                  >
+                    {tr('ui.buildings.filterDated', { n: bStats.withYear })}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setBuildingEpochFilter(
+                        buildingEpochFilter === 'contemporary_authored' ? 'all' : 'contemporary_authored',
+                      )
+                    }
+                    className={`px-1.5 py-0.5 rounded text-[9px] font-mono border cursor-pointer ${
+                      buildingEpochFilter === 'contemporary_authored'
+                        ? 'bg-fuchsia-500/25 text-fuchsia-300 border-fuchsia-400/50 font-bold'
+                        : 'text-[var(--ink-3)] border-[var(--rule)] hover:text-[var(--ink-2)]'
+                    }`}
+                  >
+                    {tr('ui.buildings.filterAuthored', { n: bStats.withArchitect })}
+                  </button>
+                  {EPOCH_ORDER.map((ep) => {
+                    const m = EPOCH_META[ep];
+                    const active = buildingEpochFilter === ep;
+                    return (
+                      <button
+                        key={ep}
+                        type="button"
+                        onClick={() => setBuildingEpochFilter(active ? 'all' : ep)}
+                        className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono border cursor-pointer ${
+                          active
+                            ? 'bg-white/15 text-[var(--ink)] border-white/50 font-bold'
+                            : 'text-[var(--ink-2)] border-[var(--rule)]/70 hover:border-white/30'
+                        }`}
+                      >
+                        <span className="w-2 h-2 rounded-xs shrink-0" style={{ background: m.roofDark }} />
+                        <span>{isIt ? m.shortIt : m.shortEn}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Timeline storica per anno */}
+                <div className="flex items-center gap-2 pt-0.5">
+                  <span className="text-[9px] font-mono text-[var(--ink-3)] shrink-0">
+                    {tr('ui.buildings.upToYear')}
+                  </span>
+                  <input
+                    type="range"
+                    min={1000}
+                    max={2026}
+                    step={10}
+                    value={buildingMaxYear ?? 2026}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setBuildingMaxYear(val >= 2026 ? null : val);
+                    }}
+                    className="w-full accent-amber-400 h-1 cursor-pointer"
+                    aria-label={tr('ui.buildings.upToYearAria')}
+                  />
+                  <span className="text-[10px] font-mono font-bold text-amber-300 min-w-[3.2rem] text-right">
+                    {buildingMaxYear ?? tr('ui.buildings.now')}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {buildingColorMode === 'contemporary' && (
+              <div className="flex flex-col gap-1.5">
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[9px] font-mono text-[var(--ink-2)]">
+                  <span className="flex items-center gap-1">
+<span className="w-2 h-2 rounded-xs bg-[#e879f9] shrink-0" />
+<span>{tr('ui.buildings.authoredLegend')}</span>
+</span>
+                </div>
+                <div className="flex items-center justify-between gap-2 pt-0.5">
+                  <span className="text-[9px] text-[var(--ink-3)] font-mono">
+                    {tr('ui.buildings.authoredCount', { n: bStats.withArchitect })}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setBuildingEpochFilter(
+                        buildingEpochFilter === 'contemporary_authored' ? 'all' : 'contemporary_authored',
+                      )
+                    }
+                    className={`px-1.5 py-0.5 rounded text-[9px] font-mono border shrink-0 cursor-pointer ${
+                      buildingEpochFilter === 'contemporary_authored'
+                        ? 'bg-fuchsia-500/25 text-fuchsia-300 border-fuchsia-400/50 font-bold'
+                        : 'text-[var(--ink-2)] border-[var(--rule)] hover:border-white/30'
+                    }`}
+                  >
+                    {buildingEpochFilter === 'contemporary_authored'
+                      ? tr('ui.buildings.showFabric')
+                      : tr('ui.buildings.isolateAuthored', { n: bStats.withArchitect })}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {buildingColorMode === 'floors' && (
+              <div className="flex flex-wrap items-center gap-2 text-[9px] font-mono text-[var(--ink-2)]">
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-xs bg-[#38bdf8]" />1–2p</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-xs bg-[#34d399]" />3–4p</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-xs bg-[#fbbf24]" />5–6p</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-xs bg-[#fb7185]" />&gt;6p / Torri</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-xs bg-slate-500/60" />{tr('ui.buildings.levelsUnknown')}</span>
+              </div>
+            )}
+
+            {buildingColorMode === 'category' && (
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[9px] font-mono text-[var(--ink-2)]">
+                {CATEGORY_ORDER.map((cat) => (
+                  <span key={cat} className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-xs shrink-0" style={{ background: CATEGORY_META[cat].colorDark }} />
+                    <span>{(isIt ? CATEGORY_META[cat].labelIt : CATEGORY_META[cat].labelEn).split(',')[0]}</span>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <span className="text-[9px] text-[var(--ink-3)] leading-tight">
+              {tr('ui.buildings.sources')}
+            </span>
+          </div>
+        );
+      })()}
+      {layers.showStreetPhotos && (camera.s < STREET_PHOTOS_MIN_SCALE || streetPhotosError) && (
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 px-3 py-1.5 rounded-lg glass-panel text-[11px] text-[var(--ink-2)]" data-testid="street-photos-hint">
+          {streetPhotosError === 'mapillary_token_missing' ? tr('ui.streetPhotos.missingToken') : streetPhotosError ? tr('ui.streetPhotos.unavailable') : tr('ui.streetPhotos.zoomIn')}
+        </div>
+      )}
       {/* Legenda del vento animato: scala in km/h, fonte e ora di validità della previsione */}
       {!hideFloatingWindLegend && showMarineWind && windField && (
         <div className="pointer-events-none glass-panel rounded-xl border border-[var(--rule)] px-3 py-2 flex flex-col gap-1 shadow-lg">
@@ -1228,7 +1656,7 @@ export const MapEngine: React.FC<MapEngineProps> = ({
 
         <button
           type="button"
-          onClick={() => setIs3DView((v) => !v)}
+          onClick={toggle3DView}
           className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl glass-panel border transition-all shadow-lg active:scale-95 cursor-pointer mt-0.5 flex items-center justify-center ${is3DView
               ? 'bg-cyan-500 text-white border-cyan-400 font-semibold'
               : 'border-[var(--rule)] hover:border-cyan-400/50 bg-[var(--ground)]/90 text-[var(--ink-2)] hover:text-cyan-400'
@@ -1239,7 +1667,6 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           <Box className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
       </div>
-
     </div>
   );
 };

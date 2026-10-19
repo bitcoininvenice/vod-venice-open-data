@@ -1,6 +1,9 @@
 // Layer di disegno della mappa estratti da MapEngine (environmentLayers). Ogni funzione riceve il contesto del frame.
 import type { RenderContext } from './renderContext';
 import { getLiveSatellite } from './mapHelpers';
+import { AIRBNB_DATA, AIRBNB_CELL_COLORS, AIRBNB_LISTING_POINTS, AIRBNB_ROOM_COLORS, airbnbCellBounds, airbnbCellClass } from '@/lib/airbnb';
+import { SEVESO_ESTABLISHMENTS } from '@/lib/seveso';
+import { STAY_COLORS, stayCellBounds } from '@/lib/registeredStays';
 
 export function drawSatellites(rc: RenderContext): void {
   const { ctx, isDark, sx, sy, mx, my, camera, currentTimeSeconds, selectedSatellite, paletteTheme, showSatellites, satellites } = rc;
@@ -307,15 +310,82 @@ export function drawLagoonWater(rc: RenderContext): void {
 }
 
 export function drawAccommodations(rc: RenderContext): void {
-  const { ctx, isDark, sx, sy, mx, my, camera, showAccommodations, touristAccommodations } = rc;
-  // 41. Render Strutture Ricettive & Overtourism (Regione del Veneto)
-  if (showAccommodations && touristAccommodations && touristAccommodations.length > 0) {
+  const { ctx, isDark, sx, sy, mx, my, camera, cw, ch, showAccommodations } = rc;
+  // 41a. Render Singoli Alloggi & Locazioni Brevi (Inside Airbnb, 8.844 unita con coordinate anonimizzate)
+  if (!showAccommodations || AIRBNB_LISTING_POINTS.length === 0) return;
+
+  ctx.save();
+  const isCloseZoom = camera.s >= 0.08;
+  const isVeryCloseZoom = camera.s >= 0.22;
+  const radius = isVeryCloseZoom ? 4.2 : isCloseZoom ? 3.0 : camera.s >= 0.03 ? 2.1 : 1.5;
+
+  for (const pt of AIRBNB_LISTING_POINTS) {
+    const ax = sx(mx(pt.lon));
+    const ay = sy(my(pt.lat));
+    // Viewport culling per mantenere 60 fps con 8.844 punti
+    if (ax < -12 || ax > cw + 12 || ay < -12 || ay > ch + 12) continue;
+
+    const col = AIRBNB_ROOM_COLORS[pt.roomType];
+    ctx.fillStyle = col;
+    ctx.globalAlpha = isCloseZoom ? 0.92 : 0.72;
+    ctx.beginPath();
+    ctx.arc(ax, ay, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (isCloseZoom) {
+      ctx.globalAlpha = 0.95;
+      ctx.strokeStyle = isDark ? '#0f172a' : '#ffffff';
+      ctx.lineWidth = isVeryCloseZoom ? 1.1 : 0.7;
+      ctx.stroke();
+    }
+
+    if (isVeryCloseZoom && pt.priceEur !== null) {
+      ctx.font = 'bold 7px "DM Mono", monospace';
+      ctx.fillStyle = isDark ? '#fda4af' : '#9f1239';
+      ctx.fillText(`${pt.priceEur}€`, ax + 5.5, ay + 2.5);
+    }
+  }
+  ctx.restore();
+}
+
+export function drawTourismPressure(rc: RenderContext): void {
+  const { ctx, isDark, sx, sy, mx, my, camera, showTourismPressure, touristAccommodations } = rc;
+  // 41b. Render Pressione Turistica & Abitativa (griglia ~100 m + 14 ambiti Sestieri/Isole/Terraferma)
+  if (showTourismPressure && touristAccommodations && touristAccommodations.length > 0) {
+    // 1. Griglia di densita reale Inside Airbnb (~100x100 m)
+    if (AIRBNB_DATA.cells && AIRBNB_DATA.cells.length > 0) {
+      ctx.save();
+      for (const [ci, cj, totalListings] of AIRBNB_DATA.cells) {
+        const b = airbnbCellBounds(AIRBNB_DATA, ci, cj);
+        const x0 = sx(mx(b.lon0));
+        const y0 = sy(my(b.lat1));
+        const x1 = sx(mx(b.lon1));
+        const y1 = sy(my(b.lat0));
+        const w = Math.max(1.5, x1 - x0);
+        const h = Math.max(1.5, y1 - y0);
+        const cls = airbnbCellClass(totalListings);
+        ctx.fillStyle = AIRBNB_CELL_COLORS[cls];
+        ctx.globalAlpha = cls === 4 ? 0.52 : cls === 3 ? 0.40 : cls === 2 ? 0.28 : 0.18;
+        ctx.fillRect(x0, y0, w, h);
+        if (camera.s > 0.05 && w > 18 && totalListings >= 8) {
+          ctx.globalAlpha = 0.9;
+          ctx.font = '700 7px "DM Mono", monospace';
+          ctx.fillStyle = isDark ? '#fdf4ff' : '#4a044e';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(String(totalListings), x0 + w / 2, y0 + h / 2);
+        }
+      }
+      ctx.restore();
+    }
+
+    // 2. Nodi di sintesi per Sestiere / Isola / Terraferma
     for (const acc of touristAccommodations) {
       const ax = sx(mx(acc.lon));
       const ay = sy(my(acc.lat));
       ctx.save();
 
-      // Heatmap zone circle scaled by beds
+      // Heatmap zone circle scaled by listings
       const baseRadius = Math.max(16, 26 * (camera.s / 0.03));
       const isCritical = acc.densityCategory === 'CRITICA';
       const grad = ctx.createRadialGradient(ax, ay, 2, ax, ay, baseRadius);
@@ -342,19 +412,23 @@ export function drawAccommodations(rc: RenderContext): void {
       ctx.lineWidth = 1.2;
       ctx.stroke();
 
-      // Hotel initial 'H'
+      // Pressione turistica initial 'P'
       ctx.font = 'bold 7px "DM Sans", sans-serif';
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('H', ax, ay);
+      ctx.fillText('P', ax, ay);
       ctx.textAlign = 'start';
       ctx.textBaseline = 'alphabetic';
 
-      if (camera.s > 0.02) {
+      if (camera.s > 0.018) {
         ctx.font = 'bold 8px "DM Mono", monospace';
         ctx.fillStyle = isCritical ? (isDark ? '#f472b6' : '#be185d') : (isDark ? '#c084fc' : '#7e22ce');
-        ctx.fillText(rc.t('ui.mapLabels.beds', { beds: acc.totalBeds.toLocaleString(), ratio: acc.bedsPerResidentRatio }), ax + 9, ay + 3);
+        ctx.fillText(
+          rc.t('ui.mapLabels.beds', { beds: acc.totalBeds.toLocaleString(), ratio: acc.bedsPerResidentRatio }),
+          ax + 9,
+          ay + 3,
+        );
       }
       ctx.restore();
     }
@@ -487,4 +561,98 @@ export function drawTributaries(rc: RenderContext): void {
       ctx.restore();
     }
   }
+}
+
+export function drawSevesoPlants(rc: RenderContext): void {
+  const { ctx, isDark, sx, sy, mx, my, camera, cw, ch, showSevesoPlants } = rc;
+  if (!showSevesoPlants) return;
+
+  ctx.save();
+  for (const plant of SEVESO_ESTABLISHMENTS) {
+    const px = sx(mx(plant.lon));
+    const py = sy(my(plant.lat));
+    if (px < -30 || px > cw + 30 || py < -30 || py > ch + 30) continue;
+
+    const isUpper = plant.threshold === 'SS';
+    const mainColor = isUpper ? (isDark ? '#f97316' : '#ea580c') : (isDark ? '#eab308' : '#ca8a04');
+    const glowColor = isUpper ? 'rgba(249, 115, 22, 0.22)' : 'rgba(234, 179, 8, 0.18)';
+
+    // Outer hazard buffer
+    const radius = Math.max(14, 22 * (camera.s / 0.03));
+    ctx.beginPath();
+    ctx.arc(px, py, radius, 0, Math.PI * 2);
+    ctx.fillStyle = glowColor;
+    ctx.fill();
+
+    // Diamond marker
+    const dSize = 7.5;
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.rotate(Math.PI / 4);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(-dSize / 2, -dSize / 2, dSize, dSize);
+    ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(-dSize / 2, -dSize / 2, dSize, dSize);
+    ctx.restore();
+
+    // Inner letter 'S'
+    ctx.font = 'bold 7px "DM Sans", sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('S', px, py);
+    ctx.textAlign = 'start';
+    ctx.textBaseline = 'alphabetic';
+
+    // Label on zoom
+    if (camera.s > 0.014) {
+      ctx.font = 'bold 8px "DM Mono", monospace';
+      ctx.fillStyle = mainColor;
+      const tag = `[${plant.threshold}]`;
+      ctx.fillText(`${tag} ${plant.name}`, px + 10, py + 3);
+    }
+  }
+  ctx.restore();
+}
+
+/**
+ * Strutture ricettive registrate (GeoIDS del Comune): celle da ~100 m con il numero di locazioni turistiche e
+ * strutture complementari (alloggi spesso privati: solo il conteggio), punti per alberghi, campeggi e agriturismi.
+ */
+export function drawRegisteredStays(rc: RenderContext): void {
+  const { ctx, isDark, sx, sy, mx, my, camera, cw, ch, showRegisteredStays, registeredStays } = rc;
+  if (!showRegisteredStays || !registeredStays) return;
+  ctx.save();
+  for (const [i, j, count] of registeredStays.privateCells) {
+    const b = stayCellBounds(registeredStays, i, j);
+    const x0 = sx(mx(b.lon0));
+    const x1 = sx(mx(b.lon1));
+    const y0 = sy(my(b.lat1));
+    const y1 = sy(my(b.lat0));
+    if (x1 < 0 || x0 > cw || y1 < 0 || y0 > ch) continue;
+    ctx.fillStyle = isDark ? 'rgba(244, 114, 182, 1)' : 'rgba(190, 24, 93, 1)';
+    ctx.globalAlpha = Math.min(0.7, 0.12 + Math.log2(1 + count) * 0.09);
+    ctx.fillRect(x0, y0, Math.max(1, x1 - x0), Math.max(1, y1 - y0));
+  }
+  ctx.globalAlpha = 1;
+  const r = camera.s >= 0.08 ? 5 : 3.5;
+  for (const p of registeredStays.businesses) {
+    const x = sx(mx(p.lon));
+    const y = sy(my(p.lat));
+    if (x < -10 || x > cw + 10 || y < -10 || y > ch + 10) continue;
+    ctx.fillStyle = STAY_COLORS[p.kind];
+    ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    if (camera.s > 0.25 && p.name) {
+      ctx.font = '600 8.5px "DM Mono", monospace';
+      ctx.fillStyle = isDark ? '#fda4af' : '#9f1239';
+      ctx.fillText(p.name, x + r + 3, y + 3);
+    }
+  }
+  ctx.restore();
 }

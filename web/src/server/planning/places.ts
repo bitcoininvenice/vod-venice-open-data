@@ -7,6 +7,7 @@ import { findCivic, civicLabel, parseCivicQuery, type CivicRow, type SestiereCiv
 import { ACTV_STOPS_REFERENCE } from '@/lib/stopsReference';
 import { ALILAGUNA_STOPS } from '@/lib/alilaguna-schedule';
 import { AIRPORT, matchesAirport } from '@/lib/airportPlanner';
+import { MESTRE_STATION, matchesMestreStation } from '@/lib/mestrePlanner';
 
 const CIVICI = civiciDataset.civici as unknown as Record<SestiereCivico, CivicRow[]>;
 
@@ -14,7 +15,7 @@ let index: ReturnType<typeof buildAddressIndex> | null = null;
 /** Gazzettiere degli indirizzi OSM, costruito alla prima richiesta e tenuto in memoria */
 export const addressIndex = () => (index ??= buildAddressIndex(toponyms.names as unknown as Record<string, [number, number][]>, CIVICI));
 
-type PlaceKind = 'coordinates' | 'airport' | 'civic' | 'stop' | 'address';
+type PlaceKind = 'coordinates' | 'airport' | 'station' | 'civic' | 'stop' | 'address';
 
 export interface ResolvedPlace {
   lat: number;
@@ -75,6 +76,7 @@ export function resolvePlace(text: string): ResolvedPlace | null {
     return { lat, lon, label: `${lat.toFixed(5)}, ${lon.toFixed(5)}`, kind: 'coordinates', approximate: false, source: 'coordinate indicate' };
   }
   if (matchesAirport(t)) return { lat: AIRPORT.lat, lon: AIRPORT.lon, label: AIRPORT.label, kind: 'airport', approximate: false, source: 'terminal dell\'aeroporto' };
+  if (matchesMestreStation(t)) return { lat: MESTRE_STATION.lat, lon: MESTRE_STATION.lon, label: MESTRE_STATION.label, kind: 'station', approximate: false, source: 'stazione ferroviaria e interscambio di Venezia Mestre (Piazzale Favretti)' };
   const civic = parseCivicQuery(t);
   if (civic) {
     const m = findCivic(CIVICI[civic.sestiere] ?? [], civic);

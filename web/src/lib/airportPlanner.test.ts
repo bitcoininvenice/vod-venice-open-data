@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import atvoJson from '@/data/atvo-venezia.json';
 import { describe, expect, it } from 'vitest';
 import { SIM_URL } from './simulation-data';
 import { WALK_URL } from './walk-data';
@@ -147,5 +148,34 @@ describe('aeroporto Marco Polo', () => {
     expect(actv.rides).toBeGreaterThanOrEqual(3);
     const last = actv.legs[actv.legs.length - 1];
     expect(last.kind === 'ride' && last.line).toBe(AEROBUS_LINE);
+  });
+
+  it('da Piazzale Roma e Mestre FS all\'aeroporto include ATVO dall\'orario ufficiale, solo nelle date di servizio', () => {
+    // un giorno feriale coperto dal file ATVO (le date si aggiornano con la pipeline)
+    const ymd = (atvoJson as { trips: { line: string; dates: string[] }[] }).trips
+      .flatMap((t) => t.dates)
+      .sort()
+      .find((d) => {
+        const wd = new Date(Date.UTC(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8))).getUTCDay();
+        return wd >= 1 && wd <= 5;
+      })!;
+    const coachDate = new Date(`${ymd.slice(0, 4)}-${ymd.slice(4, 6)}-${ymd.slice(6, 8)}T10:00:00+02:00`);
+    const itsRoma = planAirport(graph, sim, ACTV_STOPS_REFERENCE, PIAZZALE_ROMA, AIRPORT, 10 * 3600, 'weekday', { date: coachDate });
+    const viasRoma = itsRoma.map((i) => i.via);
+    expect(viasRoma).toContain('actv');
+    expect(viasRoma).toContain('atvo');
+
+    const mestreStation = { lon: 12.2325, lat: 45.4828, label: 'Mestre Stazione FS' };
+    const itsMestre = planAirport(graph, sim, ACTV_STOPS_REFERENCE, mestreStation, AIRPORT, 10 * 3600, 'weekday', { date: coachDate });
+    const viasMestre = itsMestre.map((i) => i.via);
+    expect(viasMestre).toContain('atvo');
+    const atvoMestre = itsMestre.find((i) => i.via === 'atvo');
+    const leg = atvoMestre?.legs.find((l) => l.kind === 'ride');
+    expect(leg?.kind === 'ride' && leg.line).toBe('ATVO 35B');
+    // 20 minuti di percorrenza come nel PDF ATVO
+    expect(leg && leg.end - leg.start).toBe(20 * 60);
+    // fuori dalle date del file nessuna corsa ATVO
+    const far = planAirport(graph, sim, ACTV_STOPS_REFERENCE, mestreStation, AIRPORT, 10 * 3600, 'weekday', { date: new Date('2099-01-05T10:00:00+01:00') });
+    expect(far.map((i) => i.via)).not.toContain('atvo');
   });
 });

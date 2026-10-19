@@ -26,6 +26,7 @@ import type { LayerKey } from './urlLayers';
 import {
   REGIONAL_BIKE_ROUTES, REGIONAL_POLLEN_STATIONS, REGIONAL_TOURIST_ACCOMMODATIONS, REGIONAL_TRIBUTARY_RIVERS,
 } from './regionalVenetoData';
+import { AIRBNB_LISTING_POINTS } from './airbnb';
 import {
   OPEN_BELL_TOWERS, OPEN_BRIDGE_CLEARANCES, OPEN_EMERGENCY_WATER_DOCKS,
   OPEN_GONDOLA_STATIONS, OPEN_HEAT_ISLAND_LST, OPEN_LAGOON_FORTRESS_ISLANDS, OPEN_LAGOON_MORPHOLOGY,
@@ -42,7 +43,12 @@ import { isPlacedOrdinance } from './canalOrdinances';
 import type { ScheduleSpeedSegment } from './scheduleSpeed';
 import type { ActvNotice } from './contracts/actvNotices';
 import { flixbusPositions, type FlixbusData } from './flixbus';
+import { atvoPositions, type AtvoData } from './atvo';
+import { dolomitiPositions, type DolomitiData } from './dolomitibus';
 import type { FuelStation } from './fuel';
+import { OPEN_LUGGAGE_STORAGE, type LuggageStorageSpot } from './luggages';
+import type { RegisteredStaysData } from './registeredStays';
+import { OPEN_PUBLIC_LIGHTING, type PublicLightingPoint } from './publicLighting';
 
 interface TideInfo {
   observedAt: string | null;
@@ -66,6 +72,10 @@ export interface CityData {
   actvNotices: ActvNotice[];
   /** corse FlixBus per Venezia (orario, /api/flixbus) */
   flixbus: FlixbusData | null;
+  /** corse ATVO per Venezia (orario, /api/atvo) */
+  atvo: AtvoData | null;
+  /** corse Dolomiti Bus per Venezia (orario, /api/dolomitibus) */
+  dolomitibus: DolomitiData | null;
   realtimeVehicles: RealtimeVehicleDto[];
   flights: FlightItem[];
   ships: ShipItem[];
@@ -131,6 +141,10 @@ export interface CityData {
   fortressIslands: LagoonFortressIslandItem[];
   satellites: SatelliteItem[];
   touristAccommodations: TouristAccommodationItem[];
+  luggages: LuggageStorageSpot[];
+  /** strutture ricettive registrate nel Comune (GeoIDS, /api/strutture-registrate) */
+  registeredStays: RegisteredStaysData | null;
+  publicLighting: PublicLightingPoint[];
 }
 
 /** Valori iniziali: elenchi di riferimento inclusi nella build, poi sostituiti dalle API. */
@@ -143,6 +157,8 @@ export const INITIAL_CITY_DATA: CityData = {
   busStops: [],
   actvNotices: [],
   flixbus: null,
+  atvo: null,
+  dolomitibus: null,
   realtimeVehicles: [],
   flights: [],
   ships: [],
@@ -203,6 +219,9 @@ export const INITIAL_CITY_DATA: CityData = {
   fortressIslands: OPEN_LAGOON_FORTRESS_ISLANDS,
   satellites: [],
   touristAccommodations: REGIONAL_TOURIST_ACCOMMODATIONS,
+  luggages: OPEN_LUGGAGE_STORAGE,
+  registeredStays: null,
+  publicLighting: OPEN_PUBLIC_LIGHTING,
 };
 
 // ---------------------------------------------------------------------------
@@ -266,6 +285,8 @@ export const RESOURCES = {
   fuel: { url: '/api/carburanti', pick: (j) => (j.success ? { fuelStations: list(j.data) } : undefined) },
   cantieri: { url: '/api/cantieri', pick: (j) => (j.success ? { cantieri: nonEmpty(j.data) } : undefined) },
   flixbus: { url: '/api/flixbus', pick: (j) => (j.success && j.data ? { flixbus: j.data as FlixbusData } : undefined) },
+  atvo: { url: '/api/atvo', pick: (j) => (j.success && j.data ? { atvo: j.data as AtvoData } : undefined) },
+  dolomitibus: { url: '/api/dolomitibus', pick: (j) => (j.success && j.data ? { dolomitibus: j.data as DolomitiData } : undefined) },
   actvNotices: { url: '/api/avvisi-actv', refreshMs: 15 * 60_000, pick: (j) => (j.success ? { actvNotices: list(j.data) } : undefined) },
   busStops: { url: '/api/fermate-bus', pick: (j) => (j.success ? { busStops: list(j.data) } : undefined) },
   stops: { url: '/api/stops', pick: (j) => (j.success ? { stops: nonEmpty(j.data) } : undefined) },
@@ -345,6 +366,7 @@ export const RESOURCES = {
   },
   railLogistics: {
     url: '/api/rail-logistics',
+    refreshMs: 20_000,
     pick: (j) => {
       const d = payload(j);
       return d && { liveTrains: list(d.trains), wasteBoats: list(d.wasteBoats) };
@@ -379,6 +401,14 @@ export const RESOURCES = {
         }
       );
     },
+  },
+  registeredStays: {
+    url: '/api/strutture-registrate',
+    pick: (j) => (j.success && j.data ? { registeredStays: j.data as RegisteredStaysData } : undefined),
+  },
+  luggages: {
+    url: '/api/luggages',
+    pick: (j) => (j.success ? { luggages: list(j.data) } : undefined),
   },
 } satisfies Record<string, ResourceSpec>;
 
@@ -415,7 +445,7 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
     flights: l.showFlights || ui.airportModal,
     ships: l.showShips,
     // con i mezzi da orario accesi servono anche le posizioni GPS: in tempo reale le due icone diventano una
-    realtimeVehicles: l.showRealtimeVehicles || l.showVehicles,
+    realtimeVehicles: l.showRealtimeVehicles || l.showVehicles || l.showBusitalia,
     windField: l.showMarineWind,
     bdapWorks: l.showBdapWorks,
     lagoonNetwork: l.showMarineSignals || l.showCanals,
@@ -430,6 +460,8 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
     busStops: l.showBusStops,
     actvNotices: l.showActvNotices,
     flixbus: l.showFlixbus,
+    atvo: l.showAtvo,
+    dolomitibus: l.showDolomitibus,
     cameras: l.showCameras || ui.lists,
     cityAssets: l.showCityAssets || l.showAccessibleBridges || l.showWasteBoats || l.showParkings || l.showRecyclingCentres || l.showLibraries || l.showWifiVenues || ui.lists,
     environment: l.showAirQuality,
@@ -448,7 +480,9 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
     heritage: l.showNizioleti || l.showWells || l.showBellTowers || l.showFortresses || ui.lists,
     emergencyHealth: l.showEmergencyDocks || l.showDae || l.showPharmacies || ui.lists,
     urbanMicroclimate: l.showHeatIslands,
-    regionalData: l.showLagoonWater || l.showAccommodations || l.showBikeRoutes || l.showPollenStations || l.showTributaries || ui.tideModal,
+    regionalData: l.showLagoonWater || l.showAccommodations || l.showTourismPressure || l.showBikeRoutes || l.showPollenStations || l.showTributaries || ui.tideModal,
+    luggages: l.showLuggages || ui.lists,
+    registeredStays: l.showRegisteredStays,
   };
 }
 
@@ -456,11 +490,14 @@ export function neededResources(l: LayerVisibility, ui: DataNeeds): Record<DataR
 export function layerCounts(d: CityData, extra: { scheduledVehicles: number; alilagunaBoats: number }): Partial<Record<LayerKey, number>> {
   return {
     showVehicles: extra.scheduledVehicles,
-    showRealtimeVehicles: d.realtimeVehicles.length,
+    showRealtimeVehicles: d.realtimeVehicles.filter((v) => v.operator !== 'Busitalia Veneto').length,
+    showBusitalia: d.realtimeVehicles.filter((v) => v.operator === 'Busitalia Veneto').length,
     showStops: d.stops.length,
     showBusStops: d.busStops.length,
     showActvNotices: d.actvNotices.length,
     showFlixbus: d.flixbus ? flixbusPositions(d.flixbus, Date.now()).length : 0,
+    showAtvo: d.atvo ? atvoPositions(d.atvo, Date.now()).length : 0,
+    showDolomitibus: d.dolomitibus ? dolomitiPositions(d.dolomitibus, Date.now()).length : 0,
     showAlilaguna: extra.alilagunaBoats,
     showCantieri: d.cantieri.length,
     showCameras: d.cameras.length,
@@ -510,10 +547,14 @@ export function layerCounts(d: CityData, extra: { scheduledVehicles: number; ali
     showPharmacies: d.pharmacies.length,
     showHeatIslands: d.heatIslands.length,
     showLagoonWater: d.lagoonWaterQuality.length,
-    showAccommodations: d.touristAccommodations.length,
+    showAccommodations: AIRBNB_LISTING_POINTS.length,
+    showTourismPressure: d.touristAccommodations.length,
     showBikeRoutes: d.regionalBikeRoutes.length,
     showPollenStations: d.pollenMonitoringStations.length,
     showTributaries: d.lagoonTributaryRivers.length,
     showLagoonCurrents: d.lagoonCurrents.length,
+    showLuggages: d.luggages.length,
+    showRegisteredStays: d.registeredStays ? d.registeredStays.businesses.length + d.registeredStays.privateCells.length : 0,
+    showPublicLighting: d.publicLighting.length,
   };
 }

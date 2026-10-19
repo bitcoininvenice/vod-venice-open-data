@@ -125,7 +125,27 @@ export function hasActiveTemporalLayers(layers: LayerVisibility, hasSimulator = 
     layers.showAlilaguna ||
     layers.showMose ||
     layers.showPasserelle ||
-    layers.showLagoonCurrents
+    layers.showLagoonCurrents ||
+    layers.showPublicLighting
   );
 }
+
+/**
+ * Restituisce true se almeno un livello dei trasporti (che usa lo slider 24h e la velocità di riproduzione) è attivo.
+ */
+export function hasActiveTransportLayers(layers: LayerVisibility): boolean {
+  return Boolean(
+    layers.showVehicles ||
+    layers.showRealtimeVehicles ||
+    layers.showAlilaguna ||
+    layers.showShips ||
+    layers.showFlights ||
+    layers.showTrains ||
+    layers.showFlixbus ||
+    layers.showBusitalia ||
+    layers.showAtvo ||
+    layers.showDolomitibus
+  );
+}
+
 

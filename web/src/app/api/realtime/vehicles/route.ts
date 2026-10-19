@@ -9,6 +9,7 @@ import { serverSimulation } from '@/server/sources/simulationServer';
 import { romeDayType, romeLocalToDate } from '@/lib/time';
 import type { TripDelay } from '@/server/sources/gtfsRt';
 import { providerMeta } from '@/lib/provenance/providers';
+import { fetchBusitaliaVehicles } from '@/server/sources/busoneBiv';
 
 export const revalidate = 20;
 
@@ -23,6 +24,7 @@ export interface RealtimeVehicleOut extends RealtimeVehicle {
   delay: VehicleDelay | null;
   /** il ritardo calcolato e quello di ACTV non sono coerenti: nessun ritardo mostrato */
   delayConflict?: boolean;
+  operator?: 'ACTV' | 'Busitalia Veneto';
 }
 
 /**
@@ -65,9 +67,10 @@ export async function GET() {
       responseType: 'arrayBuffer',
     });
 
-  const [nav, aut, delays, sim] = await Promise.all([
+  const [nav, aut, biv, delays, sim] = await Promise.all([
     fetchFeed(ACTV_GTFS_RT_FEEDS.navigazione),
     fetchFeed(ACTV_GTFS_RT_FEEDS.automobilistico),
+    fetchBusitaliaVehicles(),
     fetchTripDelays(),
     serverSimulation(),
   ]);
@@ -87,6 +90,7 @@ export async function GET() {
           ...v,
           network,
           line,
+          operator: 'ACTV',
           category: trip?.category ?? lineCategory(line, network) ?? (network === 'navigazione' ? 'vaporetto' : 'bus'),
           delay: conflict ? null : vehicleDelay(actvTrip, nowSec, checked),
           ...(conflict ? { delayConflict: true } : {}),
@@ -96,21 +100,24 @@ export async function GET() {
   const vehicles = [
     ...(nav.ok ? enrich(nav.data, 'navigazione') : []),
     ...(aut.ok ? enrich(aut.data, 'automobilistico') : []),
+    ...(biv.ok ? biv.data : []),
   ];
 
   return NextResponse.json({
-    ok: nav.ok || aut.ok,
+    ok: nav.ok || aut.ok || biv.ok,
     count: vehicles.length,
     data: vehicles,
     meta: {
       kind: 'live',
-      ...providerMeta('actvRealtime', 'ACTV / AVM – GTFS-Realtime VehiclePositions'),
-      fetchedAt: nav.ok ? nav.fetchedAt : aut.ok ? aut.fetchedAt : undefined,
-      feeds: { navigazione: nav.ok, automobilistico: aut.ok, ritardi: delays.ok },
+      ...providerMeta('actvRealtime', 'ACTV / AVM e BusOne – GTFS-Realtime VehiclePositions'),
+      fetchedAt: nav.ok ? nav.fetchedAt : aut.ok ? aut.fetchedAt : biv.ok ? new Date().toISOString() : undefined,
+      feeds: { navigazione: nav.ok, automobilistico: aut.ok, busitalia: biv.ok, ritardi: delays.ok },
+      // mezzi Busitalia Veneto (operator) dal feed BusOne: condizioni d'uso proprie, citando BusOne e Busitalia
+      busitaliaSource: providerMeta('busone', 'BusOne – GTFS-RT Busitalia Veneto'),
       withDelay: vehicles.filter((v) => v.delay).length,
       delayFromPosition: vehicles.filter((v) => v.delay?.source === 'position').length,
       delayConflicts: vehicles.filter((v) => v.delayConflict).length,
-      note: 'Posizioni GPS reali dei mezzi. Il ritardo (campo delay) è calcolato dalla posizione GPS sulla corsa dell\'orario ufficiale con la stessa linea e partenza e verificato con quello di ACTV (source=position); quando il calcolo non è possibile (mezzo a un pontile o lontano dal percorso) è quello dichiarato da ACTV (source=actv). Se i due differiscono di oltre 15 minuti nessun ritardo viene mostrato (delayConflict). Solo valori aggiornati da meno di 2 minuti. Feed elencato come «Open Data Real Time» nel catalogo dei dati ACTV (art. 53 CAD).',
+      note: 'Posizioni GPS reali dei mezzi. Il ritardo (campo delay) è calcolato dalla posizione GPS sulla corsa dell\'orario ufficiale con la stessa linea e partenza e verificato con quello di ACTV (source=position); quando il calcolo non è possibile (mezzo a un pontile o lontano dal percorso) è quello dichiarato da ACTV (source=actv). Se i due differiscono di oltre 15 minuti nessun ritardo viene mostrato (delayConflict). Solo valori aggiornati da meno di 2 minuti. Feed ACTV elencato come «Open Data Real Time» nel catalogo dei dati ACTV (art. 53 CAD). Mezzi extraurbani Busitalia Veneto (operator) dal feed BusOne, con il ritardo dichiarato nel feed.',
     },
   });
 }

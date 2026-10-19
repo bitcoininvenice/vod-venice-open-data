@@ -28,7 +28,9 @@ function subscribe(callback: () => void) {
 export function readPreference(key: string): string | null {
   if (memory.has(key)) return memory.get(key) ?? null;
   try {
-    return localStorage.getItem(key);
+    const val = localStorage.getItem(key);
+    if (val !== null) return val;
+    return null;
   } catch {
     return null;
   }

@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   ChevronDown,
   ChevronUp,
+  Download,
   Eye,
   EyeOff,
   HeartPulse,
@@ -13,6 +14,7 @@ import {
   Ship,
   Search,
   ShieldQuestion,
+  Upload,
   Waves,
   Wind,
   X,
@@ -22,6 +24,11 @@ import {
 import { TransportModeCategory } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import type { LayerKey } from '@/lib/urlLayers';
+import {
+  MIMIT_PRICES_CSV_URL,
+  parseClientPricesCsv,
+  saveClientFuelCache,
+} from '@/lib/fuelClient';
 import {
   countActiveLayers,
   CROWDED_LAYER_THRESHOLD,
@@ -49,7 +56,7 @@ import { UnplacedOrdinances } from '@/components/OrdinanceList';
 import { UnplacedActvNotices } from '@/components/ActvNoticeList';
 import type { ActvNotice } from '@/lib/contracts/actvNotices';
 import { SPEED_VERDICT_COLORS, type SpeedVerdict } from '@/lib/scheduleSpeed';
-import { FUEL_KINDS, FUEL_NO_PRICE_COLOR, fuelRankColor, type FuelKind } from '@/lib/fuel';
+import { FUEL_KINDS, FUEL_NO_PRICE_COLOR, fuelRankColor, type FuelKind, type FuelStation } from '@/lib/fuel';
 
 interface LayerPanelProps {
   layers: LayerVisibility;
@@ -72,6 +79,10 @@ interface LayerPanelProps {
   /** Carburante confrontato nel livello dei distributori */
   fuelFilter?: FuelKind;
   onFuelFilterChange?: (f: FuelKind) => void;
+  fuelStations?: FuelStation[];
+  onUpdateFuelStations?: (stations: FuelStation[], extractedAt?: string | null) => void;
+  onClearFuelStations?: () => void;
+  clientFuelExtractedAt?: string | null;
   bufferRadiusMeters: number;
   onBufferRadiusChange: (radius: number) => void;
   /** apre l'analisi «fermate vicine ai cantieri» (dal livello Buffer spaziale cantieri) */
@@ -116,6 +127,10 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   onFountainFilterChange,
   fuelFilter = 'benzina',
   onFuelFilterChange,
+  fuelStations,
+  onUpdateFuelStations,
+  onClearFuelStations,
+  clientFuelExtractedAt,
   bufferRadiusMeters,
   onBufferRadiusChange,
   onOpenSpatialAnalysis,
@@ -130,6 +145,44 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
   const [openGroups, setOpenGroups] = useState<Record<LayerGroupId, boolean>>({ mobility: false, lagoon: false, city: false });
   const [openCurated, setOpenCurated] = useState<Record<LayerGroupId, boolean>>({ mobility: false, lagoon: false, city: false });
   const [actvOpen, setActvOpen] = useState(false);
+
+  // Prezzi da un file del Ministero scaricato dal visitatore stesso: letto solo nel browser, non inviato a nessuno
+  const [isUpdatingFuel, setIsUpdatingFuel] = useState(false);
+  const [fuelUpdateMsg, setFuelUpdateMsg] = useState<string | null>(null);
+  const [fuelUpdateError, setFuelUpdateError] = useState(false);
+  const [showFuelManualImport, setShowFuelManualImport] = useState(false);
+
+  const handleFuelFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUpdatingFuel(true);
+    setFuelUpdateMsg(null);
+    setFuelUpdateError(false);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        if (!text) throw new Error(t('ui.fuel.fileError'));
+        const parsed = parseClientPricesCsv(text, fuelStations ?? []);
+        if (parsed.matchedStationsCount > 0) {
+          saveClientFuelCache(parsed.stations, parsed.extractedAt);
+          onUpdateFuelStations?.(parsed.stations, parsed.extractedAt);
+          setFuelUpdateMsg(t('ui.fuel.updateSuccess', { count: parsed.matchedStationsCount, date: parsed.extractedAt ?? '' }));
+          setShowFuelManualImport(false);
+        } else {
+          setFuelUpdateError(true);
+          setFuelUpdateMsg(t('ui.fuel.fileNoStations'));
+        }
+      } catch (err) {
+        setFuelUpdateError(true);
+        setFuelUpdateMsg(err instanceof Error ? err.message : t('ui.fuel.fileError'));
+      } finally {
+        setIsUpdatingFuel(false);
+        e.target.value = '';
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const activeCount = countActiveLayers(layers);
   const activePreset = useMemo(() => matchingPreset(layers), [layers]);
@@ -228,7 +281,7 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
           </div>
         )}
         {entry.key === 'showFuel' && on && onFuelFilterChange && (
-          <div className="flex flex-col gap-1 px-2 pb-1">
+          <div className="flex flex-col gap-1.5 px-2 pb-1.5">
             <div className="flex flex-wrap gap-1" role="group" aria-label={t('ui.layerPanel.fuelFilter')}>
               {FUEL_KINDS.map((f) => (
                 <button
@@ -244,6 +297,71 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({
               ))}
             </div>
             <Legend items={[[fuelRankColor(0), t('ui.fuel.legendCheap')], [fuelRankColor(0.5), t('ui.fuel.legendMid')], [fuelRankColor(1), t('ui.fuel.legendExpensive')], [FUEL_NO_PRICE_COLOR, t('ui.fuel.legendNoPrice')]]} />
+
+            {/* Prezzi da un file del Ministero scaricato a mano: utile se quelli del sito sono di qualche giorno fa */}
+            <div className="flex flex-col gap-1 pt-1 border-t border-[var(--rule)]">
+              {clientFuelExtractedAt ? (
+                <div className="flex items-center justify-between gap-1 text-[10px] font-mono text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded px-2 py-1">
+                  <span>{t('ui.fuel.updateCached', { date: clientFuelExtractedAt })}</span>
+                  {onClearFuelStations && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClearFuelStations();
+                        setFuelUpdateMsg(null);
+                        setShowFuelManualImport(false);
+                      }}
+                      className="text-[9px] text-[var(--ink-3)] hover:text-rose-400 underline cursor-pointer"
+                    >
+                      {t('ui.fuel.resetDefault')}
+                    </button>
+                  )}
+                </div>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={() => setShowFuelManualImport((v) => !v)}
+                aria-expanded={showFuelManualImport}
+                className="flex items-center justify-center gap-1.5 w-full py-1.5 px-2 rounded-lg text-[10px] font-mono font-semibold bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/25 transition cursor-pointer disabled:opacity-50"
+                disabled={isUpdatingFuel}
+                data-testid="fuel-manual-import"
+              >
+                <Upload className="w-3 h-3" />
+                <span>{isUpdatingFuel ? t('ui.fuel.updating') : t('ui.fuel.manualImport')}</span>
+              </button>
+
+              {showFuelManualImport && (
+                <div className="flex flex-col gap-1.5 p-2 rounded-lg bg-[var(--surface-sunken)] border border-[var(--rule)] text-[10px] font-mono animate-in fade-in duration-150">
+                  <p className="text-[var(--ink-2)] text-[10px] leading-tight">
+                    {t('ui.fuel.manualHelp')}
+                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <a
+                      href={MIMIT_PRICES_CSV_URL}
+                      download="prezzo_alle_8.csv"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-1 py-1 px-1.5 rounded border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 text-center font-semibold text-[9px]"
+                    >
+                      <Download className="w-3 h-3 shrink-0" />
+                      <span>1. {t('ui.fuel.downloadCsvBtn')}</span>
+                    </a>
+                    <label className="flex-1 flex items-center justify-center gap-1 py-1 px-1.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 text-center cursor-pointer font-semibold text-[9px]">
+                      <Upload className="w-3 h-3 shrink-0" />
+                      <span>2. {t('ui.fuel.uploadCsvBtn')}</span>
+                      <input type="file" accept=".csv" onChange={handleFuelFileUpload} className="hidden" />
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {fuelUpdateMsg && !showFuelManualImport && (
+                <p className={`text-[10px] font-mono px-1 ${fuelUpdateError ? 'text-rose-400' : 'text-emerald-300'}`}>
+                  {fuelUpdateMsg}
+                </p>
+              )}
+            </div>
           </div>
         )}
         {entry.key === 'showSpatialBuffer' && on && (

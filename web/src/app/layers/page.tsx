@@ -78,8 +78,8 @@ export default function LayersDocumentationPage() {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6">
         {/* Hero Explanation Banner */}
-        <section className="glass-panel rounded-3xl p-5 sm:p-6 border border-cyan-500/20 shadow-xl flex flex-col md:flex-row gap-6 items-start justify-between">
-          <div className="flex flex-col gap-2 max-w-3xl">
+        <section className="relative overflow-hidden glass-panel rounded-3xl p-5 sm:p-6 border border-cyan-500/20 shadow-xl flex flex-col md:flex-row gap-6 items-start justify-between">
+          <div className="relative z-10 flex flex-col gap-2 max-w-3xl pointer-events-none">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 text-xs font-mono font-bold w-max border border-cyan-500/30">
               <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
               <span>{t('ui.layersPage.documentazioneDataLineageUfficiale')}</span>
@@ -93,24 +93,24 @@ export default function LayersDocumentationPage() {
           </div>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 w-full md:w-auto shrink-0 font-mono text-center">
-            <div className="p-3 rounded-2xl bg-[var(--rule)]/30 border border-[var(--rule)] flex flex-col">
+          <div className="relative z-10 grid grid-cols-2 sm:grid-cols-5 gap-2.5 w-full md:w-auto shrink-0 font-mono text-center">
+            <div className="p-3 rounded-2xl bg-[var(--ground)]/75 backdrop-blur-md border border-[var(--rule)] flex flex-col">
               <span className="text-2xl font-bold text-[var(--ink)]">{totalLayers}</span>
               <span className="text-[10px] text-[var(--ink-3)] uppercase">{t('ui.layersPage.livelliTotali')}</span>
             </div>
-            <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col">
+            <div className="p-3 rounded-2xl bg-emerald-500/10 backdrop-blur-md border border-emerald-500/30 flex flex-col">
               <span className="text-2xl font-bold text-emerald-400">{realtimeLayers}</span>
               <span className="text-[10px] text-emerald-300 uppercase">{t('ui.layersPage.tempoReale')}</span>
             </div>
-            <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col">
+            <div className="p-3 rounded-2xl bg-amber-500/10 backdrop-blur-md border border-amber-500/30 flex flex-col">
               <span className="text-2xl font-bold text-amber-400">{simulatedLayers}</span>
               <span className="text-[10px] text-amber-300 uppercase">{t('ui.layersPage.digitalTwin')}</span>
             </div>
-            <div className="p-3 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex flex-col">
+            <div className="p-3 rounded-2xl bg-sky-500/10 backdrop-blur-md border border-sky-500/30 flex flex-col">
               <span className="text-2xl font-bold text-sky-400">{staticLayers}</span>
               <span className="text-[10px] text-sky-300 uppercase">{t('ui.layersPage.censimento')}</span>
             </div>
-            <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/30 flex flex-col">
+            <div className="p-3 rounded-2xl bg-orange-500/10 backdrop-blur-md border border-orange-500/30 flex flex-col">
               <span className="text-2xl font-bold text-orange-400">{curatedLayers}</span>
               <span className="text-[10px] text-orange-300 uppercase">{t('ui.layersPage.curato')}</span>
             </div>

@@ -11,9 +11,9 @@ const FEATURE_LAYER: Record<Exclude<VeniceFeatureSelected['type'], 'civicPoi' | 
   wasteBoat: 'showWasteBoats', nizioleto: 'showNizioleti', veniceWell: 'showWells', bellTower: 'showBellTowers',
   fortressIsland: 'showFortresses', emergencyDock: 'showEmergencyDocks', publicDae: 'showDae',
   pharmacy: 'showPharmacies', heatIsland: 'showHeatIslands', lagoonWater: 'showLagoonWater', lagoonCurrent: 'showLagoonCurrents',
-  accommodation: 'showAccommodations', bikeRoute: 'showBikeRoutes', pollenStation: 'showPollenStations',
+  accommodation: 'showTourismPressure', airbnbListing: 'showAccommodations', bikeRoute: 'showBikeRoutes', pollenStation: 'showPollenStations',
   tributaryRiver: 'showTributaries', parking: 'showParkings', fountain: 'showCityAssets', fiberCell: 'showFiber',
-  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks', loraGateway: 'showLoraGateways', wifiVenue: 'showWifiVenues', sportPlace: 'showSports', nauticalPlace: 'showNautical', parkPlace: 'showParks', ordinance: 'showOrdinances', scheduleSpeed: 'showScheduleSpeed', actvNotice: 'showActvNotices', fuelStation: 'showFuel',
+  airStation: 'showAirQuality', lagoonMarker: 'showMarineSignals', canal: 'showCanals', bdapWork: 'showBdapWorks', loraGateway: 'showLoraGateways', wifiVenue: 'showWifiVenues', sportPlace: 'showSports', nauticalPlace: 'showNautical', parkPlace: 'showParks', ordinance: 'showOrdinances', scheduleSpeed: 'showScheduleSpeed', actvNotice: 'showActvNotices', fuelStation: 'showFuel', historicBuilding: 'showBuildings', luggageStorage: 'showLuggages', registeredStay: 'showRegisteredStays', streetPhoto: 'showStreetPhotos', publicLighting: 'showPublicLighting', sevesoPlant: 'showSevesoPlants',
 };
 
 export function featureLayer(feature: VeniceFeatureSelected): LayerKey | undefined {

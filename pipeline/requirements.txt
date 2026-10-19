@@ -1,1 +1,2 @@
 pyproj>=3.6
+pypdf>=5.0

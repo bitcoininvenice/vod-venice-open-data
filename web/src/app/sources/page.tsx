@@ -169,8 +169,8 @@ export default function SourcesPage() {
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[var(--rule)] pb-6">
-          <div>
+        <div className="relative overflow-hidden glass-panel rounded-3xl p-5 sm:p-6 border border-emerald-500/20 shadow-xl flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="relative z-10 pointer-events-none">
             <div className="flex items-center gap-2 flex-wrap mb-1">
               <span className="text-[10px] uppercase font-mono tracking-wider text-emerald-400 font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
                 {s_('kicker')}
@@ -184,7 +184,7 @@ export default function SourcesPage() {
             <p className="text-xs sm:text-sm text-[var(--ink-2)] mt-1 max-w-3xl">{s_('intro', { n: totalSources || '…' })}</p>
           </div>
 
-          <div className="flex flex-col items-start md:items-end gap-1.5 shrink-0">
+          <div className="relative z-10 flex flex-col items-start md:items-end gap-1.5 shrink-0 pointer-events-none">
             <span className="text-xs font-mono text-[var(--ink-3)]">
               {s_('lastCheck')}{' '}
               <strong className="text-[var(--ink)]">

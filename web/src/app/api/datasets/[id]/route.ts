@@ -9,6 +9,8 @@ export const dynamic = 'force-dynamic';
 const Query = z
   .object({
     text: z.string().min(2).max(80).optional(),
+    minYear: z.coerce.number().int().min(400).max(2100).optional(),
+    maxYear: z.coerce.number().int().min(400).max(2100).optional(),
     lat: z.coerce.number().min(45.0).max(45.8).optional(),
     lon: z.coerce.number().min(11.9).max(12.8).optional(),
     radius: z.coerce.number().int().min(10).max(20000).optional(),
@@ -36,7 +38,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   try {
     const loaded = await MCP_LOADERS[id]();
     const near = q.lat !== undefined && q.lon !== undefined ? { lat: q.lat, lon: q.lon, radiusMeters: q.radius ?? 500 } : undefined;
-    const result = applyQuery(loaded.items, { text: q.text, near, limit: q.limit, offset: q.offset });
+    const result = applyQuery(loaded.items, { text: q.text, minYear: q.minYear, maxYear: q.maxYear, near, limit: q.limit, offset: q.offset });
     return NextResponse.json(
       { success: true, dataset: meta, context: loaded.meta ?? null, ...result, retrievedAt: new Date().toISOString() },
       { headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=60', 'Vercel-CDN-Cache-Control': 'max-age=60' } },

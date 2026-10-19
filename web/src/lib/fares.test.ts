@@ -58,6 +58,21 @@ describe('costo stimato del viaggio', () => {
     expect(c).toMatchObject({ total: 0, unpriced: ['53E'] });
   });
 
+  it('ATVO 35 alla tariffa del PDF; treni, FlixBus, Dolomiti Bus e ATVO 35B a prezzo variabile con il link per l\'acquisto', () => {
+    const op = (line: string, operator: string): Leg => ({ ...(ride(line, 'bus', 'A', 'B', 0, 20) as Extract<Leg, { kind: 'ride' }>), operator });
+    expect(cost([op('ATVO 35', 'ATVO')], 'ordinary')).toMatchObject({ total: 12, variable: [] });
+    for (const [line, operator] of [['REG 16306', 'Trenitalia'], ['FR 9712', 'Trenitalia'], ['Italo 8970', 'Italo'], ['FlixBus N440', 'FlixBus'], ['Dolomiti Bus 72', 'Dolomiti Bus'], ['ATVO 35B', 'ATVO']]) {
+      const c = cost([op(line, operator)], 'ordinary');
+      expect(c.total).toBe(0);
+      expect(c.tickets).toEqual([]);
+      expect(c.variable).toEqual([{ operator, line, url: expect.stringMatching(/^https:\/\//) }]);
+    }
+    // insieme al vaporetto: il totale conta solo i biglietti stimati
+    const mixed = cost([ride('2', 'vaporetto', 'Rialto', 'Ferrovia', 0, 15), op('REG 16306', 'Trenitalia')], 'ordinary');
+    expect(mixed.total).toBe(9.5);
+    expect(mixed.variable).toHaveLength(1);
+  });
+
   it('carburante della barca dal consumo orario', () => {
     expect(boatFuelCost(1800, 10, 2)).toEqual({ litres: 5, cost: 10 });
   });

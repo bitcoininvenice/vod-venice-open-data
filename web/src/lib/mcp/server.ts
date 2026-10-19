@@ -12,7 +12,7 @@ const INSTRUCTIONS = `VOD – Venice Open Data espone in sola lettura dati pubbl
 Usa prima list_datasets per vedere cosa c'è, poi query_dataset con filtri piccoli (limit basso, near per una zona, text per un nome).
 Ogni risposta indica la natura del dato (live, forecast, simulated, dataset, osm, curated), la fonte, la licenza e le avvertenze: riportale all'utente.
 Non presentare previsioni come misure né elenchi curati come dati ufficiali. Coordinate WGS84; Piazza San Marco è circa lat 45.4341, lon 12.3388.
-Oltre ai dataset, VOD calcola: plan_trip (come arrivare da A a B con tutti i mezzi ACTV e Alilaguna, a piedi o con la barca privata), stop_departures (prossime partenze da una fermata), flood_simulation (acqua alta a un livello: città allagata, un luogo, un percorso a piedi all'asciutto), airport_connections (bus, Alilaguna e FlixBus dell'aeroporto nei prossimi 90 minuti) e find_place (come VOD riconosce un luogo).
+Oltre ai dataset, VOD calcola: plan_trip (come arrivare da A a B con tutti i mezzi: ACTV, Alilaguna, treni RFI Trenitalia/Italo da Santa Lucia a Mestre Stazione FS, bus Busitalia Veneto, ATVO Express, Dolomiti Bus 72, FlixBus, a piedi o con la barca privata), stop_departures (prossime partenze da una fermata), flood_simulation (acqua alta a un livello: città allagata, un luogo, un percorso a piedi all'asciutto), airport_connections (bus ACTV, Alilaguna, bus ATVO, Dolomiti Bus e FlixBus dell'aeroporto nei prossimi 90 minuti) e find_place (come VOD riconosce un luogo, inclusi "mestre", "mestre stazione" e "aeroporto").
 Ogni risposta di questi strumenti contiene sources (fonti con licenza e link) e vodUrl (lo stesso risultato sulla mappa di VOD): cita sempre le fonti e il link VOD all'utente.
 Per indicatori socio-economici di altri comuni italiani esiste il server MCP di Cruscotto Italia (AgID): vedi vod://related-mcp-services. VOD non lo interroga per te.`;
 
@@ -48,10 +48,12 @@ export function createVodMcpServer(): McpServer {
     {
       title: 'Interroga un dataset di VOD',
       description:
-        'Restituisce le voci di un dataset con filtri opzionali: text (cerca nei campi testuali), near (lat, lon, raggio in metri: ordina per distanza) e paginazione (limit massimo 50).',
+        'Restituisce le voci di un dataset con filtri opzionali: text (cerca nei campi testuali, es. nome, architetto, sestiere), minYear e maxYear (filtra per anno di costruzione o intervento, es. maxYear=1499 per edifici prima del 1500), near (lat, lon, raggio in metri: ordina per distanza) e paginazione (limit massimo 50).',
       inputSchema: z.object({
         dataset: z.enum(MCP_DATASET_IDS).describe('id da list_datasets'),
-        text: z.string().min(2).max(80).optional().describe('testo da cercare, es. "Rialto" o "FTTH"'),
+        text: z.string().min(2).max(80).optional().describe('testo da cercare, es. "Rialto", "Carlo Scarpa" o "FTTH"'),
+        minYear: z.number().int().min(400).max(2100).optional().describe('anno minimo di costruzione o intervento (es. 1900 per edifici del Novecento)'),
+        maxYear: z.number().int().min(400).max(2100).optional().describe('anno massimo di costruzione o intervento (es. 1499 per edifici costruiti prima del 1500)'),
         near: z
           .object({
             lat: z.number().min(45.0).max(45.8),
@@ -65,14 +67,14 @@ export function createVodMcpServer(): McpServer {
       }),
       annotations: { readOnlyHint: true, openWorldHint: false, idempotentHint: true },
     },
-    async ({ dataset, text, near, limit, offset }) => {
+    async ({ dataset, text, minYear, maxYear, near, limit, offset }) => {
       const meta = MCP_DATASETS.find((d) => d.id === dataset)!;
       if (near && !meta.geo) {
         return { ...textResult({ error: 'near_not_supported', message: `Il dataset ${dataset} non ha coordinate: usa text o la paginazione.` }), isError: true };
       }
       try {
         const loaded = await withTimeout(MCP_LOADERS[dataset](), LOAD_TIMEOUT_MS);
-        const result = applyQuery(loaded.items, { text, near, limit, offset });
+        const result = applyQuery(loaded.items, { text, minYear, maxYear, near, limit, offset });
         return textResult({
           dataset: { id: meta.id, title: meta.title, kind: meta.kind, source: meta.source, license: meta.license, caveat: meta.caveat },
           context: loaded.meta ?? null,
@@ -104,13 +106,13 @@ export function createVodMcpServer(): McpServer {
     {
       title: 'Come arrivare da A a B',
       description:
-        'Itinerario da un luogo a un altro di Venezia e dintorni (da Chioggia a Mestre, aeroporto e Treporti) con tutti i mezzi ACTV (vaporetti, bus, tram, People Mover) e Alilaguna, fino a 4 mezzi con cambi a piedi, più le alternative con meno cambi; oppure solo a piedi, solo via acqua o con la barca privata (regole del Testo Unico della circolazione acquea). Luoghi: fermata, indirizzo, civico (Cannaregio 3450), «aeroporto» o «lat,lon». Con l\'acqua alta i tratti a piedi preferiscono le calli asciutte. Se stasera non c\'è più niente restituisce la prima soluzione di domani mattina. Ogni itinerario ha il costo stimato dei biglietti per il tipo indicato in fare (cost) e cheapestItinerary indica l\'opzione più economica; in barca privata, con litresPerHour, la stima del carburante (fuel). Sono stime: fanno fede le tariffe ACTV e Alilaguna.',
+        'Itinerario da un luogo a un altro di Venezia e dintorni (da Chioggia a Mestre, aeroporto e Treporti) con tutti i mezzi ACTV (vaporetti, bus, tram, People Mover), Alilaguna, treni RFI (Trenitalia Regionale/Frecciarossa e Italo tra Venezia S. Lucia e Mestre Stazione FS), bus Busitalia Veneto extraurbano, ATVO Express (linee 35 e 35B), Dolomiti Bus Linea 72 (Cortina Express) e FlixBus, fino a 4 mezzi con cambi a piedi, più le alternative con meno cambi; oppure solo a piedi, solo via acqua o con la barca privata (regole del Testo Unico della circolazione acquea). Luoghi: fermata, indirizzo, civico (Cannaregio 3450), «mestre», «mestre stazione», «aeroporto» o «lat,lon». Con l\'acqua alta i tratti a piedi preferiscono le calli asciutte. Se stasera non c\'è più niente restituisce la prima soluzione di domani mattina. Ogni itinerario ha il costo stimato dei biglietti per il tipo indicato in fare (cost) e cheapestItinerary indica l\'opzione più economica; in barca privata, con litresPerHour, la stima del carburante (fuel). Sono stime basate sui tariffari ufficiali.',
       inputSchema: z.object({
-        from: placeText.describe('partenza'),
-        to: placeText.describe('arrivo'),
+        from: placeText.describe('partenza, es. "Piazzale Roma", "Rialto", "Venezia Santa Lucia", "Mestre Stazione FS", "Aeroporto"'),
+        to: placeText.describe('arrivo, es. "Mestre Stazione FS", "Aeroporto", "Piazza San Marco", "Piazzale Roma"'),
         date: dateText,
         time: timeText,
-        mode: z.enum(['fastest', 'walk', 'water', 'private']).default('fastest').describe('fastest: tutti i mezzi; walk: solo a piedi; water: solo mezzi d\'acqua; private: barca privata'),
+        mode: z.enum(['fastest', 'eco', 'walk', 'water', 'private']).default('fastest').describe('fastest: tutti i mezzi; eco: percorso più ecologico (minor CO2); walk: solo a piedi; water: solo mezzi d\'acqua; private: barca privata'),
         resident: z.boolean().default(false).describe('solo per private: residente in centro storico o isole, o concessionario di uno spazio acqueo (art. 18 Testo Unico)'),
         tideCm: z.number().min(-100).max(250).optional().describe('marea da simulare (cm sullo zero di Punta della Salute)'),
         fare: z.enum(['ordinary', 'veneziaUnica', 'pass']).default('ordinary').describe('biglietto per il costo stimato: ordinary (turista), veneziaUnica (tessera Venezia Unica: residenti, studenti, pendolari), pass (abbonamento ACTV)'),
@@ -158,7 +160,7 @@ export function createVodMcpServer(): McpServer {
     'airport_connections',
     {
       title: 'Collegamenti dell\'aeroporto Marco Polo',
-      description: 'Partenze e arrivi dei prossimi 90 minuti all\'aeroporto di bus ACTV (5 Aerobus, 15, 45), barche Alilaguna e FlixBus, dagli orari ufficiali. Gli orari dei voli non sono dati aperti.',
+      description: 'Partenze e arrivi dei prossimi 90 minuti all\'aeroporto di bus ACTV (5 Aerobus, 15, 45), barche Alilaguna, bus ATVO Express (35 e 35B), Dolomiti Bus Linea 72 (Cortina Express) e FlixBus, dagli orari ufficiali. Gli orari dei voli non sono dati aperti.',
       annotations: { readOnlyHint: true, openWorldHint: false, idempotentHint: true },
     },
     async () =>

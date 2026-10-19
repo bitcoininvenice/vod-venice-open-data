@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { Footprints, MapPin, Route, Ship, ArrowDownUp, Crosshair, Droplets, Plane, Bus } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Footprints, MapPin, Route, Ship, ArrowDownUp, Crosshair, Droplets, Plane, Bus, Train, Leaf } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { InfoHeader, InfoPanel } from '@/components/ui/InfoPanel';
 import { useSimulation } from '@/lib/simulationModel';
@@ -25,7 +25,10 @@ import { BoatPlanResult } from '@/components/BoatPlanResult';
 import { FareProfilePicker, TripCostSummary, useCostLabel, useFareProfile } from '@/components/TripCost';
 import { tripCost } from '@/lib/fares';
 import { AIRPORT, FIRST_SERVICE_FROM_S, isAirport, matchesAirport, planAirportOrTomorrow } from '@/lib/airportPlanner';
+import { MESTRE_STATION, isMestreStation, matchesMestreStation, planMestre } from '@/lib/mestrePlanner';
+import { loadTrainSchedule, trainSchedule } from '@/lib/trainSimulation';
 import { addressLabel, type AddressHit } from '@/lib/addresses';
+import { calculateItineraryEmissions, fossilScore, type ItineraryEmissions } from '@/lib/mobilityEmissions';
 
 let walkPromise: Promise<WalkGraph> | null = null;
 /** Rete pedonale: scaricata una sola volta, alla prima apertura del planner. */
@@ -106,12 +109,35 @@ const optionKey = (it: Itinerary) =>
     .map((l) => (l.kind === 'ride' ? `${l.line}@${Math.round(l.start)}` : ''))
     .join('>') || 'walk';
 
-/** Linee di un itinerario: «4.2 › 5.1 › 5» (Alilaguna col nome dell'operatore) */
-const optionLines = (it: Itinerary) =>
-  it.legs
-    .filter((l) => l.kind === 'ride')
-    .map((l) => (l.kind === 'ride' ? (l.operator === 'alilaguna' ? `Alilaguna ${l.line}` : l.line) : ''))
+/** Identifica chiaramente l'operatore o servizio di un'opzione (ACTV, ATVO, Trenitalia, Italo, Busitalia, Dolomiti Bus, FlixBus, Alilaguna) */
+const optionCompanyLabel = (it: Itinerary): string => {
+  if (it.via === 'treno_regionale') return 'Trenitalia · Regionale';
+  if (it.via === 'treno_av') {
+    const isItalo = it.legs.some((l) => l.kind === 'ride' && l.operator === 'Italo');
+    return isItalo ? 'Italo · Alta Velocità' : 'Trenitalia · Frecciarossa AV';
+  }
+  if (it.via === 'bus_actv') return 'ACTV · Bus Linea 2';
+  if (it.via === 'busitalia') return 'Busitalia Veneto · Extraurbano';
+  if (it.via === 'dolomitibus') return 'Dolomiti Bus · Linea 72 Cortina Express';
+  if (it.via === 'flixbus') return 'FlixBus · Diretto';
+  if (it.via === 'atvo') return 'ATVO Express · Bus diretto';
+  if (it.via === 'alilaguna') return 'Alilaguna · Navigazione';
+
+  const rides = it.legs.filter((l) => l.kind === 'ride');
+  if (rides.length === 0) return 'Percorso a piedi';
+
+  return rides
+    .map((l) => {
+      if (l.kind !== 'ride') return '';
+      const op = l.operator ?? 'ACTV';
+      if (op === 'alilaguna') return `Alilaguna ${l.line}`;
+      if (op !== 'ACTV') return `${op} ${l.line}`;
+      const cat = ['bus', 'tram'].includes(l.category) ? (l.category === 'tram' ? 'Tram ' : 'Bus ') : '';
+      return `ACTV ${cat}${l.line}`;
+    })
     .join(' › ');
+};
+
 
 /** Ora di partenza scelta (HH:MM) in secondi dalla mezzanotte, altrimenti adesso a Venezia. */
 const departSeconds = (time: string, now: number): number => (/^\d{2}:\d{2}$/.test(time) ? Number(time.slice(0, 2)) * 3600 + Number(time.slice(3)) * 60 : now);
@@ -136,7 +162,16 @@ interface TripPlannerPanelProps {
 }
 
 const ACTV_SITE = 'https://actv.avmspa.it/it';
-const MODES: PlanMode[] = ['fastest', 'walk', 'boat', 'private'];
+const MODES: PlanMode[] = ['fastest', 'eco', 'walk', 'boat', 'private'];
+
+/** Alimentazione dei mezzi del percorso: zero emissioni allo scarico, oppure i minuti su mezzi a motore termico */
+function formatCo2(em: ItineraryEmissions, t: (k: string, p?: Record<string, string | number>) => string): string {
+  if (em.isZeroEmission) return t('ui.planner.co2Zero');
+  const fossil = Math.round(em.fossilSeconds / 60);
+  const unknown = Math.round(em.unknownSeconds / 60);
+  if (fossil === 0) return t('ui.planner.propulsionUnknown', { min: unknown });
+  return unknown > 0 ? t('ui.planner.propulsionFossilUnknown', { min: fossil, unknown }) : t('ui.planner.propulsionFossil', { min: fossil });
+}
 
 /** Fermate proposte nel campo: pontili, tram, People Mover e nodi bus principali (prima i pontili) */
 const PLACE_STOPS = [...ACTV_STOPS_REFERENCE].sort((a, b) => Number(b.mode === 'navigazione' || b.mode === 'ferry') - Number(a.mode === 'navigazione' || a.mode === 'ferry'));
@@ -171,6 +206,7 @@ const PlaceInput: React.FC<{
   const stopHits = q.length >= 2 && !civicKey ? PLACE_STOPS.filter((s) => s.name.toLowerCase().includes(q.toLowerCase())).slice(0, 6) : [];
   const civicPoint = civic && civic.key === civicKey ? civic.point : null;
   const airportHit = q.length >= 2 && !civicKey && matchesAirport(q);
+  const mestreHit = q.length >= 2 && !civicKey && matchesMestreStation(q);
   // Indirizzi (calli, campi, fondamenta…) dal gazzettiere OpenStreetMap di VOD
   const addressQuery = q.length >= 3 && !civicKey ? q : null;
   const [addresses, setAddresses] = useState<{ q: string; hits: AddressHit[] } | null>(null);
@@ -216,8 +252,21 @@ const PlaceInput: React.FC<{
           className="mt-1 w-full px-3 py-2 rounded-xl bg-[var(--ground)] border border-[var(--rule)] text-xs text-[var(--ink)] normal-case font-sans focus:outline-none focus:border-cyan-500/60"
         />
       </label>
-      {(civicPoint || airportHit || stopHits.length > 0 || addressHits.length > 0) && (
+      {(civicPoint || airportHit || mestreHit || stopHits.length > 0 || addressHits.length > 0) && (
         <ul className="flex flex-col rounded-xl border border-[var(--rule)] overflow-hidden">
+          {mestreHit && (
+            <li>
+              <button
+                type="button"
+                onClick={() => onChange(MESTRE_STATION)}
+                className="w-full text-left px-3 py-2 text-xs hover:bg-[var(--rule)]/50 cursor-pointer"
+                data-testid="planner-mestre-option"
+              >
+                <Train className="inline w-3.5 h-3.5 mr-1 text-sky-400" aria-hidden />
+                {MESTRE_STATION.label}
+              </button>
+            </li>
+          )}
           {airportHit && (
             <li>
               <button type="button" onClick={() => onChange(AIRPORT)} className="w-full text-left px-3 py-2 text-xs hover:bg-[var(--rule)]/50 cursor-pointer" data-testid="planner-airport-option">
@@ -337,24 +386,93 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
     };
   }, [open, time]);
 
-  // Da o per l'aeroporto: opzioni Alilaguna (via acqua) e ACTV (bus 5 da Piazzale Roma), dalla più veloce
+  // Da o per l'aeroporto: opzioni Alilaguna (via acqua), ACTV, ATVO, Dolomiti Bus, Flixbus, ecc.
   const airportTrip = !!from && !!to && isAirport(from) !== isAirport(to);
-  const [airportChoice, setAirportChoice] = useState<'alilaguna' | 'actv' | 'mixed' | null>(null);
+  const [airportChoice, setAirportChoice] = useState<Itinerary['via'] | null>(null);
   const airportPlan = useMemo(() => {
     if (!open || isPrivate || !airportTrip || !sim || !walk || !from || !to) return null;
     // se stasera non ci sono più collegamenti: le prime opzioni di domani mattina
-    return planAirportOrTomorrow(walk, sim, ACTV_STOPS_REFERENCE, from, to, departSeconds(time, clockS), romeDayType(), { day: romeTomorrowDayType(), date: tomorrowDate() }, { tideAt, passerelle, nextDay: romeTomorrowDayType(), hurry: !time, date: todayDate() });
+    return planAirportOrTomorrow(
+      walk,
+      sim,
+      ACTV_STOPS_REFERENCE,
+      from,
+      to,
+      departSeconds(time, clockS),
+      romeDayType(),
+      { day: romeTomorrowDayType(), date: tomorrowDate() },
+      { tideAt, passerelle, nextDay: romeTomorrowDayType(), hurry: !time, date: todayDate(), includeCoaches: true },
+    );
   }, [open, isPrivate, airportTrip, sim, walk, from, to, time, clockS, tideAt, passerelle]);
-  const airportOptions = airportPlan?.options ?? null;
+  const rawAirportOptions = airportPlan?.options ?? null;
+
+  // Collegamenti con Mestre Stazione FS (treni Trenitalia e Italo, mezzi ACTV, Dolomiti Bus, FlixBus)
+  const mestreTrip = !!from && !!to && !airportTrip && isMestreStation(from) !== isMestreStation(to);
+  // orario dei treni caricato solo quando serve
+  const [trainsReady, setTrainsReady] = useState(() => trainSchedule() !== null);
+  useEffect(() => {
+    if (!mestreTrip || trainsReady) return;
+    let alive = true;
+    loadTrainSchedule()
+      .then(() => alive && setTrainsReady(true))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [mestreTrip, trainsReady]);
+  const mestrePlan = useMemo<(PlanResult & { tomorrow: boolean }) | null>(() => {
+    if (!open || isPrivate || !mestreTrip || !sim || !walk || !from || !to) return null;
+    const now = departSeconds(time, clockS);
+    const its = planMestre(walk, sim, ACTV_STOPS_REFERENCE, from, to, now, romeDayType(), { tideAt, passerelle, nextDay: romeTomorrowDayType(), hurry: !time, date: todayDate() });
+    if (its.length > 0) return { best: its[0], alternatives: its, tomorrow: false, walkOnly: null, floodLevelCm: null, shortestWalkWetMeters: null, ifLate: null };
+    const morning = planMestre(walk, sim, ACTV_STOPS_REFERENCE, from, to, FIRST_SERVICE_FROM_S, romeTomorrowDayType(), { tideAt, passerelle, date: tomorrowDate() });
+    return { best: morning[0] ?? null, alternatives: morning, tomorrow: morning.length > 0, walkOnly: null, floodLevelCm: null, shortestWalkWetMeters: null, ifLate: null };
+    // trainsReady: si ricalcola quando arriva l'orario dei treni (letto da planMestre tramite trainSimulation)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, isPrivate, mestreTrip, sim, walk, from, to, time, clockS, tideAt, passerelle, trainsReady]);
+
   // Tutti i mezzi (ACTV, Alilaguna) con le alternative; se stasera non c'è più niente, la prima soluzione di domani mattina
-  const generalPlan = useMemo(() => {
-    if (!open || isPrivate || airportTrip || !sim || !walk || !from || !to) return null;
+  const standardPlan = useMemo(() => {
+    if (!open || isPrivate || airportTrip || mestreTrip || !sim || !walk || !from || !to) return null;
     const now = departSeconds(time, clockS);
     const today = planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, now, romeDayType(), { mode, tideAt, passerelle, nextDay: romeTomorrowDayType(), hurry: !time, date: todayDate() });
     if (today.best || mode === 'walk') return { ...today, tomorrow: false };
     const morning = planTrip(walk, sim, ACTV_STOPS_REFERENCE, from, to, FIRST_SERVICE_FROM_S, romeTomorrowDayType(), { mode, tideAt, passerelle, date: tomorrowDate() });
     return { ...morning, tomorrow: !!morning.best };
-  }, [open, isPrivate, airportTrip, sim, walk, from, to, time, clockS, mode, tideAt, passerelle]);
+  }, [open, isPrivate, airportTrip, mestreTrip, sim, walk, from, to, time, clockS, mode, tideAt, passerelle]);
+
+  const generalPlan = mestreTrip ? mestrePlan : standardPlan;
+  const rawRouteOptions = !rawAirportOptions && (generalPlan?.alternatives?.length ?? 0) > 1 ? generalPlan!.alternatives! : null;
+
+  // Calcolo costi ed emissioni per tutte le opzioni
+  const allCandidateOptions = useMemo(() => [...(rawRouteOptions ?? []), ...(rawAirportOptions ?? [])], [rawRouteOptions, rawAirportOptions]);
+  const optionCosts = useMemo(() => new Map(allCandidateOptions.map((o) => [o, tripCost(o, fareProfile)])), [allCandidateOptions, fareProfile]);
+  const optionEmissions = useMemo(() => new Map(allCandidateOptions.map((o) => [o, calculateItineraryEmissions(o)])), [allCandidateOptions]);
+
+  // Ordinamento opzioni: in modalità "eco" meno tempo su mezzi a motore termico, altrimenti chi arriva prima
+  const sortOptions = useCallback(
+    (list: Itinerary[]) => {
+      return list.slice().sort((a, b) => {
+        if (mode === 'eco') {
+          const emA = fossilScore(optionEmissions.get(a) ?? calculateItineraryEmissions(a));
+          const emB = fossilScore(optionEmissions.get(b) ?? calculateItineraryEmissions(b));
+          if (emA !== emB) return emA - emB;
+          return a.arrive - b.arrive;
+        }
+        // più veloce: prima chi arriva prima; la più economica è segnalata a parte
+        if (a.arrive !== b.arrive) return a.arrive - b.arrive;
+        const costA = optionCosts.get(a)?.total ?? tripCost(a, fareProfile).total;
+        const costB = optionCosts.get(b)?.total ?? tripCost(b, fareProfile).total;
+        if (costA !== costB) return costA - costB;
+        return a.depart - b.depart;
+      });
+    },
+    [mode, optionEmissions, optionCosts, fareProfile],
+  );
+
+  const airportOptions = useMemo(() => (rawAirportOptions ? sortOptions(rawAirportOptions) : null), [rawAirportOptions, sortOptions]);
+  const routeOptions = useMemo(() => (rawRouteOptions ? sortOptions(rawRouteOptions) : null), [rawRouteOptions, sortOptions]);
+
   const [routeChoice, setRouteChoice] = useState<string | null>(null);
   const result = useMemo(() => {
     if (!open || isPrivate || !sim || !walk || !from || !to) return null;
@@ -364,20 +482,31 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
       return airportResult;
     }
     if (!generalPlan) return null;
-    const chosen = (generalPlan.alternatives ?? []).find((o) => optionKey(o) === routeChoice);
-    return chosen ? { ...generalPlan, best: chosen } : generalPlan;
-  }, [open, isPrivate, sim, walk, from, to, airportOptions, airportChoice, generalPlan, routeChoice]);
-  const routeOptions = !airportOptions && (generalPlan?.alternatives?.length ?? 0) > 1 ? generalPlan!.alternatives! : null;
-  // Costo stimato di ogni opzione per il tipo di biglietto scelto; la più economica si segnala se costa meno delle altre
-  const optionCosts = useMemo(() => new Map((routeOptions ?? airportOptions ?? []).map((o) => [o, tripCost(o, fareProfile)])), [routeOptions, airportOptions, fareProfile]);
+    const alternatives = routeOptions ?? generalPlan.alternatives ?? [];
+    const chosen = alternatives.find((o) => optionKey(o) === routeChoice);
+    const best = chosen ?? alternatives[0] ?? generalPlan.best;
+    return { ...generalPlan, best, alternatives };
+  }, [open, isPrivate, sim, walk, from, to, airportOptions, airportChoice, generalPlan, routeOptions, routeChoice]);
+
+  // Opzione più economica
   const cheapest = useMemo(() => {
-    const priced = [...optionCosts.entries()].filter(([, c]) => c.unpriced.length === 0);
+    const priced = [...optionCosts.entries()].filter(([, c]) => c.unpriced.length === 0 && c.variable.length === 0);
     if (priced.length < 2) return null;
     const min = Math.min(...priced.map(([, c]) => c.total));
     const max = Math.max(...priced.map(([, c]) => c.total));
     if (min === max) return null;
     return priced.filter(([, c]) => c.total === min).sort(([a], [b]) => a.arrive - b.arrive)[0][0];
   }, [optionCosts]);
+
+  // Opzione più ecologica: meno tempo su mezzi a motore termico (o ad alimentazione non nota)
+  const greenest = useMemo(() => {
+    const list = [...optionEmissions.entries()];
+    if (list.length < 2) return null;
+    const min = Math.min(...list.map(([, e]) => fossilScore(e)));
+    const max = Math.max(...list.map(([, e]) => fossilScore(e)));
+    if (min === max) return null;
+    return list.filter(([, e]) => fossilScore(e) === min).sort(([a], [b]) => a.arrive - b.arrive)[0][0];
+  }, [optionEmissions]);
 
   // In barca propria: rete dei canali e regole del Testo Unico (lib/boatRouting)
   const boatResult = useMemo(() => {
@@ -506,28 +635,63 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
                     : t('ui.planner.airportTomorrow')}
                 </p>
               )}
-              {airportOptions.map((o) => (
-                <button
-                  key={o.via}
-                  type="button"
-                  role="radio"
-                  aria-checked={best === o}
-                  onClick={() => setAirportChoice(o.via ?? null)}
-                  data-testid={`planner-airport-${o.via}`}
-                  className={`flex items-baseline justify-between gap-2 px-2.5 py-1.5 rounded-lg border text-left text-[11px] cursor-pointer ${
-                    best === o ? 'bg-sky-500/15 border-sky-500/50 text-[var(--ink)]' : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)]'
-                  }`}
-                >
-                  <span className="font-semibold">
-                    {t(`ui.planner.airport_${o.via}`)}
-                    {o === cheapest && <span className="ml-1 font-normal text-emerald-400" data-testid="planner-cheapest">· {t('ui.fares.cheapest')}</span>}
-                  </span>
-                  <span className="font-mono shrink-0">
-                    {clock(o.depart)} → {clock(o.arrive)} · {t('ui.planner.duration', { min: minutes(o.arrive - o.depart) })}
-                    {optionCosts.get(o) && ` · ${costLabel(optionCosts.get(o)!)}`}
-                  </span>
-                </button>
-              ))}
+              {airportOptions.map((o) => {
+                const isSelected = best === o;
+                const cost = optionCosts.get(o);
+                const em = optionEmissions.get(o);
+                return (
+                  <button
+                    key={o.via}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    onClick={() => setAirportChoice(o.via ?? null)}
+                    data-testid={`planner-airport-${o.via}`}
+                    className={`flex flex-col gap-1.5 p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                      isSelected
+                        ? 'bg-sky-500/15 border-sky-500/60 text-[var(--ink)] ring-1 ring-sky-500/30'
+                        : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--rule)]/20'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                        <span className="font-semibold text-xs text-[var(--ink)]">
+                          {t(`ui.planner.airport_${o.via}`)}
+                        </span>
+                        {o === cheapest && (
+                          <span className="font-medium text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-md border border-emerald-500/40" data-testid="planner-cheapest">
+                            {t('ui.fares.cheapest')}
+                          </span>
+                        )}
+                        {o === greenest && (
+                          <span className="font-medium text-[10px] px-1.5 py-0.5 bg-teal-500/20 text-teal-300 rounded-md border border-teal-500/40" data-testid="planner-greenest">
+                            {t('ui.planner.greenest')}
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-mono text-xs font-bold text-[var(--ink)] shrink-0">
+                        {clock(o.depart)} → {clock(o.arrive)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-[var(--ink-3)] font-mono">
+                      <span>{t('ui.planner.duration', { min: minutes(o.arrive - o.depart) })}</span>
+                      <div className="flex items-center gap-2">
+                        {isSelected && em && (
+                          <span className="text-teal-400 flex items-center gap-1 font-mono" data-testid="planner-airport-co2">
+                            <Leaf className="w-3 h-3 text-teal-400" aria-hidden />
+                            {formatCo2(em, t)}
+                          </span>
+                        )}
+                        {cost && (
+                          <span className="text-[var(--ink)] font-sans font-medium text-xs">
+                            {costLabel(cost)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
           {generalPlan?.tomorrow && (
@@ -536,34 +700,80 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({ open, onClos
           {routeOptions && (
             <div className="flex flex-col gap-1.5" role="radiogroup" aria-label={t('ui.planner.optionsTitle')} data-testid="planner-options">
               <span className="text-[11px] font-semibold text-[var(--ink-2)]">{t('ui.planner.optionsTitle')}</span>
-              {routeOptions.map((o) => (
-                <button
-                  key={optionKey(o)}
-                  type="button"
-                  role="radio"
-                  aria-checked={best === o}
-                  onClick={() => setRouteChoice(optionKey(o))}
-                  className={`flex items-baseline justify-between gap-2 px-2.5 py-1.5 rounded-lg border text-left text-[11px] cursor-pointer ${
-                    best === o ? 'bg-emerald-500/15 border-emerald-500/50 text-[var(--ink)]' : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)]'
-                  }`}
-                >
-                  <span className="font-semibold truncate">
-                    {optionLines(o)} <span className="font-normal text-[var(--ink-3)]">· {o.rides <= 1 ? t('ui.planner.optionDirect') : t('ui.planner.optionChanges', { n: o.rides - 1 })}</span>
-                    {o === cheapest && <span className="font-normal text-emerald-400" data-testid="planner-cheapest"> · {t('ui.fares.cheapest')}</span>}
-                  </span>
-                  <span className="font-mono shrink-0">
-                    {clock(o.depart)} → {clock(o.arrive)} · {t('ui.planner.duration', { min: minutes(o.arrive - o.depart) })}
-                    {optionCosts.get(o) && ` · ${costLabel(optionCosts.get(o)!)}`}
-                  </span>
-                </button>
-              ))}
+              {routeOptions.map((o) => {
+                const isSelected = best === o;
+                const cost = optionCosts.get(o);
+                const em = optionEmissions.get(o);
+                return (
+                  <button
+                    key={optionKey(o)}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    onClick={() => setRouteChoice(optionKey(o))}
+                    className={`flex flex-col gap-1.5 p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                      isSelected
+                        ? 'bg-emerald-500/15 border-emerald-500/60 text-[var(--ink)] ring-1 ring-emerald-500/30'
+                        : 'border-[var(--rule)] text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--rule)]/20'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                        <span className="font-semibold text-xs text-[var(--ink)]">
+                          {optionCompanyLabel(o)}
+                        </span>
+                        <span className="font-normal text-[var(--ink-3)] text-[11px]">
+                          · {o.rides <= 1 ? t('ui.planner.optionDirect') : t('ui.planner.optionChanges', { n: o.rides - 1 })}
+                        </span>
+                        {o === cheapest && (
+                          <span className="font-medium text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-md border border-emerald-500/40" data-testid="planner-cheapest">
+                            {t('ui.fares.cheapest')}
+                          </span>
+                        )}
+                        {o === greenest && (
+                          <span className="font-medium text-[10px] px-1.5 py-0.5 bg-teal-500/20 text-teal-300 rounded-md border border-teal-500/40" data-testid="planner-greenest">
+                            {t('ui.planner.greenest')}
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-mono text-xs font-bold text-[var(--ink)] shrink-0">
+                        {clock(o.depart)} → {clock(o.arrive)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-[var(--ink-3)] font-mono">
+                      <span>{t('ui.planner.duration', { min: minutes(o.arrive - o.depart) })}</span>
+                      <div className="flex items-center gap-2">
+                        {isSelected && em && (
+                          <span className="text-teal-400 flex items-center gap-1 font-mono" data-testid="planner-route-co2">
+                            <Leaf className="w-3 h-3 text-teal-400" aria-hidden />
+                            {formatCo2(em, t)}
+                          </span>
+                        )}
+                        {cost && (
+                          <span className="text-[var(--ink)] font-sans font-medium text-xs">
+                            {costLabel(cost)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
           <div className="flex items-baseline justify-between gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
             <span className="text-sm font-bold text-[var(--ink)]">
               {clock(best.depart)} → {clock(best.arrive)}
             </span>
-            <span className="text-xs font-mono text-emerald-300">{t('ui.planner.duration', { min: minutes(best.arrive - best.depart) })}</span>
+            <div className="flex items-center gap-2">
+              {optionEmissions.get(best) && (
+                <span className="text-xs font-mono text-teal-300 flex items-center gap-1" data-testid="planner-best-co2">
+                  <Leaf className="w-3 h-3 text-teal-400" aria-hidden />
+                  {formatCo2(optionEmissions.get(best)!, t)}
+                </span>
+              )}
+              <span className="text-xs font-mono text-emerald-300">{t('ui.planner.duration', { min: minutes(best.arrive - best.depart) })}</span>
+            </div>
           </div>
           {best.hurry && (
             <HurryBox

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import type { DynamicTideState, TideSource } from '@/lib/tideCurve';
+import type { DynamicTideState } from '@/lib/tideCurve';
 import {
   Play,
   Pause,
@@ -22,12 +22,31 @@ import {
   Plus,
   Minus,
   X,
-  Wind
+  Wind,
+  Building2,
+  Cloud,
+  CloudRain,
+  CloudSnow,
+  CloudFog,
+  Lightbulb,
 } from 'lucide-react';
-import type { CityAirTemperature, DayType, WindField } from '@/lib/types';
+import type { AirportMetarData, CityAirTemperature, DayType, WindField } from '@/lib/types';
+import { detectWeatherCondition, type WeatherConditionKey } from '@/lib/weatherCondition';
 import { formatTimeParts, getSolarPhase } from '@/lib/solar';
+import { getPublicLightingStatus } from '@/lib/publicLighting';
 import { useTranslation } from '@/lib/i18n';
 import { WIND_COLOR_STOPS } from '@/components/map/windLayer';
+import {
+  CATEGORY_META,
+  CATEGORY_ORDER,
+  EPOCH_META,
+  EPOCH_ORDER,
+  getBuildingsAuditStats,
+  isBuildingsLoaded,
+  requestBuildings,
+  type BuildingColorMode,
+  type BuildingEpochFilter,
+} from '@/components/map/buildingsLayer';
 
 interface TideSimulatorProps {
   level: number;
@@ -43,6 +62,17 @@ interface TideSimulatorProps {
   onReset: () => void;
 }
 
+export interface BuildingsDockProps {
+  colorMode: BuildingColorMode;
+  onColorModeChange: (mode: BuildingColorMode) => void;
+  epochFilter: BuildingEpochFilter;
+  onEpochFilterChange: (filter: BuildingEpochFilter) => void;
+  maxYear: number | null;
+  onMaxYearChange: (year: number | null) => void;
+  is3DView: boolean;
+  onToggle3DView: () => void;
+}
+
 export interface TimelineControlsProps {
   currentTimeSeconds: number;
   onTimeChange: (seconds: number) => void;
@@ -55,6 +85,7 @@ export interface TimelineControlsProps {
   // Contextual Transit Props
   showVehicles?: boolean;
   showAlilaguna?: boolean;
+  hasTransportLayers?: boolean;
   actvTripsCount?: number;
   alilagunaBoatsCount?: number;
   peakCount?: number;
@@ -66,6 +97,8 @@ export interface TimelineControlsProps {
   tideStatus?: Pick<DynamicTideState, 'levelSource' | 'moseStatus' | 'moseBasis' | 'forecastStale'>;
   /** Temperatura dell'aria nel centro storico (mostrata solo all'ora attuale) */
   airTemp?: CityAirTemperature | null;
+  /** Bollettino METAR ufficiale per la condizione meteo prevalente */
+  metarData?: AirportMetarData | null;
   // Live sync
   onSyncLiveTime?: () => void;
   isLiveSynced?: boolean;
@@ -77,17 +110,13 @@ export interface TimelineControlsProps {
   // Contextual Wind Props
   showWind?: boolean;
   windField?: WindField | null;
+  // Contextual Lighting Props
+  showPublicLighting?: boolean;
   // Dock state & contextual awareness
   hasTemporalLayers?: boolean;
   simulator?: TideSimulatorProps | null;
+  buildings?: BuildingsDockProps | null;
 }
-
-const TIDE_LABEL: Record<TideSource, string> = {
-  measured: 'ui.timeline.tideMeasured',
-  forecast: 'ui.timeline.tideForecastEstimated',
-  simulated: 'ui.timeline.tideSimulated',
-  none: 'ui.timeline.tideForecastEstimated',
-};
 
 export const TimelineControls: React.FC<TimelineControlsProps> = ({
   currentTimeSeconds,
@@ -100,14 +129,16 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
   onDayChange,
   showVehicles = false,
   showAlilaguna = false,
+  hasTransportLayers = false,
+  showPublicLighting = false,
   actvTripsCount,
   alilagunaBoatsCount,
   peakCount,
   peakTime,
   showTide = false,
   tideLevel,
-  tideStatus,
   airTemp,
+  metarData = null,
   showWind = false,
   windField = null,
   onSyncLiveTime,
@@ -116,23 +147,31 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
   hasActiveLayers = false,
   onOpenTideModal,
   onStartSimulator,
-  hasTemporalLayers = true,
-  simulator = null
+  simulator = null,
+  buildings = null,
 }) => {
   const { t, language } = useTranslation();
+  const isIt = language === 'it';
 
-  // Inizializza l'espansione: se ci sono layer temporali attivi e nessun simulatore, parte aperto;
-  // se ci sono solo layer statici o e attivo il simulatore, parte compatto per lasciare massima visibilita alla mappa.
-  const [isExpanded, setIsExpanded] = useState<boolean>(() => Boolean(hasTemporalLayers) && !simulator);
-  const prevTemporalRef = useRef(Boolean(hasTemporalLayers));
+  // Lo slider orario 24h e la velocità sono attivi quando c'è almeno un layer trasporti o illuminazione pubblica;
+  // il pannello espanso si apre per trasporti, illuminazione o per il pannello Edifici 3D.
+  const hasExpandableDock = Boolean(hasTransportLayers || showVehicles || showAlilaguna || buildings || showPublicLighting);
+  const [isExpanded, setIsExpanded] = useState<boolean>(() => hasExpandableDock && !simulator);
+  const prevExpandableRef = useRef(hasExpandableDock);
 
   useEffect(() => {
-    if (Boolean(hasTemporalLayers) !== prevTemporalRef.current) {
-      prevTemporalRef.current = Boolean(hasTemporalLayers);
-      // Quando l'utente accende un layer temporale, espandi la timeline; se li spegne tutti, richiudi
-      setIsExpanded(Boolean(hasTemporalLayers) && !simulator);
+    if (hasExpandableDock !== prevExpandableRef.current) {
+      prevExpandableRef.current = hasExpandableDock;
+      setIsExpanded(hasExpandableDock && !simulator);
     }
-  }, [hasTemporalLayers, simulator]);
+  }, [hasExpandableDock, simulator]);
+
+  const [, setBuildingsReadyTick] = useState(false);
+  useEffect(() => {
+    if (buildings && !isBuildingsLoaded()) {
+      requestBuildings(() => setBuildingsReadyTick((v) => !v));
+    }
+  }, [buildings]);
 
   const [shareState, setShareState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const copied = shareState === 'copied';
@@ -188,46 +227,87 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
     }
   };
 
+  // Determina la condizione meteo prevalente (METAR LIPZ aeroporto / stazioni meteo)
+  const weatherInfo = detectWeatherCondition(metarData);
+
+  const renderWeatherIcon = (cond: WeatherConditionKey) => {
+    switch (cond) {
+      case 'sole':
+        return <Sun className="w-3.5 h-3.5 text-amber-400 shrink-0" aria-hidden />;
+      case 'nuvola':
+        return <Cloud className="w-3.5 h-3.5 text-slate-300 shrink-0" aria-hidden />;
+      case 'pioggia':
+        return <CloudRain className="w-3.5 h-3.5 text-blue-400 shrink-0" aria-hidden />;
+      case 'neve':
+        return <CloudSnow className="w-3.5 h-3.5 text-cyan-200 shrink-0" aria-hidden />;
+      case 'nebbia':
+        return <CloudFog className="w-3.5 h-3.5 text-zinc-400 shrink-0" aria-hidden />;
+      case 'vento':
+        return <Wind className="w-3.5 h-3.5 text-teal-300 shrink-0" aria-hidden />;
+    }
+  };
+
   // Sezione comune: Effemeridi solari & Meteo centro storico
-  const renderSolarAndWeather = (isCompact = false) => (
-    <div
-      className={`flex items-center gap-1.5 px-2 ${isCompact ? 'py-0.5' : 'py-1'} rounded-lg text-xs font-mono bg-[var(--rule)]/50 border border-[var(--rule)] text-[var(--ink-2)] shrink-0`}
-      title={t('ui.timeline.orologioUrbanoVenezia')}
-    >
-      {renderSolarIcon()}
-      <span className="font-medium text-[var(--ink)]">{t(solarPhase.labelKey)}</span>
-      {!isCompact && (
-        <>
-          <span className="hidden md:inline text-[var(--ink-3)]">·</span>
-          <span className="hidden md:inline text-[var(--ink-3)]">
-            {t(solarPhase.targetLabelKey)} {solarPhase.targetTime}
+  const renderSolarAndWeather = (isCompact = false) => {
+    const weatherLabel = t(`ui.timeline.weather_${weatherInfo.condition}`);
+    const weatherTitle = `${t('ui.timeline.weatherLabel')}: ${weatherLabel}${weatherInfo.detail ? ` (${weatherInfo.detail})` : ''}`;
+
+    return (
+      <div
+        className={`flex items-center gap-1.5 px-2 ${isCompact ? 'py-0.5' : 'py-1'} rounded-lg text-xs font-mono bg-[var(--rule)]/50 border border-[var(--rule)] text-[var(--ink-2)] shrink-0`}
+        title={t('ui.timeline.orologioUrbanoVenezia')}
+      >
+        {renderSolarIcon()}
+        <span className="font-medium text-[var(--ink)]">{t(solarPhase.labelKey)}</span>
+        {!isCompact && (
+          <>
+            <span className="hidden md:inline text-[var(--ink-3)]">·</span>
+            <span className="hidden md:inline text-[var(--ink-3)]">
+              {t(solarPhase.targetLabelKey)} {solarPhase.targetTime}
+            </span>
+          </>
+        )}
+        {/* Meteo, Temperatura e Umidità misurate adesso (confermato per test e2e) */}
+        {isLiveSynced && (airTemp || metarData) && (
+          <span
+            className="flex items-center gap-1.5 pl-1.5 ml-0.5 border-l border-[var(--rule)]"
+            title={
+              airTemp
+                ? t(airTemp.humidityPercent !== null ? 'ui.timeline.airTempHumidityTitle' : 'ui.timeline.airTempTitle', {
+                    station: airTemp.stationName,
+                    time: airTemp.observedAt.slice(11, 16),
+                  })
+                : weatherTitle
+            }
+            data-testid="timeline-air-temp"
+          >
+            {/* Icona Meteo prima della temperatura */}
+            <span
+              className="flex items-center shrink-0 cursor-default"
+              title={weatherTitle}
+              data-testid="timeline-weather-condition"
+            >
+              {renderWeatherIcon(weatherInfo.condition)}
+            </span>
+            {airTemp && (
+              <>
+                <Thermometer className="w-3.5 h-3.5 text-rose-300 shrink-0" aria-hidden />
+                <span className="font-medium text-[var(--ink)] tabular">{airTemp.celsius.toLocaleString(language === 'it' ? 'it-IT' : 'en-GB', { maximumFractionDigits: 1 })}°</span>
+                {airTemp.humidityPercent !== null && (
+                  <>
+                    <Droplets className="w-3.5 h-3.5 text-sky-300 shrink-0 ml-0.5" aria-hidden />
+                    <span className="font-medium text-[var(--ink)] tabular" data-testid="timeline-humidity">
+                      {airTemp.humidityPercent}%<span className="sr-only"> {t('ui.timeline.humidityLabel')}</span>
+                    </span>
+                  </>
+                )}
+              </>
+            )}
           </span>
-        </>
-      )}
-      {/* Temperatura misurata adesso (confermato per test e2e) */}
-      {isLiveSynced && airTemp && (
-        <span
-          className="flex items-center gap-1 pl-1.5 ml-0.5 border-l border-[var(--rule)]"
-          title={t(airTemp.humidityPercent !== null ? 'ui.timeline.airTempHumidityTitle' : 'ui.timeline.airTempTitle', {
-            station: airTemp.stationName,
-            time: airTemp.observedAt.slice(11, 16),
-          })}
-          data-testid="timeline-air-temp"
-        >
-          <Thermometer className="w-3.5 h-3.5 text-rose-300 shrink-0" aria-hidden />
-          <span className="font-medium text-[var(--ink)] tabular">{airTemp.celsius.toLocaleString(language === 'it' ? 'it-IT' : 'en-GB', { maximumFractionDigits: 1 })}°</span>
-          {airTemp.humidityPercent !== null && (
-            <>
-              <Droplets className="w-3.5 h-3.5 text-sky-300 shrink-0 ml-1" aria-hidden />
-              <span className="font-medium text-[var(--ink)] tabular" data-testid="timeline-humidity">
-                {airTemp.humidityPercent}%<span className="sr-only"> {t('ui.timeline.humidityLabel')}</span>
-              </span>
-            </>
-          )}
-        </span>
-      )}
-    </div>
-  );
+        )}
+      </div>
+    );
+  };
 
   // Sezione comune: Pulsante di Condivisione
   const renderShareButton = () => {
@@ -299,18 +379,243 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
     );
   };
 
-  // Sezione comune: Badge Vento Open-Meteo
+  // Sezione comune: Box Vento Previsto Open-Meteo
   const renderWindBadge = () => {
     if (!showWind || !windField) return null;
     return (
       <div
-        className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-mono bg-teal-500/10 border border-teal-500/25 text-[var(--ink-2)] shrink-0 animate-in fade-in duration-150"
-        title={`${t('ui.mapLabels.windTitle')} (${t('ui.mapLabels.windValidAt', { time: windField.validTime.slice(11, 16) })})`}
+        className="flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-mono bg-teal-500/10 border border-teal-500/30 text-[var(--ink-2)] shrink-0 animate-in fade-in duration-150"
+        title={`${t('ui.timeline.windForecastBoxTitle')} (${t('ui.mapLabels.windValidAt', { time: windField.validTime.slice(11, 16) })}) — ${t('ui.mapLabels.windSource')}`}
+        data-testid="timeline-wind-box"
       >
-        <Wind className="w-3.5 h-3.5 text-teal-400 shrink-0" />
-        <span className="text-[var(--ink-3)] hidden md:inline">Vento:</span>
-        <span className="font-bold text-teal-300">0–90 km/h</span>
-        <span className="text-[var(--ink-3)] text-[10px] hidden lg:inline">({windField.validTime.slice(11, 16)})</span>
+        <div className="flex items-center gap-1.5">
+          <Wind className="w-3.5 h-3.5 text-teal-400 shrink-0" aria-hidden />
+          <span className="font-semibold text-teal-300 whitespace-nowrap">{t('ui.timeline.windForecastBoxTitle')}</span>
+        </div>
+        <div className="hidden sm:flex items-center gap-1.5 pl-1.5 border-l border-teal-500/30">
+          <div
+            className="w-16 sm:w-20 h-1.5 rounded-full border border-teal-500/30 shrink-0"
+            style={{
+              background: `linear-gradient(to right, ${WIND_COLOR_STOPS.filter(([s]) => s <= 25)
+                .map(([s, [r, g, b]]) => `rgb(${r},${g},${b}) ${(s / 25) * 100}%`)
+                .join(', ')})`,
+            }}
+          />
+          <span className="text-[10px] text-teal-200 font-bold tabular">0–90 km/h</span>
+          <span className="text-[10px] text-[var(--ink-3)] hidden md:inline">({windField.validTime.slice(11, 16)})</span>
+        </div>
+      </div>
+    );
+  };
+
+  const showTransportScrubber = Boolean(hasTransportLayers || showVehicles || showAlilaguna || showPublicLighting);
+
+  // Sezione innestata: Controlli Edifici 3D & Storia Urbana dentro la dashboard/timeline
+  const renderBuildingsDock = () => {
+    if (!buildings) return null;
+    const bStats = getBuildingsAuditStats();
+    const {
+      colorMode,
+      onColorModeChange,
+      epochFilter,
+      onEpochFilterChange,
+      maxYear,
+      onMaxYearChange,
+      is3DView,
+      onToggle3DView,
+    } = buildings;
+
+    return (
+      <div
+        className="pt-2 border-t border-[var(--rule)]/60 flex flex-col gap-2 animate-in fade-in duration-150"
+        data-testid="buildings-panel"
+      >
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Building2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-400">
+              {t('ui.buildings.panelTitle')}
+            </span>
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
+              {bStats.withYear} {t('ui.buildings.dated')} / {bStats.total.toLocaleString(language === 'it' ? 'it-IT' : 'en-GB')}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 ml-auto">
+            {/* Tab selector (Epoca / Autore '900 / Altezze / Contesto) */}
+            <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-black/25 border border-[var(--rule)] text-[10px] font-mono">
+              {([
+                ['period', t('ui.buildings.mode_period')],
+                ['contemporary', t('ui.buildings.mode_contemporary')],
+                ['floors', t('ui.buildings.mode_floors')],
+                ['category', t('ui.buildings.mode_category')],
+              ] as const).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => onColorModeChange(mode)}
+                  className={`px-2 py-0.5 rounded-md font-semibold transition-colors cursor-pointer ${
+                    colorMode === mode
+                      ? mode === 'contemporary'
+                        ? 'bg-fuchsia-500 text-white'
+                        : 'bg-amber-500 text-slate-950'
+                      : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={onToggle3DView}
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-semibold border transition-colors cursor-pointer shrink-0 ${
+                is3DView
+                  ? 'bg-cyan-500 text-white border-cyan-400'
+                  : 'bg-[var(--rule)]/50 text-[var(--ink-2)] border-[var(--rule)] hover:border-cyan-400/50'
+              }`}
+            >
+              {is3DView ? '3D ON' : '2D / 3D'}
+            </button>
+          </div>
+        </div>
+
+        {colorMode === 'period' && (
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+            <div className="flex flex-wrap gap-1">
+              <button
+                type="button"
+                onClick={() => onEpochFilterChange('all')}
+                className={`px-1.5 py-0.5 rounded text-[9px] font-mono border cursor-pointer ${
+                  epochFilter === 'all'
+                    ? 'bg-white/15 text-[var(--ink)] border-white/40 font-bold'
+                    : 'text-[var(--ink-3)] border-[var(--rule)] hover:text-[var(--ink-2)]'
+                }`}
+              >
+                {t('ui.buildings.filterAll')}
+              </button>
+              <button
+                type="button"
+                onClick={() => onEpochFilterChange('dated_only')}
+                className={`px-1.5 py-0.5 rounded text-[9px] font-mono border cursor-pointer ${
+                  epochFilter === 'dated_only'
+                    ? 'bg-amber-500/25 text-amber-300 border-amber-400/50 font-bold'
+                    : 'text-[var(--ink-3)] border-[var(--rule)] hover:text-[var(--ink-2)]'
+                }`}
+              >
+                {t('ui.buildings.filterDated', { n: bStats.withYear })}
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  onEpochFilterChange(epochFilter === 'contemporary_authored' ? 'all' : 'contemporary_authored')
+                }
+                className={`px-1.5 py-0.5 rounded text-[9px] font-mono border cursor-pointer ${
+                  epochFilter === 'contemporary_authored'
+                    ? 'bg-fuchsia-500/25 text-fuchsia-300 border-fuchsia-400/50 font-bold'
+                    : 'text-[var(--ink-3)] border-[var(--rule)] hover:text-[var(--ink-2)]'
+                }`}
+              >
+                {t('ui.buildings.filterAuthored', { n: bStats.withArchitect })}
+              </button>
+              {EPOCH_ORDER.map((ep) => {
+                const m = EPOCH_META[ep];
+                const active = epochFilter === ep;
+                return (
+                  <button
+                    key={ep}
+                    type="button"
+                    onClick={() => onEpochFilterChange(active ? 'all' : ep)}
+                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono border cursor-pointer ${
+                      active
+                        ? 'bg-white/15 text-[var(--ink)] border-white/50 font-bold'
+                        : 'text-[var(--ink-2)] border-[var(--rule)]/70 hover:border-white/30'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-xs shrink-0" style={{ background: m.roofDark }} />
+                    <span>{isIt ? m.shortIt : m.shortEn}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Slider Timeline Storica per Anno (1000 - Oggi) */}
+            <div className="flex items-center gap-2 md:w-64 shrink-0">
+              <span className="text-[9px] font-mono text-[var(--ink-3)] shrink-0">
+                {t('ui.buildings.upToYear')}
+              </span>
+              <input
+                type="range"
+                min={1000}
+                max={2026}
+                step={10}
+                value={maxYear ?? 2026}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  onMaxYearChange(val >= 2026 ? null : val);
+                }}
+                className="w-full accent-amber-400 h-1.5 cursor-pointer"
+                aria-label={t('ui.buildings.upToYearAria')}
+              />
+              <span className="text-[10px] font-mono font-bold text-amber-300 min-w-[2.8rem] text-right">
+                {maxYear ?? t('ui.buildings.now')}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {colorMode === 'contemporary' && (
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[9px] font-mono text-[var(--ink-2)]">
+              <span className="flex items-center gap-1">
+<span className="w-2 h-2 rounded-xs bg-[#e879f9] shrink-0" />
+<span>{t('ui.buildings.authoredLegend')}</span>
+</span>
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                onEpochFilterChange(epochFilter === 'contemporary_authored' ? 'all' : 'contemporary_authored')
+              }
+              className={`px-2 py-0.5 rounded text-[9px] font-mono border shrink-0 cursor-pointer ${
+                epochFilter === 'contemporary_authored'
+                  ? 'bg-fuchsia-500/25 text-fuchsia-300 border-fuchsia-400/50 font-bold'
+                  : 'text-[var(--ink-2)] border-[var(--rule)] hover:border-white/30'
+              }`}
+            >
+              {epochFilter === 'contemporary_authored'
+                ? t('ui.buildings.showFabric')
+                : t('ui.buildings.isolateAuthored', { n: bStats.withArchitect })}
+            </button>
+          </div>
+        )}
+
+        {colorMode === 'floors' && (
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[9px] font-mono text-[var(--ink-2)]">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-xs bg-[#38bdf8]" />1–2p</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-xs bg-[#34d399]" />3–4p</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-xs bg-[#fbbf24]" />5–6p</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-xs bg-[#fb7185]" />&gt;6p / Torri</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-xs bg-slate-500/60" />{t('ui.buildings.levelsUnknown')}</span>
+            </div>
+            <span className="text-[var(--ink-3)]">
+              {t('ui.buildings.sources')}
+            </span>
+          </div>
+        )}
+
+        {colorMode === 'category' && (
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[9px] font-mono text-[var(--ink-2)]">
+            {CATEGORY_ORDER.map((cat) => (
+              <span key={cat} className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-xs shrink-0" style={{ background: CATEGORY_META[cat].colorDark }} />
+                <span>{(isIt ? CATEGORY_META[cat].labelIt : CATEGORY_META[cat].labelEn).split(',')[0]}</span>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     );
   };
@@ -453,12 +758,15 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
             <span className="text-rose-600 dark:text-rose-400 font-bold">{t('ui.timeline.tideSliderPicco')}</span>
           </div>
         </div>
+
+        {/* Se anche il layer Edifici 3D è attivo durante la simulazione marea, mostra i controlli Edifici */}
+        {renderBuildingsDock()}
       </div>
     );
   }
 
-  // 2. MODALITA COMPATTA (Compact Pill ~44px: massimizza lo spazio per layer statici o su richiesta)
-  if (!isExpanded) {
+  // 2. MODALITA COMPATTA (Compact Pill ~44px: massimizza lo spazio quando non ci sono trasporti/edifici o quando ridotta)
+  if (!isExpanded || (!showTransportScrubber && !buildings)) {
     return (
       <div
         className="w-full glass-panel rounded-2xl px-3 sm:px-4 py-2 shadow-2xl flex items-center justify-between gap-2 flex-wrap transition-all duration-200"
@@ -520,29 +828,41 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
               <span className="text-[var(--ink-3)] text-[11px]">{showVehicles ? t('ui.timeline.corseOrario') : t('ui.timeline.battelliServizio')}</span>
             </div>
           )}
+
+          {/* Badge Edifici 3D quando la timeline è ridotta */}
+          {buildings && (
+            <button
+              type="button"
+              onClick={() => setIsExpanded(true)}
+              className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-mono bg-amber-500/15 border border-amber-500/35 text-amber-300 shrink-0 cursor-pointer hover:bg-amber-500/25"
+            >
+              <Building2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span>{t('ui.buildings.buildings3d')}</span>
+            </button>
+          )}
         </div>
 
-        {/* Destra: Condivisione e Chevron di Espansione */}
+        {/* Destra: Condivisione e Chevron di Espansione (mostrato solo se ci sono trasporti o edifici) */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
           {renderShareButton()}
 
-          {/* Chevron Espandi */}
-          <button
-            type="button"
-            onClick={() => setIsExpanded(true)}
-            className="flex items-center gap-1 px-2 py-1 rounded-xl bg-[var(--rule)]/70 text-[var(--ink-2)] hover:text-[var(--ink)] border border-[var(--rule)] text-xs font-mono cursor-pointer transition-all"
-            title={t('ui.timeline.espandiTimeline')}
-            aria-label={t('ui.timeline.espandiTimeline')}
-          >
-            <ChevronUp className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline text-[11px] font-sans font-medium">{t('ui.timeline.espandiTimeline')}</span>
-          </button>
+          {hasExpandableDock && (
+            <button
+              type="button"
+              onClick={() => setIsExpanded(true)}
+              className="p-1.5 rounded-xl bg-[var(--rule)]/70 text-[var(--ink-2)] hover:text-[var(--ink)] border border-[var(--rule)] cursor-pointer transition-all active:scale-95 flex items-center justify-center"
+              title={t('ui.timeline.espandiTimeline')}
+              aria-label={t('ui.timeline.espandiTimeline')}
+            >
+              <ChevronUp className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
     );
   }
 
-  // 3. MODALITA ESTESA (Full Timeline Scrubber 24h & Velocita)
+  // 3. MODALITA ESTESA (Pannello Edifici 3D e/o Scrubber 24h & Velocità solo con livelli Trasporti attivi)
   return (
     <div
       className="w-full glass-panel rounded-2xl p-3 sm:p-4 shadow-2xl flex flex-col gap-2.5 sm:gap-3 transition-all duration-200"
@@ -631,6 +951,23 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
 
         {/* Right Section: Share button, Desktop Day Selector, Collapse Button */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* Contextual Public Lighting Badge */}
+          {showPublicLighting && (() => {
+            const lStatus = getPublicLightingStatus(currentTimeSeconds);
+            return (
+              <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs font-mono animate-in fade-in duration-150">
+                <Lightbulb className={`w-3.5 h-3.5 shrink-0 ${lStatus.intensityFactor > 0 ? 'text-amber-400' : 'text-amber-400/50'}`} />
+                <span>
+                  {lStatus.state === 'day_off'
+                    ? t('ui.lighting.off', { time: lStatus.ignitionTime })
+                    : lStatus.state === 'night_active'
+                      ? t('ui.lighting.on', { time: lStatus.extinctionTime, count: lStatus.mappedCount })
+                      : t('ui.lighting.twilight', { pct: Math.round(lStatus.intensityFactor * 100) })}
+                </span>
+              </div>
+            );
+          })()}
+
           {renderShareButton()}
 
           {/* Desktop Day Selector (Contextual: visible only if ACTV GTFS layer is active) */}
@@ -654,182 +991,161 @@ export const TimelineControls: React.FC<TimelineControlsProps> = ({
             </div>
           )}
 
-          {/* Chevron Riduci (permette di comprimere la timeline sia su desktop che mobile) */}
+          {/* Chevron Riduci */}
           <button
             type="button"
             onClick={() => setIsExpanded(false)}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[var(--rule)]/70 text-[var(--ink-2)] hover:text-[var(--ink)] border border-[var(--rule)] text-xs font-mono cursor-pointer transition-all"
+            className="p-1.5 rounded-xl bg-[var(--rule)]/70 text-[var(--ink-2)] hover:text-[var(--ink)] border border-[var(--rule)] cursor-pointer transition-all active:scale-95 flex items-center justify-center"
             title={t('ui.timeline.riduciTimeline')}
             aria-label={t('ui.timeline.riduciTimeline')}
           >
             <ChevronDown className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline text-[11px] font-sans font-medium">{t('ui.timeline.riduciTimeline')}</span>
           </button>
         </div>
       </div>
 
-      {/* Middle row: Interactive Time Scrubber Slider (00:00 - 24:00) */}
-      <div className="flex flex-col gap-1">
-        {/* Intestazione di contesto marea se attiva senza flotta ACTV */}
-        {isTideActive && !isTransitActive && (
-          <div className="flex items-center justify-between text-[11px] font-mono text-[var(--ink-2)] px-1 mb-0.5">
-            <span className="flex items-center gap-1.5 font-medium text-[var(--ink)]">
-              <Waves className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-              <span>{t('ui.timeline.tideEvolution24h')}</span>
-              <span className="text-[var(--ink-3)] text-[10px] font-normal hidden sm:inline">
-                · {t('ui.timeline.tideEvolutionHint')}
-              </span>
-            </span>
-            {tideLevel !== null && tideLevel !== undefined ? (
-              <span className={`font-bold tabular ${tideLevel >= 80 ? 'text-amber-400' : 'text-sky-400'}`}>
-                {t(TIDE_LABEL[tideStatus?.levelSource ?? 'forecast'], { cm: tideLevel > 0 ? `+${tideLevel}` : `${tideLevel}` })}
-              </span>
-            ) : (
-              <span className="text-[var(--ink-3)]">{t('ui.timeline.tideNoData')}</span>
-            )}
-          </div>
-        )}
-        {isTideActive && tideStatus && (tideStatus.forecastStale || (tideStatus.moseStatus !== 'ABBASSATO' && tideStatus.levelSource !== 'simulated')) && (
-          <div className="text-[10px] font-mono px-1 mb-0.5 text-amber-400">
-            {tideStatus.moseStatus !== 'ABBASSATO' && tideStatus.levelSource !== 'simulated' && (
-              <span className="mr-3">{t(tideStatus.moseBasis === 'measured' ? 'ui.timeline.moseMeasured' : 'ui.timeline.moseForecast')}</span>
-            )}
-            {tideStatus.forecastStale && <span>{t('ui.timeline.tideForecastStale')}</span>}
-          </div>
-        )}
-        <div className="relative w-full py-1">
-          <input
-            type="range"
-            min={0}
-            max={1439}
-            step={1}
-            value={sliderValue}
-            onChange={(e) => onTimeChange(Number(e.target.value) * 60)}
-            className="w-full h-2 rounded-lg cursor-ew-resize appearance-none"
-            aria-label={t('ui.timeline.orarioGiorno')}
-          />
-        </div>
+      {/* Pannello Edifici 3D innestato direttamente nella dashboard/timeline */}
+      {renderBuildingsDock()}
 
-        {/* Ticks for 24h timeline */}
-        <div className="flex justify-between text-[10px] sm:text-[11px] font-mono text-[var(--ink-3)] px-1">
-          <span>00:00</span>
-          <span className="hidden sm:inline">04:00</span>
-          <span>08:00</span>
-          <span>12:00</span>
-          <span>16:00</span>
-          <span className="hidden sm:inline">20:00</span>
-          <span>24:00</span>
-        </div>
-      </div>
+      {/* Slider Orario 24h (00:00 - 24:00) e Velocità mostrati SOLO quando ci sono livelli Trasporti attivi */}
+      {showTransportScrubber && (
+        <>
+          <div className="flex flex-col gap-1">
+            <div className="relative w-full py-1">
+              <input
+                type="range"
+                min={0}
+                max={1439}
+                step={1}
+                value={sliderValue}
+                onChange={(e) => onTimeChange(Number(e.target.value) * 60)}
+                className="w-full h-2 rounded-lg cursor-ew-resize appearance-none"
+                aria-label={t('ui.timeline.orarioGiorno')}
+              />
+            </div>
 
-      {/* Bottom row: Speed Presets & Contextual Transit info */}
-      <div className="flex flex-col md:flex-row flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-[var(--rule)]/60 animate-in fade-in duration-150">
-        {/* Mobile Day Selector (Contextual: when expanded and ACTV layer is active) */}
-        {showVehicles && (
-          <div className="flex xl:hidden items-center justify-between w-full md:w-auto gap-2">
-            <span className="text-[11px] text-[var(--ink-3)] font-mono">{t('ui.timeline.giorno')}</span>
-            <div className="flex items-center gap-1 bg-[var(--rule)]/60 p-0.5 rounded-lg border border-[var(--rule)] flex-1 justify-end">
-              {(['weekday', 'saturday', 'sunday'] as DayType[]).map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => onDayChange(d)}
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
-                    selectedDay === d
-                      ? 'bg-cyan-500 text-white'
-                      : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
-                  }`}
-                >
-                  {dayLabels[d]}
-                </button>
-              ))}
+            {/* Ticks for 24h timeline */}
+            <div className="flex justify-between text-[10px] sm:text-[11px] font-mono text-[var(--ink-3)] px-1">
+              <span>00:00</span>
+              <span className="hidden sm:inline">04:00</span>
+              <span>08:00</span>
+              <span>12:00</span>
+              <span>16:00</span>
+              <span className="hidden sm:inline">20:00</span>
+              <span>24:00</span>
             </div>
           </div>
-        )}
 
-        {/* Playback orario 24h & Selettore Velocità (Raggruppati per il moto temporale) */}
-        <div className="flex items-center justify-between w-full md:w-auto gap-2">
-          <div className="flex items-center gap-1 bg-[var(--rule)]/60 p-0.5 rounded-lg border border-[var(--rule)] w-full md:w-auto justify-between md:justify-start">
-            <button
-              type="button"
-              onClick={onTogglePlay}
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-mono font-medium transition-all cursor-pointer ${
-                isPlaying
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
-                  : 'bg-cyan-500 text-white shadow-sm hover:bg-cyan-400'
-              }`}
-              title={isPlaying ? t('ui.timeline.pausaOrarioTooltip') : t('ui.timeline.avviaOrarioTooltip')}
-              aria-label={isPlaying ? t('ui.timeline.pausa') : t('ui.timeline.avvia')}
-            >
-              {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 fill-current" />}
-              <span className="text-[11px]">{isPlaying ? t('ui.timeline.pausa') : t('ui.timeline.avvia')}</span>
-            </button>
+          {/* Bottom row: Speed Presets & Contextual Transit info */}
+          <div className="flex flex-col md:flex-row flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-[var(--rule)]/60 animate-in fade-in duration-150">
+            {/* Mobile Day Selector (Contextual: when expanded and ACTV layer is active) */}
+            {showVehicles && (
+              <div className="flex xl:hidden items-center justify-between w-full md:w-auto gap-2">
+                <span className="text-[11px] text-[var(--ink-3)] font-mono">{t('ui.timeline.giorno')}</span>
+                <div className="flex items-center gap-1 bg-[var(--rule)]/60 p-0.5 rounded-lg border border-[var(--rule)] flex-1 justify-end">
+                  {(['weekday', 'saturday', 'sunday'] as DayType[]).map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => onDayChange(d)}
+                      className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                        selectedDay === d
+                          ? 'bg-cyan-500 text-white'
+                          : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+                      }`}
+                    >
+                      {dayLabels[d]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-            <div className="h-3.5 w-px bg-[var(--rule)] mx-0.5" />
+            {/* Playback orario 24h & Selettore Velocità (Raggruppati per il moto temporale dei trasporti) */}
+            <div className="flex items-center justify-between w-full md:w-auto gap-2">
+              <div className="flex items-center gap-1 bg-[var(--rule)]/60 p-0.5 rounded-lg border border-[var(--rule)] w-full md:w-auto justify-between md:justify-start">
+                <button
+                  type="button"
+                  onClick={onTogglePlay}
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-mono font-medium transition-all cursor-pointer ${
+                    isPlaying
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
+                      : 'bg-cyan-500 text-white shadow-sm hover:bg-cyan-400'
+                  }`}
+                  title={isPlaying ? t('ui.timeline.pausaOrarioTooltip') : t('ui.timeline.avviaOrarioTooltip')}
+                  aria-label={isPlaying ? t('ui.timeline.pausa') : t('ui.timeline.avvia')}
+                >
+                  {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 fill-current" />}
+                  <span className="text-[11px]">{isPlaying ? t('ui.timeline.pausa') : t('ui.timeline.avvia')}</span>
+                </button>
 
-            <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono px-1.5 hidden sm:inline">
-              {t('timeline.speed')}
-            </span>
-            {speedOptions.map((s) => (
-              <button
-                key={s.val}
-                type="button"
-                onClick={() => onSpeedChange(s.val)}
-                className={`px-2 py-0.5 rounded-md text-xs font-mono transition-all cursor-pointer ${
-                  speed === s.val
-                    ? 'bg-cyan-500 text-white font-semibold'
-                    : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
-                }`}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-        </div>
+                <div className="h-3.5 w-px bg-[var(--rule)] mx-0.5" />
 
-        {/* Contextual Metric or Urban Astronomical Footprint */}
-        {showVehicles ? (
-          <div className="flex items-center justify-between w-full md:w-auto text-[11px] sm:text-xs text-[var(--ink-2)] font-mono">
-            <span className="md:hidden">
-              {t('ui.timeline.corseOrario2')}{' '}
-              <strong className="text-emerald-400 tabular">{effectiveActv}</strong>
-            </span>
-            {peakCount !== undefined && peakTime && (
-              <span>
-                {t('ui.timeline.picco')}{' '}
-                <span className="text-cyan-400 font-bold tabular">{peakCount}</span>{' '}
-                {t('ui.timeline.corseAlle')}{' '}
-                <span className="text-[var(--ink)] font-bold tabular">{peakTime}</span>
-              </span>
+                <span className="text-[10px] text-[var(--ink-3)] uppercase font-mono px-1.5 hidden sm:inline">
+                  {t('timeline.speed')}
+                </span>
+                {speedOptions.map((s) => (
+                  <button
+                    key={s.val}
+                    type="button"
+                    onClick={() => onSpeedChange(s.val)}
+                    className={`px-2 py-0.5 rounded-md text-xs font-mono transition-all cursor-pointer ${
+                      speed === s.val
+                        ? 'bg-cyan-500 text-white font-semibold'
+                        : 'text-[var(--ink-2)] hover:text-[var(--ink)]'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Contextual Metric or Urban Astronomical Footprint */}
+            {showVehicles ? (
+              <div className="flex items-center justify-between w-full md:w-auto text-[11px] sm:text-xs text-[var(--ink-2)] font-mono">
+                <span className="md:hidden">
+                  {t('ui.timeline.corseOrario2')}{' '}
+                  <strong className="text-emerald-400 tabular">{effectiveActv}</strong>
+                </span>
+                {peakCount !== undefined && peakTime && (
+                  <span>
+                    {t('ui.timeline.picco')}{' '}
+                    <span className="text-cyan-400 font-bold tabular">{peakCount}</span>{' '}
+                    {t('ui.timeline.corseAlle')}{' '}
+                    <span className="text-[var(--ink)] font-bold tabular">{peakTime}</span>
+                  </span>
+                )}
+              </div>
+            ) : showAlilaguna ? (
+              <div className="flex items-center justify-between w-full md:w-auto text-[11px] sm:text-xs text-[var(--ink-2)] font-mono">
+                <span>
+                  {t('ui.timeline.flottaAlilaguna')}:{' '}
+                  <strong className="text-teal-400 tabular">{effectiveAli}</strong> {t('ui.timeline.battelliServizio')}
+                </span>
+              </div>
+            ) : showWind && windField ? (
+              <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--ink-2)] w-full md:w-auto animate-in fade-in duration-150">
+                <span className="text-[var(--ink-3)] uppercase font-semibold">{t('ui.timeline.windScale')}:</span>
+                <div
+                  className="w-24 sm:w-32 h-2 rounded-full border border-[var(--rule)]"
+                  style={{
+                    background: `linear-gradient(to right, ${WIND_COLOR_STOPS.filter(([s]) => s <= 25)
+                      .map(([s, [r, g, b]]) => `rgb(${r},${g},${b}) ${(s / 25) * 100}%`)
+                      .join(', ')})`,
+                  }}
+                />
+                <span className="text-[var(--ink-3)]">0–90 km/h</span>
+                <span className="text-[var(--ink-3)] hidden lg:inline">· {t('ui.mapLabels.windSource')}</span>
+              </div>
+            ) : (
+              <div className="hidden sm:flex items-center text-[11px] text-[var(--ink-3)] font-mono">
+                <span>45.437° N, 12.335° E · Laguna di Venezia</span>
+              </div>
             )}
           </div>
-        ) : showAlilaguna ? (
-          <div className="flex items-center justify-between w-full md:w-auto text-[11px] sm:text-xs text-[var(--ink-2)] font-mono">
-            <span>
-              {t('ui.timeline.flottaAlilaguna')}:{' '}
-              <strong className="text-teal-400 tabular">{effectiveAli}</strong> {t('ui.timeline.battelliServizio')}
-            </span>
-          </div>
-        ) : showWind && windField ? (
-          <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--ink-2)] w-full md:w-auto animate-in fade-in duration-150">
-            <span className="text-[var(--ink-3)] uppercase font-semibold">{t('ui.timeline.windScale')}:</span>
-            <div
-              className="w-24 sm:w-32 h-2 rounded-full border border-[var(--rule)]"
-              style={{
-                background: `linear-gradient(to right, ${WIND_COLOR_STOPS.filter(([s]) => s <= 25)
-                  .map(([s, [r, g, b]]) => `rgb(${r},${g},${b}) ${(s / 25) * 100}%`)
-                  .join(', ')})`,
-              }}
-            />
-            <span className="text-[var(--ink-3)]">0–90 km/h</span>
-            <span className="text-[var(--ink-3)] hidden lg:inline">· {t('ui.timeline.windForecastModel')}</span>
-          </div>
-        ) : (
-          <div className="hidden sm:flex items-center text-[11px] text-[var(--ink-3)] font-mono">
-            <span>45.437° N, 12.335° E · Laguna di Venezia</span>
-          </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 };

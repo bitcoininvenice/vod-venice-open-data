@@ -19,7 +19,7 @@ export type LayerIconName =
   | 'train' | 'trash' | 'car' | 'bike' | 'shieldAlert' | 'wind' | 'lifeBuoy' | 'trees' | 'layers'
   | 'droplets' | 'gitBranch' | 'flower' | 'thermometer' | 'pill' | 'heartPulse' | 'wifi' | 'cable'
   | 'recycle' | 'library' | 'zap' | 'construction' | 'sliders' | 'camera' | 'footprints' | 'landmark'
-  | 'bell' | 'satellite' | 'building' | 'dumbbell' | 'fuel';
+  | 'bell' | 'satellite' | 'building' | 'dumbbell' | 'fuel' | 'luggage' | 'lightbulb';
 
 export interface LayerEntry {
   key: LayerKey;
@@ -73,6 +73,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
           e('showLoraGateways', 'ui.layerPanel.loraGateways', 'radio', 'violet'),
           e('showRecyclingCentres', 'ui.layerPanel.recyclingCentres', 'recycle', 'green'),
           e('showLibraries', 'ui.layerPanel.libraries', 'library', 'violet'),
+          e('showPublicLighting', 'layers.layerPublicLighting', 'lightbulb', 'amber'),
           e('showEvCharging', 'layers.layerEvCharging', 'zap', 'amber'),
           e('showFuel', 'ui.layerPanel.fuel', 'fuel', 'emerald'),
           e('showCameras', 'layers.layerCameras', 'camera', 'cyan'),
@@ -93,6 +94,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
       {
         id: 'heritage', label: 'layers.subHeritage', icon: 'landmark', tone: 'amber',
         layers: [
+          e('showBuildings', 'ui.layerPanel.buildings', 'building', 'amber'),
           e('showNizioleti', 'layers.layerNizioleti', 'landmark', 'neutral'),
           e('showWells', 'layers.layerWells', 'landmark', 'amber'),
           e('showBellTowers', 'layers.layerBellTowers', 'bell', 'orange'),
@@ -102,7 +104,11 @@ export const LAYER_GROUPS: LayerGroup[] = [
         id: 'territory', label: 'ui.layerPanel.subTerritory', icon: 'building', tone: 'fuchsia',
         layers: [
           e('showSatellites', 'layers.layerSatellites', 'satellite', 'fuchsia'),
-          e('showAccommodations', 'layers.layerAccommodations', 'building', 'fuchsia'),
+          e('showRegisteredStays', 'layers.layerRegisteredStays', 'building', 'rose'),
+          e('showAccommodations', 'layers.layerAccommodations', 'building', 'rose'),
+          e('showTourismPressure', 'layers.layerTourismPressure', 'layers', 'fuchsia'),
+          e('showLuggages', 'ui.layerPanel.luggages', 'luggage', 'sky'),
+          e('showStreetPhotos', 'layers.layerStreetPhotos', 'camera', 'emerald'),
         ],
       },
     ],
@@ -122,6 +128,9 @@ export const LAYER_GROUPS: LayerGroup[] = [
           e('showStops', 'layers.layerStops', 'anchor', 'cyan'),
           e('showBusStops', 'ui.layerPanel.busStops', 'circleDot', 'blue'),
           e('showActvNotices', 'ui.layerPanel.actvNotices', 'shieldAlert', 'blue'),
+          e('showBusitalia', 'ui.layerPanel.busitalia', 'navigation', 'emerald'),
+          e('showAtvo', 'ui.layerPanel.atvo', 'navigation', 'sky'),
+          e('showDolomitibus', 'ui.layerPanel.dolomitibus', 'navigation', 'emerald'),
           e('showFlixbus', 'ui.layerPanel.flixbus', 'navigation', 'lime'),
           e('showAlilaguna', 'layers.layerAlilaguna', 'waves', 'blue'),
         ],
@@ -199,6 +208,7 @@ export const LAYER_GROUPS: LayerGroup[] = [
         id: 'environmentClimate', label: 'layers.subEnvironmentClimate', icon: 'trees', tone: 'emerald',
         layers: [
           e('showAirQuality', 'layers.layerAirQuality', 'wind', 'emerald'),
+          e('showSevesoPlants', 'layers.layerSevesoPlants', 'shieldAlert', 'amber'),
           e('showPollenStations', 'layers.layerPollenStations', 'flower', 'lime'),
           e('showTrees', 'layers.layerTrees', 'trees', 'emerald'),
           e('showHeatIslands', 'layers.layerHeatIslands', 'thermometer', 'orange'),

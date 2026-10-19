@@ -9,6 +9,8 @@ import { scheduledArrivals, scheduledDepartures } from './scheduledDepartures';
 import { ALILAGUNA_STOPS, type AlilagunaTripTimes } from './alilaguna-schedule';
 import { AIRPORT_DOCKS, AEROBUS_COLOR } from './airportPlanner';
 import { dayStart, FLIXBUS_COLOR, type FlixbusData } from './flixbus';
+import { ATVO_COLOR, type AtvoData } from './atvo';
+import { DOLOMITI_COLOR, type DolomitiData } from './dolomitibus';
 
 /** Fermata degli autobus ACTV all'aeroporto (GTFS «Aeroporto MARCO POLO») */
 const AIRPORT_BUS_STOP = { lon: 12.339084, lat: 45.504509 };
@@ -17,7 +19,7 @@ export const FLIX_AIRPORT_STOP = 'Venice (Marco Polo Airport)';
 export const BOARD_WINDOW_S = 90 * 60;
 
 export interface BoardRow {
-  kind: 'bus' | 'alilaguna' | 'flixbus';
+  kind: 'bus' | 'alilaguna' | 'flixbus' | 'atvo' | 'dolomitibus';
   line: string;
   color: string | null;
   /** destinazione (partenze) o provenienza (arrivi) */
@@ -46,12 +48,17 @@ interface BoardInput {
   nowS: number;
   alilaguna: AlilagunaTripTimes[];
   flixbus: FlixbusData | null;
+  atvo?: AtvoData | null;
+  dolomitibus?: DolomitiData | null;
   /** destinazione di una linea quando il capolinea è fuori dalla mappa (nome lungo della linea) */
   lineName?: (line: string) => string | null;
   windowS?: number;
 }
 
-export function airportBoard({ sim, day, nextDay, nowMs, nowS, alilaguna, flixbus, lineName, windowS = BOARD_WINDOW_S }: BoardInput): AirportBoard {
+/** Fermata dell'aeroporto negli orari ATVO e Dolomiti Bus */
+const AIRPORT_STOP = /aeroporto|airport|marco polo/i;
+
+export function airportBoard({ sim, day, nextDay, nowMs, nowS, alilaguna, flixbus, atvo, dolomitibus, lineName, windowS = BOARD_WINDOW_S }: BoardInput): AirportBoard {
   const departures: BoardRow[] = [];
   const arrivals: BoardRow[] = [];
   const at = (s: number) => nowMs + (s - nowS) * 1000;
@@ -89,6 +96,26 @@ export function airportBoard({ sim, day, nextDay, nowMs, nowS, alilaguna, flixbu
         const arr = base + stop[1] * 1000;
         if (trip.to !== FLIX_AIRPORT_STOP && dep >= nowMs && dep <= end) departures.push({ kind: 'flixbus', line: trip.line, color: FLIXBUS_COLOR, place: trip.to, at: dep });
         if (trip.from !== FLIX_AIRPORT_STOP && arr >= nowMs && arr <= end) arrivals.push({ kind: 'flixbus', line: trip.line, color: FLIXBUS_COLOR, place: trip.from, at: arr });
+      }
+    }
+  }
+
+  // ATVO e Dolomiti Bus: orari in UTC per data di servizio, come FlixBus
+  const coaches: [AtvoData | DolomitiData | null | undefined, 'atvo' | 'dolomitibus', string, string][] = [
+    [atvo, 'atvo', 'ATVO', ATVO_COLOR],
+    [dolomitibus, 'dolomitibus', 'Dolomiti Bus', DOLOMITI_COLOR],
+  ];
+  for (const [data, kind, label, color] of coaches) {
+    for (const trip of data?.trips ?? []) {
+      const i = trip.stops.findIndex((s) => AIRPORT_STOP.test(s[3]));
+      if (i < 0) continue;
+      const stop = trip.stops[i];
+      for (const ymd of trip.dates) {
+        const base = dayStart(ymd);
+        const dep = base + stop[2] * 1000;
+        const arr = base + stop[1] * 1000;
+        if (i < trip.stops.length - 1 && dep >= nowMs && dep <= end) departures.push({ kind, line: `${label} ${trip.line}`, color, place: trip.to, at: dep });
+        if (i > 0 && arr >= nowMs && arr <= end) arrivals.push({ kind, line: `${label} ${trip.line}`, color, place: trip.from, at: arr });
       }
     }
   }

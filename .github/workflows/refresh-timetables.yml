@@ -1,0 +1,44 @@
+name: Orari dei bus dai PDF
+
+# Ogni giorno controlla i PDF degli orari ATVO (35, 35B) e Dolomiti Bus (72): se sono cambiati, o se le date
+# coperte stanno finendo, rigenera i file e apre una pull request da revisionare. Altrimenti non fa nulla.
+on:
+  schedule:
+    - cron: '30 5 * * *' # ogni giorno alle 05:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  timetables:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: pipeline/requirements-dev.txt
+      - run: pip install -r pipeline/requirements-dev.txt
+      - name: Orari ATVO e Dolomiti Bus
+        working-directory: pipeline
+        run: |
+          python import_atvo.py || echo "::warning::orari ATVO non aggiornati"
+          python import_dolomitibus.py || echo "::warning::orario Dolomiti Bus non aggiornato"
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: data/timetables
+          delete-branch: true
+          commit-message: 'Orari: ATVO e Dolomiti Bus dai PDF ufficiali'
+          title: 'Orari ATVO e Dolomiti Bus aggiornati'
+          body: |
+            Il workflow `refresh-timetables` ha trovato PDF degli orari cambiati, o date in esaurimento, e ha rigenerato
+            `web/src/data/atvo-venezia.json` e/o `web/src/data/dolomitibus-venezia.json`.
+            Controllare nel diff le eventuali segnalazioni in `warnings` (orari fuori sequenza o sigle non spiegate nel PDF).
+          add-paths: |
+            web/src/data/atvo-venezia.json
+            web/src/data/dolomitibus-venezia.json
+          labels: data

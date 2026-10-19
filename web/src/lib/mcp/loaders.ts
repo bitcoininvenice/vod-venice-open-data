@@ -38,9 +38,28 @@ import { romeToday } from '@/lib/time';
 import { GET as healthGET } from '@/app/api/health/route';
 import tourism from '@/data/turismo-comuni.json';
 import cruscotto from '@/data/cruscotto-comuni.json';
+import bdsrData from '@/data/bdsr-cin-veneto.json';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { canalLengthMeters } from '@/lib/lagoonNetwork';
 import { fiberCellBounds, fiberOperators } from '@/lib/fiber';
 import { GET as fuelGET } from '@/app/api/carburanti/route';
+import { BUILDINGS_AUDIT_STATS, BUILDINGS_URL } from '@/lib/buildings-data';
+import { CPSM_HISTORICAL_EXCEPTIONAL_TIDES } from '@/lib/historicalTides';
+import { GRID } from '@/lib/simulation-data';
+import type { RawBuildingItem } from '@/components/map/buildingsLayer';
+
+let cachedBuildingsPromise: Promise<LoadedDataset> | null = null;
+
+function epochLabelForYear(y?: number): string | null {
+  if (!y || y <= 0) return null;
+  if (y < 1400) return 'pre-1400 (Origini–Trecento)';
+  if (y < 1600) return '1400–1599 (Rinascimento)';
+  if (y < 1800) return '1600–1799 (Barocco–Settecento)';
+  if (y < 1900) return '1800–1899 (Ottocento)';
+  if (y < 1950) return '1900–1949 (Primo Novecento)';
+  return 'post-1950 (Secondo Novecento–Oggi)';
+}
 
 /**
  * Per ogni dataset del catalogo MCP: richiama l'endpoint del sito (stessa cache, stessa logica)
@@ -70,7 +89,15 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
     const d = (j.data ?? {}) as Row;
     return {
       items: asRows(d.stations),
-      meta: { reference: d.reference, category: d.category, trend: d.trend, forecast: d.forecast, moseGates: asRows(d.moseGates).length, sources: j.meta },
+      meta: {
+        reference: d.reference,
+        category: d.category,
+        trend: d.trend,
+        forecast: d.forecast,
+        moseGates: asRows(d.moseGates).length,
+        historicalExceptionalTides: CPSM_HISTORICAL_EXCEPTIONAL_TIDES,
+        sources: j.meta,
+      },
     };
   },
   weather_stations: async () => {
@@ -130,7 +157,11 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   bus_stops: async () => ({ items: asRows(busStopsData.stops), meta: { source: busStopsData.source, license: busStopsData.license, generatedAt: busStopsData.generatedAt } }),
   realtime_vehicles: async () => {
     const j = await read(vehiclesGET());
-    return { items: asRows(j.data), meta: j.meta as Row };
+    // solo ACTV: i bus Busitalia arrivano da BusOne, le cui condizioni non coprono la ridistribuzione via MCP
+    const actv = asRows(j.data).filter((v) => v.operator !== 'Busitalia Veneto');
+    const meta = { ...(j.meta as Row) };
+    delete meta.busitaliaSource;
+    return { items: actv, meta };
   },
   alilaguna_boats: async () => {
     const j = await read(alilagunaGET());
@@ -262,10 +293,88 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
     return { items, meta: j.meta as Row };
   },
   tourism: async () => ({ items: tourism.comuni as unknown as Row[], meta: { year: tourism.tourismYear, populationDate: tourism.populationDate, source: tourism.source } }),
+  accommodations: async () => {
+    const j = await read(regionalGET());
+    return {
+      items: asRows(field(j.data, 'accommodations')),
+      meta: {
+        ...(j.accommodationsSource as Row),
+        summary: field(j.data, 'accommodationsSummary'),
+      },
+    };
+  },
+  bdsr_cin: async () => ({
+    items: bdsrData.metropolitanMunicipalities as unknown as Row[],
+    meta: {
+      metadata: bdsrData.metadata,
+      venetoRegion: bdsrData.venetoRegion,
+      veneziaMunicipality: bdsrData.veneziaMunicipality,
+    },
+  }),
   municipal_profile: async () => ({
     items: cruscotto.comuni as unknown as Row[],
     meta: { source: cruscotto.source, sourceUrl: cruscotto.sourceUrl, license: cruscotto.license, retrievedAt: cruscotto.generatedAt },
   }),
+  buildings: async () => {
+    cachedBuildingsPromise ??= readFile(path.join(process.cwd(), 'public', BUILDINGS_URL), 'utf8').then((rawText) => {
+      const parsed = JSON.parse(rawText) as { buildings?: RawBuildingItem[]; audit?: Row };
+      const rawItems = parsed.buildings ?? [];
+      const [LON0, LON1, LAT0, LAT1] = GRID.frame;
+      const items: Row[] = [];
+      for (const b of rawItems) {
+        // Espone tutti gli edifici catalogati (con nome, data storica, autore '900 o QID Wikidata)
+        if (!b.n && !b.y && !b.cy && !b.ar && !b.w) continue;
+        const firstRing = b.r?.[0];
+        let cx = 0;
+        let cy = 0;
+        if (firstRing && firstRing.length >= 2) {
+          let x = 0;
+          let y = 0;
+          let count = 0;
+          for (let i = 0; i < firstRing.length; i += 2) {
+            x += firstRing[i];
+            y += firstRing[i + 1];
+            cx += x / 10;
+            cy += y / 10;
+            count++;
+          }
+          if (count > 0) {
+            cx /= count;
+            cy /= count;
+          }
+        }
+        const lon = +(LON0 + (cx / GRID.W) * (LON1 - LON0)).toFixed(5);
+        const lat = +(LAT1 - (cy / GRID.H) * (LAT1 - LAT0)).toFixed(5);
+        items.push({
+          name: b.n ?? null,
+          sestiere: b.s ?? null,
+          category: b.c ?? 'residential',
+          year: b.y && b.y > 0 ? b.y : null,
+          yearPrecision: b.yp ?? null,
+          yearSource: b.ys ?? null,
+          epoch: epochLabelForYear(b.y ?? b.cy),
+          architect: b.ar ?? null,
+          contemporaryYear: b.cy && b.cy > 0 ? b.cy : null,
+          contemporaryType: b.ct ?? null,
+          contemporarySource: b.cs ?? null,
+          style: b.st ?? null,
+          levels: b.l && b.l > 0 ? b.l : null,
+          heightM: b.h && b.h > 0 ? b.h : null,
+          wikidataId: b.w ?? null,
+          lat,
+          lon,
+        });
+      }
+      return {
+        items,
+        meta: {
+          audit: parsed.audit ?? BUILDINGS_AUDIT_STATS,
+          note: 'Voci catalogate con nome, anno di costruzione o progettista. Nel riepilogo audit figurano anche i corpi di fabbrica residenziali anonimi privi di datazione in open data.',
+        },
+      };
+    });
+    return cachedBuildingsPromise;
+  },
   sources_status: async () => {
     const j = await read(healthGET());
     return { items: asRows(j.sources), meta: { status: j.status, checkedAt: j.checkedAt } };

@@ -38,6 +38,21 @@ describe('applyQuery', () => {
     expect(distanceMeters(45.4341, 12.3388, 45.438, 12.3358)).toBeGreaterThan(450);
     expect(distanceMeters(45.4341, 12.3388, 45.438, 12.3358)).toBeLessThan(520);
   });
+
+  it('filtra gli edifici per epoca (minYear / maxYear) e per architetto', () => {
+    const buildings = [
+      { name: 'Palazzo Ducale', year: 1340, architect: null },
+      { name: "Ca' d'Oro", year: 1421, architect: null },
+      { name: 'Fondazione Querini Stampalia', year: 1528, contemporaryYear: 1963, architect: 'Carlo Scarpa' },
+      { name: 'Negozio Olivetti', year: 1538, contemporaryYear: 1958, architect: 'Carlo Scarpa' },
+      { name: 'Casa alle Zattere', year: 1958, contemporaryYear: 1958, architect: 'Ignazio Gardella' },
+    ];
+    const pre1500 = applyQuery(buildings, { maxYear: 1499, limit: 10, offset: 0 });
+    expect(pre1500.items.map((b) => b.name)).toEqual(['Palazzo Ducale', "Ca' d'Oro"]);
+
+    const scarpa = applyQuery(buildings, { text: 'Carlo Scarpa', limit: 10, offset: 0 });
+    expect(scarpa.items.map((b) => b.name)).toEqual(['Fondazione Querini Stampalia', 'Negozio Olivetti']);
+  });
 });
 
 describe('catalogo MCP', () => {
