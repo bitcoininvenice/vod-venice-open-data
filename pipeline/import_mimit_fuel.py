@@ -134,15 +134,46 @@ def parse_fuel(stations_csv: str, prices_csv: str, min_stations_italy: int = MIN
     }
 
 
+def reprice(existing: dict, prices_csv: str) -> dict:
+    """
+    Solo il file dei prezzi (es. scaricato a mano): si tengono i distributori dell'ultimo file salvato (anagrafica
+    già filtrata per l'area) e si sostituiscono i prezzi con quelli nuovi.
+    """
+    stations = {s["id"]: {**s, "prices": []} for s in existing.get("stations", []) + existing.get("listedWithoutPrices", [])}
+    for r in rows(prices_csv):
+        s = stations.get(r.get("idImpianto", ""))
+        try:
+            price = float(r.get("prezzo", ""))
+        except ValueError:
+            continue
+        if not s or not r.get("descCarburante") or price <= 0:
+            continue
+        s["prices"].append({"fuel": r["descCarburante"], "self": r.get("isSelf") == "1", "price": price,
+                            "communicatedAt": communicated_at(r.get("dtComu", ""))})
+    every = sorted(stations.values(), key=lambda s: -s["lat"])
+    for s in every:
+        s["prices"].sort(key=lambda p: (p["fuel"], not p["self"]))
+    return {
+        "extractedAt": extraction_date(prices_csv),
+        "stationsItaly": existing.get("stationsItaly"),
+        "stations": [s for s in every if s["prices"]],
+        "listedWithoutPrices": [s for s in every if not s["prices"]],
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Prezzi dei carburanti MIMIT per l'area della mappa")
     ap.add_argument("--file-stations", help="anagrafica_impianti_attivi.csv locale")
     ap.add_argument("--file-prices", help="prezzo_alle_8.csv locale")
     args = ap.parse_args()
     try:
-        stations_csv = open(args.file_stations, encoding="utf-8", errors="replace").read() if args.file_stations else download_csv(STATIONS_URL)
         prices_csv = open(args.file_prices, encoding="utf-8", errors="replace").read() if args.file_prices else download_csv(PRICES_URL)
-        data = parse_fuel(stations_csv, prices_csv)
+        if args.file_prices and not args.file_stations and os.path.exists(OUT_PATH):
+            # solo i prezzi: distributori dell'ultimo file salvato
+            data = reprice(json.load(open(OUT_PATH, encoding="utf-8")), prices_csv)
+        else:
+            stations_csv = open(args.file_stations, encoding="utf-8", errors="replace").read() if args.file_stations else download_csv(STATIONS_URL)
+            data = parse_fuel(stations_csv, prices_csv)
     except Exception as exc:  # noqa: BLE001 - qualsiasi errore lascia il file precedente
         logging.error("Prezzi MIMIT non aggiornati: %s", exc)
         return 1

@@ -157,3 +157,12 @@ def test_airbnb_niente_punti_isolati():
 def test_mimit_ora_di_venezia_in_utc():
     assert mimit.communicated_at("16/01/2026 07:30:00") == "2026-01-16T06:30:00.000Z"
     assert mimit.communicated_at("16/07/2026 07:30:00") == "2026-07-16T05:30:00.000Z"
+
+
+def test_mimit_solo_prezzi_con_i_distributori_salvati():
+    existing = {"stationsItaly": 23000, "stations": [{"id": "1", "lat": 45.4, "lon": 12.3, "prices": [{"fuel": "Benzina", "self": True, "price": 2.0, "communicatedAt": None}]}], "listedWithoutPrices": [{"id": "2", "lat": 45.5, "lon": 12.2, "prices": []}]}
+    csv_text = "Estrazione del 2026-10-19\nidImpianto|descCarburante|prezzo|isSelf|dtComu\n2|Benzina|1.9|1|19/10/2026 07:00:00\n99|Benzina|1.5|1|19/10/2026 07:00:00\n"
+    d = mimit.reprice(existing, csv_text)
+    assert d["extractedAt"] == "2026-10-19"
+    assert [s["id"] for s in d["stations"]] == ["2"]  # solo i distributori dell'area, con i prezzi nuovi
+    assert [s["id"] for s in d["listedWithoutPrices"]] == ["1"]
