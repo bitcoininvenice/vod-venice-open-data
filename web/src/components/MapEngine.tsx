@@ -1609,6 +1609,8 @@ export const MapEngine: React.FC<MapEngineProps> = ({
           © OpenStreetMap contributors
         </a>
         {' · '}
+        <a href={isIt ? '/guide' : '/en/guides'} className="hover:text-cyan-400">{tr('ui.mapLabels.guides')}</a>
+        {' · '}
         <a href="/sources" className="hover:text-cyan-400">{tr('ui.mapLabels.allSources')}</a>
         {' · '}
         <a href="/privacy" className="hover:text-cyan-400">{tr('ui.mapLabels.privacy')}</a>

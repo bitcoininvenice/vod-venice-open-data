@@ -9,7 +9,7 @@ import "@fontsource/dm-mono/latin-400.css";
 import "@fontsource/dm-mono/latin-500.css";
 import "./globals.css";
 import { SITE_DESCRIPTION, SITE_NAME, jsonLd } from "@/lib/seo";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, SOURCE_CODE_URL } from "@/lib/site";
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
@@ -72,13 +72,18 @@ export const metadata: Metadata = {
       "max-snippet": -1
     }
   },
-  category: "technology"
+  category: "travel",
+  // Verifica della proprietà in Google Search Console e Bing Webmaster Tools (variabili del progetto su Vercel)
+  verification: {
+    ...(process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : {}),
+    ...(process.env.BING_SITE_VERIFICATION ? { other: { 'msvalidate.01': process.env.BING_SITE_VERIFICATION } } : {}),
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // Nessun maximumScale: lo zoom del browser resta disponibile (accessibilità); la mappa gestisce da sé i gesti
   themeColor: [
     { media: "(prefers-color-scheme: dark)", color: "#090d16" },
     { media: "(prefers-color-scheme: light)", color: "#f8fafc" }
@@ -86,7 +91,6 @@ export const viewport: Viewport = {
 };
 
 import { THEME_BOOT_SCRIPT } from '@/lib/themeBoot';
-import { LanguageProvider } from "@/lib/i18n";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
 export default function RootLayout({
@@ -110,9 +114,27 @@ export default function RootLayout({
           dangerouslySetInnerHTML={jsonLd({
             '@context': 'https://schema.org',
             '@graph': [
-              { '@type': 'WebSite', '@id': `${SITE_URL}/#website`, url: SITE_URL, name: SITE_NAME, description: SITE_DESCRIPTION, inLanguage: ['it', 'en'] },
+              {
+                '@type': 'Organization',
+                '@id': `${SITE_URL}/#organization`,
+                name: SITE_NAME,
+                url: SITE_URL,
+                logo: `${SITE_URL}/icon-512.png`,
+                sameAs: [SOURCE_CODE_URL],
+              },
+              {
+                '@type': 'WebSite',
+                '@id': `${SITE_URL}/#website`,
+                url: SITE_URL,
+                name: SITE_NAME,
+                description: SITE_DESCRIPTION,
+                inLanguage: ['it', 'en'],
+                publisher: { '@id': `${SITE_URL}/#organization` },
+              },
               {
                 '@type': 'WebApplication',
+                '@id': `${SITE_URL}/#app`,
+                publisher: { '@id': `${SITE_URL}/#organization` },
                 name: SITE_NAME,
                 url: SITE_URL,
                 description: SITE_DESCRIPTION,
@@ -132,11 +154,10 @@ export default function RootLayout({
             ],
           })}
         />
-        <LanguageProvider>
-          <ServiceWorkerRegister />
-          {children}
-          <Analytics />
-        </LanguageProvider>
+        {/* LanguageProvider sta in (mappa)/layout.tsx: le guide non scaricano il dizionario della mappa */}
+        <ServiceWorkerRegister />
+        {children}
+        <Analytics />
       </body>
     </html>
   );

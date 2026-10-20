@@ -1575,6 +1575,7 @@ export const itUi = {
   },
   mapLabels: {
     privacy: "Privacy",
+    guides: "Guide",
     sourceCode: "Codice",
     allSources: "Fonti dei dati",
     offshorePlatform: "Piattaforma CNR",

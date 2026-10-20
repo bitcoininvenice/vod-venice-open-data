@@ -62,7 +62,10 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="min-[400px]:hidden md:inline xl:hidden" aria-hidden>VOD</span>
               <span className="hidden min-[400px]:inline md:hidden xl:inline">{t('header.title')}</span>
               <span className="sr-only min-[400px]:hidden md:inline xl:hidden">{t('header.title')}</span>
+              {/* Per lettori di schermo e motori di ricerca: cosa è la pagina, oltre al marchio */}
+              <span className="sr-only"> – {t('header.seoTagline')}</span>
             </h1>
+            <p className="sr-only">{t('header.seoIntro')}</p>
           </div>
         </div>
 

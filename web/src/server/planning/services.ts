@@ -90,7 +90,8 @@ function itineraryOut(it: Itinerary, profile: FareProfile = 'ordinary') {
     minutes: minutes(it.arrive - it.depart),
     vehicles: it.rides,
     changes: Math.max(0, it.rides - 1),
-    lines: rides.map((l) => (l.kind === 'ride' ? `${l.operator && l.operator !== 'ACTV' ? `${l.operator} ` : ''}${l.line}` : '')),
+    // «ATVO 35», «FlixBus 466»: il nome dell'operatore è già nella linea, non si ripete
+    lines: rides.map((l) => (l.kind === 'ride' ? `${l.operator && l.operator !== 'ACTV' && !l.line.startsWith(l.operator) ? `${l.operator} ` : ''}${l.line}` : '')),
     walkMeters: Math.round(it.walkMeters),
     emissions,
     ...(it.via

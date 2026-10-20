@@ -6,6 +6,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
+      // /embed/: riquadri da incorporare, già marcati noindex; restano visitabili per seguire i link
       disallow: ['/api/']
     },
     sitemap: `${SITE_URL}/sitemap.xml`

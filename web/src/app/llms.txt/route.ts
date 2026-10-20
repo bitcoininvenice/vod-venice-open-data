@@ -20,6 +20,8 @@ export function GET() {
     `- [Metriche](${SITE}/metrics): indicatori calcolati, con la base di calcolo dichiarata.`,
     `- [Stato delle fonti](${SITE}/sources): disponibilità e freschezza di ogni fonte.`,
     `- [Collega la tua AI](${SITE}/mcp): istruzioni per usare VOD da Claude, ChatGPT, Cursor.`,
+    `- [Guide](${SITE}/guide) ([English](${SITE}/en/guides)): marea a Venezia oggi, vaporetti in tempo reale, come arrivare ai luoghi principali (percorsi calcolati dall'orario), FAQ e glossario.`,
+    `- [Marea a Venezia oggi](${SITE}/marea-venezia): livello a Punta della Salute, previsione, soglie dell'acqua alta.`,
     '',
     '## Accesso per AI (MCP)',
     '',

@@ -12,6 +12,8 @@ export const itTranslations: Translations = {
   },
   header: {
     title: 'Venice Open Data',
+    seoTagline: 'mappa interattiva di Venezia',
+    seoIntro: 'Mappa interattiva gratuita di Venezia e della laguna con dati aperti: vaporetti ACTV in tempo reale con i ritardi, marea e acqua alta, come arrivare a piedi e in vaporetto, numeri civici e decine di livelli di dati, ognuno con fonte e licenza.',
     viewLagoon: 'Laguna',
     viewVenice: 'Venezia',
     viewMestre: 'Mestre',

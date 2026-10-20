@@ -13,6 +13,8 @@ export interface Translations {
   };
   header: {
     title: string;
+    seoTagline: string;
+    seoIntro: string;
     viewLagoon: string;
     viewVenice: string;
     viewMestre: string;

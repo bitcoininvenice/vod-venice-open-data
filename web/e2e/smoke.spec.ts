@@ -1866,3 +1866,61 @@ test.describe('API', () => {
     expect(cachedRes.headers()['x-ratelimit-remaining']).toBeUndefined();
   });
 });
+
+test('guide SEO: HTML già completo con titolo, hreflang, breadcrumb e invito alla mappa', async ({ page }) => {
+  for (const [path, h1, alt] of [
+    ['/marea-venezia', /marea a venezia oggi/i, '/en/venice-tide'],
+    ['/vaporetti-tempo-reale', /vaporetti actv in tempo reale/i, '/en/vaporetto-live'],
+    ['/come-arrivare/ponte-di-rialto', /come arrivare al ponte di rialto/i, '/en/getting-to/rialto-bridge'],
+    ['/en/getting-to/marco-polo-airport', /how to get to marco polo airport/i, '/come-arrivare/aeroporto-marco-polo'],
+    ['/faq', /domande frequenti/i, '/en/faq'],
+    ['/glossario', /glossario di venezia/i, '/en/glossary'],
+  ] as const) {
+    // L'HTML del server contiene già il testo: niente JavaScript necessario per i motori di ricerca
+    const res = await page.request.get(path);
+    expect(res.status(), path).toBe(200);
+    const html = await res.text();
+    expect(html, path).toMatch(new RegExp(`hrefLang="${alt.startsWith('/en') ? 'en' : 'it'}" href="[^"]*${alt}"`));
+    expect(html, path).toContain('"BreadcrumbList"');
+    expect(html, path).toMatch(/<meta property="og:image" content="[^"]+\/opengraph-image"/);
+    await page.goto(path);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(h1);
+    await expect(page.getByRole('link', { name: /apri la mappa|open the map/i }).first()).toBeVisible();
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(scrollWidth, path).toBeLessThanOrEqual(page.viewportSize()!.width);
+  }
+});
+
+test('guida «come arrivare»: percorsi calcolati dal planner e link al percorso sulla mappa', async ({ page }) => {
+  await page.goto('/come-arrivare/burano');
+  const routes = page.getByTestId('guide-routes');
+  await expect(routes.getByRole('heading', { name: /da stazione di venezia santa lucia/i })).toBeVisible();
+  await expect(routes).toContainText(/\d+ min/);
+  await expect(routes).toContainText(/12/); // la linea 12 arriva a Burano
+  const link = routes.getByRole('link', { name: /apri questo percorso/i }).first();
+  await expect(link).toHaveAttribute('href', /^\/\?open=planner&/);
+});
+
+test('FAQ con dati strutturati e guide raggiungibili dalla mappa', async ({ page, isMobile }) => {
+  const html = await (await page.request.get('/faq')).text();
+  expect(html).toContain('"FAQPage"');
+  expect((await page.request.get('/en', { maxRedirects: 0 })).status()).toBe(308);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/mappa interattiva di venezia/i);
+  if (isMobile) return; // l'attribuzione è la stessa, su mobile è parzialmente coperta dai controlli
+  await page.getByTestId('map-attribution').getByRole('link', { name: 'Guide' }).click();
+  await expect(page).toHaveURL(/\/guide$/);
+});
+
+test('riquadro della marea incorporabile solo su /embed, il resto del sito no', async ({ request }) => {
+  const embed = await request.get('/embed/marea');
+  expect(embed.status()).toBe(200);
+  expect(embed.headers()['content-security-policy']).toContain('frame-ancestors *');
+  expect(embed.headers()['x-frame-options']).toBeUndefined();
+  expect(await embed.text()).toContain('noindex');
+  for (const path of ['/', '/marea-venezia']) {
+    const res = await request.get(path);
+    expect(res.headers()['content-security-policy'], path).toContain("frame-ancestors 'none'");
+    expect(res.headers()['x-frame-options'], path).toBe('DENY');
+  }
+});

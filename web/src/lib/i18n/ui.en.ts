@@ -1577,6 +1577,7 @@ export const enUi: UiTranslations = {
   },
   mapLabels: {
     privacy: "Privacy",
+    guides: "Guides",
     sourceCode: "Code",
     allSources: "Data sources",
     offshorePlatform: "CNR platform",

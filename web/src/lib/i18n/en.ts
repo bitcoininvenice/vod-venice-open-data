@@ -12,6 +12,8 @@ export const enTranslations: Translations = {
   },
   header: {
     title: 'Venice Open Data',
+    seoTagline: 'interactive map of Venice',
+    seoIntro: 'Free interactive map of Venice and its lagoon built on open data: live ACTV waterbuses with delays, tide and high water, walking and waterbus directions, house numbers and dozens of data layers, each with its source and licence.',
     viewLagoon: 'Lagoon',
     viewVenice: 'Venice',
     viewMestre: 'Mestre',
