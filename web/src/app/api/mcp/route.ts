@@ -17,6 +17,8 @@ let inFlight = 0;
 const handler = createMcpHandler(() => createVodMcpServer(), {
   legacy: 'stateless',
   responseMode: 'json',
+  // L'SDK misura il corpo anche mentre arriva: copre le richieste senza Content-Length
+  maxRequestBodySize: MAX_REQUEST_BYTES,
   onerror: (error) => console.warn('[mcp]', error.message),
 });
 

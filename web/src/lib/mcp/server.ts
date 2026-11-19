@@ -29,9 +29,16 @@ function textResult(payload: unknown) {
   return { content: [{ type: 'text' as const, text: JSON.stringify(payload) }] };
 }
 
+/** Somma di elementi di array e campi di oggetto ammessa negli argomenti di una chiamata a un tool. */
+export const MAX_TOOL_INPUT_ELEMENTS = 100;
+
 /** Nuova istanza per ogni richiesta (server stateless). */
 export function createVodMcpServer(): McpServer {
-  const server = new McpServer({ name: 'vod-venice-open-data', version: '1.0.0' }, { instructions: INSTRUCTIONS });
+  // Gli argomenti dei tool sono pochi campi semplici: il limite blocca input enormi prima della validazione
+  const server = new McpServer(
+    { name: 'vod-venice-open-data', version: '1.0.0' },
+    { instructions: INSTRUCTIONS, maxToolInputElements: MAX_TOOL_INPUT_ELEMENTS },
+  );
 
   server.registerTool(
     'list_datasets',
