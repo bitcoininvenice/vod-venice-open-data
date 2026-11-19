@@ -1199,6 +1199,14 @@ test('la pagina Collega la tua AI mostra l\'indirizzo del server MCP', async ({ 
   await expect(page.getByRole('heading', { level: 1, name: /collega la tua ai/i })).toBeVisible();
   await expect(page.getByText('https://venice-open-data.vercel.app/api/mcp', { exact: true }).first()).toBeVisible();
   await expect(page.getByRole('link', { name: /scarica la skill/i })).toBeVisible();
+  await expect(page.getByRole('img', { name: /codice qr del server mcp/i })).toBeVisible();
+});
+
+test('il QR del server MCP è un SVG servito dalla CDN', async ({ request }) => {
+  const res = await request.get('/mcp/qr.svg');
+  expect(res.ok()).toBe(true);
+  expect(res.headers()['content-type']).toContain('image/svg+xml');
+  expect(await res.text()).toMatch(/^<svg/);
 });
 
 test('llms.txt descrive il sito e il server MCP', async ({ request }) => {

@@ -15,6 +15,12 @@ export const SITE_URL = (
 export const MCP_ENDPOINT = `${SITE_URL}/api/mcp`;
 
 /**
+ * Indirizzo nel QR della pagina /mcp: le app che aggiungono un connettore lo usano come server MCP
+ * (POST /mcp è un alias di /api/mcp), la fotocamera del telefono apre la pagina con le istruzioni.
+ */
+export const MCP_QR_URL = `${SITE_URL}/mcp`;
+
+/**
  * Codice sorgente del sito. La licenza AGPL-3.0 chiede che chi offre il programma in rete ne indichi il codice:
  * chi pubblica una versione modificata imposta qui (o in NEXT_PUBLIC_SOURCE_URL) il proprio repository.
  */

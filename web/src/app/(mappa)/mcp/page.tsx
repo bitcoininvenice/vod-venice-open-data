@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Bot, Check, Copy, Database, Download, Link2, ShieldCheck, Terminal } from 'lucide-react';
+import { Bot, Check, Copy, Database, Download, Link2, QrCode, ShieldCheck, Terminal } from 'lucide-react';
 import { SiteFooter, SiteHeader } from '@/components/site/SiteChrome';
 import { useTranslation } from '@/lib/i18n';
 import { copyToClipboard } from '@/lib/dataExport';
 import { MCP_DATASETS, MCP_RELATED_SERVICES, type McpDatasetKind } from '@/lib/mcp/catalog';
-import { MCP_ENDPOINT, SITE_URL } from '@/lib/site';
+import { MCP_ENDPOINT, MCP_QR_URL, SITE_URL } from '@/lib/site';
 
 const SKILL_ZIP = `${SITE_URL}/downloads/venice-open-data-skill.zip`;
 
@@ -68,10 +68,27 @@ export default function McpPage() {
           <p className="text-sm text-[var(--ink-2)] max-w-3xl leading-relaxed">{p('intro', { n: MCP_DATASETS.length })}</p>
         </section>
 
-        <section className="flex flex-col gap-2">
-          <h2 className="text-sm font-bold uppercase font-mono text-[var(--ink-3)]">{p('endpointTitle')}</h2>
-          <CopyBlock text={endpoint} label={p('copy')} />
-          <p className="text-xs text-[var(--ink-3)]">{p('endpointNote')}</p>
+        <section className="flex flex-col sm:flex-row gap-4 sm:items-start">
+          <div className="flex-1 min-w-0 flex flex-col gap-2">
+            <h2 className="text-sm font-bold uppercase font-mono text-[var(--ink-3)]">{p('endpointTitle')}</h2>
+            <CopyBlock text={endpoint} label={p('copy')} />
+            <p className="text-xs text-[var(--ink-3)]">{p('endpointNote')}</p>
+          </div>
+          <figure className="flex sm:flex-col items-center gap-3 sm:w-44 shrink-0">
+            {/* Fondo bianco fisso: il QR resta leggibile anche nel tema scuro */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/mcp/qr.svg"
+              alt={p('qrAlt', { url: MCP_QR_URL })}
+              width={160}
+              height={160}
+              className="w-32 h-32 sm:w-40 sm:h-40 rounded-xl bg-white p-1 border border-[var(--rule)]"
+            />
+            <figcaption className="text-xs text-[var(--ink-2)] leading-relaxed">
+              <span className="font-bold text-[var(--ink)] flex items-center gap-1.5"><QrCode className="w-3.5 h-3.5 text-cyan-400" />{p('qrTitle')}</span>
+              {p('qrBody')}
+            </figcaption>
+          </figure>
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-3">
