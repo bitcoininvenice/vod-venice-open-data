@@ -23,6 +23,7 @@ import { GET as scheduleSpeedGET } from '@/app/api/velocita-orario/route';
 import { serverSimulation } from '@/server/sources/simulationServer';
 import { lastDeparturesByStop } from '@/lib/lastDepartures';
 import { ACTV_STOPS_REFERENCE } from '@/lib/stopsReference';
+import { stopLineColors } from '@/lib/lineColors';
 import { clock } from '@/lib/tripView';
 import { romeDayType, romeTomorrowDayType } from '@/lib/time';
 import { GET as ordinancesGET } from '@/app/api/ordinanze/route';
@@ -139,7 +140,8 @@ export const MCP_LOADERS: Record<string, () => Promise<LoadedDataset>> = {
   },
   public_transport_stops: async () => {
     const j = await read(stopsGET(new Request('http://vod.local/api/stops')));
-    return { items: asRows(j.data) };
+    // accanto a lines, i colori ufficiali delle linee (GTFS ACTV: route_color e route_text_color, testo leggibile)
+    return { items: asRows(j.data).map((s) => (Array.isArray(s.lines) ? { ...s, lineColors: stopLineColors(s.lines as string[], s.mode as string) } : s)) };
   },
   flixbus: async () => {
     const today = romeToday().replace(/-/g, '');

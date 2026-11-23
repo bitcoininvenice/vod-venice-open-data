@@ -29,6 +29,9 @@ function textResult(payload: unknown) {
   return { content: [{ type: 'text' as const, text: JSON.stringify(payload) }] };
 }
 
+/** Categorie di mezzo di stop_departures: navigazione ACTV, bus e tram ACTV, Alilaguna */
+const DEPARTURE_CATEGORIES = ['vaporetto', 'motoscafo', 'motonave', 'ferry', 'bus', 'island', 'tram', 'peoplemover', 'alilaguna'] as const;
+
 /** Somma di elementi di array e campi di oggetto ammessa negli argomenti di una chiamata a un tool. */
 export const MAX_TOOL_INPUT_ELEMENTS = 100;
 
@@ -134,16 +137,25 @@ export function createVodMcpServer(): McpServer {
     'stop_departures',
     {
       title: 'Prossime partenze da una fermata',
-      description: 'Partenze dall\'orario ufficiale ACTV (battelli, bus, tram, People Mover) e Alilaguna da una fermata nei prossimi minuti (default 90, max 240); se non ce ne sono, la prossima corsa (anche domani). Orario teorico senza ritardi.',
+      description:
+        'Partenze dall\'orario ufficiale ACTV (battelli, bus, tram, People Mover) e Alilaguna da una fermata nei prossimi minuti (default 90, max 240), da tutti i pontili della fermata; se non ce ne sono, la prossima corsa (anche domani). Ogni partenza ha color e textColor (colore ufficiale della linea dal GTFS, "#RRGGBB", o null). Filtri facoltativi: operator, category, line. Orario teorico senza ritardi.',
       inputSchema: z.object({
         stop: placeText.describe('nome della fermata, es. "Rialto", "Piazzale Roma", "Aeroporto"'),
         date: dateText,
         time: timeText,
         minutes: z.number().int().min(10).max(240).default(90),
+        operator: z.enum(['ACTV', 'Alilaguna']).optional().describe('solo le partenze di un operatore'),
+        category: z
+          .array(z.enum(DEPARTURE_CATEGORIES))
+          .min(1)
+          .max(DEPARTURE_CATEGORIES.length)
+          .optional()
+          .describe('solo queste categorie di mezzo, es. ["vaporetto", "motoscafo", "motonave"] per la sola navigazione ACTV'),
+        line: z.string().min(1).max(10).optional().describe('solo una linea, es. "4.1"'),
       }),
       annotations: { readOnlyHint: true, openWorldHint: false, idempotentHint: true },
     },
-    async ({ stop, date, time, minutes }) => run(() => departuresService({ stop, date, time, minutes })),
+    async ({ stop, date, time, minutes, operator, category, line }) => run(() => departuresService({ stop, date, time, minutes, operator, category, line })),
   );
 
   server.registerTool(

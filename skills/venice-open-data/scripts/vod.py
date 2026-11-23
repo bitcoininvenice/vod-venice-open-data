@@ -10,7 +10,7 @@ No dependencies (Python 3.9+). Same data and filters as the VOD MCP server.
   python vod.py health
   python vod.py route <from> <to> [--date YYYY-MM-DD] [--time HH:MM] [--mode fastest|walk|water|private] [--resident] [--tide CM]
                     [--fare ordinary|veneziaUnica|pass] [--litres-per-hour L]
-  python vod.py departures <stop> [--date YYYY-MM-DD] [--time HH:MM] [--minutes N]
+  python vod.py departures <stop> [--date YYYY-MM-DD] [--time HH:MM] [--minutes N] [--operator ACTV|Alilaguna] [--category vaporetto,motoscafo] [--line 4.1]
   python vod.py flood [--level CM] [--place NAME] [--from NAME --to NAME]
   python vod.py find <query>
   python vod.py airport
@@ -92,7 +92,7 @@ def calc_request(args: argparse.Namespace) -> tuple[str, dict]:
         if args.resident:
             params["resident"] = "1"
     elif args.cmd == "departures":
-        params = {"stop": args.stop, "date": args.date, "time": args.time, "minutes": args.minutes}
+        params = {"stop": args.stop, "date": args.date, "time": args.time, "minutes": args.minutes, "operator": args.operator, "category": args.category, "line": args.line}
     elif args.cmd == "flood":
         params = {"levelCm": args.level, "place": args.place, "from": args.origin, "to": args.destination}
     elif args.cmd == "find":
@@ -131,6 +131,9 @@ def build_parser() -> argparse.ArgumentParser:
     d.add_argument("--date")
     d.add_argument("--time")
     d.add_argument("--minutes", type=int, default=90)
+    d.add_argument("--operator", choices=["ACTV", "Alilaguna"], help="only one operator")
+    d.add_argument("--category", help="only these vehicle categories, comma separated (e.g. vaporetto,motoscafo,motonave)")
+    d.add_argument("--line", help="only one line (e.g. 4.1)")
     f = sub.add_parser("flood", help="acqua alta simulation: flooded city, a place, a dry walking route")
     f.add_argument("--level", type=int, help="tide level in cm (default: measured now)")
     f.add_argument("--place")

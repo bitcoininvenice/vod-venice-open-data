@@ -31,6 +31,8 @@ export interface StopItem {
   wheelchair?: boolean;
   /** codici delle fermate GTFS (pontili, corsie) che compongono la fermata, per i dati in tempo reale */
   gtfsIds?: string[];
+  /** [lat, lon] dei singoli pontili o corsie quando sono più d'uno (lat/lon della fermata è il punto medio) */
+  platforms?: [number, number][];
 }
 
 /** Opera pubblica dall'Elenco Annuale dei Lavori del Comune di Venezia (dati.venezia.it, CC BY). */

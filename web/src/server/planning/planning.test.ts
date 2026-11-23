@@ -50,3 +50,18 @@ describe('giorno e ora del viaggio', () => {
     expect(hhmm(36000)).toBe('10:00');
   });
 });
+
+describe('pontili ACTV chiamati con i nomi comuni', () => {
+  it('nomi senza «S.», «San», «F.te», accenti e apostrofi', async () => {
+    const { matchPontile, stopKey } = await import('./places');
+    expect(stopKey("S. Toma'")).toEqual(['toma']);
+    expect(stopKey('F.te Nove "B"')).toEqual(['fondamente', 'nove']);
+    expect(matchPontile('Fondamenta Nove')?.name).toBe('F.te Nove');
+    expect(matchPontile('San Zaccaria')?.name).toBe('S. Marco-San Zaccaria');
+    // nomi ambigui o generici restano agli indirizzi e ai luoghi
+    expect(matchPontile('San Marco')).toBeNull();
+    expect(matchPontile('Castello')).toBeNull();
+    expect(matchPontile('Lido')).toBeNull();
+    expect(resolvePlace('Calle San Zaccaria')?.kind).toBe('address');
+  });
+});

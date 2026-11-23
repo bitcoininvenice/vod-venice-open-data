@@ -94,5 +94,391 @@
    "color": "#25408D",
    "text": "#FFFFFF"
   }
+ },
+ "busLines": {
+  "10": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "10E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "10S": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "11": {
+   "color": "#5B5B5B",
+   "text": "#FFFFFF"
+  },
+  "11E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "12E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "12L": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "13": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "14E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "15": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "15E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "16": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "16E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "17E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "18": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "19": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "2": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "20": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "21": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "24": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "24H": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "2E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "3": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "31": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "31H": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "32": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "32H": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "33H": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "34H": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "3E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "4": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "43": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "44": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "45": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "45H": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "47H": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "48H": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "4DE": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "4E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "4L": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "5": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "53": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "53E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "54E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "54RE": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "55E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "55SE": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "56E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "57E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "58E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "58RE": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "59E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "5E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "6": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "60E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "66": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "66E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "67E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "67RE": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "6E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "6L": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "7": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "72E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "73E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "7DE": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "7E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "7L": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "8/": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "80": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "81E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "81F": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "82E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "83E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "84": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "86": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "8AE": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "8E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "9E": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "9S": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "A": {
+   "color": "#EF7F1A",
+   "text": "#FFFFFF"
+  },
+  "B": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "C": {
+   "color": "#00A0E3",
+   "text": "#FFFFFF"
+  },
+  "GSB": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "GSG": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "HE": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "N": {
+   "color": "#000000",
+   "text": "#FFFFFF"
+  },
+  "N1": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "N2": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "OMN1": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "OMN2": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "OMN3": {
+   "color": "#393185",
+   "text": "#FFFFFF"
+  },
+  "PK1": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "PM": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "T1": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "T2": {
+   "color": "#E31E24",
+   "text": "#FFFFFF"
+  },
+  "V": {
+   "color": "#4D897C",
+   "text": "#FFFFFF"
+  }
  }
 }

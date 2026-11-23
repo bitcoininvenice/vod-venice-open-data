@@ -20,6 +20,7 @@ import { tripCost, boatFuelCost, type FareProfile, type TicketKind } from '@/lib
 import { fuelStations } from '@/server/sources/mimitFuel';
 import { fuelSummary } from '@/lib/fuel';
 import { calculateItineraryEmissions, fossilScore } from '@/lib/mobilityEmissions';
+import { officialLineColors } from '@/lib/lineColors';
 
 // orario dei treni Santa Lucia - Mestre per il planner lato server (nel browser si carica a richiesta)
 setTrainSchedule(trainsJson as unknown as TrainScheduleData);
@@ -34,9 +35,10 @@ const minutes = (s: number) => Math.max(1, Math.round(s / 60));
 function legOut(l: Leg) {
   if (l.kind === 'walk') return { type: 'a_piedi', from: l.from, to: l.to, start: hhmm(l.start), end: hhmm(l.end), minutes: minutes(l.seconds), meters: Math.round(l.meters), ...(l.wetMeters >= 10 ? { wetMeters: Math.round(l.wetMeters), maxDepthCm: l.maxDepthCm } : {}) };
   if (l.kind === 'boat') return { type: 'barca_privata', from: l.from, to: l.to, start: hhmm(l.start), end: hhmm(l.end), minutes: minutes(l.seconds), meters: Math.round(l.meters) };
+  const operator = l.operator === 'alilaguna' ? 'Alilaguna' : (l.operator ?? (l.category === 'train' ? 'Ferrovia RFI' : 'ACTV'));
   return {
     type: 'mezzo',
-    operator: l.operator === 'alilaguna' ? 'Alilaguna' : (l.operator ?? (l.category === 'train' ? 'Ferrovia RFI' : 'ACTV')),
+    operator,
     line: l.line,
     category: l.category,
     direction: l.headsign,
@@ -45,6 +47,8 @@ function legOut(l: Leg) {
     start: hhmm(l.start),
     end: hhmm(l.end),
     stops: l.stops,
+    // colore ufficiale della linea (GTFS ACTV o Alilaguna) e testo leggibile; null se la fonte non lo indica
+    ...officialLineColors(l.line, l.category, operator),
   };
 }
 
@@ -400,6 +404,12 @@ export interface DeparturesInput {
   time?: string | null;
   /** finestra in minuti (max 240) */
   minutes?: number;
+  /** solo un operatore */
+  operator?: 'ACTV' | 'Alilaguna' | null;
+  /** solo queste categorie di mezzo (es. vaporetto, motoscafo, motonave) */
+  category?: string[] | null;
+  /** solo una linea (es. "4.1") */
+  line?: string | null;
 }
 
 /** Prossime partenze dall'orario ufficiale (ACTV e Alilaguna) da una fermata, con la prossima corsa se non ce ne sono. */
@@ -412,38 +422,59 @@ export async function departuresService(input: DeparturesInput): Promise<Service
   const sim = await serverSimulation();
   if (!sim) return fail(503, 'unavailable', 'Orario non disponibile in questo momento.');
 
-  // Fermate entro 150 m dal luogo (pontili, corsie bus, darsene Alilaguna dello stesso nodo)
-  // fermate ACTV entro 150 m (pontili, corsie bus, tram dello stesso nodo); le darsene Alilaguna sono a parte
+  // Filtri facoltativi: senza filtri tutte le partenze
+  const wantOperator = input.operator ? input.operator.toLowerCase() : null;
+  const wantCategories = input.category?.length ? new Set(input.category.map((c) => c.toLowerCase())) : null;
+  const wantLine = input.line?.trim() ? input.line.trim().toLowerCase() : null;
+  const keep = (operator: string, category: string, line: string) =>
+    (!wantOperator || operator.toLowerCase() === wantOperator) && (!wantCategories || wantCategories.has(category.toLowerCase())) && (!wantLine || line.toLowerCase() === wantLine);
+
+  // fermate ACTV entro 150 m (pontili, corsie bus, tram dello stesso nodo); le darsene Alilaguna sono a parte.
+  // Una fermata con più pontili (es. F.te Nove A, B, C, D) si cerca vicino a ciascun pontile, non solo al punto medio.
   const near = stopsNear(place.lat, place.lon).filter((s, i, arr) => s.operator === 'ACTV' && arr.findIndex((x) => x.name === s.name && x.operator === 'ACTV') === i);
-  const points = near.length > 0 ? near : [{ name: place.label, lat: place.lat, lon: place.lon }];
+  const points: { name: string; lat: number; lon: number; platforms?: [number, number][] }[] = near.length > 0 ? near : [{ name: place.label, lat: place.lat, lon: place.lon }];
   const seen = new Set<string>();
   const departures: { time: string; operator: string; line: string; category: string; direction: string; stop: string; seconds: number }[] = [];
-  for (const p of points) {
-    for (const d of scheduledDepartures(sim.model, p, ctx.day, ctx.seconds, windowMin * 60, ctx.nextDay)) {
-      const key = `${d.line}|${d.time}|${d.headsign}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      departures.push({ time: hhmm(d.time), operator: 'ACTV', line: d.line, category: d.category, direction: d.headsign, stop: p.name, seconds: d.time });
+  if (!wantOperator || wantOperator === 'actv') {
+    for (const p of points) {
+      for (const d of scheduledDepartures(sim.model, p, ctx.day, ctx.seconds, windowMin * 60, ctx.nextDay)) {
+        const key = `${d.line}|${d.time}|${d.headsign}`;
+        if (seen.has(key) || !keep('ACTV', d.category, d.line)) continue;
+        seen.add(key);
+        departures.push({ time: hhmm(d.time), operator: 'ACTV', line: d.line, category: d.category, direction: d.headsign, stop: p.name, seconds: d.time });
+      }
     }
   }
   let alilagunaUsed = false;
   // la darsena Alilaguna dell'aeroporto è a circa 450 m dal terminal (percorso coperto)
   const dockRadius = place.kind === 'airport' ? 600 : 150;
   const docks = new Set(ALILAGUNA_STOPS.map((s, i) => (metersBetween(s.lon, s.lat, place.lon, place.lat) <= dockRadius ? i : -1)).filter((i) => i >= 0));
-  if (docks.size > 0) {
+  if (docks.size > 0 && (!wantOperator || wantOperator === 'alilaguna')) {
     for (const trip of alilagunaTripsOn(ctx.date)) {
       trip.stops.forEach((s, i) => {
         if (!docks.has(s.stop) || i === trip.stops.length - 1 || s.dep < ctx.seconds || s.dep > ctx.seconds + windowMin * 60) return;
+        const line = trip.line.replace(/^Linea\s+/i, '');
+        if (!keep('Alilaguna', 'alilaguna', line)) return;
         alilagunaUsed = true;
-        departures.push({ time: hhmm(s.dep), operator: 'Alilaguna', line: trip.line.replace(/^Linea\s+/i, ''), category: 'alilaguna', direction: trip.headsign.replace(/^per\s+/i, ''), stop: ALILAGUNA_STOPS[s.stop].name, seconds: s.dep });
+        departures.push({ time: hhmm(s.dep), operator: 'Alilaguna', line, category: 'alilaguna', direction: trip.headsign.replace(/^per\s+/i, ''), stop: ALILAGUNA_STOPS[s.stop].name, seconds: s.dep });
       });
     }
   }
   departures.sort((a, b) => a.seconds - b.seconds);
   let nextRun: Record<string, unknown> | null = null;
-  if (departures.length === 0) {
-    const next = points.map((p) => nextScheduledDeparture(sim.model, p, ctx.day, ctx.nextDay, ctx.seconds)).filter((x) => x !== null).sort((a, b) => a!.time + (a!.tomorrow && a!.time < 86400 ? 86400 : 0) - (b!.time + (b!.tomorrow && b!.time < 86400 ? 86400 : 0)))[0];
-    if (next) nextRun = { time: hhmm(next.time), tomorrow: next.tomorrow, line: next.line, direction: next.headsign };
+  const filtered = !!(wantOperator || wantCategories || wantLine);
+  // prossima corsa ACTV (con i filtri, la prossima che li rispetta): il resto della giornata, poi domani
+  const nextFor = (p: (typeof points)[number]) => {
+    if (!filtered) return nextScheduledDeparture(sim.model, p, ctx.day, ctx.nextDay, ctx.seconds);
+    const ok = (d: { line: string; category: string }) => keep('ACTV', d.category, d.line);
+    const later = scheduledDepartures(sim.model, p, ctx.day, ctx.seconds, 30 * 3600 - ctx.seconds, ctx.nextDay).find(ok);
+    if (later) return { ...later, tomorrow: later.time >= 86400 };
+    const tomorrow = scheduledDepartures(sim.model, p, ctx.nextDay, 0, 30 * 3600).find(ok);
+    return tomorrow ? { ...tomorrow, tomorrow: true } : null;
+  };
+  if (departures.length === 0 && (!wantOperator || wantOperator === 'actv')) {
+    const next = points.map(nextFor).filter((x) => x !== null).sort((a, b) => a!.time + (a!.tomorrow && a!.time < 86400 ? 86400 : 0) - (b!.time + (b!.tomorrow && b!.time < 86400 ? 86400 : 0)))[0];
+    if (next) nextRun = { time: hhmm(next.time), tomorrow: next.tomorrow, line: next.line, direction: next.headsign, ...officialLineColors(next.line, next.category, 'ACTV') };
   }
   return {
     ok: true,
@@ -453,7 +484,17 @@ export async function departuresService(input: DeparturesInput): Promise<Service
       date: ctx.dateLabel,
       from: ctx.timeLabel,
       windowMinutes: windowMin,
-      departures: departures.slice(0, 60).map((d) => ({ time: d.time, operator: d.operator, line: d.line, category: d.category, direction: d.direction, stop: d.stop })),
+      ...(filtered ? { filters: { operator: input.operator ?? null, category: input.category?.length ? input.category : null, line: input.line?.trim() || null } } : {}),
+      departures: departures.slice(0, 60).map((d) => ({
+        time: d.time,
+        operator: d.operator,
+        line: d.line,
+        category: d.category,
+        direction: d.direction,
+        stop: d.stop,
+        // colore ufficiale della linea (GTFS ACTV o Alilaguna) e testo leggibile; null se la fonte non lo indica
+        ...officialLineColors(d.line, d.category, d.operator),
+      })),
       ...(nextRun ? { nextRun } : {}),
       caveat: 'Orario teorico ufficiale, senza ritardi: per i ritardi in tempo reale c\'è il dataset realtime_vehicles e la scheda della fermata su VOD.',
       sources: [SOURCES.actv, ...(alilagunaUsed ? [SOURCES.alilaguna] : []), SOURCES.vod],
@@ -531,7 +572,7 @@ export function findPlaceService(query: string): ServiceResult {
     ok: true,
     body: {
       place: place ? placeOut(place) : null,
-      stops: stops.map((s) => ({ name: s.name, operator: s.operator, lat: +s.lat.toFixed(6), lon: +s.lon.toFixed(6) })),
+      stops: (place?.kind === 'stop' && !stops.some((s) => s.name === place.label) ? [...findStops(place.label, 1), ...stops].slice(0, 8) : stops).map((s) => ({ name: s.name, operator: s.operator, lat: +s.lat.toFixed(6), lon: +s.lon.toFixed(6) })),
       sources: [SOURCES.osm, SOURCES.actv, SOURCES.alilaguna, SOURCES.vod],
     },
   };

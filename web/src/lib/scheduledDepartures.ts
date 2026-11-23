@@ -5,6 +5,7 @@
 import { forEachTrip, pointAt, type SimModel, type SimProfile } from './simulationCore';
 import { fromGrid } from './positionDelay';
 import { ACTV_STOPS_REFERENCE } from './stopsReference';
+import { isWaterCategory } from './actvLines';
 import type { DayType, StopItem } from './types';
 
 /** Distanza massima tra la fermata della mappa e il punto della corsa (m) */
@@ -33,14 +34,26 @@ const cache = new WeakMap<SimModel, ProfilePoints[]>();
 const meters = (a: [number, number], lon: number, lat: number) =>
   Math.hypot((a[0] - lon) * Math.cos((lat * Math.PI) / 180) * 111320, (a[1] - lat) * 110540);
 
-function nearestName(lon: number, lat: number): string {
+/**
+ * Fermata più vicina a un punto della corsa (entro 400 m). Per i battelli (`waterLine`) si preferiscono i pontili
+ * serviti dalla linea: a Piazzale Roma il capolinea della linea 1 è «P.le Roma», non la vicina fermata del tram
+ * «VENEZIA CORSIA C». I bus restano sulla fermata più vicina (le corsie di Piazzale Roma non sono in mappa).
+ */
+function nearestName(lon: number, lat: number, waterLine?: string): string {
   let best: { d: number; name: string } | null = null;
+  let bestServed: { d: number; name: string } | null = null;
   for (const s of ACTV_STOPS_REFERENCE) {
     const d = meters([s.lon, s.lat], lon, lat);
-    if (d <= 400 && (!best || d < best.d)) best = { d, name: s.name };
+    if (d > 400) continue;
+    if (!best || d < best.d) best = { d, name: s.name };
+    if (waterLine && (s.mode === 'navigazione' || s.mode === 'ferry') && s.lines?.includes(waterLine) && (!bestServed || d < bestServed.d)) bestServed = { d, name: s.name };
   }
-  return best?.name ?? '';
+  return (bestServed ?? best)?.name ?? '';
 }
+
+/** Punti [lon, lat] dove cercare le corse: i singoli pontili o corsie della fermata, altrimenti il suo punto */
+const stopPoints = (stop: Pick<StopItem, 'lat' | 'lon' | 'platforms'>): [number, number][] =>
+  stop.platforms?.length ? stop.platforms.map(([lat, lon]) => [lon, lat]) : [[stop.lon, stop.lat]];
 
 function profilePoints(sim: SimModel): ProfilePoints[] {
   let out = cache.get(sim);
@@ -52,7 +65,8 @@ function profilePoints(sim: SimModel): ProfilePoints[] {
       return fromGrid(pt[0], pt[1]) as [number, number];
     });
     const last = pts[pts.length - 1];
-    return { p, pts, headsign: nearestName(last[0], last[1]), origin: nearestName(pts[0][0], pts[0][1]) };
+    const waterLine = isWaterCategory(p.route.cat) ? p.route.n : undefined;
+    return { p, pts, headsign: nearestName(last[0], last[1], waterLine), origin: nearestName(pts[0][0], pts[0][1], waterLine) };
   });
   cache.set(sim, out);
   return out;
@@ -64,7 +78,7 @@ function profilePoints(sim: SimModel): ProfilePoints[] {
  */
 export function scheduledDepartures(
   sim: SimModel,
-  stop: Pick<StopItem, 'lat' | 'lon'>,
+  stop: Pick<StopItem, 'lat' | 'lon' | 'platforms'>,
   day: DayType,
   from: number,
   windowS = 90 * 60,
@@ -72,9 +86,10 @@ export function scheduledDepartures(
   nextDay?: DayType,
 ): ScheduledDeparture[] {
   const profIndex = new Map<SimProfile, number[]>();
+  const targets = stopPoints(stop);
   for (const { p, pts } of profilePoints(sim)) {
     const ks: number[] = [];
-    for (let k = 0; k < pts.length - 1; k++) if (meters(pts[k], stop.lon, stop.lat) <= STOP_MATCH_M) ks.push(k);
+    for (let k = 0; k < pts.length - 1; k++) if (targets.some(([lon, lat]) => meters(pts[k], lon, lat) <= STOP_MATCH_M)) ks.push(k);
     if (ks.length) profIndex.set(p, ks);
   }
   if (profIndex.size === 0) return [];
@@ -104,7 +119,7 @@ export function scheduledDepartures(
  */
 export function nextScheduledDeparture(
   sim: SimModel,
-  stop: Pick<StopItem, 'lat' | 'lon'>,
+  stop: Pick<StopItem, 'lat' | 'lon' | 'platforms'>,
   day: DayType,
   nextDay: DayType,
   from: number,
@@ -127,16 +142,17 @@ export interface ScheduledArrival {
 /** Arrivi alla fermata tra `from` e `from + windowS`, ordinati per orario (il capolinea di partenza non è un arrivo). */
 export function scheduledArrivals(
   sim: SimModel,
-  stop: Pick<StopItem, 'lat' | 'lon'>,
+  stop: Pick<StopItem, 'lat' | 'lon' | 'platforms'>,
   day: DayType,
   from: number,
   windowS = 90 * 60,
   nextDay?: DayType,
 ): ScheduledArrival[] {
   const profIndex = new Map<SimProfile, { ks: number[]; origin: string }>();
+  const targets = stopPoints(stop);
   for (const { p, pts, origin } of profilePoints(sim)) {
     const ks: number[] = [];
-    for (let k = 1; k < pts.length; k++) if (meters(pts[k], stop.lon, stop.lat) <= STOP_MATCH_M) ks.push(k);
+    for (let k = 1; k < pts.length; k++) if (targets.some(([lon, lat]) => meters(pts[k], lon, lat) <= STOP_MATCH_M)) ks.push(k);
     if (ks.length) profIndex.set(p, { ks, origin });
   }
   const out: ScheduledArrival[] = [];

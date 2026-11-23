@@ -38,6 +38,10 @@ def test_cli_calculation_commands():
     args = vod.build_parser().parse_args(["route", "a", "b", "--fare", "veneziaUnica", "--litres-per-hour", "8"])
     assert vod.calc_request(args)[1] | {} == {"from": "a", "to": "b", "mode": "fastest", "fare": "veneziaUnica", "litresPerHour": 8.0}
     assert vod.calc_request(vod.build_parser().parse_args(["departures", "Rialto"])) == ("/api/partenze", {"stop": "Rialto", "minutes": 90})
+    assert vod.calc_request(vod.build_parser().parse_args(["departures", "F.te Nove", "--line", "4.1", "--operator", "ACTV"])) == (
+        "/api/partenze",
+        {"stop": "F.te Nove", "minutes": 90, "operator": "ACTV", "line": "4.1"},
+    )
     assert vod.calc_request(vod.build_parser().parse_args(["flood", "--level", "130", "--from", "Ferrovia", "--to", "Rialto"])) == (
         "/api/acqua-alta", {"levelCm": 130, "from": "Ferrovia", "to": "Rialto"})
     assert vod.calc_request(vod.build_parser().parse_args(["find", "marco polo"])) == ("/api/luoghi", {"q": "marco polo"})

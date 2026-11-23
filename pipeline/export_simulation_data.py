@@ -77,7 +77,7 @@ def to_grid(lon: float, lat: float) -> tuple[float, float]:
 
 
 def simplify(points: list[tuple[float, float]], tol: float) -> list[tuple[float, float]]:
-    """Douglas-Peucker iterativo."""
+    """Douglas-Peucker iterativo (anche per i percorsi ad anello, con primo e ultimo punto uguali)."""
     if len(points) < 3:
         return points
     keep = [False] * len(points)
@@ -88,11 +88,12 @@ def simplify(points: list[tuple[float, float]], tol: float) -> list[tuple[float,
         ax, ay = points[a]
         bx, by = points[b]
         dx, dy = bx - ax, by - ay
-        norm = math.hypot(dx, dy) or 1.0
+        norm = math.hypot(dx, dy)
         best, idx = 0.0, -1
         for i in range(a + 1, b):
             px, py = points[i]
-            d = abs(dy * px - dx * py + bx * ay - by * ax) / norm
+            # percorso ad anello (primo punto = ultimo): distanza dal punto, non da una retta che non esiste
+            d = abs(dy * px - dx * py + bx * ay - by * ax) / norm if norm else math.hypot(px - ax, py - ay)
             if d > best:
                 best, idx = d, i
         if best > tol and idx > 0:
@@ -109,8 +110,16 @@ def cumulative(points: list[tuple[int, int]]) -> list[float]:
     return cum
 
 
+# Proiezione delle fermate sulla forma: una fermata entro STOP_NEAR (unità di griglia, circa metri) dalla forma
+# si aggancia al primo passaggio, finito quando la forma se ne allontana di STOP_LEAVE. Le linee circolari
+# (4.1, 4.2, 5.1, 5.2…) passano due volte dagli stessi pontili: il punto più vicino in assoluto può essere il
+# secondo passaggio, e tutte le fermate successive finirebbero schiacciate in fondo alla forma.
+STOP_NEAR = 60.0
+STOP_LEAVE = 300.0
+
+
 def project_stops(points, cum, stops_xy) -> list[int]:
-    """Distanza lungo la forma di ogni fermata, monotona crescente."""
+    """Distanza lungo la forma di ogni fermata, monotona crescente (primo passaggio vicino alla fermata)."""
     out = []
     seg_start = 0
     last = 0.0
@@ -128,6 +137,8 @@ def project_stops(points, cum, stops_xy) -> list[int]:
             pos = cum[i] + t * math.sqrt(seg_len2)
             if d < best_d and pos >= last:
                 best_d, best_pos, best_seg = d, pos, i
+            elif best_d <= STOP_NEAR and d > best_d + STOP_LEAVE:
+                break
         last = best_pos
         seg_start = best_seg
         out.append(int(round(best_pos)))
@@ -458,6 +469,8 @@ def map_stops(feeds: list[Feed]) -> list[dict]:
             "mode": g["mode"],
             "lines": sorted(g["lines"], key=natural_key),
             "gtfsIds": sorted(g["gtfsIds"]),
+            # pontili o corsie distinti: le partenze si cercano vicino a ciascuno, non solo al punto medio
+            **({"platforms": sorted({(round(p[0], 6), round(p[1], 6)) for p in g["pts"]})} if len(set(g["pts"])) > 1 else {}),
         })
     out.sort(key=lambda s: (s["mode"], s["name"]))
     return out
@@ -541,11 +554,12 @@ def write_map_stops(feeds: list[Feed]) -> None:
     logging.info("Fermate della mappa: %d (%s)", len(stops), {m: sum(1 for s in stops if s["mode"] == m) for m in ("navigazione", "ferry", "tram", "peoplemover", "bus")})
 
 
-def line_colors(feeds: list[Feed]) -> dict[str, dict]:
-    """Colori ufficiali delle linee di navigazione (route_color / route_text_color del GTFS ACTV)."""
+def line_colors(feeds: list[Feed], feed_name: str = "navigazione") -> dict[str, dict]:
+    """Colori ufficiali delle linee di un feed ACTV (route_color / route_text_color del GTFS).
+    Navigazione e automobilistico hanno linee con lo stesso nome (es. 2): restano separati."""
     out = {}
     for feed in feeds:
-        if feed.name != "navigazione":
+        if feed.name != feed_name:
             continue
         for r in feed.routes.values():
             name, color = r.get("route_short_name"), r.get("route_color")
@@ -560,6 +574,8 @@ def write_line_colors(feeds: list[Feed]) -> None:
         "source": "GTFS ACTV navigazione (routes.txt: route_color, route_text_color)",
         "license": "Open Data ACTV (CC BY) - fonte: ACTV S.p.A. / AVM S.p.A.",
         "lines": line_colors(feeds),
+        # bus, tram e People Mover (feed automobilistico): colori per rete (urbano Mestre, Lido, extraurbano)
+        "busLines": line_colors(feeds, "automobilistico"),
     }
     with open(LINE_COLORS_FILE, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=1)

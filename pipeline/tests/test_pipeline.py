@@ -1066,3 +1066,34 @@ def test_mimit_fuel_parse_csv_rows_and_date():
     assert mimit_fuel.clean_address("Via Torino 105   30172") == "Via Torino 105"
 
 
+
+
+def test_simplify_keeps_loop_shapes():
+    # percorso ad anello (linee circolari 4.1, 4.2, 5.1): primo e ultimo punto uguali
+    loop = [(0.0, 0.0), (100.0, 0.0), (100.0, 100.0), (0.0, 100.0), (0.0, 0.0)]
+    out = sim.simplify(loop, 5.0)
+    assert len(out) >= 4
+    assert sim.cumulative([(int(x), int(y)) for x, y in out])[-1] > 300
+
+
+def test_project_stops_uses_first_pass_on_loops():
+    # la forma passa due volte vicino alla fermata A (all'andata e al ritorno)
+    shape = [(0, 0), (1000, 0), (1000, 500), (0, 500), (0, 20)]
+    cum = sim.cumulative(shape)
+    stops = [(0, 10), (1000, 250), (0, 15)]
+    dd = sim.project_stops(shape, cum, stops)
+    assert dd[0] < 50  # andata, non il passaggio finale
+    assert 1100 < dd[1] < 1400
+    assert dd[2] > 2900
+    assert dd == sorted(dd)
+
+
+def test_map_stops_platforms_and_bus_line_colors():
+    import pytest
+    if not os.path.exists(os.path.join(sim.BASE_DIR, "data", "navigazione", "stops.txt")):
+        pytest.skip("GTFS ACTV non scaricato (python download_gtfs.py)")
+    stops = sim.map_stops([sim.Feed("navigazione")])
+    fte = next(s for s in stops if s["name"] == "F.te Nove")
+    assert len(fte["platforms"]) == len(fte["gtfsIds"]) >= 2
+    colors = sim.line_colors([sim.Feed("automobilistico")], "automobilistico")
+    assert all(c["color"].startswith("#") and len(c["color"]) == 7 for c in colors.values())
